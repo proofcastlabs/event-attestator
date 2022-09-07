@@ -487,7 +487,7 @@ mod tests {
         let addresses = vec![get_sample_contract_address()];
         let receipt = get_sample_eth_submission_material()
             .receipts
-            .get_receipts_containing_log_from_addresses_and_with_topics(&addresses, &vec![topic])[0]
+            .get_receipts_containing_log_from_addresses_and_with_topics(&addresses, &[topic])[0]
             .clone();
         let result = receipt.get_logs_from_addresses_with_topic(&addresses, &topic);
         assert_eq!(result.len(), 1);

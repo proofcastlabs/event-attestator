@@ -57,7 +57,7 @@ mod tests {
             height: 1,
             block: block_and_id.block,
             deposit_address_list: DepositInfoList::new(vec![]),
-            id: BlockHash::from_str(&wrong_block_id).unwrap(),
+            id: BlockHash::from_str(wrong_block_id).unwrap(),
         };
         match validate_btc_block_header(&invalid_block_and_id) {
             Err(AppError::Custom(e)) => assert_eq!(e, expected_error),

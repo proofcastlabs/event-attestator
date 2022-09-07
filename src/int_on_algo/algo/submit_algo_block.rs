@@ -135,91 +135,91 @@ mod tests {
                     signed_tx._id,
                     expected_result.int_signed_transactions[i]._id,
                     "\n{}",
-                    format!("Wrong `_id` @ index: {}", i),
+                    format_args!("Wrong `_id` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.broadcast,
                     expected_result.int_signed_transactions[i].broadcast,
                     "\n{}",
-                    format!("Wrong `broadcast` @ index: {}", i),
+                    format_args!("Wrong `broadcast` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_tx_hash,
                     expected_result.int_signed_transactions[i].int_tx_hash,
                     "\n{}",
-                    format!("Wrong `int_tx_hash` @ index: {}", i),
+                    format_args!("Wrong `int_tx_hash` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_tx_amount,
                     expected_result.int_signed_transactions[i].int_tx_amount,
                     "\n{}",
-                    format!("Wrong `int_tx_amount` @ index: {}", i),
+                    format_args!("Wrong `int_tx_amount` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.host_token_address,
                     expected_result.int_signed_transactions[i].host_token_address,
                     "\n{}",
-                    format!("Wrong `host_token_address` @ index: {}", i),
+                    format_args!("Wrong `host_token_address` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.originating_tx_hash,
                     expected_result.int_signed_transactions[i].originating_tx_hash,
                     "\n{}",
-                    format!("Wrong `originating_tx_hash` @ index: {}", i),
+                    format_args!("Wrong `originating_tx_hash` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.originating_address,
                     expected_result.int_signed_transactions[i].originating_address,
                     "\n{}",
-                    format!("Wrong `originating_address` @ index: {}", i),
+                    format_args!("Wrong `originating_address` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.native_token_address,
                     expected_result.int_signed_transactions[i].native_token_address,
                     "\n{}",
-                    format!("Wrong `native_token_address` @ index: {}", i),
+                    format_args!("Wrong `native_token_address` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_signed_tx,
                     expected_result.int_signed_transactions[i].int_signed_tx,
                     "\n{}",
-                    format!("Wrong `int_signed_tx` @ index: {}", i),
+                    format_args!("Wrong `int_signed_tx` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_account_nonce,
                     expected_result.int_signed_transactions[i].int_account_nonce,
                     "\n{}",
-                    format!("Wrong `int_account_nonce` @ index: {}", i),
+                    format_args!("Wrong `int_account_nonce` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_latest_block_number,
                     expected_result.int_signed_transactions[i].int_latest_block_number,
                     "\n{}",
-                    format!("Wrong `int_latest_block_number` @ index: {}", i),
+                    format_args!("Wrong `int_latest_block_number` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.broadcast_tx_hash,
                     expected_result.int_signed_transactions[i].broadcast_tx_hash,
                     "\n{}",
-                    format!("Wrong `broadcast_tx_hash` @ index: {}", i),
+                    format_args!("Wrong `broadcast_tx_hash` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.broadcast_timestamp,
                     expected_result.int_signed_transactions[i].broadcast_timestamp,
                     "\n{}",
-                    format!("Wrong `broadcast_timestamp` @ index: {}", i),
+                    format_args!("Wrong `broadcast_timestamp` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_tx_recipient,
                     expected_result.int_signed_transactions[i].int_tx_recipient,
                     "\n{}",
-                    format!("Wrong `int_tx_recipient` @ index: {}", i),
+                    format_args!("Wrong `int_tx_recipient` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.destination_chain_id,
                     expected_result.int_signed_transactions[i].destination_chain_id,
                     "\n{}",
-                    format!("Wrong `destination_chain_id` @ index: {}", i),
+                    format_args!("Wrong `destination_chain_id` @ index: {}", i),
                 );
             })
     }

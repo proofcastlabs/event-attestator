@@ -152,7 +152,7 @@ mod tests {
             new_nonce,
             is_for_eth,
             &CoreType::BtcOnInt,
-            &DUMMY_DEBUG_COMMAND_SIGNATURE,
+            DUMMY_DEBUG_COMMAND_SIGNATURE,
         )
         .unwrap();
         assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), new_nonce);
@@ -172,7 +172,7 @@ mod tests {
             new_nonce,
             is_for_eth,
             &CoreType::BtcOnInt,
-            &DUMMY_DEBUG_COMMAND_SIGNATURE,
+            DUMMY_DEBUG_COMMAND_SIGNATURE,
         )
         .unwrap();
         assert_eq!(db_utils.get_any_sender_nonce_from_db().unwrap(), new_nonce);

@@ -358,7 +358,7 @@ mod tests {
     fn should_not_filter_out_proofs_for_valid_actions() {
         let required_action_name = REDEEM_ACTION_NAME;
         let action_proofs = vec![get_sample_action_proof_n(4), get_sample_action_proof_n(1)];
-        let result = filter_for_proofs_with_action_name(&action_proofs, &required_action_name).unwrap();
+        let result = filter_for_proofs_with_action_name(&action_proofs, required_action_name).unwrap();
 
         assert_eq!(result, action_proofs);
     }
@@ -376,7 +376,7 @@ mod tests {
             EosActionName::from_str(required_action_name).unwrap()
         );
 
-        let result = filter_for_proofs_with_action_name(&dirty_action_proofs, &required_action_name).unwrap();
+        let result = filter_for_proofs_with_action_name(&dirty_action_proofs, required_action_name).unwrap();
 
         assert_eq!(result, [get_sample_action_proof_n(1)]);
     }

@@ -509,7 +509,7 @@ mod tests {
         let token_dictionary_entry_str = "{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TLOS\",\"eos_symbol\":\"TLOS\",\"eth_address\":\"b6c53431608e626ac81a9776ac3e999c5556717c\",\"eos_address\":\"eosio.token\"}";
         let token_dictionary =
             EosEthTokenDictionary::new(vec![
-                EosEthTokenDictionaryEntry::from_str(&token_dictionary_entry_str).unwrap()
+                EosEthTokenDictionaryEntry::from_str(token_dictionary_entry_str).unwrap()
             ]);
         let submission_material = get_eth_submission_material_with_bad_eos_account_name();
         let origin_chain_id = EthChainId::Rinkeby;

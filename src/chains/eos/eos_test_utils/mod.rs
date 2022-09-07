@@ -101,7 +101,7 @@ impl EosInitAndSubsequentBlocksJson {
     }
 
     pub fn from_json_string(json_string: &str) -> Result<Self> {
-        Ok(serde_json::from_str(&json_string)?)
+        Ok(serde_json::from_str(json_string)?)
     }
 
     pub fn total_num_blocks(&self) -> usize {
@@ -158,14 +158,13 @@ impl EosInitAndSubsequentBlocksJson {
                     vec![0; n - 1]
                         .iter()
                         .enumerate()
-                        .map(|(i, _)| {
+                        .flat_map(|(i, _)| {
                             let mut block_ids = vec![];
                             self.subsequent_blocks[i].interim_block_ids.iter().for_each(|id| {
                                 block_ids.push(id.clone());
                             });
                             block_ids
                         })
-                        .flatten()
                         .map(convert_hex_to_checksum256)
                         .for_each(|checksum| {
                             incremerkle.append(checksum.unwrap()).unwrap();
@@ -257,7 +256,7 @@ pub fn get_sample_mainnet_schedule_1713() -> Result<EosProducerScheduleV2> {
         "src/chains/eos/eos_test_utils/sample-schedule-1713-v1.json",
     )?)
     .and_then(|v1_json| EosProducerScheduleV1::from_schedule_json(&v1_json))
-    .map(|v1_schedule| EosProducerScheduleV2::from(v1_schedule))
+    .map(EosProducerScheduleV2::from)
 }
 
 pub fn get_sample_j3_schedule_37() -> Result<EosProducerScheduleV2> {
@@ -265,7 +264,7 @@ pub fn get_sample_j3_schedule_37() -> Result<EosProducerScheduleV2> {
         "src/chains/eos/eos_test_utils/sample-j3-schedule-37.json",
     )?)
     .and_then(|v1_json| EosProducerScheduleV1::from_schedule_json(&v1_json))
-    .map(|v1_schedule| EosProducerScheduleV2::from(v1_schedule))
+    .map(EosProducerScheduleV2::from)
 }
 
 pub fn get_sample_v1_schedule_json() -> Result<EosProducerScheduleJsonV1> {
@@ -335,7 +334,7 @@ pub fn get_sample_eos_public_key_bytes() -> Bytes {
 
 pub fn get_sample_eos_signature() -> EosSignature {
     get_sample_eos_private_key()
-        .sign_message_bytes(&get_sample_message_to_sign_bytes())
+        .sign_message_bytes(get_sample_message_to_sign_bytes())
         .unwrap()
 }
 

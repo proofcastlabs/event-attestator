@@ -84,7 +84,7 @@ mod tests {
         let submission_materials = get_sample_contiguous_submission_material();
         submission_materials
             .iter()
-            .for_each(|block| db_utils.put_algo_submission_material_in_db(&block).unwrap());
+            .for_each(|block| db_utils.put_algo_submission_material_in_db(block).unwrap());
         let tail_submission_material = submission_materials[submission_materials.len() - 1].clone();
         db_utils
             .put_tail_block_hash_in_db(&tail_submission_material.block.hash().unwrap())
@@ -101,7 +101,7 @@ mod tests {
         let submission_materials = get_sample_contiguous_submission_material();
         submission_materials
             .iter()
-            .for_each(|block| db_utils.put_algo_submission_material_in_db(&block).unwrap());
+            .for_each(|block| db_utils.put_algo_submission_material_in_db(block).unwrap());
         let tail_submission_material = submission_materials[0].clone();
         db_utils
             .put_tail_block_hash_in_db(&tail_submission_material.block.hash().unwrap())
@@ -113,9 +113,9 @@ mod tests {
 
     #[test]
     fn should_calculate_algo_linker_hash() {
-        let hash_0 = AlgorandHash::from_bytes(&vec![0u8; 32]).unwrap();
-        let hash_1 = AlgorandHash::from_bytes(&vec![1u8; 32]).unwrap();
-        let hash_2 = AlgorandHash::from_bytes(&vec![2u8; 32]).unwrap();
+        let hash_0 = AlgorandHash::from_bytes(&[0u8; 32]).unwrap();
+        let hash_1 = AlgorandHash::from_bytes(&[1u8; 32]).unwrap();
+        let hash_2 = AlgorandHash::from_bytes(&[2u8; 32]).unwrap();
         let result = calculate_linker_hash(&hash_0, &hash_1, &hash_2).unwrap();
         let expected_result = AlgorandHash::from_bytes(
             &hex::decode("078307a0909a75087ee67b066ae45056a2dfa03f3c60716ba1c270c0aa29c9a4").unwrap(),
@@ -131,7 +131,7 @@ mod tests {
         let submission_materials = get_sample_contiguous_submission_material();
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let anchor_submission_material = submission_materials[0].clone();
         db_utils
             .put_anchor_block_hash_in_db(&anchor_submission_material.block.hash().unwrap())

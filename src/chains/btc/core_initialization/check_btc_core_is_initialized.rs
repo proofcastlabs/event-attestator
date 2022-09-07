@@ -32,7 +32,7 @@ mod tests {
     fn should_return_true_if_btc_core_initialized() {
         let db = get_test_database();
         let db_utils = BtcDbUtils::new(&db);
-        db_utils.put_btc_address_in_db(&SAMPLE_TARGET_BTC_ADDRESS).unwrap();
+        db_utils.put_btc_address_in_db(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         assert!(is_btc_core_initialized(&db_utils));
     }
 }

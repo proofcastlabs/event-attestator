@@ -256,11 +256,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = EthDbUtils::new(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
-        let block_hashes = blocks
-            .clone()
-            .iter()
-            .map(|block| block.hash.unwrap())
-            .collect::<Vec<EthHash>>();
+        let block_hashes = blocks.iter().map(|block| block.hash.unwrap()).collect::<Vec<EthHash>>();
         let latest_hash = block_hashes[block_hashes.len() - 1];
         blocks
             .iter()
@@ -268,17 +264,17 @@ mod tests {
         db_utils.put_eth_latest_block_hash_in_db(&latest_hash).unwrap();
         block_hashes
             .iter()
-            .for_each(|hash| assert!(db_utils.get_submission_material_from_db(&hash).is_ok()));
+            .for_each(|hash| assert!(db_utils.get_submission_material_from_db(hash).is_ok()));
         delete_all_eth_blocks(&db_utils).unwrap();
         block_hashes.iter().enumerate().for_each(|(i, hash)| {
-            let result = db_utils.get_submission_material_from_db(&hash);
+            let result = db_utils.get_submission_material_from_db(hash);
             if result.is_ok() {
                 let err_msg = format!(
                     "Sample ETH block #{} still exists in DB under hash: 0x{}",
                     i,
                     hex::encode(hash.as_bytes())
                 );
-                assert!(false, "{}", err_msg);
+                panic!("{}", err_msg);
             }
         });
     }
@@ -288,11 +284,7 @@ mod tests {
         let db = get_test_database();
         let db_utils = EvmDbUtils::new(&db);
         let blocks = get_sequential_eth_blocks_and_receipts();
-        let block_hashes = blocks
-            .clone()
-            .iter()
-            .map(|block| block.hash.unwrap())
-            .collect::<Vec<EthHash>>();
+        let block_hashes = blocks.iter().map(|block| block.hash.unwrap()).collect::<Vec<EthHash>>();
         let latest_hash = block_hashes[block_hashes.len() - 1];
         blocks
             .iter()
@@ -300,17 +292,17 @@ mod tests {
         db_utils.put_eth_latest_block_hash_in_db(&latest_hash).unwrap();
         block_hashes
             .iter()
-            .for_each(|hash| assert!(db_utils.get_submission_material_from_db(&hash).is_ok()));
+            .for_each(|hash| assert!(db_utils.get_submission_material_from_db(hash).is_ok()));
         delete_all_eth_blocks(&db_utils).unwrap();
         block_hashes.iter().enumerate().for_each(|(i, hash)| {
-            let result = db_utils.get_submission_material_from_db(&hash);
+            let result = db_utils.get_submission_material_from_db(hash);
             if result.is_ok() {
                 let err_msg = format!(
                     "Sample EVM block #{} still exists in DB under hash: 0x{}",
                     i,
                     hex::encode(hash.as_bytes())
                 );
-                assert!(false, "{}", err_msg);
+                panic!("{}", err_msg);
             }
         });
     }

@@ -127,27 +127,26 @@ mod tests {
         let db_utils = AlgoDbUtils::new(&db);
         let submission_materials = get_sample_contiguous_submission_material();
         let block_hashes = submission_materials
-            .clone()
             .iter()
             .map(|material| material.block.hash().unwrap())
             .collect::<Vec<AlgorandHash>>();
-        let latest_hash = block_hashes[block_hashes.len() - 1].clone();
+        let latest_hash = block_hashes[block_hashes.len() - 1];
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         db_utils.put_latest_block_hash_in_db(&latest_hash).unwrap();
         block_hashes
             .iter()
-            .for_each(|hash| assert!(db_utils.get_submission_material(&hash).is_ok()));
+            .for_each(|hash| assert!(db_utils.get_submission_material(hash).is_ok()));
         delete_all_algo_submision_material(&db_utils).unwrap();
         block_hashes.iter().enumerate().for_each(|(i, hash)| {
-            let result = db_utils.get_submission_material(&hash);
+            let result = db_utils.get_submission_material(hash);
             if result.is_ok() {
                 let err_msg = format!(
                     "Sample ALGO submission_material #{} still exists in DB under hash: 0x{}",
                     i, hash,
                 );
-                assert!(false, "{}", err_msg);
+                panic!("{}", err_msg);
             }
         });
     }

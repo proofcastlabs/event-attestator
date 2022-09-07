@@ -114,12 +114,12 @@ mod test {
 
     impl EosPublicKey {
         pub fn verify_signature(&self, message_slice: &[u8], signature: &EosSignature) -> Result<()> {
-            self.verify_hash(&sha256::Hash::hash(&message_slice), &signature)
+            self.verify_hash(&sha256::Hash::hash(message_slice), signature)
         }
 
         pub fn verify_hash(&self, hash: &[u8], signature: &EosSignature) -> Result<()> {
             match Secp256k1::new().verify(
-                &Message::from_slice(&hash)?,
+                &Message::from_slice(hash)?,
                 &signature.0.to_standard(),
                 &self.public_key,
             ) {
@@ -150,7 +150,7 @@ mod test {
     fn should_verify_good_signature() {
         let signature = get_sample_eos_signature();
         let public_key = get_sample_eos_public_key();
-        if let Err(e) = public_key.verify_signature(&get_sample_message_to_sign_bytes(), &signature) {
+        if let Err(e) = public_key.verify_signature(get_sample_message_to_sign_bytes(), &signature) {
             panic!("Should verify good signature!\n{}", e)
         }
     }

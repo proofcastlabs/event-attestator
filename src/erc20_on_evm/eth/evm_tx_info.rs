@@ -535,7 +535,7 @@ mod tests {
     #[test]
     fn should_fail_to_subtract_too_large_amount_from_eth_on_evm_evm_tx_info() {
         let info = get_sample_tx_info();
-        let subtrahend = U256::from(info.native_token_amount + 1);
+        let subtrahend = info.native_token_amount + 1;
         let result = info.subtract_amount(subtrahend);
         assert!(result.is_err());
     }

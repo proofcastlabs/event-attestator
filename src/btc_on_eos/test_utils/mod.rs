@@ -60,7 +60,7 @@ pub fn get_sample_btc_on_eos_eos_tx_infos() -> BtcOnEosEosTxInfos {
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
         user_data,
-        eos_token_address: eos_token_address.clone(),
+        eos_token_address,
     };
     BtcOnEosEosTxInfos::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }

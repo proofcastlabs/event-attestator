@@ -260,7 +260,7 @@ mod tests {
         .collect::<Vec<Bytes>>();
         let result = chain_ids_bytes
             .iter()
-            .map(|ref bytes| MetadataChainId::from_bytes(bytes))
+            .map(|bytes| MetadataChainId::from_bytes(bytes))
             .collect::<Result<Vec<MetadataChainId>>>()
             .unwrap();
         let expected_result = MetadataChainId::get_all();

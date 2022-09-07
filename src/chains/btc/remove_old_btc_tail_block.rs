@@ -138,8 +138,7 @@ mod tests {
         assert!(db_utils.btc_block_exists_in_db(&anchor_block.id));
         blocks
             .iter()
-            .map(|block| db_utils.put_btc_block_in_db(block))
-            .collect::<Result<()>>()
+            .try_for_each(|block| db_utils.put_btc_block_in_db(block))
             .unwrap();
         blocks
             .iter()

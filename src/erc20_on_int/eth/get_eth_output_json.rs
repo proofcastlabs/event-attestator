@@ -104,7 +104,7 @@ impl EvmTxInfo {
             int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
             host_token_address: convert_eth_address_to_string(&tx_info.evm_token_address),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            native_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
+            native_token_address: format!("0x{}", hex::encode(tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),

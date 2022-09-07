@@ -139,7 +139,7 @@ pub fn get_sample_btc_block_in_db_format() -> Result<BtcBlockInDbFormat> {
 }
 
 pub fn get_sample_testnet_block_and_txs() -> Result<BtcBlockAndId> {
-    BtcSubmissionMaterialJson::from_str(&read_to_string(&SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH).unwrap())
+    BtcSubmissionMaterialJson::from_str(&read_to_string(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH).unwrap())
         .and_then(|json| BtcBlockAndId::from_json(&json))
 }
 
@@ -226,7 +226,7 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
         _ => Err(AppError::Custom("✘ Don't have sample for that number!".into())),
     }
     .unwrap();
-    BtcSubmissionMaterialJson::from_str(&read_to_string(&block_path)?).and_then(|json| BtcBlockAndId::from_json(&json))
+    BtcSubmissionMaterialJson::from_str(&read_to_string(block_path)?).and_then(|json| BtcBlockAndId::from_json(&json))
 }
 
 pub fn get_sample_p2pkh_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue> {
@@ -238,7 +238,7 @@ pub fn get_sample_p2pkh_utxo_and_value_n(n: usize) -> Result<BtcUtxoAndValue> {
         _ => Err(AppError::Custom("✘ Don't have sample for that number!".into())),
     }
     .unwrap();
-    BtcSubmissionMaterialJson::from_str(&read_to_string(&tuple.0)?)
+    BtcSubmissionMaterialJson::from_str(&read_to_string(tuple.0)?)
         .and_then(|json| BtcBlockAndId::from_json(&json))
         .map(|block_and_id| block_and_id.block.txdata[tuple.1].clone())
         .map(|tx| create_p2pkh_btc_utxo_and_value_from_tx_output(&tx, tuple.2))

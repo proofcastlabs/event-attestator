@@ -211,7 +211,7 @@ mod tests {
     fn should_get_amount_from_proof() {
         let proof = &get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let expected_result: u64 = 5111;
-        let result = BtcOnEosBtcTxInfo::get_eos_amount_from_proof(&proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::get_eos_amount_from_proof(proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -219,7 +219,7 @@ mod tests {
     fn should_get_sender_from_proof() {
         let proof = &get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let expected_result = EosAccountName::from_str("provtestable").unwrap();
-        let result = BtcOnEosBtcTxInfo::get_action_sender_from_proof(&proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::get_action_sender_from_proof(proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -227,7 +227,7 @@ mod tests {
     fn should_get_redeem_address_from_proof() {
         let proof = &get_sample_eos_submission_material_n(1).action_proofs[0].clone();
         let expected_result = "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM";
-        let result = BtcOnEosBtcTxInfo::get_redeem_address_from_proof(&proof).unwrap();
+        let result = BtcOnEosBtcTxInfo::get_redeem_address_from_proof(proof).unwrap();
         assert_eq!(result, expected_result);
     }
 

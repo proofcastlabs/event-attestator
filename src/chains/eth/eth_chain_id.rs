@@ -160,10 +160,7 @@ impl EthChainId {
     }
 
     fn is_unknown(&self) -> bool {
-        match self {
-            Self::Unknown(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Unknown(_))
     }
 }
 
@@ -228,7 +225,7 @@ mod tests {
             .unwrap();
         let result = vec_of_bytes
             .iter()
-            .map(|ref bytes| EthChainId::from_bytes(bytes))
+            .map(|bytes| EthChainId::from_bytes(bytes))
             .collect::<Result<Vec<EthChainId>>>()
             .unwrap();
         assert_eq!(result, ids);

@@ -101,7 +101,7 @@ impl DepositAddressInfoJson {
 
     #[cfg(test)]
     pub fn from_str(json_string: &str) -> Result<Self> {
-        Ok(serde_json::from_str(&json_string)?)
+        Ok(serde_json::from_str(json_string)?)
     }
 }
 
@@ -148,7 +148,7 @@ impl DepositAddressInfoJson {
                 chain_id_hex,
                 eth_address_and_nonce_hash: None,
                 address_and_nonce_hash: Some(address_and_nonce_hash),
-                user_data: Some(format!("0x{}", hex::encode(&user_data))),
+                user_data: Some(format!("0x{}", hex::encode(user_data))),
             }),
         }
     }

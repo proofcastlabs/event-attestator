@@ -158,7 +158,7 @@ mod tests {
         let db = get_test_database();
         let state = AlgoState::init(&db);
         let block = AlgoSubmissionMaterial::default();
-        let updated_state = state.add_algo_submission_material(&block.clone()).unwrap();
+        let updated_state = state.add_algo_submission_material(&block).unwrap();
         let result = updated_state.get_algo_submission_material().unwrap();
         assert_eq!(result, block);
     }

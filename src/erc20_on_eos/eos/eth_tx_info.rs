@@ -286,10 +286,10 @@ mod tests {
             EthAddress::from_slice(&hex::decode("32eF9e9a622736399DB5Ee78A68B258dadBB4353").unwrap()),
             convert_hex_to_checksum256("ed991197c5d571f39b4605f91bf1374dd69237070d44b46d4550527c245a01b9").unwrap(),
             250255005734,
-            eos_account_name.clone(),
+            eos_account_name,
             "0.000001337 PETH".to_string(),
             user_data,
-            origin_chain_id.clone(),
+            origin_chain_id,
             EthAddress::default(),
         )
     }

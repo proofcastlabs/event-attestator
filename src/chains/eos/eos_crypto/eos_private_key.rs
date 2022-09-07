@@ -229,7 +229,7 @@ mod test {
         let eos_private_key = get_sample_eos_private_key();
         let message_bytes = get_sample_message_to_sign_bytes();
         let hash = &sha256::Hash::hash(message_bytes);
-        let msg = Message::from_slice(&hash).unwrap();
+        let msg = Message::from_slice(hash).unwrap();
         let signature = Secp256k1::sign_canonical(&Secp256k1::new(), &msg, &eos_private_key.private_key);
         assert!(signature.is_canonical());
     }

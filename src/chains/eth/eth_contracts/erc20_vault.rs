@@ -389,8 +389,8 @@ mod tests {
             origin_chain_id: None,
             destination_chain_id: None,
             token_amount: U256::from_dec_str("1337").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode(&"fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
-            token_address: EthAddress::from_slice(&hex::decode(&"9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
+            token_sender: EthAddress::from_slice(&hex::decode("fedfe2616eb3661cb8fed2782f5f0cc91d59dcac").unwrap()),
+            token_address: EthAddress::from_slice(&hex::decode("9f57cb2a4f462a5258a49e88b4331068a391de66").unwrap()),
             destination_address: "aneosaddress".to_string(),
         };
         let result_1 = Erc20VaultPegInEventParams::from_v1_log_without_user_data(&log).unwrap();
@@ -409,8 +409,8 @@ mod tests {
             origin_chain_id: None,
             destination_chain_id: None,
             token_amount: U256::from_dec_str("1000000000000000000").unwrap(),
-            token_sender: EthAddress::from_slice(&hex::decode(&"8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
-            token_address: EthAddress::from_slice(&hex::decode(&"89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap()),
+            token_sender: EthAddress::from_slice(&hex::decode("8127192c2e4703dfb47f087883cc3120fe061cb8").unwrap()),
+            token_address: EthAddress::from_slice(&hex::decode("89ab32156e46f46d02ade3fecbe5fc4243b9aaed").unwrap()),
             // NOTE: This address was from when @bertani accidentally included the `"` chars in the string!
             destination_address: "\"0x8127192c2e4703dfb47f087883cc3120fe061cb8\"".to_string(),
         };

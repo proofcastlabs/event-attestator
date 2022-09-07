@@ -47,7 +47,7 @@ mod tests {
     fn should_convert_hex_string_to_extension() {
         let hex = "01030307";
         let expected_result = EosExtension(769, vec![3u8, 7u8]);
-        let result = EosExtension::from_hex(&hex).unwrap();
+        let result = EosExtension::from_hex(hex).unwrap();
         assert_eq!(result, expected_result);
     }
 }

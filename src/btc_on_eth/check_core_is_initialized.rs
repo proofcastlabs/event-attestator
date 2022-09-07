@@ -59,7 +59,7 @@ mod tests {
         let db = get_test_database();
         let btc_db_utils = BtcDbUtils::new(&db);
         let eth_db_utils = EthDbUtils::new(&db);
-        btc_db_utils.put_btc_address_in_db(&SAMPLE_TARGET_BTC_ADDRESS).unwrap();
+        btc_db_utils.put_btc_address_in_db(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         eth_db_utils
             .put_public_eth_address_in_db(&get_sample_eth_address())
             .unwrap();

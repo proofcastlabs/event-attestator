@@ -529,8 +529,7 @@ mod tests {
         let expected_result = blocks[blocks.len() - 2].clone();
         blocks
             .iter()
-            .map(|block| db_utils.put_btc_block_in_db(&block))
-            .collect::<Result<()>>()
+            .try_for_each(|block| db_utils.put_btc_block_in_db(block))
             .unwrap();
         let result = db_utils.maybe_get_parent_btc_block_and_id(&test_block.id).unwrap();
         assert_eq!(result, expected_result);
@@ -551,9 +550,7 @@ mod tests {
     fn should_get_and_put_btc_address_in_database() {
         let db = get_test_database();
         let db_utils = BtcDbUtils::new(&db);
-        db_utils
-            .put_btc_address_in_db(&SAMPLE_TARGET_BTC_ADDRESS.to_string())
-            .unwrap();
+        db_utils.put_btc_address_in_db(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let result = db_utils.get_btc_address_from_db().unwrap();
         assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }

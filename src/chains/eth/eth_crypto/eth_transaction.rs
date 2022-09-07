@@ -36,10 +36,10 @@ pub struct EthTransaction {
 #[cfg(test)]
 impl EthTransaction {
     pub fn from_bytes(tx_bytes: &[Byte]) -> Result<EthTransaction> {
-        let decoded_tx: Vec<Bytes> = rlp::decode_list(&tx_bytes);
+        let decoded_tx: Vec<Bytes> = rlp::decode_list(tx_bytes);
         if decoded_tx.len() != 9 {
             // FIXME Magic number!
-            return Err("Error decoded ETH tx!".into());
+            Err("Error decoded ETH tx!".into())
         } else {
             Ok(EthTransaction {
                 nonce: U256::from_big_endian(&decoded_tx[0]),

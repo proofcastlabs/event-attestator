@@ -57,9 +57,9 @@ impl TxInfo {
             native_token_address: tx_info.eos_token_address.to_string(),
             destination_chain_id: eos_chain_id.to_metadata_chain_id().to_hex()?,
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
-            host_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            host_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            originating_tx_hash: format!("0x{}", hex::encode(&tx_info.originating_tx_hash)),
+            originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash)),
         })
     }
 }

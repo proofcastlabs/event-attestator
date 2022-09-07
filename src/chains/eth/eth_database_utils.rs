@@ -945,7 +945,7 @@ mod tests {
             .unwrap()
             .get_block_hash()
             .unwrap();
-        db_utils.put_special_eth_hash_in_db(&hash_type, &hash).unwrap();
+        db_utils.put_special_eth_hash_in_db(hash_type, &hash).unwrap();
         match db_utils.get_special_eth_hash_from_db(hash_type) {
             Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH special hash from db: {}", e),
@@ -976,7 +976,7 @@ mod tests {
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
         db_utils
-            .put_special_eth_block_in_db(&submission_material, &block_type)
+            .put_special_eth_block_in_db(&submission_material, block_type)
             .unwrap();
         match db_utils.get_special_eth_block_from_db(block_type) {
             Ok(result) => assert_eq!(result, expected_result),
@@ -1104,8 +1104,7 @@ mod tests {
         let block_hash = blocks[blocks.len() - 1].get_block_hash().unwrap();
         blocks
             .iter()
-            .map(|block| db_utils.put_eth_submission_material_in_db(block))
-            .collect::<Result<()>>()
+            .try_for_each(|block| db_utils.put_eth_submission_material_in_db(block))
             .unwrap();
         blocks.iter().enumerate().for_each(|(i, _)| {
             match db_utils

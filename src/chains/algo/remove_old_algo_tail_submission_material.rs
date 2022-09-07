@@ -70,7 +70,7 @@ mod tests {
         let num_submission_materials = submission_materials.len();
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let anchor_submission_material = submission_materials[0].clone();
         let anchor_block_hash = anchor_submission_material.block.hash().unwrap();
         let tail_submission_material = submission_materials[num_submission_materials - 1].clone();

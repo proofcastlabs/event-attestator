@@ -319,14 +319,7 @@ mod tests {
             assert!(things_that_will_not_be_filtered_out.contains(thing));
         });
         // NOTE: Now we need to assert that ONLY two of the repeated things made it through the filter...
-        assert_eq!(
-            results
-                .iter()
-                .filter(|thing| *thing == &repeated_thing)
-                .collect::<Vec<_>>()
-                .len(),
-            2
-        );
+        assert_eq!(results.iter().filter(|thing| *thing == &repeated_thing).count(), 2);
         // NOTE: We can assert the things to be filtered out were indeed filtered out, but first we
         // need to remove the repeated element since it'll give false asserion failures.
         things_that_will_be_filtered_out

@@ -106,7 +106,7 @@ impl IntTxOutput {
             int_tx_recipient: tx_info.destination_address.to_string(),
             originating_tx_hash: tx_info.originating_tx_hash.to_string(),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            native_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
             destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
         })
     }

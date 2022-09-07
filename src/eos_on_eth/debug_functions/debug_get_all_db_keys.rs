@@ -27,7 +27,7 @@ pub fn debug_get_all_db_keys<D: DatabaseInterface>(db: &D, signature: &str) -> R
                 "eos": EosDatabaseKeysJson::new(),
                 "db-key-prefix": DB_KEY_PREFIX.to_string(),
                 "dictionary:": hex::encode(EOS_ETH_DICTIONARY_KEY.to_vec()),
-                "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
+                "debug_signatories": format!("0x{}", hex::encode(*DEBUG_SIGNATORIES_DB_KEY)),
             })
             .to_string())
         })

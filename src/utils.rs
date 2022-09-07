@@ -131,7 +131,7 @@ pub fn capitalize_first_letter(s: &str) -> String {
 }
 
 pub fn convert_bytes_to_string(bytes: &[Byte]) -> String {
-    format!("0x{}", hex::encode(&bytes))
+    format!("0x{}", hex::encode(bytes))
 }
 
 #[cfg(test)]
@@ -315,10 +315,10 @@ mod tests {
         let hex_no_prefix = "4d261b7d3101e9ff7e37f63449be8a9a1affef87e4952900dbb84ee3c29f45f3";
         let string_no_hex = "Arbitrary string";
         let string_containing_hex = "the address is 0x82a59eA2B64B2A6FF0B8A778D0B3f3A1945d36Dd";
-        assert_eq!(is_hex(hex), true);
-        assert_eq!(is_hex(hex_no_prefix), true);
-        assert_eq!(is_hex(string_no_hex), false);
-        assert_eq!(is_hex(string_containing_hex), false);
+        assert!(is_hex(hex));
+        assert!(is_hex(hex_no_prefix));
+        assert!(!is_hex(string_no_hex));
+        assert!(!is_hex(string_containing_hex));
     }
 
     #[test]

@@ -378,7 +378,7 @@ impl EosEthTokenDictionary {
         Ok(Self::new(
             entry_jsons
                 .iter()
-                .map(|ref entry_json| EosEthTokenDictionaryEntry::from_json(entry_json))
+                .map(EosEthTokenDictionaryEntry::from_json)
                 .collect::<Result<Vec<EosEthTokenDictionaryEntry>>>()?,
         ))
     }
@@ -884,7 +884,7 @@ mod tests {
             "0.000000000 SAM1".to_string(),
         ]
         .iter()
-        .map(|eos_asset| entry.convert_eos_asset_to_eth_amount(&eos_asset).unwrap())
+        .map(|eos_asset| entry.convert_eos_asset_to_eth_amount(eos_asset).unwrap())
         .zip(expected_results.iter())
         .for_each(|(result, expected_result)| assert_eq!(&result, expected_result));
     }
@@ -919,7 +919,7 @@ mod tests {
             U256::from_dec_str("123456789").unwrap(),
         ]
         .iter()
-        .map(|eth_amount| entry.convert_u256_to_eos_asset_string(&eth_amount).unwrap())
+        .map(|eth_amount| entry.convert_u256_to_eos_asset_string(eth_amount).unwrap())
         .zip(expected_results.iter())
         .for_each(|(result, expected_result)| assert_eq!(&result, expected_result));
     }
@@ -949,25 +949,25 @@ mod tests {
             "0.000000000 SAM1".to_string(),
         ];
         vec![
-            123456789123456789 as u64,
-            12345678912345678 as u64,
-            1234567891234567 as u64,
-            123456789123456 as u64,
-            12345678912345 as u64,
-            1234567891234 as u64,
-            123456789123 as u64,
-            12345678912 as u64,
-            1234567891 as u64,
-            123456789 as u64,
-            12345678 as u64,
-            1234567 as u64,
-            123456 as u64,
-            12345 as u64,
-            1234 as u64,
-            123 as u64,
-            12 as u64,
-            1 as u64,
-            0 as u64,
+            123456789123456789_u64,
+            12345678912345678_u64,
+            1234567891234567_u64,
+            123456789123456_u64,
+            12345678912345_u64,
+            1234567891234_u64,
+            123456789123_u64,
+            12345678912_u64,
+            1234567891_u64,
+            123456789_u64,
+            12345678_u64,
+            1234567_u64,
+            123456_u64,
+            12345_u64,
+            1234_u64,
+            123_u64,
+            12_u64,
+            1_u64,
+            0_u64,
         ]
         .iter()
         .map(|u_64| entry.convert_u64_to_eos_asset(*u_64))
@@ -1130,7 +1130,7 @@ mod tests {
         let symbol = "SAM2";
         let address = "sampletokens";
         let result = dictionary
-            .get_entry_via_eos_address_and_symbol(&symbol, &address)
+            .get_entry_via_eos_address_and_symbol(symbol, address)
             .unwrap();
         let expected_result = get_sample_eos_eth_token_dictionary_entry_2();
         assert_eq!(result, expected_result);
@@ -1142,7 +1142,7 @@ mod tests {
         let symbol = "SAM2";
         let address = "wrongnameaaa";
         let expected_error = format!("No entry with EOS symbol {} & address {}!", symbol, address);
-        match dictionary.get_entry_via_eos_address_and_symbol(&symbol, &address) {
+        match dictionary.get_entry_via_eos_address_and_symbol(symbol, address) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
@@ -1160,7 +1160,7 @@ mod tests {
         let symbol = "SAM2";
         let address = "sampletokens";
         let expected_error = format!("Found > 1 entries with EOS symbol {} & address {}!", symbol, address);
-        match dictionary.get_entry_via_eos_address_and_symbol(&symbol, &address) {
+        match dictionary.get_entry_via_eos_address_and_symbol(symbol, address) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),

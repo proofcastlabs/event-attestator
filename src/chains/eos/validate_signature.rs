@@ -86,7 +86,7 @@ fn get_signing_digest(
     let block_digest = get_block_digest(msig_enabled, block_header)?;
     let schedule_hash = get_schedule_hash(msig_enabled, v2_schedule)?;
     let signing_digest = create_eos_signing_digest(block_mroot, &schedule_hash, &block_digest);
-    debug!("   block mroot: {}", hex::encode(&block_mroot));
+    debug!("   block mroot: {}", hex::encode(block_mroot));
     debug!("  block digest: {}", hex::encode(&block_digest));
     debug!(" schedule hash: {}", hex::encode(&schedule_hash));
     debug!("signing digest: {}", hex::encode(&signing_digest));

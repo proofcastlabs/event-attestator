@@ -164,8 +164,7 @@ mod tests {
         assert!(eth_db_utils.eth_block_exists_in_db(&anchor_block.get_block_hash().unwrap()));
         blocks
             .iter()
-            .map(|block| eth_db_utils.put_eth_submission_material_in_db(block))
-            .collect::<Result<()>>()
+            .try_for_each(|block| eth_db_utils.put_eth_submission_material_in_db(block))
             .unwrap();
         blocks
             .iter()

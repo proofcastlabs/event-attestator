@@ -29,7 +29,7 @@ pub fn debug_get_all_db_keys<D: DatabaseInterface>(db: &D, signature: &str) -> R
                 "eth": EthDatabaseKeysJson::new(),
                 "db_key_prefix": DB_KEY_PREFIX.to_string(),
                 "utxo_manager": get_utxo_constants_db_keys(),
-                "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
+                "debug_signatories": format!("0x{}", hex::encode(*DEBUG_SIGNATORIES_DB_KEY)),
             })
             .to_string())
         })

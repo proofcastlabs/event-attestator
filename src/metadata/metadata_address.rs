@@ -154,7 +154,7 @@ impl MetadataAddress {
     fn from_bytes_for_algo(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataAddress` from bytes for ALGO...");
         if bytes.len() == ALGO_ADDRESS_LENGTH_IN_BYTES {
-            Self::new(&AlgorandAddress::from_bytes(bytes)?.to_string(), &metadata_chain_id)
+            Self::new(&AlgorandAddress::from_bytes(bytes)?.to_string(), metadata_chain_id)
         } else {
             Err("Incorrect number of bytes to convert to ALGO address in `MetadataAddress`!".into())
         }
@@ -229,7 +229,7 @@ mod tests {
     #[test]
     fn should_do_btc_address_bytes_roundtrip() {
         let metadata_address = get_sample_btc_origin_address();
-        let metadata_chain_id = metadata_address.metadata_chain_id.clone();
+        let metadata_chain_id = metadata_address.metadata_chain_id;
         let bytes = metadata_address.to_bytes().unwrap();
         let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
         assert_eq!(result, metadata_address);
@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn should_do_eth_address_bytes_roundtrip() {
         let metadata_address = get_sample_eth_origin_address();
-        let metadata_chain_id = metadata_address.metadata_chain_id.clone();
+        let metadata_chain_id = metadata_address.metadata_chain_id;
         let bytes = metadata_address.to_bytes().unwrap();
         let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
         assert_eq!(result, metadata_address);
@@ -247,7 +247,7 @@ mod tests {
     #[test]
     fn should_do_eos_address_bytes_roundtrip() {
         let metadata_address = get_sample_eos_origin_address();
-        let metadata_chain_id = metadata_address.metadata_chain_id.clone();
+        let metadata_chain_id = metadata_address.metadata_chain_id;
         let bytes = metadata_address.to_bytes().unwrap();
         let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
         assert_eq!(result, metadata_address);
@@ -265,7 +265,7 @@ mod tests {
     #[test]
     fn should_do_algo_address_bytes_roundtrip() {
         let metadata_address = get_sample_algo_origin_address();
-        let metadata_chain_id = metadata_address.metadata_chain_id.clone();
+        let metadata_chain_id = metadata_address.metadata_chain_id;
         let bytes = metadata_address.to_bytes().unwrap();
         let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
         assert_eq!(result, metadata_address);

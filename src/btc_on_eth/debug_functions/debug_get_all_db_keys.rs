@@ -30,7 +30,7 @@ pub fn debug_get_all_db_keys<D: DatabaseInterface>(db: &D, signature: &str) -> R
                 "fees": BTC_ON_ETH_FEE_DB_KEYS.to_json(),
                 "db-key-prefix": DB_KEY_PREFIX.to_string(),
                 "utxo-manager": get_utxo_constants_db_keys(),
-                "debug_signatories": format!("0x{}", hex::encode(&*DEBUG_SIGNATORIES_DB_KEY)),
+                "debug_signatories": format!("0x{}", hex::encode(*DEBUG_SIGNATORIES_DB_KEY)),
             })
             .to_string())
         })

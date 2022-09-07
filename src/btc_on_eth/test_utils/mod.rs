@@ -72,7 +72,7 @@ pub fn get_sample_eth_tx_infos() -> BtcOnEthEthTxInfos {
         originating_tx_hash: originating_tx_hash_1,
         originating_tx_address: originating_tx_address_1,
         user_data: user_data.clone(),
-        eth_token_address: eth_token_address.clone(),
+        eth_token_address,
     };
     let minting_params_2 = BtcOnEthEthTxInfo {
         amount: amount_2,
@@ -80,7 +80,7 @@ pub fn get_sample_eth_tx_infos() -> BtcOnEthEthTxInfos {
         originating_tx_hash: originating_tx_hash_2,
         originating_tx_address: originating_tx_address_2,
         user_data: user_data.clone(),
-        eth_token_address: eth_token_address.clone(),
+        eth_token_address,
     };
     let minting_params_3 = BtcOnEthEthTxInfo {
         amount: amount_3,
@@ -88,7 +88,7 @@ pub fn get_sample_eth_tx_infos() -> BtcOnEthEthTxInfos {
         originating_tx_hash: originating_tx_hash_3,
         originating_tx_address: originating_tx_address_3,
         user_data,
-        eth_token_address: eth_token_address.clone(),
+        eth_token_address,
     };
     BtcOnEthEthTxInfos::new(vec![minting_params_1, minting_params_2, minting_params_3])
 }

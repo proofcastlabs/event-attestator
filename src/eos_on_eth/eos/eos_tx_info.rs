@@ -519,7 +519,7 @@ mod tests {
     fn should_get_eos_amount_from_proof() {
         let proof = get_sample_proof();
         let result = EosOnEthEosTxInfo::get_eos_amount_from_proof(&proof).unwrap();
-        let expected_result = 1 as u64;
+        let expected_result = 1_u64;
         assert_eq!(result, expected_result);
     }
 

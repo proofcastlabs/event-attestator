@@ -73,8 +73,7 @@ mod tests {
 
     #[test]
     fn should_crate_ptoken_peg_out_action_from_str() {
-        let result =
-            PTokenPegOutAction::from_str("whateverxxx", "1.000 EOS", "whateveryyyy", &vec![0x1, 0x3, 0x3, 0x7]);
+        let result = PTokenPegOutAction::from_str("whateverxxx", "1.000 EOS", "whateveryyyy", &[0x1, 0x3, 0x3, 0x7]);
         assert!(result.is_ok());
     }
 }

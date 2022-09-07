@@ -60,7 +60,7 @@ impl EvmAlgoTokenDictionaryEntry {
             algo_asset_id: self.algo_asset_id,
             evm_symbol: self.evm_symbol.clone(),
             algo_symbol: self.algo_symbol.clone(),
-            evm_address: hex::encode(&self.evm_address.as_bytes()),
+            evm_address: hex::encode(self.evm_address.as_bytes()),
         })
     }
 

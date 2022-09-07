@@ -74,10 +74,7 @@ impl BtcChainId {
 
     #[cfg(test)]
     fn is_unknown(&self) -> bool {
-        match self {
-            Self::Unknown(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Unknown(_))
     }
 
     #[cfg(test)]
@@ -115,7 +112,7 @@ mod tests {
         let vec_of_bytes = ids.iter().map(|id| id.to_bytes()).collect::<Vec<Bytes>>();
         let result = vec_of_bytes
             .iter()
-            .map(|ref bytes| BtcChainId::from_bytes(bytes))
+            .map(|bytes| BtcChainId::from_bytes(bytes))
             .collect::<Result<Vec<BtcChainId>>>()
             .unwrap();
         assert_eq!(result, ids);

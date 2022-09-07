@@ -271,10 +271,10 @@ mod tests {
         assert_eq!(decoded_eth_tx.gas_price, U256::from(eth_gas_price));
 
         // NOTE: Decode the data part of the transaction and assert that...
-        let tx_data = decoded_eth_tx.data.clone();
+        let tx_data = decoded_eth_tx.data;
         let metadata = Metadata::decode_from_eth_v3(&tx_data[(4 + (32 * 5))..]).unwrap();
         let expected_metadata = Metadata::new_v3(
-            &vec![0xc0, 0xff, 0xee],
+            &[0xc0, 0xff, 0xee],
             &MetadataAddress::new(&originating_address, &MetadataChainId::BitcoinTestnet).unwrap(),
             &MetadataAddress::new(&int_tx_recipient, &MetadataChainId::EthereumRopsten).unwrap(),
             Some(vec![]), // NOTE: Protocol options

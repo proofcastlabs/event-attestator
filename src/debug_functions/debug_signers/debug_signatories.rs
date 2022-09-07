@@ -311,7 +311,7 @@ mod tests {
     fn should_get_debug_signatory_from_signatories() {
         let debug_signatories = get_sample_debug_signatories();
         let expected_result = debug_signatories[2].clone();
-        let eth_address = expected_result.eth_address.clone();
+        let eth_address = expected_result.eth_address;
         let result = debug_signatories.get(&eth_address).unwrap();
         assert_eq!(result, expected_result);
     }
@@ -349,7 +349,7 @@ mod tests {
         let index = 1;
         let mut debug_signatory = debug_signatories[index].clone();
         let eth_address = debug_signatory.eth_address;
-        debug_signatory.nonce = debug_signatory.nonce + 1;
+        debug_signatory.nonce += 1;
         assert_ne!(debug_signatory, debug_signatories[index]);
         let updated_signatories = debug_signatories.replace(&debug_signatory).unwrap();
         let result = updated_signatories.get(&eth_address).unwrap();
@@ -372,7 +372,7 @@ mod tests {
     fn should_remove_and_update_in_db() {
         let db = get_test_database();
         let debug_signatories = get_n_random_debug_signatories(5);
-        let signatory_to_remove = debug_signatories[2].eth_address.clone();
+        let signatory_to_remove = debug_signatories[2].eth_address;
         let expected_result = DebugSignatories(
             debug_signatories
                 .iter()
@@ -409,7 +409,7 @@ mod tests {
         let debug_signatory = DebugSignatory::random();
         // NOTE: This is the only way we can create one with a duplicate in it.
         let debug_signatories = DebugSignatories(vec![debug_signatory.clone(), debug_signatory.clone()]);
-        let eth_address = debug_signatory.eth_address.clone();
+        let eth_address = debug_signatory.eth_address;
         let expected_error = format!("> 1 entry found with address: '{}'!", eth_address);
         match debug_signatories.get(&eth_address) {
             Ok(_) => panic!("Should not have succeeded!"),

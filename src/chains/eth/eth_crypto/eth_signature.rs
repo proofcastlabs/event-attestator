@@ -68,7 +68,7 @@ impl TryFrom<&str> for EthSignature {
 
 impl std::fmt::Display for EthSignature {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", hex::encode(&self.0))
+        write!(f, "{}", hex::encode(self.0))
     }
 }
 

@@ -45,7 +45,7 @@ mod tests {
         put_utxo_nonce_in_db(&db, nonce).unwrap();
         assert_eq!(get_utxo_nonce_from_db(&db).unwrap(), nonce);
         let new_nonce = 4;
-        debug_set_btc_utxo_nonce(&db, new_nonce, &CoreType::BtcOnInt, &DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
+        debug_set_btc_utxo_nonce(&db, new_nonce, &CoreType::BtcOnInt, DUMMY_DEBUG_COMMAND_SIGNATURE).unwrap();
         assert_eq!(get_utxo_nonce_from_db(&db).unwrap(), new_nonce);
     }
 }

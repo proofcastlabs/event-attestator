@@ -87,7 +87,7 @@ mod tests {
             new_gas_price,
             is_for_eth,
             &CoreType::BtcOnInt,
-            &DUMMY_DEBUG_COMMAND_SIGNATURE,
+            DUMMY_DEBUG_COMMAND_SIGNATURE,
         )
         .unwrap();
         assert_eq!(db_utils.get_eth_gas_price_from_db().unwrap(), new_gas_price);

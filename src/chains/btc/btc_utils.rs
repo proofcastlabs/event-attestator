@@ -320,14 +320,14 @@ mod tests {
     #[test]
     fn should_convert_btc_address_to_bytes() {
         let expected_result_hex = "6f54102783c8640c5144d039cea53eb7dbb470081462fbafd9";
-        let result = convert_btc_address_to_bytes(&SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
+        let result = convert_btc_address_to_bytes(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let result_hex = hex::encode(result);
         assert_eq!(result_hex, expected_result_hex);
     }
 
     #[test]
     fn should_convert_bytes_to_btc_address() {
-        let bytes = convert_btc_address_to_bytes(&SAMPLE_TARGET_BTC_ADDRESS.to_string()).unwrap();
+        let bytes = convert_btc_address_to_bytes(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let result = convert_bytes_to_btc_address(bytes);
         assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
@@ -395,7 +395,7 @@ mod tests {
         let signature_slice = &vec![6u8, 6u8, 6u8][..];
         let redeem_script = get_sample_p2sh_redeem_script_sig();
         let expected_result = "03060606452071a8e55edefe53f703646a679e66799cfef657b98474ff2e4148c3a1ea43169c752103d2a5e3b162eb580fe2ce023cd5e0dddbb6286923acde77e3e5468314dc9373f7ac";
-        let result = get_p2sh_script_sig_from_redeem_script(&signature_slice, &redeem_script);
+        let result = get_p2sh_script_sig_from_redeem_script(signature_slice, &redeem_script);
         let result_hex = hex::encode(result.as_bytes());
         assert_eq!(result_hex, expected_result);
     }

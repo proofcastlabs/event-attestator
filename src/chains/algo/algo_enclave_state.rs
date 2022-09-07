@@ -119,7 +119,7 @@ mod tests {
             algo_canon_to_tip_length: canon_to_tip_length,
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_linker_hash: AlgorandHash::default().to_string(),
-            algo_genesis_hash: AlgorandHash::from_genesis_id(&genesis_id).unwrap().to_string(),
+            algo_genesis_hash: AlgorandHash::from_genesis_id(genesis_id).unwrap().to_string(),
             // NOTE: The redeem address is generated randomly on initialization!
             algo_address: db_utils
                 .get_algo_private_key()
