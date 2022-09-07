@@ -132,7 +132,7 @@ impl DebugSignatories {
         }
     }
 
-    fn add_multi(&self, debug_signatories_to_add: Vec<DebugSignatory>) -> Self {
+    fn add_multi(&self, debug_signatories_to_add: &[DebugSignatory]) -> Self {
         debug_signatories_to_add
             .iter()
             .fold(self.clone(), |existing_debug_signatories: Self, debug_signatory| {
@@ -180,7 +180,7 @@ impl DebugSignatories {
     pub fn add_multi_and_update_in_db<D: DatabaseInterface>(
         &self,
         db: &D,
-        debug_signatories_to_add: Vec<DebugSignatory>,
+        debug_signatories_to_add: &[DebugSignatory],
     ) -> Result<()> {
         self.add_multi(debug_signatories_to_add).put_in_db(db)
     }

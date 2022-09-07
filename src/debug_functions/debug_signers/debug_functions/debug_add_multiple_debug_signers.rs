@@ -27,7 +27,7 @@ impl DebugSignersJson {
     fn to_debug_signatories(&self) -> Result<Vec<DebugSignatory>> {
         self.iter()
             .map(|signer_json| {
-                let eth_address = convert_hex_to_eth_address(&signer_json.address)?;
+                let eth_address = convert_hex_to_eth_address(&signer_json.eth_address)?;
                 let debug_signatory = DebugSignatory::new(&signer_json.name, &eth_address);
                 Ok(debug_signatory)
             })
@@ -46,7 +46,7 @@ impl FromStr for DebugSignersJson {
 #[derive(Deserialize)]
 struct DebugSignerJson {
     name: String,
-    address: String,
+    eth_address: String,
 }
 
 impl FromStr for DebugSignerJson {
@@ -72,6 +72,8 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
     signature_str: &str,
 ) -> Result<String> {
     info!("✔ Adding debug signer to list...");
+    let debug_signatories_to_add = DebugSignersJson::from_str(debug_signers_json)?.to_debug_signatories()?;
+
     db.start_transaction()
         .and_then(|_| DebugSignatories::get_from_db(db))
         .and_then(|debug_signatories| {
@@ -81,24 +83,29 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
                 core_type
             )()?)?;
             let signature = EthSignature::from_str(signature_str)?;
-            let debug_signatories_to_add = DebugSignersJson::from_str(debug_signers_json)?.to_debug_signatories()?;
 
             if debug_signatories.is_empty() {
                 info!("✔ Validating debug signers addition using the safe address...");
                 SAFE_DEBUG_SIGNATORIES
                     .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                    .and_then(|_| debug_signatories.add_multi_and_update_in_db(db, debug_signatories_to_add))
+                    .and_then(|_| debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add))
             } else {
                 debug_signatories
                     .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
                     .and_then(|_| DebugSignatories::get_from_db(db))
                     .and_then(|debug_signatories| {
-                        debug_signatories.add_multi_and_update_in_db(db, debug_signatories_to_add)
+                        debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add)
                     })
             }
         })
         .and_then(|_| db.end_transaction())
-        .map(|_| json!({"debug_add_mutli_signatories_success":true}).to_string())
+        .map(|_| {
+            json!({
+                "debug_add_multi_debug_signers_success":true,
+                "signers_added": debug_signatories_to_add,
+            })
+            .to_string()
+        })
 }
 
 #[cfg(test)]
@@ -109,10 +116,10 @@ mod tests {
         json!([
             {
                 "name": "address1",
-                "address": "0xea674fdde714fd979de3edf0f56aa9716b898ec8",
+                "eth_address": "0xea674fdde714fd979de3edf0f56aa9716b898ec8",
             },{
                 "name": "address2",
-                "address": "0xb522f30ba03188d37893504d435beed000925485",
+                "eth_address": "0xb522f30ba03188d37893504d435beed000925485",
             }
         ])
         .to_string()
