@@ -15,7 +15,12 @@
 
 pub use crate::{
     core_type::CoreType,
-    debug_functions::{debug_add_debug_signer, debug_remove_debug_signer, get_debug_signature_info},
+    debug_functions::{
+        debug_add_debug_signer,
+        debug_add_multiple_debug_signers,
+        debug_remove_debug_signer,
+        get_debug_signature_info,
+    },
     errors::AppError,
     traits::DatabaseInterface,
     types::{Bytes, Result},
