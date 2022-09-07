@@ -25,7 +25,13 @@ pub use crate::{
             debug_set_eth_gas_price as debug_set_int_gas_price,
         },
     },
-    debug_functions::{debug_get_key_from_db, debug_set_key_in_db_to_value},
+    debug_functions::{
+        debug_add_debug_signer,
+        debug_add_multiple_debug_signers,
+        debug_get_key_from_db,
+        debug_remove_debug_signer,
+        debug_set_key_in_db_to_value,
+    },
     int_on_algo::{
         algo::{maybe_initialize_algo_core, submit_algo_block_to_core},
         constants::CORE_TYPE,

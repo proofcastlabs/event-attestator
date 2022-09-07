@@ -74,6 +74,7 @@ pub use crate::{
     },
     debug_functions::{
         debug_add_debug_signer,
+        debug_add_multiple_debug_signers,
         debug_get_key_from_db,
         debug_remove_debug_signer,
         debug_set_key_in_db_to_value,
