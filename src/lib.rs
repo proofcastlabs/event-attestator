@@ -1,5 +1,4 @@
 #![recursion_limit = "256"] // NOTE: Because of the error macro.
-#![allow(clippy::match_bool)]
 #![allow(clippy::too_many_arguments)]
 
 //! # The __`pToken`__ Core
