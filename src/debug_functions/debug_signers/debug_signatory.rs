@@ -50,7 +50,7 @@ impl DebugSignatory {
             "n": self.nonce,
             "h": self.hash_to_hex(core_type, debug_command_hash)?,
             "d": convert_h256_to_string(debug_command_hash),
-            "a": convert_eth_address_to_string(&self.eth_address),
+            "a": self.eth_address(),
 
         }))
     }
@@ -69,6 +69,14 @@ impl DebugSignatory {
             "nonce": self.nonce,
             "ethAddress": convert_eth_address_to_string(&self.eth_address),
         })
+    }
+
+    pub fn name(&self) -> String {
+        self.name.clone()
+    }
+
+    pub fn eth_address(&self) -> String {
+        convert_eth_address_to_string(&self.eth_address)
     }
 }
 

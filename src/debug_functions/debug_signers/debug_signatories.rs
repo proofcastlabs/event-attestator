@@ -20,10 +20,21 @@ lazy_static! {
         DebugSignatories::new(vec![DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS)]);
 }
 
-#[derive(Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
 pub struct DebugSignatories(Vec<DebugSignatory>);
 
 impl DebugSignatories {
+    fn contains_name(&self, name: &str) -> bool {
+        debug!("Checking if debug signatories contains name '{}'...", name);
+        self.iter().any(|debug_signatory| debug_signatory.name() == name)
+    }
+
+    fn contains_eth_address(&self, eth_address: &str) -> bool {
+        debug!("Checking if debug signatories contains address '{}'...", eth_address);
+        self.iter()
+            .any(|debug_signatory| debug_signatory.eth_address() == eth_address)
+    }
+
     fn from_bytes(bytes: &[Byte]) -> Result<Self> {
         serde_json::from_slice::<Vec<Bytes>>(bytes)?
             .iter()
@@ -102,16 +113,18 @@ impl DebugSignatories {
     fn add(&self, debug_signatory: &DebugSignatory) -> Self {
         info!("✔ Maybe adding debug signatory to list...");
         let mut mutable_self = self.0.clone();
-        let eth_address = debug_signatory.eth_address;
-        match self.get(&eth_address) {
-            Ok(_) => {
-                warn!("✘ Debug signatory with ETH address '{}' already in list!", eth_address);
-                Self(mutable_self)
-            },
-            Err(_) => {
-                mutable_self.push(debug_signatory.clone());
-                Self(mutable_self)
-            },
+        let name = debug_signatory.name();
+        let eth_address = debug_signatory.eth_address();
+        if self.contains_name(&name) {
+            warn!("✘ Debug signatory with name '{}' already in list!", name);
+            Self(mutable_self)
+        } else if self.contains_eth_address(&eth_address) {
+            warn!("✘ Debug signatory with ETH address '{}' already in list!", eth_address);
+            Self(mutable_self)
+        } else {
+            info!("✔ Adding debug signer to list!");
+            mutable_self.push(debug_signatory.clone());
+            Self(mutable_self)
         }
     }
 
@@ -492,5 +505,33 @@ mod tests {
         // NOTE: Finally, let's assert that no debug signatory nonces were incremented.
         let debug_signatories_after = DebugSignatories::get_from_db(&db).unwrap();
         assert_eq!(debug_signatories_before, debug_signatories_after);
+    }
+
+    #[test]
+    fn should_return_true_if_contains_name() {
+        let debug_signatories = get_sample_debug_signatories();
+        let result = debug_signatories.contains_name(&debug_signatories[0].name());
+        assert!(result);
+    }
+
+    #[test]
+    fn should_return_true_if_contains_eth_address() {
+        let debug_signatories = get_sample_debug_signatories();
+        let result = debug_signatories.contains_eth_address(&debug_signatories[0].eth_address());
+        assert!(result);
+    }
+
+    #[test]
+    fn should_return_false_if_does_not_contain_name() {
+        let debug_signatories = get_sample_debug_signatories();
+        let result = debug_signatories.contains_name("non-existent");
+        assert!(!result);
+    }
+
+    #[test]
+    fn should_return_false_if_does_not_contain_eth_address() {
+        let debug_signatories = get_sample_debug_signatories();
+        let result = debug_signatories.contains_eth_address("non-existent");
+        assert!(!result);
     }
 }
