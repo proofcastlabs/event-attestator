@@ -2,12 +2,14 @@ mod divert_to_safe_address;
 mod filter_txs;
 mod get_eos_output;
 mod increment_int_nonce;
+mod initialize_eos_core;
 mod int_tx_info;
 mod metadata;
 mod parse_tx_info;
 mod sign_txs;
 mod submit_eos_block;
 
+pub use initialize_eos_core::maybe_initialize_eos_core;
 pub use submit_eos_block::submit_eos_block_to_core;
 
 // FIXME Used in `State`

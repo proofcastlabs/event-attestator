@@ -17,19 +17,16 @@ mod test_utils;
 pub(crate) use self::{eos::EosOnEthEosTxInfos, eth::EosOnEthEthTxInfos};
 pub use crate::{
     chains::{
-        eos::{
-            core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account_without_symbol as maybe_initialize_eos_core,
-            eos_debug_functions::{
-                debug_add_global_sequences_to_processed_list,
-                debug_add_new_eos_schedule,
-                debug_add_token_dictionary_entry,
-                debug_disable_eos_protocol_feature,
-                debug_enable_eos_protocol_feature,
-                debug_remove_global_sequences_from_processed_list,
-                debug_remove_token_dictionary_entry,
-                debug_set_eos_account_nonce,
-                debug_update_incremerkle,
-            },
+        eos::eos_debug_functions::{
+            debug_add_global_sequences_to_processed_list,
+            debug_add_new_eos_schedule,
+            debug_add_token_dictionary_entry,
+            debug_disable_eos_protocol_feature,
+            debug_enable_eos_protocol_feature,
+            debug_remove_global_sequences_from_processed_list,
+            debug_remove_token_dictionary_entry,
+            debug_set_eos_account_nonce,
+            debug_update_incremerkle,
         },
         eth::{
             eth_debug_functions::{
@@ -66,7 +63,7 @@ pub use crate::{
             debug_set_eth_fee_basis_points,
             debug_withdraw_fees,
         },
-        eos::submit_eos_block_to_core,
+        eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
         eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,

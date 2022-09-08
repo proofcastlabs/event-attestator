@@ -2,6 +2,7 @@ mod divert_to_safe_address;
 mod filter_tx_infos;
 mod get_eos_output;
 mod increment_int_nonce;
+mod initialize_eos_core;
 mod int_tx_info;
 mod metadata;
 mod parse_tx_info;
@@ -10,7 +11,6 @@ mod submit_eos_block;
 
 // FIXME Used in `State`.
 pub(crate) use self::int_tx_info::IntOnEosIntTxInfos;
-pub use self::submit_eos_block::submit_eos_block_to_core;
 pub(in crate::int_on_eos) use self::{
     divert_to_safe_address::{
         divert_tx_infos_to_safe_address_if_destination_is_router_address,
@@ -22,3 +22,4 @@ pub(in crate::int_on_eos) use self::{
     increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
     parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,
 };
+pub use self::{initialize_eos_core::maybe_initialize_eos_core, submit_eos_block::submit_eos_block_to_core};

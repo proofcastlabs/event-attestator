@@ -3,11 +3,11 @@ mod divert_to_safe_address;
 mod eos_tx_info;
 mod get_eos_output;
 mod increment_eth_nonce;
+mod initialize_eos_core;
 mod submit_eos_block;
 
 // FIXME Used in `State`.
 pub(crate) use self::eos_tx_info::EosOnEthEosTxInfos;
-pub use self::submit_eos_block::submit_eos_block_to_core;
 pub(in crate::eos_on_eth) use self::{
     account_for_fees::{
         account_for_fees_in_eos_tx_infos_in_state,
@@ -21,3 +21,4 @@ pub(in crate::eos_on_eth) use self::{
     get_eos_output::{get_eth_signed_tx_info_from_eth_txs, EosOutput},
     increment_eth_nonce::maybe_increment_eth_nonce_in_db_and_return_eos_state,
 };
+pub use self::{initialize_eos_core::maybe_initialize_eos_core, submit_eos_block::submit_eos_block_to_core};

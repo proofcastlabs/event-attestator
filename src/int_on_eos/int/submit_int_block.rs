@@ -121,6 +121,7 @@ mod tests {
             maybe_eos_account_name,
             maybe_eos_token_symbol,
             &eos_init_block,
+            false,
         )
         .unwrap();
 

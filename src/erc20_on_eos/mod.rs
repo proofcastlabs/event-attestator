@@ -22,7 +22,6 @@ pub(crate) use self::{eos::Erc20OnEosEthTxInfos, eth::Erc20OnEosEosTxInfos};
 pub use crate::{
     chains::{
         eos::{
-            core_initialization::initialize_eos_core::maybe_initialize_eos_core_without_eos_account_or_symbol as maybe_initialize_eos_core,
             eos_debug_functions::{
                 debug_add_global_sequences_to_processed_list,
                 debug_add_new_eos_schedule,
@@ -75,7 +74,7 @@ pub use crate::{
             debug_set_eth_fee_basis_points,
             debug_withdraw_fees_and_save_in_db,
         },
-        eos::submit_eos_block_to_core,
+        eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
         eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,

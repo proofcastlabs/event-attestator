@@ -31,7 +31,7 @@ pub use crate::{
             debug_reprocess_eos_block,
             debug_reprocess_eos_block_with_fee_accrual,
         },
-        eos::submit_eos_block_to_core,
+        eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
     },
@@ -51,7 +51,6 @@ pub use crate::{
             },
         },
         eos::{
-            core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account_and_symbol as maybe_initialize_eos_core,
             eos_debug_functions::{
                 debug_add_global_sequences_to_processed_list,
                 debug_add_new_eos_schedule,
