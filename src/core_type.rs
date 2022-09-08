@@ -53,31 +53,13 @@ impl CoreType {
         .is_ok()
     }
 
-    fn host_core_is_initialized<D: DatabaseInterface>(db: &D) -> bool {
-        Self::core_is_initialized(db, false)
-    }
-
-    fn native_core_is_initialized<D: DatabaseInterface>(db: &D) -> bool {
-        Self::core_is_initialized(db, true)
-    }
-
-    pub fn check_is_initialized<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
-        if !Self::native_core_is_initialized(db) {
-            Err(format!(
-                "Native {} side of {} core is not initialized!",
-                self.get_native_symbol(),
-                self
-            )
-            .into())
-        } else if Self::host_core_is_initialized(db) {
-            Err(format!(
-                "Host {} side of {} core is not initialized!",
-                self.get_host_symbol(),
-                self
-            )
-            .into())
+    fn check_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
+        if !Self::core_is_initialized(db, true) {
+            Err("NATIVE side of core is not initialized!".into())
+        } else if Self::core_is_initialized(db, false) {
+            Err("HOST side of core is not initialized!".into())
         } else {
-            info!("✔ {} core is initialized!", self);
+            info!("✔ Core is initialized!");
             Ok(())
         }
     }
@@ -107,6 +89,26 @@ impl fmt::Display for CoreType {
         write!(f, "{}", s)
     }
 }
+
+macro_rules! make_stateful_initialization_checkers {
+    ($($chain:ident),*) => {
+        paste! {
+            $(
+                use $crate::chains::[< $chain:lower >]::[< $chain:lower _state>]::[< $chain:camel State>];
+
+                impl CoreType {
+                    pub fn [< check_core_is_initialized_and_return_ $chain:lower _state > ]<D: DatabaseInterface>(
+                        state: [< $chain:camel State >]<D>,
+                    ) -> Result<[< $chain:camel State >]<D>> {
+                        Self::check_is_initialized(state.[< $chain:lower _db_utils >].get_db()).and(Ok(state))
+                    }
+                }
+            )*
+        }
+    }
+}
+
+make_stateful_initialization_checkers!(Eth, Eos, Btc, Algo);
 
 #[cfg(test)]
 mod tests {
