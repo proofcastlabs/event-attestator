@@ -18,17 +18,15 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_eth_state,
-    int_on_algo::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        int::{
-            filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-            filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-            get_int_output_json::get_int_output_json,
-            parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
-            sign_txs::maybe_sign_algo_txs_and_add_to_state,
-        },
+    int_on_algo::int::{
+        filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
+        filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
+        filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
+        get_int_output_json::get_int_output_json,
+        parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_algo_txs_and_add_to_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -44,7 +42,7 @@ use crate::{
 pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting INT block to core...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_eth_state)

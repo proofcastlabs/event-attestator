@@ -6,7 +6,6 @@
 //! with the creation and signing of transactions related to each chain.
 
 mod add_vault_contract_address_to_db;
-mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
 mod eos;

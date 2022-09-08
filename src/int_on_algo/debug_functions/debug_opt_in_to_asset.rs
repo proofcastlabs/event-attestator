@@ -3,9 +3,10 @@ use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys, AlgorandTransac
 use serde_json::json;
 
 use crate::{
-    chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
+    chains::algo::algo_database_utils::AlgoDbUtils,
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    int_on_algo::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -39,10 +40,9 @@ pub fn debug_opt_in_to_asset<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     info!("✔ Opting in to ALGO asset...");
-    let int_db_utils = EthDbUtils::new(db);
     let algo_db_utils = AlgoDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&int_db_utils, &algo_db_utils))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), &asset_id, &first_valid_round)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {

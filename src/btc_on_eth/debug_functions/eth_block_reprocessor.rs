@@ -2,7 +2,6 @@ use function_name::named;
 
 use crate::{
     btc_on_eth::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         constants::CORE_TYPE,
         eth::{
             filter_receipts_for_btc_on_eth_redeem_events_in_state,
@@ -22,6 +21,7 @@ use crate::{
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::validate_block_in_state,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
@@ -40,7 +40,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_block_json, &accrue_fees)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)
         .and_then(|state| {

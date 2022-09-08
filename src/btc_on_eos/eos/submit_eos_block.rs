@@ -1,19 +1,16 @@
 use crate::{
-    btc_on_eos::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
-        eos::{
-            account_for_fees::maybe_account_for_fees,
-            btc_tx_info::{
-                maybe_filter_out_already_processed_tx_ids_from_state,
-                maybe_filter_value_too_low_btc_tx_infos_in_state,
-                maybe_parse_btc_tx_infos_and_put_in_state,
-            },
-            extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
-            filter_btc_txs_in_state::maybe_filter_btc_txs_in_state,
-            get_eos_output::get_eos_output,
-            save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
-            sign_transactions::maybe_sign_txs_and_add_to_state,
+    btc_on_eos::eos::{
+        account_for_fees::maybe_account_for_fees,
+        btc_tx_info::{
+            maybe_filter_out_already_processed_tx_ids_from_state,
+            maybe_filter_value_too_low_btc_tx_infos_in_state,
+            maybe_parse_btc_tx_infos_and_put_in_state,
         },
+        extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
+        filter_btc_txs_in_state::maybe_filter_btc_txs_in_state,
+        get_eos_output::get_eos_output,
+        save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
+        sign_transactions::maybe_sign_txs_and_add_to_state,
     },
     chains::{
         btc::increment_btc_account_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
@@ -49,6 +46,7 @@ use crate::{
             validate_signature::validate_block_header_signature,
         },
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -56,7 +54,7 @@ use crate::{
 pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) -> Result<String> {
     info!("✔ Submitting EOS block to core...");
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
-        .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_incremerkle_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)

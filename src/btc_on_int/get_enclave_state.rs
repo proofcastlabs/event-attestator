@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_int::check_core_is_initialized::check_core_is_initialized,
+    btc_on_int::constants::CORE_TYPE,
     chains::{
         btc::{btc_database_utils::BtcDbUtils, btc_enclave_state::BtcEnclaveState},
         eth::{
@@ -9,6 +9,7 @@ use crate::{
             eth_enclave_state::EthEnclaveState,
         },
     },
+    core_type::CoreType,
     enclave_info::EnclaveInfo,
     traits::DatabaseInterface,
     types::Result,
@@ -43,10 +44,8 @@ impl EnclaveState {
 ///
 /// This function returns a JSON containing the enclave state, including state relevant to each
 /// blockchain controlled by this instance.
-pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
-    info!("✔ Getting enclave state...");
-    let eth_db_utils = EthDbUtils::new(&db);
-    let btc_db_utils = BtcDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &btc_db_utils)
-        .and_then(|_| EnclaveState::new(&eth_db_utils, &btc_db_utils)?.to_string())
+pub fn get_enclave_state<D: DatabaseInterface>(db: &D) -> Result<String> {
+    info!("✔ Getting enclave state for {} core...", CORE_TYPE);
+    CoreType::check_is_initialized(db)
+        .and_then(|_| EnclaveState::new(&EthDbUtils::new(db), &BtcDbUtils::new(db))?.to_string())
 }

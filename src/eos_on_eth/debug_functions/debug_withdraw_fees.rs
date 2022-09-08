@@ -11,11 +11,12 @@ use crate::{
             eos_database_utils::EosDbUtils,
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
-        eth::{eth_database_utils::EthDbUtils, eth_utils::convert_hex_to_eth_address},
+        eth::eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    eos_on_eth::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -37,7 +38,8 @@ pub fn debug_withdraw_fees<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()?;
-    check_core_is_initialized(&EthDbUtils::new(db), &EosDbUtils::new(db))?;
+    CoreType::check_is_initialized(db)?;
+
     let dictionary = EosEthTokenDictionary::get_from_db(db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
     let eos_smart_contract_address = EosDbUtils::new(db).get_eos_account_name_from_db()?.to_string();

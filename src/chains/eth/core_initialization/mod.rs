@@ -1,4 +1,3 @@
-pub(crate) mod check_eth_core_is_initialized;
 pub(crate) mod eth_core_init_utils;
 pub(crate) mod generate_eth_address;
 pub(crate) mod generate_eth_contract_address;

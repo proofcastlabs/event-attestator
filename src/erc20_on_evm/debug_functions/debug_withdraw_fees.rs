@@ -5,12 +5,13 @@ use crate::{
     chains::eth::{
         eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_without_user_data,
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_evm::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    erc20_on_evm::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -33,9 +34,8 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
-    let evm_db_utils = EvmDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &evm_db_utils))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, recipient_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| EthEvmTokenDictionary::get_from_db(db))

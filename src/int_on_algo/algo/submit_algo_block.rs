@@ -18,24 +18,22 @@ use crate::{
         update_algo_linker_hash::maybe_update_algo_linker_hash_and_return_state,
         update_algo_tail_block_hash::maybe_update_algo_tail_block_hash_and_return_state,
     },
+    core_type::CoreType,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
-    int_on_algo::{
-        algo::{
-            add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-            get_algo_output::get_algo_output,
-            get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
-            parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
-            sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
-            validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
+    int_on_algo::algo::{
+        add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
+        filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
+        get_algo_output::get_algo_output,
+        get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
+        parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
+        validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -51,7 +49,7 @@ use crate::{
 pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ALGO block to core...");
     parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
-        .and_then(check_core_is_initialized_and_return_algo_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)

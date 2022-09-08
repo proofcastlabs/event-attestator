@@ -3,15 +3,13 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    btc_on_int::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
-    chains::{
-        btc::btc_database_utils::BtcDbUtils,
-        eth::{
-            eth_chain_id::EthChainId,
-            eth_crypto::eth_transaction::get_signed_minting_tx,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        },
+    btc_on_int::constants::CORE_TYPE,
+    chains::eth::{
+        eth_chain_id::EthChainId,
+        eth_crypto::eth_transaction::get_signed_minting_tx,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
@@ -43,7 +41,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), &amount, &nonce, eth_network, &gas_price, recipient)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .map(|_| strip_hex_prefix(recipient))

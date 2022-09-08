@@ -5,11 +5,12 @@ use crate::{
     chains::eth::{
         eth_contracts::erc20_vault::encode_erc20_vault_migrate_fxn_data,
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_utils::get_eth_address_from_str,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    erc20_on_evm::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    erc20_on_evm::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -37,11 +38,10 @@ pub fn debug_get_erc20_on_evm_vault_migration_tx<D: DatabaseInterface>(
     db.start_transaction()?;
     info!("✔ Debug getting `ERC20-on-EVM` migration transaction...");
     let eth_db_utils = EthDbUtils::new(db);
-    let evm_db_utils = EvmDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let current_smart_contract_address = eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?;
     let new_smart_contract_address = get_eth_address_from_str(new_address)?;
-    check_core_is_initialized(&eth_db_utils, &evm_db_utils)
+    CoreType::check_is_initialized(db)
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))

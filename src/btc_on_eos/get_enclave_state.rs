@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::check_core_is_initialized::check_core_is_initialized,
+    btc_on_eos::constants::CORE_TYPE,
     chains::{
         btc::{btc_database_utils::BtcDbUtils, btc_enclave_state::BtcEnclaveState},
         eos::{eos_database_utils::EosDbUtils, eos_enclave_state::EosEnclaveState},
     },
+    core_type::CoreType,
     enclave_info::EnclaveInfo,
     fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
@@ -41,9 +42,7 @@ impl EnclaveState {
 /// This function returns a JSON containing the enclave state, including state relevant to each
 /// blockchain controlled by this instance.
 pub fn get_enclave_state<D: DatabaseInterface>(db: &D) -> Result<String> {
-    info!("✔ Getting core state...");
-    let btc_db_utils = BtcDbUtils::new(db);
-    let eos_db_utils = EosDbUtils::new(db);
-    check_core_is_initialized(&btc_db_utils, &eos_db_utils)
-        .and_then(|_| EnclaveState::new(&btc_db_utils, &eos_db_utils)?.to_string())
+    info!("✔ Getting {} core state...", CORE_TYPE);
+    CoreType::check_is_initialized(db)
+        .and_then(|_| EnclaveState::new(&BtcDbUtils::new(db), &EosDbUtils::new(db))?.to_string())
 }

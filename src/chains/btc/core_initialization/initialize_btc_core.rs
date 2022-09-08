@@ -15,7 +15,6 @@ use crate::{
                 put_canon_to_tip_length_in_db_and_return_state,
                 put_difficulty_threshold_in_db,
             },
-            check_btc_core_is_initialized::is_btc_core_initialized,
             generate_and_store_btc_keys::generate_and_store_btc_keys_and_return_state,
             get_btc_init_output_json::get_btc_init_output_json,
         },
@@ -28,6 +27,7 @@ use crate::{
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -74,7 +74,8 @@ pub fn maybe_initialize_btc_core<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Maybe initializing BTC core...");
     let state = BtcState::init(db);
-    if is_btc_core_initialized(&state.btc_db_utils) {
+    // NOTE: BTC is ALWAYS native, since it's not a smart-contract platform.
+    if CoreType::native_core_is_initialized(db) {
         Ok(BTC_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
         init_btc_core(state, block_json_string, fee, difficulty, network, canon_to_tip_length)

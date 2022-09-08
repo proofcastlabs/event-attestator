@@ -2,20 +2,18 @@ use ethereum_types::Address as EthAddress;
 use function_name::named;
 
 use crate::{
-    btc_on_int::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
-    chains::{
-        btc::btc_database_utils::BtcDbUtils,
-        eth::{
-            eth_contracts::{
-                erc777_proxy::{
-                    get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
-                    get_signed_erc777_proxy_change_pnetwork_tx,
-                },
-                erc777_token::get_signed_erc777_change_pnetwork_tx,
+    btc_on_int::constants::CORE_TYPE,
+    chains::eth::{
+        eth_contracts::{
+            erc777_proxy::{
+                get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+                get_signed_erc777_proxy_change_pnetwork_tx,
             },
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            erc777_token::get_signed_erc777_change_pnetwork_tx,
         },
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
@@ -55,7 +53,7 @@ pub fn debug_get_signed_erc777_change_pnetwork_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {
@@ -88,7 +86,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_tx<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| check_erc777_proxy_address_is_set(db))
@@ -125,7 +123,7 @@ pub fn debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx<D: DatabaseInte
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &BtcDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), new_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| check_erc777_proxy_address_is_set(db))

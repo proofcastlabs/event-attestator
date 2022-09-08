@@ -2,13 +2,11 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EvmDbUtils},
-        eth_utils::convert_hex_to_eth_address,
-    },
+    chains::eth::eth_utils::convert_hex_to_eth_address,
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    erc20_on_int::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    erc20_on_int::constants::CORE_TYPE,
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::Result,
@@ -32,7 +30,7 @@ pub fn debug_set_fee_basis_points<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .map(|_| sanity_check_basis_points_value(new_fee))
         .and_then(|_| get_debug_command_hash!(function_name!(), address, &new_fee)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))

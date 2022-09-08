@@ -2,20 +2,18 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    chains::{
-        eos::eos_database_utils::EosDbUtils,
-        eth::{
-            eth_contracts::erc20_vault::{
-                encode_erc20_vault_add_supported_token_fx_data,
-                encode_erc20_vault_remove_supported_token_fx_data,
-            },
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_utils::get_eth_address_from_str,
+    chains::eth::{
+        eth_contracts::erc20_vault::{
+            encode_erc20_vault_add_supported_token_fx_data,
+            encode_erc20_vault_remove_supported_token_fx_data,
         },
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_utils::get_eth_address_from_str,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    erc20_on_eos::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    erc20_on_eos::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -43,7 +41,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
     let eth_db_utils = EthDbUtils::new(db);
 
     db.start_transaction()?;
-    check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db))?;
+    CoreType::check_is_initialized(db)?;
 
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;
@@ -95,7 +93,7 @@ pub fn debug_get_remove_supported_token_tx<D: DatabaseInterface>(
     let eth_db_utils = EthDbUtils::new(db);
 
     db.start_transaction()?;
-    check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db))?;
+    CoreType::check_is_initialized(db)?;
 
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = get_eth_address_from_str(eth_address_str)?;

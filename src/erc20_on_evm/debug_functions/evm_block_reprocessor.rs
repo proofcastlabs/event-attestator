@@ -11,10 +11,10 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
     erc20_on_evm::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
         constants::CORE_TYPE,
         evm::{
             account_for_fees_in_eth_tx_infos_in_state,
@@ -45,7 +45,7 @@ fn reprocess_evm_block<D: DatabaseInterface>(
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)

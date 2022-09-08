@@ -1,7 +1,6 @@
 use crate::{
     chains::eth::{
         core_initialization::{
-            check_eth_core_is_initialized::is_eth_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
         },
@@ -11,11 +10,11 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::EthDbUtils,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
         vault_using_cores::VaultUsingCores,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -54,9 +53,10 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     vault_address: &str,
     router_address: &str,
 ) -> Result<String> {
-    match is_eth_core_initialized(&EthDbUtils::new(db)) {
-        true => Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string()),
-        false => start_eth_db_transaction_and_return_state(EthState::init(db))
+    if CoreType::native_core_is_initialized(db) {
+        Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
+    } else {
+        start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_vault_and_router_contracts_and_return_state(
                     block_json,
@@ -70,6 +70,6 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)
-            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils)),
+            .and_then(|state| EthInitializationOutput::new_with_no_contract(&state.eth_db_utils))
     }
 }

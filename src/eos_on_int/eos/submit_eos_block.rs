@@ -30,24 +30,22 @@ use crate::{
         validate_producer_slot::validate_producer_slot_of_block_in_state,
         validate_signature::validate_block_header_signature,
     },
+    core_type::CoreType,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
-    eos_on_int::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
-        eos::{
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_txs::{
-                maybe_filter_out_already_processed_tx_ids_from_state,
-                maybe_filter_out_value_too_low_txs_from_state,
-            },
-            get_eos_output::get_eos_output,
-            increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
-            parse_tx_info::maybe_parse_eos_on_int_int_tx_infos_and_put_in_state,
-            sign_txs::maybe_sign_int_txs_and_add_to_state,
+    eos_on_int::eos::{
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
+        filter_txs::{
+            maybe_filter_out_already_processed_tx_ids_from_state,
+            maybe_filter_out_value_too_low_txs_from_state,
+        },
+        get_eos_output::get_eos_output,
+        increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
+        parse_tx_info::maybe_parse_eos_on_int_int_tx_infos_and_put_in_state,
+        sign_txs::maybe_sign_int_txs_and_add_to_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -64,7 +62,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
     info!("✔ Submitting EOS block to core...");
     parse_submission_material_and_add_to_state(block_json, EosState::init(db))
         .and_then(start_eos_db_transaction_and_return_state)
-        .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_incremerkle_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)

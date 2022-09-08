@@ -5,11 +5,12 @@ use crate::{
     chains::eth::{
         eth_contracts::erc20_vault::encode_erc20_vault_set_weth_unwrapper_address_fxn_data,
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    erc20_on_int::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    erc20_on_int::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -36,10 +37,9 @@ pub fn debug_get_add_weth_unwrapper_address_tx<D: DatabaseInterface>(
     info!("✔ Debug getting `addWEthUnwrapperAddress` contract tx...");
     db.start_transaction()?;
     let eth_db_utils = EthDbUtils::new(db);
-    let evm_db_utils = EvmDbUtils::new(db);
     let current_eth_account_nonce = eth_db_utils.get_eth_account_nonce_from_db()?;
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
-    check_core_is_initialized(&eth_db_utils, &evm_db_utils)
+    CoreType::check_is_initialized(db)
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))

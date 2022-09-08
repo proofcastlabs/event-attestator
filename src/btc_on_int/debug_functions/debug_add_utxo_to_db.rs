@@ -1,7 +1,7 @@
 use function_name::named;
 
 use crate::{
-    btc_on_int::{check_core_is_initialized::check_core_is_initialized_and_return_btc_state, constants::CORE_TYPE},
+    btc_on_int::constants::CORE_TYPE,
     chains::btc::{
         btc_block::parse_btc_block_and_id_and_put_in_state,
         btc_database_utils::end_btc_db_transaction,
@@ -20,6 +20,7 @@ use crate::{
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
     constants::SUCCESS_JSON,
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
@@ -47,7 +48,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
         .and_then(|_| parse_btc_submission_json_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)

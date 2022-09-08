@@ -53,10 +53,18 @@ impl CoreType {
         .is_ok()
     }
 
-    fn check_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
-        if !Self::core_is_initialized(db, true) {
+    pub fn native_core_is_initialized<D: DatabaseInterface>(db: &D) -> bool {
+        Self::core_is_initialized(db, true)
+    }
+
+    pub fn host_core_is_initialized<D: DatabaseInterface>(db: &D) -> bool {
+        Self::core_is_initialized(db, false)
+    }
+
+    pub fn check_is_initialized<D: DatabaseInterface>(db: &D) -> Result<()> {
+        if !Self::native_core_is_initialized(db) {
             Err("NATIVE side of core is not initialized!".into())
-        } else if Self::core_is_initialized(db, false) {
+        } else if !Self::host_core_is_initialized(db) {
             Err("HOST side of core is not initialized!".into())
         } else {
             info!("✔ Core is initialized!");

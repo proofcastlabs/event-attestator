@@ -3,7 +3,6 @@ use ethereum_types::Address as EthAddress;
 use crate::{
     chains::eth::{
         core_initialization::{
-            check_eth_core_is_initialized::is_eth_core_initialized as is_int_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },
@@ -17,6 +16,7 @@ use crate::{
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -63,7 +63,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     router_contract_address: &str,
 ) -> Result<String> {
     let state = EthState::init(db);
-    if is_int_core_initialized(&state.eth_db_utils) {
+    if CoreType::host_core_is_initialized(db) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
         init_int_core(

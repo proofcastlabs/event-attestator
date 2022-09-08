@@ -2,18 +2,16 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    chains::{
-        eos::eos_database_utils::EosDbUtils,
-        eth::{
-            eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_without_user_data,
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_utils::convert_hex_to_eth_address,
-        },
+    chains::eth::{
+        eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_without_user_data,
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::EosEthTokenDictionary,
-    erc20_on_eos::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    erc20_on_eos::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -37,7 +35,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&eth_db_utils, &EosDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, recipient_address)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| EosEthTokenDictionary::get_from_db(db))

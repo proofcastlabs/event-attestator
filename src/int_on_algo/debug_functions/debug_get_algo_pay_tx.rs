@@ -4,9 +4,10 @@ use function_name::named;
 use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandTransaction, MicroAlgos};
 
 use crate::{
-    chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_database_utils::EthDbUtils},
+    chains::algo::algo_database_utils::AlgoDbUtils,
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    int_on_algo::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
     utils::strip_hex_prefix,
@@ -33,7 +34,7 @@ pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
     let algo_db_utils = AlgoDbUtils::new(db);
     // TODO If the note is valid hex, use it raw, else if is valid utf8, convert it to bytes.
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &algo_db_utils))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| {
             get_debug_command_hash!(
                 function_name!(),

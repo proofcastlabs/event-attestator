@@ -1,7 +1,6 @@
 use crate::{
     chains::eth::{
         core_initialization::{
-            check_eth_core_is_initialized::is_eth_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_no_contract_tx,
         },
@@ -11,10 +10,11 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -27,7 +27,7 @@ pub fn maybe_initialize_eth_enclave<D: DatabaseInterface>(
     confs: u64,
     erc777_contract_address: &str,
 ) -> Result<String> {
-    if is_eth_core_initialized(&EthDbUtils::new(db)) {
+    if CoreType::host_core_is_initialized(db) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
         start_eth_db_transaction_and_return_state(EthState::init(db))

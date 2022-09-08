@@ -11,7 +11,6 @@ use crate::{
             maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
             parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         constants::CORE_TYPE,
     },
     chains::{
@@ -36,6 +35,7 @@ use crate::{
             eth_types::EthSigningParams,
         },
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
@@ -54,7 +54,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_btc_submission_json_and_put_in_state(block_json, BtcState::init(db)))
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)

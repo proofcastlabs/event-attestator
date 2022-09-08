@@ -4,13 +4,11 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    chains::{
-        algo::algo_database_utils::AlgoDbUtils,
-        eth::{eth_database_utils::EthDbUtils, eth_utils::convert_hex_to_eth_address},
-    },
+    chains::eth::eth_utils::convert_hex_to_eth_address,
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::evm_algo::{EvmAlgoTokenDictionary, EvmAlgoTokenDictionaryEntry},
-    int_on_algo::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    int_on_algo::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -31,7 +29,7 @@ use crate::{
 #[named]
 pub fn debug_add_dictionary_entry<D: DatabaseInterface>(db: &D, json_str: &str, signature: &str) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &AlgoDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), json_str)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| EvmAlgoTokenDictionary::get_from_db(db))
@@ -52,7 +50,7 @@ pub fn debug_remove_dictionary_entry<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
-        .and_then(|_| check_core_is_initialized(&EthDbUtils::new(db), &AlgoDbUtils::new(db)))
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| EvmAlgoTokenDictionary::get_from_db(db))

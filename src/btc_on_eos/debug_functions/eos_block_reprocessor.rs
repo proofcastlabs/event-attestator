@@ -3,7 +3,6 @@ pub use serde_json::json;
 
 use crate::{
     btc_on_eos::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         constants::CORE_TYPE,
         eos::{
             get_eos_output,
@@ -38,6 +37,7 @@ use crate::{
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
@@ -60,7 +60,7 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
-        .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)

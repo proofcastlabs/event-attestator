@@ -12,7 +12,6 @@ use crate::{
             parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
             BtcOutput,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
         constants::CORE_TYPE,
     },
     chains::{
@@ -31,6 +30,7 @@ use crate::{
         },
         eos::eos_crypto::eos_private_key::EosPrivateKey,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
@@ -53,7 +53,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_str, &accrue_fees)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_put_in_state(block_json_str, BtcState::init(db)))
-        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)

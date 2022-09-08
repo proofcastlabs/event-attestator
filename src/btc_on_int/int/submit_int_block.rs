@@ -1,13 +1,10 @@
 use crate::{
-    btc_on_int::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        int::{
-            filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-            get_int_output::get_int_output_json,
-            parse_tx_infos::maybe_parse_btc_on_int_tx_infos_and_add_to_state,
-            sign_txs::maybe_sign_btc_txs_and_add_to_state,
-        },
+    btc_on_int::int::{
+        filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
+        filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
+        get_int_output::get_int_output_json,
+        parse_tx_infos::maybe_parse_btc_on_int_tx_infos_and_add_to_state,
+        sign_txs::maybe_sign_btc_txs_and_add_to_state,
     },
     chains::{
         btc::increment_btc_account_nonce::maybe_increment_btc_account_nonce_and_return_eth_state,
@@ -30,6 +27,7 @@ use crate::{
             validate_receipts_in_state::validate_receipts_in_state,
         },
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -44,7 +42,7 @@ use crate::{
 pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, submission_material: &str) -> Result<String> {
     info!("✔ Submitting INT block to enclave...");
     parse_eth_submission_material_and_put_in_state(submission_material, EthState::init(db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(check_for_parent_of_eth_block_in_state)

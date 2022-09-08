@@ -6,7 +6,6 @@
 //! along with the creation and signing of transactions related to each chain.
 
 mod algo;
-mod check_core_is_initialized;
 mod constants;
 mod debug_functions;
 mod get_enclave_state;

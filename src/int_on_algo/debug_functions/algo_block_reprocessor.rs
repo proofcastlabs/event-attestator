@@ -12,6 +12,7 @@ use crate::{
         },
         eth::eth_database_utils::EthDbUtilsExt,
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
@@ -28,7 +29,6 @@ use crate::{
             AlgoOutput,
             IntOnAlgoIntTxInfos,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
         constants::CORE_TYPE,
     },
     traits::DatabaseInterface,
@@ -47,7 +47,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
-        .and_then(check_core_is_initialized_and_return_algo_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_algo_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(get_relevant_asset_txs_from_submission_material_and_add_to_state)

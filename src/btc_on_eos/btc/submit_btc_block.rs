@@ -1,13 +1,10 @@
 use crate::{
-    btc_on_eos::{
-        btc::{
-            account_for_fees::maybe_account_for_fees,
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            eos_tx_info::parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
-            get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
-            sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
-        },
-        check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
+    btc_on_eos::btc::{
+        account_for_fees::maybe_account_for_fees,
+        divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+        eos_tx_info::parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
+        get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
+        sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
     },
     chains::btc::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
@@ -34,6 +31,7 @@ use crate::{
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -48,7 +46,7 @@ use crate::{
 pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to core...");
     parse_submission_material_and_put_in_state(block_json_string, BtcState::init(db))
-        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)
         .and_then(validate_btc_block_header_in_state)

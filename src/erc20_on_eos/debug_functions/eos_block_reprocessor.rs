@@ -27,10 +27,10 @@ use crate::{
             eth_debug_functions::check_custom_nonce,
         },
     },
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
     erc20_on_eos::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eos_state,
         constants::CORE_TYPE,
         eos::{
             account_for_fees_in_eth_tx_infos_in_state,
@@ -60,7 +60,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
-        .and_then(check_core_is_initialized_and_return_eos_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)

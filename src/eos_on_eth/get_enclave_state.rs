@@ -8,8 +8,9 @@ use crate::{
             eth_enclave_state::EthEnclaveState,
         },
     },
+    core_type::CoreType,
     enclave_info::EnclaveInfo,
-    eos_on_eth::check_core_is_initialized::check_core_is_initialized,
+    eos_on_eth::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -44,9 +45,7 @@ impl EnclaveState {
 /// This function returns a JSON containing the enclave state, including state relevant to each
 /// blockchain controlled by this instance.
 pub fn get_enclave_state<D: DatabaseInterface>(db: &D) -> Result<String> {
-    info!("✔ Getting core state...");
-    let eth_db_utils = EthDbUtils::new(db);
-    let eos_db_utils = EosDbUtils::new(db);
-    check_core_is_initialized(&eth_db_utils, &eos_db_utils)
-        .and_then(|_| EnclaveState::new(&eth_db_utils, &eos_db_utils)?.to_string())
+    info!("✔ Getting {} core state...", CORE_TYPE);
+    CoreType::check_is_initialized(db)
+        .and_then(|_| EnclaveState::new(&EthDbUtils::new(db), &EosDbUtils::new(db))?.to_string())
 }

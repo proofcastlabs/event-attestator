@@ -3,13 +3,11 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EvmDbUtils},
-        eth_utils::convert_hex_to_eth_address,
-    },
+    chains::eth::eth_utils::convert_hex_to_eth_address,
+    core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    int_on_evm::{check_core_is_initialized::check_core_is_initialized, constants::CORE_TYPE},
+    int_on_evm::constants::CORE_TYPE,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -29,7 +27,7 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     info!("✔ Debug setting accrued fees in dictionary...");
     let dictionary = EthEvmTokenDictionary::get_from_db(db)?;
     let dictionary_entry_eth_address = convert_hex_to_eth_address(token_address)?;
-    check_core_is_initialized(&EthDbUtils::new(db), &EvmDbUtils::new(db))
+    CoreType::check_is_initialized(db)
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, fee_amount)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| {
