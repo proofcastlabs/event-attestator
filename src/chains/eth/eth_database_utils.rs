@@ -1216,6 +1216,10 @@ mod tests {
     fn eth_db_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = EthDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             ETH_ANY_SENDER_NONCE_KEY:
                 "09feb18750877b8b216cf9dc0bf587dfc4d043620252e1a7a33353710939c2ae".to_string(),
             ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY:
@@ -1269,6 +1273,10 @@ mod tests {
     fn evm_db_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = EvmDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             EVM_ACCOUNT_NONCE_KEY:
                "ca7f0ab19900680d76625f41854791660729bfcaf7fede763d96d4c05916ec4c".to_string(),
             EVM_ADDRESS_KEY:

@@ -539,6 +539,10 @@ mod tests {
     fn algo_db_keys_should_remain_consistent() {
         #[rustfmt::skip]
         let expected_result = AlgoDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             ALGO_FEE_KEY:
                 "d284e359e0a2076c909ee55d8deaf1e05b5488a997f18bf86e0928c4fbc5c638".to_string(),
             ALGO_REDEEM_ADDRESS_KEY:
