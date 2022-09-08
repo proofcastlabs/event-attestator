@@ -20,6 +20,14 @@ pub enum CoreType {
 }
 
 impl CoreType {
+    fn get_host_symbol(&self) -> String {
+        self.to_string().split('_').collect::<Vec<_>>()[2].into()
+    }
+
+    fn get_native_symbol(&self) -> String {
+        self.to_string().split('_').collect::<Vec<_>>()[0].into()
+    }
+
     pub fn as_db_key_prefix(&self) -> String {
         self.to_string().to_lowercase().replace('_', "-")
     }
@@ -74,5 +82,25 @@ mod tests {
         CoreType::iter()
             .zip(expected_results.iter())
             .for_each(|(core_type, expected_result)| assert_eq!(&core_type.as_db_key_prefix(), *expected_result))
+    }
+
+    #[test]
+    fn should_get_native_symbol_from_core_type() {
+        let expected_results = vec![
+            "BTC", "BTC", "INT", "INT", "EOS", "BTC", "EOS", "INT", "ERC20", "ERC20", "ERC20",
+        ];
+        CoreType::iter()
+            .zip(expected_results.iter())
+            .for_each(|(core_type, expected_result)| assert_eq!(&core_type.get_native_symbol(), *expected_result))
+    }
+
+    #[test]
+    fn should_get_host_symbol_from_core_type() {
+        let expected_results = vec![
+            "ETH", "INT", "EOS", "EVM", "INT", "EOS", "ETH", "ALGO", "EOS", "INT", "EVM",
+        ];
+        CoreType::iter()
+            .zip(expected_results.iter())
+            .for_each(|(core_type, expected_result)| assert_eq!(&core_type.get_host_symbol(), *expected_result))
     }
 }
