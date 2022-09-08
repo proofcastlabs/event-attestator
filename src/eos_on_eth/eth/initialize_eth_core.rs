@@ -57,6 +57,7 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     if CoreType::host_core_is_initialized(db) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
+        let is_native = false;
         start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_no_contract_tx(
@@ -65,6 +66,7 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
                     gas_price,
                     confs,
                     state,
+                    is_native,
                 )
             })
             .and_then(generate_and_store_eos_on_eth_contract_address)

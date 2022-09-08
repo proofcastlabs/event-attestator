@@ -56,6 +56,7 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
     if CoreType::native_core_is_initialized(db) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
+        let is_native = true;
         start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_vault_and_router_contracts_and_return_state(
@@ -67,6 +68,7 @@ pub fn maybe_initialize_eth_core<D: DatabaseInterface>(
                     &convert_hex_to_eth_address(vault_address)?,
                     &convert_hex_to_eth_address(router_address)?,
                     &VaultUsingCores::Erc20OnInt,
+                    is_native,
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)

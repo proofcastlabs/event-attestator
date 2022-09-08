@@ -56,6 +56,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     if CoreType::host_core_is_initialized(db) {
         Ok(EVM_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
+        let is_native = false;
         start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_evm_core_with_no_contract_tx(
@@ -64,6 +65,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
                     gas_price,
                     confs,
                     state,
+                    is_native,
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)

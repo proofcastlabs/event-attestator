@@ -127,6 +127,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnEvm,
+            true, // NOTE: is_native
         )
         .unwrap();
         // NOTE: Initialize the EVM side of the core...
@@ -136,6 +137,7 @@ mod tests {
             gas_price,
             confirmations,
             EthState::init(&db),
+            false, // NOTE: is_native
         )
         .unwrap();
         // NOTE: Overwrite the INT address & private key since it's generated randomly above...

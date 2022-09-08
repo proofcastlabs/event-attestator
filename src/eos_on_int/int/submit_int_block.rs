@@ -134,6 +134,7 @@ mod tests {
         let int_gas_price = 20_000_000_000;
         let contiguous_int_block_json_strs = get_contiguous_int_block_json_strs();
         let int_init_block = contiguous_int_block_json_strs[0].clone();
+        let is_native = false;
         initialize_eth_core_with_router_contract_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -141,6 +142,7 @@ mod tests {
             int_confirmations,
             IntState::init(&db),
             &router_address,
+            is_native,
         )
         .unwrap();
 

@@ -30,6 +30,7 @@ pub fn init_int_core<D: DatabaseInterface>(
     erc777_contract_address: &EthAddress,
     router_contract_address: &EthAddress,
 ) -> Result<String> {
+    let is_native = false;
     start_eth_db_transaction_and_return_state(state)
         .and_then(|state| {
             initialize_eth_core_with_no_contract_tx(
@@ -38,6 +39,7 @@ pub fn init_int_core<D: DatabaseInterface>(
                 gas_price,
                 canon_to_tip_length,
                 state,
+                is_native,
             )
         })
         .and_then(|state| {

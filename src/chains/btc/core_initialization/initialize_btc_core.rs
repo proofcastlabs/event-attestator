@@ -60,6 +60,11 @@ pub fn init_btc_core<D: DatabaseInterface>(
         .and_then(put_btc_account_nonce_in_db_and_return_state)
         .and_then(initialize_utxo_balance_and_return_state)
         .and_then(|state| generate_and_store_btc_keys_and_return_state(network, state))
+        .and_then(|state| {
+            // NOTE: BTC is ALWAYS native, since it cannot host pTokens.
+            CoreType::initialize_native_core(state.btc_db_utils.get_db())?;
+            Ok(state)
+        })
         .and_then(end_btc_db_transaction)
         .and_then(get_btc_init_output_json)
 }
@@ -74,7 +79,7 @@ pub fn maybe_initialize_btc_core<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Maybe initializing BTC core...");
     let state = BtcState::init(db);
-    // NOTE: BTC is ALWAYS native, since it's not a smart-contract platform.
+    // NOTE: BTC is ALWAYS native, since it cannot host pTokens.
     if CoreType::native_core_is_initialized(db) {
         Ok(BTC_CORE_IS_INITIALIZED_JSON.to_string())
     } else {

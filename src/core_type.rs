@@ -4,9 +4,14 @@ use std::fmt;
 use serde::Serialize;
 use strum_macros::EnumIter;
 
-use crate::{constants::MIN_DATA_SENSITIVITY_LEVEL, traits::DatabaseInterface, types::Result};
+use crate::{
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
+    traits::DatabaseInterface,
+    types::{Bytes, Result},
+};
 
 lazy_static! {
+    pub static ref CORE_IS_INITIALIZED_MARKER: Bytes = vec![1u8];
     pub static ref HOST_CORE_IS_INITIALIZED_DB_KEY: [u8; 32] =
         crate::utils::get_prefixed_db_key("host_core_is_initialized_db_key");
     pub static ref NATIVE_CORE_IS_INITIALIZED_DB_KEY: [u8; 32] =
@@ -29,6 +34,24 @@ pub enum CoreType {
 }
 
 impl CoreType {
+    pub fn initialize_native_core<D: DatabaseInterface>(db: &D) -> Result<()> {
+        info!("✔ Initializing NATIVE core...");
+        db.put(
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY.to_vec(),
+            CORE_IS_INITIALIZED_MARKER.clone(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
+    pub fn initialize_host_core<D: DatabaseInterface>(db: &D) -> Result<()> {
+        info!("✔ Initializing HOST core...");
+        db.put(
+            HOST_CORE_IS_INITIALIZED_DB_KEY.to_vec(),
+            CORE_IS_INITIALIZED_MARKER.clone(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
     fn get_host_symbol(&self) -> String {
         self.to_string().split('_').collect::<Vec<_>>()[2].into()
     }

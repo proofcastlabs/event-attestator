@@ -10,6 +10,7 @@ use crate::{
         algo_submission_material::AlgoSubmissionMaterial,
         remove_irrelevant_txs_from_submission_material_in_state::remove_irrelevant_txs_from_submission_material_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -50,6 +51,11 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
         .and_then(|state| {
             let keys = AlgorandKeys::create_random();
             let address = keys.to_address()?;
+            if is_native {
+                CoreType::initialize_native_core(state.algo_db_utils.get_db())?
+            } else {
+                CoreType::initialize_host_core(state.algo_db_utils.get_db())?
+            };
             state.algo_db_utils.put_algo_account_nonce_in_db(0)?;
             state.algo_db_utils.put_algo_private_key_in_db(&keys)?;
             state.algo_db_utils.put_redeem_address_in_db(&address)?;

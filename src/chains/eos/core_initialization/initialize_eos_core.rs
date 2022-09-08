@@ -61,6 +61,14 @@ pub fn initialize_eos_core_inner<D: DatabaseInterface>(
         .and_then(|state| test_block_validation_and_return_state(&init_json.block, state))
         .and_then(generate_and_save_eos_keys_and_return_state)
         .and_then(initialize_eos_account_nonce_in_db_and_return_state)
+        .and_then(|state| {
+            if is_native {
+                CoreType::initialize_native_core(state.eos_db_utils.get_db())?
+            } else {
+                CoreType::initialize_host_core(state.eos_db_utils.get_db())?
+            };
+            Ok(state)
+        })
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_init_output)
 }

@@ -53,6 +53,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
     if CoreType::host_core_is_initialized(db) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
+        let is_native = false;
         start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_router_contract_and_return_state(
@@ -62,6 +63,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
                     confs,
                     state,
                     &convert_hex_to_eth_address(router_address)?,
+                    is_native,
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)

@@ -122,6 +122,7 @@ mod tests {
         let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -131,6 +132,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnAlgo,
+            is_native,
         )
         .unwrap();
 
@@ -294,6 +296,7 @@ mod tests {
         let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -303,6 +306,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnAlgo,
+            is_native,
         )
         .unwrap();
 
@@ -467,6 +471,7 @@ mod tests {
         let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -476,6 +481,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnAlgo,
+            is_native,
         )
         .unwrap();
 

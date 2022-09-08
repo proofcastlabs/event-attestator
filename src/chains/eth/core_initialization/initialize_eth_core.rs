@@ -36,6 +36,7 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         vault_using_cores::VaultUsingCores,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -50,6 +51,7 @@ fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseIn
     vault_contract: Option<&EthAddress>,
     router_contract: Option<&EthAddress>,
     vault_using_core: Option<&VaultUsingCores>,
+    is_native: bool,
 ) -> Result<EthState<'a, D>> {
     parse_eth_submission_material_and_put_in_state(block_json, state)
         .and_then(|state| {
@@ -138,6 +140,14 @@ fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseIn
                 generate_and_store_evm_address(state)
             }
         })
+        .and_then(|state| {
+            if is_native {
+                CoreType::initialize_native_core(state.eth_db_utils.get_db())?
+            } else {
+                CoreType::initialize_host_core(state.eth_db_utils.get_db())?
+            };
+            Ok(state)
+        })
         .and_then(|state| match router_contract {
             Some(address) => {
                 state
@@ -165,6 +175,7 @@ pub fn initialize_eth_core_with_no_contract_tx<'a, D: DatabaseInterface>(
     gas_price: u64,
     canon_to_tip_length: u64,
     state: EthState<'a, D>,
+    is_native: bool,
 ) -> Result<EthState<'a, D>> {
     info!("✔ Initializing ETH core with NO contract tx...");
     initialize_eth_core_maybe_with_contract_tx_and_return_state(
@@ -177,6 +188,7 @@ pub fn initialize_eth_core_with_no_contract_tx<'a, D: DatabaseInterface>(
         None,
         None,
         None,
+        is_native,
     )
 }
 
@@ -186,6 +198,7 @@ pub fn initialize_evm_core_with_no_contract_tx<'a, D: DatabaseInterface>(
     gas_price: u64,
     canon_to_tip_length: u64,
     state: EthState<'a, D>,
+    is_native: bool,
 ) -> Result<EthState<'a, D>> {
     info!("✔ Initializing EVM core with NO contract tx...");
     initialize_eth_core_maybe_with_contract_tx_and_return_state(
@@ -198,6 +211,7 @@ pub fn initialize_evm_core_with_no_contract_tx<'a, D: DatabaseInterface>(
         None,
         None,
         None,
+        is_native,
     )
 }
 
@@ -210,6 +224,7 @@ pub fn initialize_eth_core_with_vault_and_router_contracts_and_return_state<'a, 
     vault_contract: &EthAddress,
     router_contract: &EthAddress,
     vault_using_core: &VaultUsingCores,
+    is_native: bool,
 ) -> Result<EthState<'a, D>> {
     info!("✔ Initializing core with vault & router contract...");
     initialize_eth_core_maybe_with_contract_tx_and_return_state(
@@ -222,6 +237,7 @@ pub fn initialize_eth_core_with_vault_and_router_contracts_and_return_state<'a, 
         Some(vault_contract),
         Some(router_contract),
         Some(vault_using_core),
+        is_native,
     )
 }
 
@@ -232,6 +248,7 @@ pub fn initialize_eth_core_with_router_contract_and_return_state<'a, D: Database
     canon_to_tip_length: u64,
     state: EthState<'a, D>,
     router_contract: &EthAddress,
+    is_native: bool,
 ) -> Result<EthState<'a, D>> {
     info!("✔ Initializing core with vault & router contract...");
     initialize_eth_core_maybe_with_contract_tx_and_return_state(
@@ -244,6 +261,7 @@ pub fn initialize_eth_core_with_router_contract_and_return_state<'a, D: Database
         None,
         Some(router_contract),
         None,
+        is_native,
     )
 }
 
@@ -267,6 +285,7 @@ mod tests {
         let chain_id = EthChainId::Rinkeby;
         let gas_price = 20000000000;
         let confs = 0;
+        let is_native = false;
         let vault_address = convert_hex_to_eth_address("0x866e3fc7043efb8ff3a994f7d59f53fe045d4d7a").unwrap();
         let router_address = convert_hex_to_eth_address("0x0e1c8524b1d1891b201ffc7bb58a82c96f8fc4f6").unwrap();
         let result = initialize_eth_core_with_vault_and_router_contracts_and_return_state(
@@ -278,6 +297,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::Erc20OnEvm,
+            is_native,
         );
         // NOTE: We can't assert the actual output since the private key generation is
         // non-deterministic.
