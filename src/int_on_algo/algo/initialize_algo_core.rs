@@ -38,8 +38,19 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
     if CoreType::host_core_is_initialized(db) {
         Ok(ALGO_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
+        let is_native = false;
         start_algo_db_transaction_and_return_state(AlgoState::init_with_empty_dictionary(db))
-            .and_then(|state| initialize_algo_core(state, block_json, fee, canon_to_tip_length, genesis_id, app_id))
+            .and_then(|state| {
+                initialize_algo_core(
+                    state,
+                    block_json,
+                    fee,
+                    canon_to_tip_length,
+                    genesis_id,
+                    app_id,
+                    is_native,
+                )
+            })
             .and_then(end_algo_db_transaction_and_return_state)
             .and_then(|state| AlgoInitializationOutput::new(&state.algo_db_utils))
             .and_then(|output| output.to_string())

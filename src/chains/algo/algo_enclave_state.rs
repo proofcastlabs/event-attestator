@@ -93,6 +93,7 @@ mod tests {
         let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let submission_material_json_str = submission_material.to_string();
+        let is_native = false;
         initialize_algo_core(
             state,
             &submission_material_json_str,
@@ -100,6 +101,7 @@ mod tests {
             canon_to_tip_length,
             genesis_id,
             app_id,
+            is_native,
         )
         .unwrap();
         let result = AlgoEnclaveState::new(&db_utils).unwrap();
