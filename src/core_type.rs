@@ -4,6 +4,15 @@ use std::fmt;
 use serde::Serialize;
 use strum_macros::EnumIter;
 
+use crate::{constants::MIN_DATA_SENSITIVITY_LEVEL, traits::DatabaseInterface, types::{Bytes, Result}};
+
+lazy_static! {
+    static ref HOST_CORE_IS_INITIALIZED_DB_KEY: [u8; 32] =
+        crate::utils::get_prefixed_db_key("host_core_is_initialized_db_key");
+    static ref NATIVE_CORE_IS_INITIALIZED_DB_KEY: [u8; 32] =
+        crate::utils::get_prefixed_db_key("native_core_is_initialized_db_key");
+}
+
 #[derive(Clone, Copy, EnumIter, Serialize)]
 pub enum CoreType {
     BtcOnEth,
@@ -20,6 +29,14 @@ pub enum CoreType {
 }
 
 impl CoreType {
+    pub fn get_host_initialization_db_key() -> Bytes {
+        HOST_CORE_IS_INITIALIZED_DB_KEY.into()
+    }
+
+    pub fn get_native_initialization_db_key() -> Bytes {
+        NATIVE_CORE_IS_INITIALIZED_DB_KEY.into()
+    }
+
     fn get_host_symbol(&self) -> String {
         self.to_string().split('_').collect::<Vec<_>>()[2].into()
     }
@@ -30,6 +47,47 @@ impl CoreType {
 
     pub fn as_db_key_prefix(&self) -> String {
         self.to_string().to_lowercase().replace('_', "-")
+    }
+
+    fn core_is_initialized<D: DatabaseInterface>(db: &D, is_native: bool) -> bool {
+        db.get(
+            if is_native {
+                NATIVE_CORE_IS_INITIALIZED_DB_KEY.to_vec()
+            } else {
+                HOST_CORE_IS_INITIALIZED_DB_KEY.to_vec()
+            },
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+        .is_ok()
+    }
+
+    fn host_core_is_initialized<D: DatabaseInterface>(db: &D) -> bool {
+        Self::core_is_initialized(db, false)
+    }
+
+    fn native_core_is_initialized<D: DatabaseInterface>(db: &D) -> bool {
+        Self::core_is_initialized(db, true)
+    }
+
+    pub fn check_is_initialized<D: DatabaseInterface>(&self, db: &D) -> Result<()> {
+        if !Self::native_core_is_initialized(db) {
+            Err(format!(
+                "Native {} side of {} core is not initialized!",
+                self.get_native_symbol(),
+                self
+            )
+            .into())
+        } else if Self::host_core_is_initialized(db) {
+            Err(format!(
+                "Host {} side of {} core is not initialized!",
+                self.get_host_symbol(),
+                self
+            )
+            .into())
+        } else {
+            info!("✔ {} core is initialized!", self);
+            Ok(())
+        }
     }
 }
 
