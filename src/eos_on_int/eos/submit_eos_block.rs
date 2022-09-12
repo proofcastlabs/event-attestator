@@ -147,6 +147,7 @@ mod tests {
             maybe_eos_account_name,
             maybe_eos_token_symbol,
             &eos_init_block,
+            true,
         )
         .unwrap();
 
@@ -167,6 +168,7 @@ mod tests {
             int_confirmations,
             IntState::init(&db),
             &router_address,
+            false,
         )
         .unwrap();
 

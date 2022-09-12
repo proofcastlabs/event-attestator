@@ -148,6 +148,7 @@ mod tests {
             maybe_eos_account_name,
             maybe_eos_token_symbol,
             &eos_init_block,
+            false,
         )
         .unwrap();
 
@@ -170,6 +171,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnEos,
+            true,
         )
         .unwrap();
 

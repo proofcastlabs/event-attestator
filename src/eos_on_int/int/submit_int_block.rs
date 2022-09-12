@@ -115,12 +115,14 @@ mod tests {
         let maybe_eos_account_name = Some("intoneostest");
         let maybe_eos_token_symbol = None;
         let eos_init_block = get_sample_eos_init_block();
+        let is_native = true;
         initialize_eos_core_inner(
             &db,
             eos_chain_id,
             maybe_eos_account_name,
             maybe_eos_token_symbol,
             &eos_init_block,
+            is_native,
         )
         .unwrap();
 
