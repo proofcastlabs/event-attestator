@@ -83,6 +83,10 @@ pub fn convert_json_value_to_string(value: &JsonValue) -> Result<String> {
         .to_string())
 }
 
+pub fn convert_h256_to_string(h: &H256) -> String {
+    format!("0x{}", hex::encode(h.as_bytes()))
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

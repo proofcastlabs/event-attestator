@@ -221,6 +221,10 @@ mod tests {
     fn eos_database_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = EosDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             EOS_ACCOUNT_NAME_KEY:
                 "8b9fd4b3e0a8263466a8fe52661124c424725ce71c62e0ac211f5ff022ada9a4".to_string(),
             EOS_ACCOUNT_NONCE_KEY:

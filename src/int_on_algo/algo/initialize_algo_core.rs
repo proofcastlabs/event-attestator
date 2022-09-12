@@ -5,14 +5,13 @@ use crate::{
             end_algo_db_transaction_and_return_state,
             start_algo_db_transaction_and_return_state,
         },
-        algo_database_utils::AlgoDbUtils,
         algo_state::AlgoState,
         core_initialization::{
-            check_algo_core_is_initialized::check_algo_core_is_initialized,
             get_algo_core_init_output::AlgoInitializationOutput,
             initialize_algo_core::initialize_algo_core,
         },
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -36,11 +35,22 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
     canon_to_tip_length: u64,
     app_id: u64,
 ) -> Result<String> {
-    if check_algo_core_is_initialized(&AlgoDbUtils::new(db)).is_ok() {
+    if CoreType::host_core_is_initialized(db) {
         Ok(ALGO_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
+        let is_native = false;
         start_algo_db_transaction_and_return_state(AlgoState::init_with_empty_dictionary(db))
-            .and_then(|state| initialize_algo_core(state, block_json, fee, canon_to_tip_length, genesis_id, app_id))
+            .and_then(|state| {
+                initialize_algo_core(
+                    state,
+                    block_json,
+                    fee,
+                    canon_to_tip_length,
+                    genesis_id,
+                    app_id,
+                    is_native,
+                )
+            })
             .and_then(end_algo_db_transaction_and_return_state)
             .and_then(|state| AlgoInitializationOutput::new(&state.algo_db_utils))
             .and_then(|output| output.to_string())

@@ -7,6 +7,8 @@ use crate::{
     types::{Bytes, DataSensitivity, Result},
 };
 
+// NOTE: Debug signatures are not verified during tests.
+pub static DUMMY_DEBUG_COMMAND_SIGNATURE: &str = "";
 pub static DB_LOCK_ERRROR: &str = "Cannot get lock on DB!";
 
 #[derive(Debug)]

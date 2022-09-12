@@ -2,6 +2,8 @@ pub(crate) mod erc20_token;
 pub(crate) mod erc20_vault;
 pub(crate) mod erc777_proxy;
 pub(crate) mod erc777_token;
+#[cfg(test)]
+mod test_utils;
 
 use ethabi::{Contract as EthContract, Token};
 use ethereum_types::H256 as EthHash;

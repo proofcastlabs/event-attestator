@@ -2,9 +2,9 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     chains::eth::{
+        eth_crypto::eth_signature::EthSignature,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_traits::EthSigningCapabilities,
-        eth_types::EthSignature,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -246,7 +246,7 @@ mod tests {
             "message": "Arbitrary message",
             "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         });
-        let result = encode_eth_signed_message_as_json("Arbitrary message", &[0u8; 65]);
+        let result = encode_eth_signed_message_as_json("Arbitrary message", &EthSignature::new([0u8; 65]));
         assert_eq!(result, expected_result, "✘ Message signature json is invalid!")
     }
 
@@ -258,7 +258,7 @@ mod tests {
         let eth_db_utils = EthDbUtils::new(&db);
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let hex_to_sign = "0xc0ffee";
-        let result = sign_hex_msg_with_prefix(&db, &hex_to_sign, is_for_eth).unwrap();
+        let result = sign_hex_msg_with_prefix(&db, hex_to_sign, is_for_eth).unwrap();
         let expected_result = json!({
             "message":"0xc0ffee",
             "signature":"0xb2ba6c72332f321a100d4a686f4ecc7d5fc13707b62b292ef36270981e4276d70dc177553bf719ab4bbec181ab7b5fe530437a149d9a9dec449f2aa42b7c1add1c"}).to_string();
@@ -274,7 +274,7 @@ mod tests {
         eth_db_utils.put_eth_private_key_in_db(&eth_private_key).unwrap();
         let invalid_hex_to_sign = "0xcoffee";
         let expected_err = "Message to sign is NOT valid hex! Invalid character \'o\' at position 1";
-        match sign_hex_msg_with_prefix(&db, &invalid_hex_to_sign, is_for_eth) {
+        match sign_hex_msg_with_prefix(&db, invalid_hex_to_sign, is_for_eth) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Ok(_) => panic!("Should not have succeeded!"),
             Err(_) => panic!("Got wrong error!"),

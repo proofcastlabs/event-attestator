@@ -539,6 +539,10 @@ mod tests {
     fn algo_db_keys_should_remain_consistent() {
         #[rustfmt::skip]
         let expected_result = AlgoDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             ALGO_FEE_KEY:
                 "d284e359e0a2076c909ee55d8deaf1e05b5488a997f18bf86e0928c4fbc5c638".to_string(),
             ALGO_REDEEM_ADDRESS_KEY:
@@ -614,7 +618,7 @@ mod tests {
         let submission_materials = get_all_sample_submission_material();
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let sample_number = 4;
         let hash = get_sample_submission_material_n(sample_number).block.hash().unwrap();
         let n: u64 = 3;
@@ -630,7 +634,7 @@ mod tests {
         let submission_materials = get_all_sample_submission_material();
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let hash = get_sample_submission_material_n(4).block.hash().unwrap();
         let expected_result = None;
         let result = db_utils
@@ -652,7 +656,7 @@ mod tests {
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let result = db_utils
             .maybe_get_candidate_submission_material(canon_to_tip_length)
             .unwrap();
@@ -674,7 +678,7 @@ mod tests {
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
         submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let result = db_utils
             .maybe_get_candidate_submission_material(canon_to_tip_length)
             .unwrap();

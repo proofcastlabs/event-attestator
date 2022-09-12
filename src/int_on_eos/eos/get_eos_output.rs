@@ -67,7 +67,7 @@ impl TxInfo {
             destination_chain_id: tx_info.destination_chain_id.to_hex()?,
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             int_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
-            native_token_address: format!("0x{}", hex::encode(&tx_info.int_token_address)),
+            native_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
         })
     }
 }

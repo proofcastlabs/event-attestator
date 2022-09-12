@@ -1,7 +1,7 @@
 use crate::{
-    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
-    btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfos,
-    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfos,
+    btc_on_eos::BtcOnEosEosTxInfos,
+    btc_on_eth::BtcOnEthEthTxInfos,
+    btc_on_int::BtcOnIntIntTxInfos,
     chains::{
         btc::{
             btc_block::{BtcBlockAndId, BtcBlockInDbFormat},

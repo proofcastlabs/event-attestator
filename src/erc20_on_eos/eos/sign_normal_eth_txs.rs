@@ -14,13 +14,13 @@ use crate::{
             eth_database_utils::EthDbUtilsExt,
         },
     },
-    erc20_on_eos::eos::redeem_info::Erc20OnEosRedeemInfos,
+    erc20_on_eos::eos::eth_tx_info::Erc20OnEosEthTxInfos,
     traits::DatabaseInterface,
     types::Result,
 };
 
 pub fn get_eth_signed_txs(
-    redeem_infos: &Erc20OnEosRedeemInfos,
+    eth_tx_infos: &Erc20OnEosEthTxInfos,
     erc20_on_eos_smart_contract_address: &EthAddress,
     eth_account_nonce: u64,
     chain_id: &EthChainId,
@@ -29,19 +29,19 @@ pub fn get_eth_signed_txs(
 ) -> Result<EthTransactions> {
     info!("✔ Getting ETH signed transactions from `erc20-on-eos` redeem infos...");
     Ok(EthTransactions::new(
-        redeem_infos
+        eth_tx_infos
             .iter()
             .enumerate()
-            .map(|(i, redeem_info)| {
+            .map(|(i, eth_tx_info)| {
                 info!(
                     "✔ Signing ETH tx for amount: {}, to address: {}",
-                    redeem_info.amount, redeem_info.destination_address
+                    eth_tx_info.amount, eth_tx_info.destination_address
                 );
                 EthTransaction::new_unsigned(
                     encode_erc20_vault_peg_out_fxn_data_without_user_data(
-                        redeem_info.destination_address,
-                        redeem_info.eth_token_address,
-                        redeem_info.amount,
+                        eth_tx_info.destination_address,
+                        eth_tx_info.eth_token_address,
+                        eth_tx_info.amount,
                     )?,
                     eth_account_nonce + i as u64,
                     ZERO_ETH_VALUE,
@@ -57,12 +57,12 @@ pub fn get_eth_signed_txs(
 }
 
 pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    if state.erc20_on_eos_redeem_infos.len() == 0 {
+    if state.erc20_on_eos_eth_tx_infos.len() == 0 {
         info!("✔ No redeem infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
         get_eth_signed_txs(
-            &state.erc20_on_eos_redeem_infos,
+            &state.erc20_on_eos_eth_tx_infos,
             &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
             state.eth_db_utils.get_eth_account_nonce_from_db()?,
             &state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -70,10 +70,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
             &state.eth_db_utils.get_eth_private_key_from_db()?,
         )
         .and_then(|signed_txs| {
-            #[cfg(feature = "debug")]
-            {
-                debug!("✔ Signed transactions: {:?}", signed_txs);
-            }
+            debug!("✔ Signed transactions: {:?}", signed_txs);
             state.add_eth_signed_txs(signed_txs)
         })
     }

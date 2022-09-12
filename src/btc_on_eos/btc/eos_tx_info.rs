@@ -299,10 +299,8 @@ impl ToMetadata for BtcOnEosEosTxInfo {
 mod tests {
     use super::*;
     use crate::{
-        chains::{
-            btc::{btc_chain_id::BtcChainId, btc_test_utils::get_sample_btc_on_eos_eos_tx_infos},
-            eos::eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
-        },
+        btc_on_eos::test_utils::get_sample_btc_on_eos_eos_tx_infos,
+        chains::{btc::btc_chain_id::BtcChainId, eos::eos_constants::MAX_BYTES_FOR_EOS_USER_DATA},
         errors::AppError,
         metadata::metadata_protocol_id::MetadataProtocolId,
     };

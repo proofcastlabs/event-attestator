@@ -302,7 +302,7 @@ pub fn get_last_utxo_pointer<D: DatabaseInterface>(db: &D) -> Result<Bytes> {
 }
 
 pub fn set_first_utxo_pointer<D: DatabaseInterface>(db: &D, hash: &sha256d::Hash) -> Result<()> {
-    debug!("✔ Setting `UTXO_FIRST` pointer to: {}", hex::encode(&hash));
+    debug!("✔ Setting `UTXO_FIRST` pointer to: {}", hex::encode(hash));
     db.put(UTXO_FIRST.to_vec(), hash.to_vec(), None)
 }
 
@@ -354,7 +354,7 @@ mod tests {
     };
 
     fn remove_utxo_pointers(utxos: &BtcUtxosAndValues) -> BtcUtxosAndValues {
-        BtcUtxosAndValues::new(utxos.iter().map(|utxo| remove_utxo_pointer(&utxo)).collect())
+        BtcUtxosAndValues::new(utxos.iter().map(remove_utxo_pointer).collect())
     }
 
     fn get_all_utxos_without_removing_from_db<D: DatabaseInterface>(db: &D) -> Result<BtcUtxosAndValues> {
@@ -703,7 +703,7 @@ mod tests {
         assert_eq!(utxos_from_db_after.len(), utxos.len());
         remove_utxo_pointers(&utxos_from_db_after)
             .iter()
-            .for_each(|utxo| assert!(remove_utxo_pointers(&utxos).contains(&utxo)));
+            .for_each(|utxo| assert!(remove_utxo_pointers(&utxos).contains(utxo)));
     }
 
     #[test]
@@ -777,7 +777,7 @@ mod tests {
         let db = get_test_database();
         set_utxo_balance_to_zero(&db).unwrap();
         let utxos = get_sample_utxo_and_values();
-        let utxos_with_one_removed = BtcUtxosAndValues(utxos.clone()[..utxos.len() - 1].to_vec());
+        let utxos_with_one_removed = BtcUtxosAndValues(utxos[..utxos.len() - 1].to_vec());
         assert_eq!(utxos.len(), utxos_with_one_removed.len() + 1);
         save_utxos_to_db(&db, &utxos_with_one_removed).unwrap();
         utxos.iter().enumerate().for_each(|(i, utxo)| {

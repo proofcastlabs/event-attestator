@@ -417,10 +417,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 &EthEvmTokenDictionary::get_from_db(state.db)?,
             )
             .and_then(|signed_txs| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_erc20_on_evm_evm_signed_txs(signed_txs)
             })
     }
@@ -538,7 +535,7 @@ mod tests {
     #[test]
     fn should_fail_to_subtract_too_large_amount_from_eth_on_evm_evm_tx_info() {
         let info = get_sample_tx_info();
-        let subtrahend = U256::from(info.native_token_amount + 1);
+        let subtrahend = info.native_token_amount + 1;
         let result = info.subtract_amount(subtrahend);
         assert!(result.is_err());
     }

@@ -945,7 +945,7 @@ mod tests {
             .unwrap()
             .get_block_hash()
             .unwrap();
-        db_utils.put_special_eth_hash_in_db(&hash_type, &hash).unwrap();
+        db_utils.put_special_eth_hash_in_db(hash_type, &hash).unwrap();
         match db_utils.get_special_eth_hash_from_db(hash_type) {
             Ok(hash_from_db) => assert_eq!(hash_from_db, hash),
             Err(e) => panic!("Error getting ETH special hash from db: {}", e),
@@ -976,7 +976,7 @@ mod tests {
         let submission_material = get_sample_eth_submission_material_n(1).unwrap();
         let expected_result = submission_material.remove_block();
         db_utils
-            .put_special_eth_block_in_db(&submission_material, &block_type)
+            .put_special_eth_block_in_db(&submission_material, block_type)
             .unwrap();
         match db_utils.get_special_eth_block_from_db(block_type) {
             Ok(result) => assert_eq!(result, expected_result),
@@ -1104,8 +1104,7 @@ mod tests {
         let block_hash = blocks[blocks.len() - 1].get_block_hash().unwrap();
         blocks
             .iter()
-            .map(|block| db_utils.put_eth_submission_material_in_db(block))
-            .collect::<Result<()>>()
+            .try_for_each(|block| db_utils.put_eth_submission_material_in_db(block))
             .unwrap();
         blocks.iter().enumerate().for_each(|(i, _)| {
             match db_utils
@@ -1217,6 +1216,10 @@ mod tests {
     fn eth_db_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = EthDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             ETH_ANY_SENDER_NONCE_KEY:
                 "09feb18750877b8b216cf9dc0bf587dfc4d043620252e1a7a33353710939c2ae".to_string(),
             ETH_BTC_ON_ETH_SMART_CONTRACT_ADDRESS_KEY:
@@ -1270,6 +1273,10 @@ mod tests {
     fn evm_db_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = EvmDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             EVM_ACCOUNT_NONCE_KEY:
                "ca7f0ab19900680d76625f41854791660729bfcaf7fede763d96d4c05916ec4c".to_string(),
             EVM_ADDRESS_KEY:

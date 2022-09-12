@@ -67,7 +67,7 @@ impl EthTxInfo {
             eth_tx_amount: tx_info.token_amount.to_string(),
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
             originating_address: tx_info.from.to_string(),
-            host_token_address: format!("0x{}", hex::encode(&tx_info.eth_token_address)),
+            host_token_address: format!("0x{}", hex::encode(tx_info.eth_token_address)),
             originating_tx_hash: tx_info.originating_tx_id.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },

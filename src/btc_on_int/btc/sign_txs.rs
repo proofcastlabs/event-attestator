@@ -94,10 +94,7 @@ pub fn maybe_sign_canon_block_txs<D: DatabaseInterface>(state: BtcState<D>) -> R
         tx_infos
             .to_int_signed_txs(&state.eth_db_utils.get_signing_params_from_db()?)
             .and_then(|signed_txs| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_eth_signed_txs(signed_txs)
             })
     }

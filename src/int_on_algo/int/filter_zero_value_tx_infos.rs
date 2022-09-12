@@ -19,16 +19,18 @@ impl IntOnAlgoAlgoTxInfos {
         Ok(Self::new(
             self.iter()
                 .zip(host_token_amounts.iter())
-                .filter(|(tx_info, evm_amount)| match *evm_amount != &U256::zero() {
-                    true => true,
-                    false => {
-                        info!(
-                            "✘ Filtering out peg in info due to zero ALGO asset amount: {:?}",
-                            tx_info
-                        );
-                        false
+                .filter(
+                    |(tx_info, host_token_amount)| match *host_token_amount != &U256::zero() {
+                        true => true,
+                        false => {
+                            info!(
+                                "✘ Filtering out peg in info due to zero ALGO asset amount: {:?}",
+                                tx_info
+                            );
+                            false
+                        },
                     },
-                })
+                )
                 .map(|(info, _)| info)
                 .cloned()
                 .collect::<Vec<IntOnAlgoAlgoTxInfo>>(),

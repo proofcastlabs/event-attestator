@@ -96,8 +96,8 @@ impl BtcUtxoAndValue {
             tx_id: Some(self.get_tx_id()?.to_string()),
             serialized_utxo: hex::encode(self.serialized_utxo.clone()),
             maybe_deposit_info_json: self.maybe_deposit_info_json.clone(),
-            maybe_pointer: self.maybe_pointer.as_ref().map(|hash| hex::encode(&hash)),
-            maybe_extra_data: self.maybe_extra_data.as_ref().map(|bytes| hex::encode(&bytes)),
+            maybe_pointer: self.maybe_pointer.as_ref().map(hex::encode),
+            maybe_extra_data: self.maybe_extra_data.as_ref().map(hex::encode),
         })
     }
 

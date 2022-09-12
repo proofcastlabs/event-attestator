@@ -12,12 +12,18 @@ macro_rules! create_db_utils_with_getters {
             #[allow(non_snake_case)]
             #[derive(Clone, Debug, Eq, PartialEq, serde::Serialize, serde::Deserialize)]
             pub struct [< $prefix:camel DatabaseKeysJson >] {
+                HOST_CORE_IS_INITIALIZED_DB_KEY: String,
+                NATIVE_CORE_IS_INITIALIZED_DB_KEY: String,
                 $([< $prefix:upper $key:upper >]: String,)*
             }
 
             impl [< $prefix:camel DatabaseKeysJson >] {
                 pub fn new() -> Self {
                     Self {
+                        HOST_CORE_IS_INITIALIZED_DB_KEY:
+                            hex::encode(&*$crate::core_type::HOST_CORE_IS_INITIALIZED_DB_KEY),
+                        NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                            hex::encode(&*$crate::core_type::NATIVE_CORE_IS_INITIALIZED_DB_KEY),
                         $([< $prefix:upper $key:upper >]: hex::encode(&*[< $prefix:upper $key:upper >]),)*
                     }
                 }

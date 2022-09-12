@@ -1,14 +1,11 @@
 use crate::{
-    btc_on_eth::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        eth::{
-            account_for_fees::maybe_account_for_fees,
-            create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
-            filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
-            get_eth_output_json::get_eth_output_json,
-            increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
-            redeem_info::maybe_parse_redeem_infos_and_add_to_state,
-        },
+    btc_on_eth::eth::{
+        account_for_fees::maybe_account_for_fees,
+        btc_tx_info::maybe_parse_btc_tx_infos_and_add_to_state,
+        create_btc_transactions::maybe_create_btc_txs_and_add_to_state,
+        filter_receipts_in_state::filter_receipts_for_btc_on_eth_redeem_events_in_state,
+        get_eth_output_json::get_eth_output_json,
+        increment_btc_nonce::maybe_increment_btc_nonce_in_db_and_return_state,
     },
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
@@ -28,6 +25,7 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -39,10 +37,10 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a redeem event emitted by the smart-contract the enclave is watching, a BTC
 /// transaction will be signed & returned to the caller.
-pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to enclave...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(check_for_parent_of_eth_block_in_state)
@@ -53,7 +51,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: D, block_json_strin
         .and_then(maybe_update_eth_canon_block_hash_and_return_state)
         .and_then(maybe_update_eth_tail_block_hash_and_return_state)
         .and_then(maybe_update_eth_linker_hash_and_return_state)
-        .and_then(maybe_parse_redeem_infos_and_add_to_state)
+        .and_then(maybe_parse_btc_tx_infos_and_add_to_state)
         .and_then(maybe_account_for_fees)
         .and_then(maybe_create_btc_txs_and_add_to_state)
         .and_then(maybe_increment_btc_nonce_in_db_and_return_state)

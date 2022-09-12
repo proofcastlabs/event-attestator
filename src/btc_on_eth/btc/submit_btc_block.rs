@@ -1,15 +1,12 @@
 use crate::{
-    btc_on_eth::{
-        btc::{
-            account_for_fees::maybe_account_for_fees,
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            filter_eth_tx_infos::maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
-            get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
-            parse_tx_infos::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
-            sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
-            sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
-        },
-        check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
+    btc_on_eth::btc::{
+        account_for_fees::maybe_account_for_fees,
+        divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+        filter_eth_tx_infos::maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
+        get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
+        parse_tx_infos::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
+        sign_any_sender_transactions::maybe_sign_any_sender_canon_block_txs_and_add_to_state,
+        sign_normal_eth_transactions::maybe_sign_normal_canon_block_txs_and_add_to_state,
     },
     chains::btc::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
@@ -39,6 +36,7 @@ use crate::{
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -50,12 +48,12 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a deposit to an address derived from the enclave's BTC public key, an ETH
 /// transaction will be signed & returned to the caller.
-pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_btc_block_to_enclave<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to enclave...");
-    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(&db))
+    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db))
         .and_then(set_any_sender_flag_in_state)
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)
         .and_then(validate_btc_block_header_in_state)

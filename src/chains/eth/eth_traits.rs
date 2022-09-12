@@ -1,7 +1,7 @@
 use ethereum_types::H256 as EthHash;
 
 use crate::{
-    chains::eth::{any_sender::relay_transaction::RelayTransaction, eth_types::EthSignature},
+    chains::eth::{any_sender::relay_transaction::RelayTransaction, eth_crypto::eth_signature::EthSignature},
     crypto_utils::keccak_hash_bytes,
     types::{Byte, Bytes, Result},
 };
@@ -20,4 +20,5 @@ pub trait EthSigningCapabilities {
     fn sign_hash(&self, hash: EthHash) -> Result<EthSignature>;
     fn sign_message_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sign_eth_prefixed_msg_bytes(&self, message: &[Byte]) -> Result<EthSignature>;
+    fn sign_hash_and_set_eth_recovery_param(&self, hash: EthHash) -> Result<EthSignature>;
 }

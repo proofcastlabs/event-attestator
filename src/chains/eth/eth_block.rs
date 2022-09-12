@@ -306,7 +306,7 @@ mod tests {
 
     #[test]
     fn eip_1559_block_should_have_base_fee() {
-        let block = get_sample_eip1559_ropsten_submission_material().block.unwrap().clone();
+        let block = get_sample_eip1559_ropsten_submission_material().block.unwrap();
         let result = block.get_base_fee_per_gas().unwrap();
         let expected_result = U256::from(13);
         assert_eq!(result, expected_result);
@@ -314,7 +314,7 @@ mod tests {
 
     #[test]
     fn ropsten_eip1559_block_should_be_valid() {
-        let block = get_sample_eip1559_ropsten_submission_material().block.unwrap().clone();
+        let block = get_sample_eip1559_ropsten_submission_material().block.unwrap();
         let chain_id = EthChainId::Ropsten;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(result);
@@ -322,7 +322,7 @@ mod tests {
 
     #[test]
     fn mainnet_eip1559_block_should_be_valid() {
-        let block = get_sample_eip1559_mainnet_submission_material().block.unwrap().clone();
+        let block = get_sample_eip1559_mainnet_submission_material().block.unwrap();
         let chain_id = EthChainId::Mainnet;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(result);
@@ -330,7 +330,7 @@ mod tests {
 
     #[test]
     fn invalid_mainnet_eip1559_block_should_not_be_valid() {
-        let mut block = get_sample_eip1559_mainnet_submission_material().block.unwrap().clone();
+        let mut block = get_sample_eip1559_mainnet_submission_material().block.unwrap();
         // NOTE: Alter the new EIP1559 block header additional field to render the block invalid.
         block.base_fee_per_gas = Some(block.base_fee_per_gas.unwrap() - 1);
         let chain_id = EthChainId::Mainnet;

@@ -1,10 +1,9 @@
+use function_name::named;
+
 use crate::{
     chains::{
         algo::{
-            algo_database_transactions::{
-                end_algo_db_transaction_and_return_state,
-                start_algo_db_transaction_and_return_state,
-            },
+            algo_database_transactions::end_algo_db_transaction_and_return_state,
             algo_state::AlgoState,
             algo_submission_material::parse_algo_submission_material_and_put_in_state,
             increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
@@ -13,37 +12,42 @@ use crate::{
         },
         eth::eth_database_utils::EthDbUtilsExt,
     },
+    core_type::CoreType,
+    debug_functions::validate_debug_command_signature,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
     int_on_algo::{
         algo::{
-            add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-            get_algo_output::{get_int_signed_tx_info_from_algo_txs, AlgoOutput},
-            get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
-            int_tx_info::IntOnAlgoIntTxInfos,
-            validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
+            add_relevant_validated_txs_to_submission_material_in_state,
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            filter_out_invalid_txs_and_update_in_state,
+            filter_out_zero_value_tx_infos_from_state,
+            get_int_signed_tx_info_from_algo_txs,
+            get_relevant_asset_txs_from_submission_material_and_add_to_state,
+            AlgoOutput,
+            IntOnAlgoIntTxInfos,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
+        constants::CORE_TYPE,
     },
     traits::DatabaseInterface,
     types::Result,
 };
 
+#[named]
 fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
     db: &D,
     block_json_string: &str,
     maybe_nonce: Option<u64>,
+    signature: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ALGO block...");
-    parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
-        .and_then(check_core_is_initialized_and_return_algo_state)
-        .and_then(start_algo_db_transaction_and_return_state)
+    db.start_transaction()
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &maybe_nonce)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
+        .and_then(CoreType::check_core_is_initialized_and_return_algo_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(get_relevant_asset_txs_from_submission_material_and_add_to_state)
@@ -95,10 +99,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
                     state.eth_db_utils.get_eth_gas_price_from_db()?,
                     &state.eth_db_utils.get_eth_private_key_from_db()?,
                 )?;
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_eth_signed_txs(signed_txs)
             }
         })
@@ -143,8 +144,12 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
 /// ### NOTES:
 ///
 ///  - This function will increment the core's INT nonce by the number of transactions signed.
-pub fn debug_reprocess_algo_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
-    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, None)
+pub fn debug_reprocess_algo_block<D: DatabaseInterface>(
+    db: &D,
+    block_json_string: &str,
+    signature: &str,
+) -> Result<String> {
+    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, None, signature)
 }
 
 /// # Debug Reprocess ALGO Block With Nonce
@@ -165,6 +170,7 @@ pub fn debug_reprocess_algo_block_with_nonce<D: DatabaseInterface>(
     db: &D,
     block_json_string: &str,
     nonce: u64,
+    signature: &str,
 ) -> Result<String> {
-    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, Some(nonce))
+    debug_reprocess_algo_block_maybe_with_nonce(db, block_json_string, Some(nonce), signature)
 }

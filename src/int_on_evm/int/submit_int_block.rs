@@ -18,24 +18,22 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
     dictionaries::eth_evm::get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
-    int_on_evm::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        int::{
-            account_for_fees::maybe_account_for_fees,
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-            filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
-            get_int_output_json::get_int_output_json,
-            parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
-            sign_txs::maybe_sign_evm_txs_and_add_to_eth_state,
+    int_on_evm::int::{
+        account_for_fees::maybe_account_for_fees,
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
+        filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
+        filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
+        filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
+        get_int_output_json::get_int_output_json,
+        parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_evm_txs_and_add_to_eth_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -48,10 +46,10 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
 /// transaction will be signed & returned to the caller.
-pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to core...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
@@ -129,6 +127,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnEvm,
+            true, // NOTE: is_native
         )
         .unwrap();
         // NOTE: Initialize the EVM side of the core...
@@ -138,6 +137,7 @@ mod tests {
             gas_price,
             confirmations,
             EthState::init(&db),
+            false, // NOTE: is_native
         )
         .unwrap();
         // NOTE: Overwrite the INT address & private key since it's generated randomly above...
@@ -164,7 +164,7 @@ mod tests {
             .unwrap();
         let submission_string = read_to_string("src/int_on_evm/test_utils/peg-in-block-1.json").unwrap();
         // NOTE: Finally, submit the block containing the peg in....
-        let output = submit_int_block_to_core(db, &submission_string).unwrap();
+        let output = submit_int_block_to_core(&db, &submission_string).unwrap();
         let expected_result_json = json!({
             "int_latest_block_number": 11544952,
             "evm_signed_transactions": [{

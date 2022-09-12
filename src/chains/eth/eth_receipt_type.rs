@@ -57,7 +57,7 @@ mod tests {
             .collect::<Bytes>();
         let results = bytes
             .iter()
-            .map(|ref byte| EthReceiptType::from_byte(byte))
+            .map(EthReceiptType::from_byte)
             .collect::<Vec<EthReceiptType>>();
         assert_eq!(results, expected_results);
     }

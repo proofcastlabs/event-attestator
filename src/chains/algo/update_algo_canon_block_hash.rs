@@ -46,11 +46,11 @@ mod tests {
             .block
             .hash()
             .unwrap();
-        let latest_block_hash = current_canon_block_hash.clone();
-        let expected_result = current_canon_block_hash.clone();
+        let latest_block_hash = current_canon_block_hash;
+        let expected_result = current_canon_block_hash;
         contiguous_submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         db_utils.put_canon_block_hash_in_db(&current_canon_block_hash).unwrap();
         db_utils.put_latest_block_hash_in_db(&latest_block_hash).unwrap();
         db_utils
@@ -80,7 +80,7 @@ mod tests {
             .unwrap();
         contiguous_submission_materials
             .iter()
-            .for_each(|material| db_utils.put_algo_submission_material_in_db(&material).unwrap());
+            .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let latest_block_hash = contiguous_submission_materials[num_submission_materials - 1]
             .block
             .hash()
@@ -108,10 +108,10 @@ mod tests {
         let current_canon_submission_material =
             contiguous_submission_materials[num_submission_materials - canon_to_tip_length].clone();
         let current_canon_block_hash = current_canon_submission_material.block.hash().unwrap();
-        let expected_result = current_canon_block_hash.clone();
+        let expected_result = current_canon_block_hash;
         contiguous_submission_materials
             .iter()
-            .for_each(|block| db_utils.put_algo_submission_material_in_db(&block).unwrap());
+            .for_each(|block| db_utils.put_algo_submission_material_in_db(block).unwrap());
         let latest_block_hash = contiguous_submission_materials[num_submission_materials - 1]
             .block
             .hash()
@@ -142,7 +142,7 @@ mod tests {
             .iter()
             .enumerate()
             .for_each(|(i, material)| {
-                db_utils.put_algo_submission_material_in_db(&material).unwrap();
+                db_utils.put_algo_submission_material_in_db(material).unwrap();
                 db_utils
                     .put_latest_block_hash_in_db(&material.block.hash().unwrap())
                     .unwrap();

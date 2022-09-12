@@ -529,8 +529,7 @@ mod tests {
         let expected_result = blocks[blocks.len() - 2].clone();
         blocks
             .iter()
-            .map(|block| db_utils.put_btc_block_in_db(&block))
-            .collect::<Result<()>>()
+            .try_for_each(|block| db_utils.put_btc_block_in_db(block))
             .unwrap();
         let result = db_utils.maybe_get_parent_btc_block_and_id(&test_block.id).unwrap();
         assert_eq!(result, expected_result);
@@ -551,9 +550,7 @@ mod tests {
     fn should_get_and_put_btc_address_in_database() {
         let db = get_test_database();
         let db_utils = BtcDbUtils::new(&db);
-        db_utils
-            .put_btc_address_in_db(&SAMPLE_TARGET_BTC_ADDRESS.to_string())
-            .unwrap();
+        db_utils.put_btc_address_in_db(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let result = db_utils.get_btc_address_from_db().unwrap();
         assert_eq!(result, SAMPLE_TARGET_BTC_ADDRESS);
     }
@@ -646,6 +643,10 @@ mod tests {
     fn btc_db_keys_should_stay_consistent() {
         #[rustfmt::skip]
         let expected_result = BtcDatabaseKeysJson {
+            HOST_CORE_IS_INITIALIZED_DB_KEY:
+                "0271c9a9e186967bbd36c4eb36f47a94d3771ace3879f1bbf202842c89942999".to_string(),
+            NATIVE_CORE_IS_INITIALIZED_DB_KEY:
+                "afa4de60dc3ab1362c4b4acf9536393ece435e3e7951363c6ea87182939271f3".to_string(),
             BTC_ACCOUNT_NONCE_KEY:
                 "48236d034b7d7fac3b4550bdbe5682eb012d1717bb345c39c5add04be5139880".to_string(),
             BTC_ADDRESS_KEY:

@@ -2,6 +2,10 @@
 quick_error! {
     #[derive(Debug)]
     pub enum AppError {
+        Json(err: serde_json::Value) {
+            from()
+            display("{}", err)
+        }
         Custom(err: String) {
             from()
             from(err: &str) -> (err.into())
@@ -137,6 +141,14 @@ quick_error! {
         RustCHexError(err: rustc_hex::FromHexError) {
             from()
             display("✘ Rustc hex error: {}", err)
+        }
+        RecoveryError(err: web3::signing::RecoveryError) {
+            from()
+            display("✘ Web3 signature recovery error: {}", err)
+        }
+        EIP712Error(err: eip_712::Error) {
+            from()
+            display("✘ EIP712 error: {}", err)
         }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)

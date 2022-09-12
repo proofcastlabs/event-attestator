@@ -4,7 +4,7 @@ use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eth::eth::redeem_info::{BtcOnEthRedeemInfo, BtcOnEthRedeemInfos},
+    btc_on_eth::eth::btc_tx_info::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos},
     chains::{
         btc::btc_utils::get_hex_tx_from_signed_btc_tx,
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
@@ -26,15 +26,15 @@ pub struct BtcTxInfo {
 }
 
 impl BtcTxInfo {
-    pub fn new(btc_tx: &BtcTransaction, redeem_info: &BtcOnEthRedeemInfo, btc_account_nonce: u64) -> Result<BtcTxInfo> {
+    pub fn new(btc_tx: &BtcTransaction, btc_tx_info: &BtcOnEthBtcTxInfo, btc_account_nonce: u64) -> Result<BtcTxInfo> {
         Ok(BtcTxInfo {
             btc_account_nonce,
             btc_tx_hash: btc_tx.txid().to_string(),
-            btc_tx_amount: redeem_info.amount_in_satoshis,
+            btc_tx_amount: btc_tx_info.amount_in_satoshis,
             btc_tx_hex: get_hex_tx_from_signed_btc_tx(btc_tx),
-            btc_tx_recipient: redeem_info.recipient.clone(),
-            originating_address: format!("0x{}", hex::encode(redeem_info.from.as_bytes())),
-            originating_tx_hash: format!("0x{}", hex::encode(redeem_info.originating_tx_hash.as_bytes())),
+            btc_tx_recipient: btc_tx_info.recipient.clone(),
+            originating_address: format!("0x{}", hex::encode(btc_tx_info.from.as_bytes())),
+            originating_tx_hash: format!("0x{}", hex::encode(btc_tx_info.originating_tx_hash.as_bytes())),
             signature_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
         })
     }
@@ -49,16 +49,16 @@ pub struct EthOutput {
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
     btc_txs: Vec<BtcTransaction>,
-    redeem_infos: &BtcOnEthRedeemInfos,
+    btc_tx_infos: &BtcOnEthBtcTxInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
     let num_btc_txs = btc_txs.len();
-    let num_redeem_infos = redeem_infos.len();
-    if num_btc_txs > num_redeem_infos {
+    let num_btc_tx_infos = btc_tx_infos.len();
+    if num_btc_txs > num_btc_tx_infos {
         // NOTE: There CAN be fewer such as in the case of txs being filtered out for amounts being too low.
         return Err(format!(
-            "There are MORE transactions than redeem infos! Num BTC txs: {}, Num RedeemInfos: {}",
-            num_btc_txs, num_redeem_infos
+            "There are MORE transactions than BTC tx infos! Num BTC txs: {}, Num BtcTxInfos: {}",
+            num_btc_txs, num_btc_tx_infos
         )
         .into());
     };
@@ -66,7 +66,7 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_txs
         .iter()
         .enumerate()
-        .map(|(i, btc_tx)| BtcTxInfo::new(btc_tx, &redeem_infos.0[i], start_nonce + i as u64))
+        .map(|(i, btc_tx)| BtcTxInfo::new(btc_tx, &btc_tx_infos.0[i], start_nonce + i as u64))
         .collect::<Result<Vec<_>>>()
 }
 
@@ -82,7 +82,7 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                 state.btc_db_utils.get_btc_account_nonce_from_db()?,
                 txs,
-                &state.btc_on_eth_redeem_infos,
+                &state.btc_on_eth_btc_tx_infos,
             )?,
             None => vec![],
         },

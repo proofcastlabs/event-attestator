@@ -194,7 +194,7 @@ impl Metadata {
             _ => Err(get_err_msg("user data").into()),
         }?;
         let origin_chain_id = match &tokens[2] {
-            EthAbiToken::FixedBytes(bytes) => Result::Ok(MetadataChainId::from_bytes(&bytes)?),
+            EthAbiToken::FixedBytes(bytes) => Result::Ok(MetadataChainId::from_bytes(bytes)?),
             _ => Err(get_err_msg("origin chain id").into()),
         }?;
         let origin_address = match &tokens[3] {
@@ -202,7 +202,7 @@ impl Metadata {
             _ => Err(get_err_msg("origin address").into()),
         }?;
         let destination_chain_id = match &tokens[4] {
-            EthAbiToken::FixedBytes(bytes) => Result::Ok(MetadataChainId::from_bytes(&bytes)?),
+            EthAbiToken::FixedBytes(bytes) => Result::Ok(MetadataChainId::from_bytes(bytes)?),
             _ => Err(get_err_msg("destination chain id").into()),
         }?;
         let destination_address = match &tokens[5] {

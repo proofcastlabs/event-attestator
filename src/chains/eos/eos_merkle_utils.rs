@@ -619,7 +619,7 @@ mod tests {
         let active_nodes = submission_material.interim_block_ids.clone();
         let node_count: u64 = submission_material.block_header.block_num().into();
         let incremerkle = Incremerkle::new(node_count, active_nodes);
-        let incremerkle_root = hex::encode(&incremerkle.get_root().to_bytes());
+        let incremerkle_root = hex::encode(incremerkle.get_root().to_bytes());
         assert_eq!(incremerkle_root, expected_incremerkle_root);
     }
 
@@ -636,7 +636,7 @@ mod tests {
         let result = json.to_incremerkle().unwrap();
         assert_eq!(result.node_count, incremerkle.node_count);
         assert_eq!(result.active_nodes.len(), incremerkle.active_nodes.len());
-        let result_root = hex::encode(&incremerkle.get_root().to_bytes());
+        let result_root = hex::encode(incremerkle.get_root().to_bytes());
         assert_eq!(result_root, expected_incremerkle_root);
     }
 

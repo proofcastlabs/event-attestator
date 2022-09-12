@@ -56,10 +56,8 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
 mod tests {
     use super::*;
     use crate::{
-        chains::{
-            btc::btc_test_utils::get_sample_btc_on_eos_eos_tx_infos,
-            eos::eos_unit_conversions::convert_eos_asset_to_u64,
-        },
+        btc_on_eos::test_utils::get_sample_btc_on_eos_eos_tx_infos,
+        chains::eos::eos_unit_conversions::convert_eos_asset_to_u64,
         test_utils::get_test_database,
     };
 

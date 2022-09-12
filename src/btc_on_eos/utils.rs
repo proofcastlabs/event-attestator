@@ -3,7 +3,11 @@ fn get_x_num_zeroes_string(num_zeroes: usize) -> String {
     zeroes.iter().fold(String::new(), |acc, e| format!("{acc}{e}"))
 }
 
-pub fn convert_u64_to_x_decimal_eos_asset(value: u64, num_decimals: usize, token_symbol: &str) -> String {
+pub(in crate::btc_on_eos) fn convert_u64_to_x_decimal_eos_asset(
+    value: u64,
+    num_decimals: usize,
+    token_symbol: &str,
+) -> String {
     let mut amount_string = value.to_string();
     let amount_string_length = amount_string.len();
     let asset = if amount_string_length == 0 {
@@ -52,25 +56,25 @@ mod tests {
             "0.00000000 SAM",
         ];
         vec![
-            123456789123456789 as u64,
-            12345678912345678 as u64,
-            1234567891234567 as u64,
-            123456789123456 as u64,
-            12345678912345 as u64,
-            1234567891234 as u64,
-            123456789123 as u64,
-            12345678912 as u64,
-            1234567891 as u64,
-            123456789 as u64,
-            12345678 as u64,
-            1234567 as u64,
-            123456 as u64,
-            12345 as u64,
-            1234 as u64,
-            123 as u64,
-            12 as u64,
-            1 as u64,
-            0 as u64,
+            123456789123456789_u64,
+            12345678912345678_u64,
+            1234567891234567_u64,
+            123456789123456_u64,
+            12345678912345_u64,
+            1234567891234_u64,
+            123456789123_u64,
+            12345678912_u64,
+            1234567891_u64,
+            123456789_u64,
+            12345678_u64,
+            1234567_u64,
+            123456_u64,
+            12345_u64,
+            1234_u64,
+            123_u64,
+            12_u64,
+            1_u64,
+            0_u64,
         ]
         .iter()
         .map(|u_64| convert_u64_to_x_decimal_eos_asset(*u_64, BTC_NUM_DECIMALS, symbol))

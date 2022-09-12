@@ -132,8 +132,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
 mod tests {
     use super::*;
     use crate::{
-        btc_on_eth::utils::convert_satoshis_to_wei,
-        chains::btc::btc_test_utils::get_sample_eth_tx_infos,
+        btc_on_eth::{test_utils::get_sample_eth_tx_infos, utils::convert_satoshis_to_wei},
         errors::AppError,
         fees::fee_database_utils::FeeDatabaseUtils,
         test_utils::get_test_database,

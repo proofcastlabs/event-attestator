@@ -18,24 +18,22 @@ use crate::{
         update_algo_linker_hash::maybe_update_algo_linker_hash_and_return_state,
         update_algo_tail_block_hash::maybe_update_algo_tail_block_hash_and_return_state,
     },
+    core_type::CoreType,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
-    int_on_algo::{
-        algo::{
-            add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-            get_algo_output::get_algo_output,
-            get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
-            parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
-            sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
-            validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
+    int_on_algo::algo::{
+        add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_algo_state,
+        filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
+        get_algo_output::get_algo_output,
+        get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
+        parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
+        validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -51,7 +49,7 @@ use crate::{
 pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ALGO block to core...");
     parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
-        .and_then(check_core_is_initialized_and_return_algo_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_algo_state)
         .and_then(start_algo_db_transaction_and_return_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
@@ -135,91 +133,91 @@ mod tests {
                     signed_tx._id,
                     expected_result.int_signed_transactions[i]._id,
                     "\n{}",
-                    format!("Wrong `_id` @ index: {}", i),
+                    format_args!("Wrong `_id` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.broadcast,
                     expected_result.int_signed_transactions[i].broadcast,
                     "\n{}",
-                    format!("Wrong `broadcast` @ index: {}", i),
+                    format_args!("Wrong `broadcast` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_tx_hash,
                     expected_result.int_signed_transactions[i].int_tx_hash,
                     "\n{}",
-                    format!("Wrong `int_tx_hash` @ index: {}", i),
+                    format_args!("Wrong `int_tx_hash` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_tx_amount,
                     expected_result.int_signed_transactions[i].int_tx_amount,
                     "\n{}",
-                    format!("Wrong `int_tx_amount` @ index: {}", i),
+                    format_args!("Wrong `int_tx_amount` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.host_token_address,
                     expected_result.int_signed_transactions[i].host_token_address,
                     "\n{}",
-                    format!("Wrong `host_token_address` @ index: {}", i),
+                    format_args!("Wrong `host_token_address` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.originating_tx_hash,
                     expected_result.int_signed_transactions[i].originating_tx_hash,
                     "\n{}",
-                    format!("Wrong `originating_tx_hash` @ index: {}", i),
+                    format_args!("Wrong `originating_tx_hash` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.originating_address,
                     expected_result.int_signed_transactions[i].originating_address,
                     "\n{}",
-                    format!("Wrong `originating_address` @ index: {}", i),
+                    format_args!("Wrong `originating_address` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.native_token_address,
                     expected_result.int_signed_transactions[i].native_token_address,
                     "\n{}",
-                    format!("Wrong `native_token_address` @ index: {}", i),
+                    format_args!("Wrong `native_token_address` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_signed_tx,
                     expected_result.int_signed_transactions[i].int_signed_tx,
                     "\n{}",
-                    format!("Wrong `int_signed_tx` @ index: {}", i),
+                    format_args!("Wrong `int_signed_tx` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_account_nonce,
                     expected_result.int_signed_transactions[i].int_account_nonce,
                     "\n{}",
-                    format!("Wrong `int_account_nonce` @ index: {}", i),
+                    format_args!("Wrong `int_account_nonce` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_latest_block_number,
                     expected_result.int_signed_transactions[i].int_latest_block_number,
                     "\n{}",
-                    format!("Wrong `int_latest_block_number` @ index: {}", i),
+                    format_args!("Wrong `int_latest_block_number` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.broadcast_tx_hash,
                     expected_result.int_signed_transactions[i].broadcast_tx_hash,
                     "\n{}",
-                    format!("Wrong `broadcast_tx_hash` @ index: {}", i),
+                    format_args!("Wrong `broadcast_tx_hash` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.broadcast_timestamp,
                     expected_result.int_signed_transactions[i].broadcast_timestamp,
                     "\n{}",
-                    format!("Wrong `broadcast_timestamp` @ index: {}", i),
+                    format_args!("Wrong `broadcast_timestamp` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.int_tx_recipient,
                     expected_result.int_signed_transactions[i].int_tx_recipient,
                     "\n{}",
-                    format!("Wrong `int_tx_recipient` @ index: {}", i),
+                    format_args!("Wrong `int_tx_recipient` @ index: {}", i),
                 );
                 assert_eq!(
                     signed_tx.destination_chain_id,
                     expected_result.int_signed_transactions[i].destination_chain_id,
                     "\n{}",
-                    format!("Wrong `destination_chain_id` @ index: {}", i),
+                    format_args!("Wrong `destination_chain_id` @ index: {}", i),
                 );
             })
     }
@@ -242,6 +240,7 @@ mod tests {
         let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -251,6 +250,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnAlgo,
+            is_native,
         )
         .unwrap();
 
@@ -346,6 +346,7 @@ mod tests {
         let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -355,6 +356,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnAlgo,
+            is_native,
         )
         .unwrap();
 
@@ -447,6 +449,7 @@ mod tests {
         let app_id = 1337;
 
         // NOTE: Initialize the INT side of the core...
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -456,6 +459,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnAlgo,
+            is_native,
         )
         .unwrap();
 

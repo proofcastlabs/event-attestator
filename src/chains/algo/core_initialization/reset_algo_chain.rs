@@ -4,17 +4,15 @@ use serde_json::json;
 use crate::{
     chains::algo::{
         add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
-        algo_database_transactions::{
-            end_algo_db_transaction_and_return_state,
-            start_algo_db_transaction_and_return_state,
-        },
+        algo_database_transactions::end_algo_db_transaction_and_return_state,
         algo_database_utils::AlgoDbUtils,
         algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         core_initialization::initialize_algo_core::initialize_algo_chain_db_keys,
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
     },
-    check_debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_functions::{check_debug_mode, validate_debug_command_signature},
     traits::DatabaseInterface,
     types::Result,
 };
@@ -100,14 +98,18 @@ pub fn reset_algo_chain_and_return_state<D: DatabaseInterface>(
 /// ### Beware: The block used to reset the chain must be trusted. Use this function only if you
 /// know exactly what you are doing and why.
 pub fn debug_reset_algo_chain<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json_string: &str,
     canon_to_tip_length: u64,
+    core_type: &CoreType,
+    signature: &str,
+    debug_command_hash: &str,
 ) -> Result<String> {
     info!("Debug resetting ALGO chain...");
     check_debug_mode()
-        .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(&db)))
-        .and_then(start_algo_db_transaction_and_return_state)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| validate_debug_command_signature(db, core_type, signature, debug_command_hash))
+        .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(|state| reset_algo_chain_and_return_state(state, canon_to_tip_length))
         .and_then(end_algo_db_transaction_and_return_state)
         .map(|_| json!({"algo-chain-reset-success":true}).to_string())

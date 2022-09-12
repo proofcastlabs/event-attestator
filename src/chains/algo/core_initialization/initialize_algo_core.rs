@@ -10,6 +10,7 @@ use crate::{
         algo_submission_material::AlgoSubmissionMaterial,
         remove_irrelevant_txs_from_submission_material_in_state::remove_irrelevant_txs_from_submission_material_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -35,6 +36,7 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
     canon_to_tip_length: u64,
     genesis_id: &str,
     app_id: u64,
+    is_native: bool,
 ) -> Result<AlgoState<'a, D>> {
     info!("✔ Initializing ALGO core...");
     if canon_to_tip_length == 0 {
@@ -49,6 +51,11 @@ pub fn initialize_algo_core<'a, D: DatabaseInterface>(
         .and_then(|state| {
             let keys = AlgorandKeys::create_random();
             let address = keys.to_address()?;
+            if is_native {
+                CoreType::initialize_native_core(state.algo_db_utils.get_db())?
+            } else {
+                CoreType::initialize_host_core(state.algo_db_utils.get_db())?
+            };
             state.algo_db_utils.put_algo_account_nonce_in_db(0)?;
             state.algo_db_utils.put_algo_private_key_in_db(&keys)?;
             state.algo_db_utils.put_redeem_address_in_db(&address)?;
@@ -83,7 +90,17 @@ mod tests {
         let hash = submission_material.block.hash().unwrap();
         let genesis_id = "mainnet-v1.0";
         let block_json_string = submission_material.to_string();
-        initialize_algo_core(state, &block_json_string, fee, canon_to_tip_length, genesis_id, app_id).unwrap();
+        let is_native = false;
+        initialize_algo_core(
+            state,
+            &block_json_string,
+            fee,
+            canon_to_tip_length,
+            genesis_id,
+            app_id,
+            is_native,
+        )
+        .unwrap();
         assert!(db_utils.get_algo_private_key().is_ok());
         assert_eq!(db_utils.get_algo_fee().unwrap(), fee_in_micro_algos);
         assert_eq!(db_utils.get_algo_account_nonce().unwrap(), 0);

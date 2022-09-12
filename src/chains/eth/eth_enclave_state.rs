@@ -113,7 +113,7 @@ mod tests {
 
     fn test_enclave_state<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) {
         let submission_material = get_sample_eth_submission_material_n(0).unwrap();
-        let block_hash = submission_material.block.as_ref().unwrap().hash.clone();
+        let block_hash = submission_material.block.as_ref().unwrap().hash;
         let any_sender_nonce = 666;
         let eth_account_nonce = 555;
         let eth_canon_to_tip_length = 20;

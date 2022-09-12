@@ -28,12 +28,12 @@ mod tests {
         submission_materials.iter().for_each(|material| {
             state
                 .algo_db_utils
-                .put_algo_submission_material_in_db(&material)
+                .put_algo_submission_material_in_db(material)
                 .unwrap()
         });
         let expected_error = "✘ ALGO submission material rejected - no parent exists in database!";
         submission_materials.iter().enumerate().for_each(|(i, material)| {
-            let state = AlgoState::init(&db).add_algo_submission_material(&material).unwrap();
+            let state = AlgoState::init(&db).add_algo_submission_material(material).unwrap();
             if i == 0 {
                 match check_parent_of_algo_block_in_state_exists(state) {
                     Ok(_) => panic!("Should not have succeeded!"),

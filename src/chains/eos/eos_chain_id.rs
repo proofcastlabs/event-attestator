@@ -188,7 +188,7 @@ mod tests {
         let vec_of_bytes = ids.iter().map(|id| id.to_bytes()).collect::<Vec<Bytes>>();
         let result = vec_of_bytes
             .iter()
-            .map(|ref bytes| EosChainId::from_bytes(bytes))
+            .map(|bytes| EosChainId::from_bytes(bytes))
             .collect::<Result<Vec<EosChainId>>>()
             .unwrap();
         assert_eq!(result, ids);

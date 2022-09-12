@@ -177,7 +177,7 @@ impl EthEvmTokenDictionary {
         Ok(Self::new(
             entry_jsons
                 .iter()
-                .map(|ref entry_json| EthEvmTokenDictionaryEntry::from_json(entry_json))
+                .map(EthEvmTokenDictionaryEntry::from_json)
                 .collect::<Result<Vec<EthEvmTokenDictionaryEntry>>>()?,
         ))
     }

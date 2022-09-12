@@ -1,7 +1,6 @@
 use crate::{
     chains::eth::{
         core_initialization::{
-            check_eth_core_is_initialized::is_eth_core_initialized,
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_eth_core_with_router_contract_and_return_state,
         },
@@ -11,10 +10,10 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_database_utils::EthDbUtils,
         eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -44,17 +43,18 @@ use crate::{
 /// length param. This latter defines how many `confirmations` of a transactions are required before
 /// a signature is signed. Finally, this function requires the address the router smart contract.
 pub fn maybe_initialize_int_core<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     chain_id: u64,
     gas_price: u64,
     confs: u64,
     router_address: &str,
 ) -> Result<String> {
-    if is_eth_core_initialized(&EthDbUtils::new(&db)) {
+    if CoreType::host_core_is_initialized(db) {
         Ok(ETH_CORE_IS_INITIALIZED_JSON.to_string())
     } else {
-        start_eth_db_transaction_and_return_state(EthState::init(&db))
+        let is_native = false;
+        start_eth_db_transaction_and_return_state(EthState::init(db))
             .and_then(|state| {
                 initialize_eth_core_with_router_contract_and_return_state(
                     block_json,
@@ -63,6 +63,7 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
                     confs,
                     state,
                     &convert_hex_to_eth_address(router_address)?,
+                    is_native,
                 )
             })
             .and_then(end_eth_db_transaction_and_return_state)

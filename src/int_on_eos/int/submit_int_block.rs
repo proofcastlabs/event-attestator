@@ -18,18 +18,16 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-    int_on_eos::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        int::{
-            divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-            filter_out_zero_tx_infos::filter_out_zero_value_eos_tx_infos_from_state,
-            filter_submission_material::filter_submission_material_for_relevant_receipts_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-            get_output_json::get_output_json,
-            parse_tx_info::maybe_parse_eos_tx_info_from_canon_block_and_add_to_state,
-            sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
-        },
+    int_on_eos::int::{
+        divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+        filter_out_zero_tx_infos::filter_out_zero_value_eos_tx_infos_from_state,
+        filter_submission_material::filter_submission_material_for_relevant_receipts_in_state,
+        filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
+        get_output_json::get_output_json,
+        parse_tx_info::maybe_parse_eos_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -45,7 +43,7 @@ use crate::{
 pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting INT block to enclave...");
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
@@ -117,12 +115,14 @@ mod tests {
         let maybe_eos_account_name = None;
         let maybe_eos_token_symbol = None;
         let eos_init_block = get_sample_eos_init_block();
+        let is_native = false;
         initialize_eos_core_inner(
             &db,
             eos_chain_id,
             maybe_eos_account_name,
             maybe_eos_token_symbol,
             &eos_init_block,
+            is_native,
         )
         .unwrap();
 
@@ -136,6 +136,7 @@ mod tests {
         let int_gas_price = 20_000_000_000;
         let contiguous_int_block_json_strs = get_contiguous_int_block_json_strs();
         let int_init_block = contiguous_int_block_json_strs[0].clone();
+        let is_native = true;
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &int_init_block,
             &EthChainId::Ropsten,
@@ -145,6 +146,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnEos,
+            is_native,
         )
         .unwrap();
 

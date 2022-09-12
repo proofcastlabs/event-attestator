@@ -75,7 +75,7 @@ impl BtcPrivateKey {
     }
 
     #[cfg(test)]
-    pub fn to_wif(self) -> String {
+    pub fn to_wif(&self) -> String {
         self.0.to_wif()
     }
 

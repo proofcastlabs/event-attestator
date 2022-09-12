@@ -1,5 +1,6 @@
 use serde::{Deserialize, Serialize};
 
+use super::constants::CORE_TYPE;
 use crate::{
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_enclave_state::AlgoEnclaveState},
@@ -8,9 +9,9 @@ use crate::{
             eth_enclave_state::EthEnclaveState,
         },
     },
+    core_type::CoreType,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     enclave_info::EnclaveInfo,
-    int_on_algo::check_core_is_initialized::check_core_is_initialized,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -26,7 +27,7 @@ struct EnclaveState {
 impl EnclaveState {
     pub fn new<D: DatabaseInterface>(eth_db_utils: &EthDbUtils<D>, algo_db_utils: &AlgoDbUtils<D>) -> Result<Self> {
         Ok(Self {
-            info: EnclaveInfo::new(),
+            info: EnclaveInfo::new(eth_db_utils.get_db())?,
             algo: AlgoEnclaveState::new(algo_db_utils)?,
             dictionary: EvmAlgoTokenDictionary::get_from_db(algo_db_utils.get_db())?,
             int: EthEnclaveState::new(
@@ -46,10 +47,8 @@ impl EnclaveState {
 ///
 /// This function returns a JSON containing the enclave state, including state relevant to each
 /// blockchain controlled by this core.
-pub fn get_enclave_state<D: DatabaseInterface>(db: D) -> Result<String> {
-    info!("✔ Getting enclave state...");
-    let eth_db_utils = EthDbUtils::new(&db);
-    let algo_db_utils = AlgoDbUtils::new(&db);
-    check_core_is_initialized(&eth_db_utils, &algo_db_utils)
-        .and_then(|_| EnclaveState::new(&eth_db_utils, &algo_db_utils)?.to_string())
+pub fn get_enclave_state<D: DatabaseInterface>(db: &D) -> Result<String> {
+    info!("✔ Getting enclave state for {}...", CORE_TYPE);
+    CoreType::check_is_initialized(db)
+        .and_then(|_| EnclaveState::new(&EthDbUtils::new(db), &AlgoDbUtils::new(db))?.to_string())
 }

@@ -18,24 +18,22 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
     dictionaries::eth_evm::get_eth_evm_token_dictionary_from_db_and_add_to_eth_state,
-    erc20_on_int::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
-        int::{
-            account_for_fees::maybe_account_for_fees,
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_submission_material::filter_submission_material_for_redeem_events_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-            filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
-            get_int_output_json::get_evm_output_json,
-            parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
-            sign_txs::maybe_sign_eth_txs_and_add_to_evm_state,
+    erc20_on_int::int::{
+        account_for_fees::maybe_account_for_fees,
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
+        filter_submission_material::filter_submission_material_for_redeem_events_in_state,
+        filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
+        filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
+        get_int_output_json::get_evm_output_json,
+        parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_eth_txs_and_add_to_evm_state,
     },
     traits::DatabaseInterface,
     types::Result,
@@ -48,10 +46,10 @@ use crate::{
 /// blockchain held by the enclave in it's encrypted database. Should the submitted block
 /// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
 /// transaction will be signed & returned to the caller.
-pub fn submit_int_block_to_core<D: DatabaseInterface>(db: D, block_json_string: &str) -> Result<String> {
+pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting INT block to core...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(&db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
@@ -88,16 +86,14 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::{
-            core_initialization::{
-                initialize_eth_core::{
-                    initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                    initialize_evm_core_with_no_contract_tx,
-                },
-                reset_eth_chain::reset_eth_chain,
+            core_initialization::initialize_eth_core::{
+                initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+                initialize_evm_core_with_no_contract_tx,
             },
             eth_chain_id::EthChainId,
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_debug_functions::reset_eth_chain,
             eth_utils::convert_hex_to_eth_address,
             vault_using_cores::VaultUsingCores,
         },
@@ -133,6 +129,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::Erc20OnInt,
+            true, // NOTE: is_native
         )
         .unwrap();
         // NOTE: Initialize the INT side of the core...
@@ -142,6 +139,7 @@ mod tests {
             gas_price,
             confirmations,
             EthState::init(&db),
+            false, // NOTE: is_native
         )
         .unwrap();
         // NOTE: Overwrite the INT address & private key since it's generated randomly above...
@@ -176,7 +174,7 @@ mod tests {
         .unwrap();
         let submission_string = get_sample_peg_out_json_string();
         // NOTE: Finally, submit the block containing the peg out....
-        let core_output = submit_int_block_to_core(db, &submission_string).unwrap();
+        let core_output = submit_int_block_to_core(&db, &submission_string).unwrap();
         let expected_result_json = json!({
             "int_latest_block_number": 11572430,
             "eth_signed_transactions": [{

@@ -1,9 +1,8 @@
+use function_name::named;
+
 use crate::{
     chains::eth::{
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
+        eth_database_transactions::end_eth_db_transaction_and_return_state,
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
@@ -11,16 +10,18 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
+    core_type::CoreType,
+    debug_functions::validate_debug_command_signature,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_eth_state,
     int_on_algo::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        constants::CORE_TYPE,
         int::{
-            algo_tx_info::IntOnAlgoAlgoTxInfos,
-            filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
-            filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-            get_int_output_json::get_int_output_json,
-            sign_txs::maybe_sign_algo_txs_and_add_to_state,
+            debug_filter_tx_info_with_no_erc20_transfer_event,
+            filter_out_zero_value_tx_infos_from_state,
+            filter_submission_material_for_peg_in_events_in_state,
+            get_int_output_json,
+            maybe_sign_algo_txs_and_add_to_state,
+            IntOnAlgoAlgoTxInfos,
         },
     },
     traits::DatabaseInterface,
@@ -36,11 +37,14 @@ use crate::{
 ///
 ///  - This function will increment the core's ALGO nonce by the number of txs signed.
 /// gap in their report IDs!
-pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
+#[named]
+pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
     info!("✔ Debug reprocessing INT block...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
+    db.start_transaction()
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(validate_block_in_state)
         .and_then(get_evm_algo_token_dictionary_and_add_to_eth_state)
         .and_then(validate_receipts_in_state)

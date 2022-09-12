@@ -1,5 +1,4 @@
 use derive_more::Constructor;
-use rmp_serde;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;
 

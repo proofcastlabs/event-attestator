@@ -3,8 +3,10 @@ use ethereum_types::U256;
 use crate::{
     chains::eth::eth_state::EthState,
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::constants::MINIMUM_WEI_AMOUNT,
-    eos_on_int::int::eos_tx_info::{EosOnIntEosTxInfo, EosOnIntEosTxInfos},
+    eos_on_int::{
+        constants::MINIMUM_WEI_AMOUNT,
+        int::eos_tx_info::{EosOnIntEosTxInfo, EosOnIntEosTxInfos},
+    },
     traits::DatabaseInterface,
     types::Result,
 };

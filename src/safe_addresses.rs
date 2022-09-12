@@ -112,7 +112,7 @@ mod tests {
     #[test]
     fn should_default_to_safe_address_if_eos_address_malformed() {
         let s = "not an good adddress";
-        let expected_result = SAFE_EOS_ADDRESS.clone();
+        let expected_result = *SAFE_EOS_ADDRESS;
         let result = safely_convert_str_to_eos_address(s);
         assert_eq!(result, expected_result);
     }
@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn should_default_to_safe_address_if_algo_address_malformed() {
         let s = "not an good adddress";
-        let expected_result = SAFE_ALGO_ADDRESS.clone();
+        let expected_result = *SAFE_ALGO_ADDRESS;
         let result = safely_convert_str_to_algo_address(s);
         assert_eq!(result, expected_result);
     }

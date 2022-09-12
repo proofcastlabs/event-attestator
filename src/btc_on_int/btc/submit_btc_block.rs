@@ -1,18 +1,15 @@
 use crate::{
-    btc_on_int::{
-        btc::{
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_deposit_info_hash_map::filter_out_wrong_version_deposit_address_infos,
-            filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
-            get_btc_output::{get_btc_output_and_put_in_state, get_btc_output_as_string},
-            parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
-            sign_txs::maybe_sign_canon_block_txs,
+    btc_on_int::btc::{
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
-        check_core_is_initialized::check_core_is_initialized_and_return_btc_state,
+        filter_deposit_info_hash_map::filter_out_wrong_version_deposit_address_infos,
+        filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
+        get_btc_output::{get_btc_output_and_put_in_state, get_btc_output_as_string},
+        parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
+        sign_txs::maybe_sign_canon_block_txs,
     },
     chains::btc::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
@@ -40,6 +37,7 @@ use crate::{
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
+    core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -55,7 +53,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
     info!("✔ Submitting BTC block to enclave...");
     parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db))
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(check_core_is_initialized_and_return_btc_state)
+        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)
         .and_then(validate_btc_block_header_in_state)
@@ -100,7 +98,7 @@ mod tests {
     use crate::{
         btc_on_int::{
             btc::get_btc_output::BtcOutput,
-            int::initialize_int_core::init_int_core,
+            int::init_int_core,
             test_utils::{
                 get_sample_btc_submission_material_json_str_n,
                 get_sample_int_submission_material_json_str_n,
@@ -271,10 +269,10 @@ mod tests {
         assert_eq!(decoded_eth_tx.gas_price, U256::from(eth_gas_price));
 
         // NOTE: Decode the data part of the transaction and assert that...
-        let tx_data = decoded_eth_tx.data.clone();
+        let tx_data = decoded_eth_tx.data;
         let metadata = Metadata::decode_from_eth_v3(&tx_data[(4 + (32 * 5))..]).unwrap();
         let expected_metadata = Metadata::new_v3(
-            &vec![0xc0, 0xff, 0xee],
+            &[0xc0, 0xff, 0xee],
             &MetadataAddress::new(&originating_address, &MetadataChainId::BitcoinTestnet).unwrap(),
             &MetadataAddress::new(&int_tx_recipient, &MetadataChainId::EthereumRopsten).unwrap(),
             Some(vec![]), // NOTE: Protocol options

@@ -193,7 +193,7 @@ mod tests {
     #[test]
     fn external_p2pkh_tx_should_have_output_with_target_script() {
         let tx = get_tx_with_external_p2pkh_deposit();
-        let target_script = get_pay_to_pub_key_hash_script(&SAMPLE_TARGET_BTC_ADDRESS).unwrap();
+        let target_script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let result = tx_has_output_with_target_script(&tx, &target_script);
         assert!(result);
     }
@@ -201,7 +201,7 @@ mod tests {
     #[test]
     fn internal_p2pkh_tx_should_have_output_with_target_script() {
         let tx = get_tx_with_internal_p2pkh_deposit();
-        let target_script = get_pay_to_pub_key_hash_script(&SAMPLE_TARGET_BTC_ADDRESS).unwrap();
+        let target_script = get_pay_to_pub_key_hash_script(SAMPLE_TARGET_BTC_ADDRESS).unwrap();
         let result = tx_has_output_with_target_script(&tx, &target_script);
         assert!(result);
     }

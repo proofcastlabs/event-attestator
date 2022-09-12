@@ -7,7 +7,7 @@ use crate::{
         eos::eos_crypto::eos_transaction::EosSignedTransaction,
         eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
     },
-    erc20_on_eos::eth::peg_in_info::Erc20OnEosPegInInfo,
+    erc20_on_eos::eth::eos_tx_info::Erc20OnEosEosTxInfo,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -35,7 +35,7 @@ pub struct EosTxInfo {
 impl EosTxInfo {
     pub fn new(
         eos_tx: &EosSignedTransaction,
-        peg_in_info: &Erc20OnEosPegInInfo,
+        eos_tx_info: &Erc20OnEosEosTxInfo,
         eos_account_nonce: u64,
         eos_latest_block_number: u64,
     ) -> Result<EosTxInfo> {
@@ -49,13 +49,13 @@ impl EosTxInfo {
             eos_tx_signature: eos_tx.signature.clone(),
             eos_tx_recipient: eos_tx.recipient.clone(),
             eos_serialized_tx: eos_tx.transaction.clone(),
-            eth_tx_amount: peg_in_info.token_amount.to_string(),
+            eth_tx_amount: eos_tx_info.token_amount.to_string(),
             _id: format!("perc20-on-eos-eos-{}", eos_account_nonce),
-            host_token_address: peg_in_info.eos_token_address.to_string(),
-            originating_address: format!("0x{}", hex::encode(peg_in_info.token_sender)),
+            host_token_address: eos_tx_info.eos_token_address.to_string(),
+            originating_address: format!("0x{}", hex::encode(eos_tx_info.token_sender)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            originating_tx_hash: format!("0x{}", hex::encode(&peg_in_info.originating_tx_hash)),
-            native_token_address: format!("0x{}", hex::encode(&peg_in_info.eth_token_address)),
+            originating_tx_hash: format!("0x{}", hex::encode(eos_tx_info.originating_tx_hash)),
+            native_token_address: format!("0x{}", hex::encode(eos_tx_info.eth_token_address)),
         })
     }
 }
@@ -84,7 +84,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
                     .map(|(i, eos_tx)| {
                         EosTxInfo::new(
                             eos_tx,
-                            &state.erc20_on_eos_peg_in_infos[i],
+                            &state.erc20_on_eos_eos_tx_infos[i],
                             start_nonce + i as u64,
                             state.eos_db_utils.get_latest_eos_block_number()?,
                         )

@@ -270,7 +270,7 @@ pub struct EosOnEthEosTxInfos(pub Vec<EosOnEthEosTxInfo>);
 
 impl FeesCalculator for EosOnEthEosTxInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `Erc20OnEosRedeemInfos`...");
+        debug!("Calculating fees in `Erc20OnEosEthTxInfos`...");
         self.iter()
             .map(|info| info.calculate_peg_in_fee_via_dictionary(dictionary))
             .collect()
@@ -430,10 +430,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
                 &state.eth_db_utils.get_eth_private_key_from_db()?,
             )
             .and_then(|signed_txs| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_eth_signed_txs(signed_txs)
             })
     }
@@ -522,7 +519,7 @@ mod tests {
     fn should_get_eos_amount_from_proof() {
         let proof = get_sample_proof();
         let result = EosOnEthEosTxInfo::get_eos_amount_from_proof(&proof).unwrap();
-        let expected_result = 1 as u64;
+        let expected_result = 1_u64;
         assert_eq!(result, expected_result);
     }
 

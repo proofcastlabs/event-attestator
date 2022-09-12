@@ -248,8 +248,7 @@ mod tests {
         assert!(feature_hashes
             .iter()
             .map(|hash| AVAILABLE_FEATURES.contains(hash))
-            .collect::<Vec<bool>>()
-            .contains(&false));
+            .any(|x| !x));
         let enabled_features = EnabledFeatures::default();
         let expected_error = format!("Unrecognised feature hash: {}", hex::encode(unavailable_feature_hash));
         match enabled_features.add_multi(&mut feature_hashes.iter().map(|hash| hash.to_vec()).collect()) {

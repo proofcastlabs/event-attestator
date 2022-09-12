@@ -124,10 +124,7 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
                 &state.eth_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
             )
             .and_then(|signed_txs| {
-                #[cfg(feature = "debug")]
-                {
-                    debug!("✔ Signed transactions: {:?}", signed_txs);
-                }
+                debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_erc20_on_int_eth_signed_txs(signed_txs)
             })
     }

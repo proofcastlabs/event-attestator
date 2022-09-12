@@ -1,3 +1,5 @@
+use function_name::named;
+
 use crate::{
     chains::eth::{
         eth_database_transactions::{
@@ -12,26 +14,24 @@ use crate::{
         validate_block_in_state::validate_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
-    check_debug_mode::check_debug_mode,
+    core_type::CoreType,
+    debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
     erc20_on_int::{
-        check_core_is_initialized::check_core_is_initialized_and_return_eth_state,
+        constants::CORE_TYPE,
         eth::{
-            account_for_fees::{
-                account_for_fees_in_evm_tx_infos_in_state,
-                update_accrued_fees_in_dictionary_and_return_state as update_accrued_fees_in_dictionary_and_return_eth_state,
-            },
-            divert_to_safe_address::{
-                divert_tx_infos_to_safe_address_if_destination_is_router_address,
-                divert_tx_infos_to_safe_address_if_destination_is_token_address,
-                divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-                divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-            },
-            filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
-            filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
-            filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
-            get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
-            int_tx_info::Erc20OnIntIntTxInfos,
+            account_for_fees_in_evm_tx_infos_in_state,
+            debug_filter_tx_info_with_no_erc20_transfer_event,
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+            filter_out_zero_value_evm_tx_infos_from_state,
+            filter_submission_material_for_peg_in_events_in_state,
+            get_evm_signed_tx_info_from_evm_txs,
+            update_accrued_fees_in_dictionary_and_return_eth_state,
+            Erc20OnIntIntTxInfos,
+            EthOutput,
         },
     },
     traits::DatabaseInterface,
@@ -39,16 +39,20 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
+#[named]
 fn reprocess_eth_block<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     accrue_fees: bool,
     maybe_nonce: Option<u64>,
+    signature: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
-    check_debug_mode()
-        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(&db)))
-        .and_then(check_core_is_initialized_and_return_eth_state)
+    db.start_transaction()
+        .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees, &maybe_nonce)())
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
+        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_block_in_state)
         .and_then(validate_receipts_in_state)
@@ -105,10 +109,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                         &EthEvmTokenDictionary::get_from_db(state.db)?,
                     )
                     .and_then(|signed_txs| {
-                        #[cfg(feature = "debug")]
-                        {
-                            debug!("✔ Signed transactions: {:?}", signed_txs);
-                        }
+                        debug!("✔ Signed transactions: {:?}", signed_txs);
                         state.add_erc20_on_int_int_signed_txs(signed_txs)
                     })
             }
@@ -169,8 +170,8 @@ fn reprocess_eth_block<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_eth_block(db, block_json, false, None)
+pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
+    reprocess_eth_block(db, block_json, false, None, signature)
 }
 
 /// # Debug Reprocess ETH Block With Nonce
@@ -191,12 +192,13 @@ pub fn debug_reprocess_eth_block<D: DatabaseInterface>(db: D, block_json: &str) 
 ///
 /// It is assumed that you know what you're doing nonce-wise with this function!
 pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
-    db: D,
+    db: &D,
     block_json: &str,
     nonce: u64,
+    signature: &str,
 ) -> Result<String> {
-    check_custom_nonce(&EvmDbUtils::new(&db), nonce)
-        .and_then(|_| reprocess_eth_block(db, block_json, false, Some(nonce)))
+    check_custom_nonce(&EvmDbUtils::new(db), nonce)
+        .and_then(|_| reprocess_eth_block(db, block_json, false, Some(nonce), signature))
 }
 
 /// # Debug Reprocess ETH Block With Fee Accrual
@@ -218,6 +220,10 @@ pub fn debug_reprocess_eth_block_with_nonce<D: DatabaseInterface>(
 /// ### BEWARE:
 /// If you don't broadcast the transaction outputted from this function, ALL future ETH transactions will
 /// fail due to the core having an incorret nonce!
-pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(db: D, block_json: &str) -> Result<String> {
-    reprocess_eth_block(db, block_json, true, None)
+pub fn debug_reprocess_eth_block_with_fee_accrual<D: DatabaseInterface>(
+    db: &D,
+    block_json: &str,
+    signature: &str,
+) -> Result<String> {
+    reprocess_eth_block(db, block_json, true, None, signature)
 }

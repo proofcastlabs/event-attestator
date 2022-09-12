@@ -42,7 +42,7 @@ pub fn maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state<D: Databa
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::btc::btc_test_utils::get_sample_eth_tx_infos;
+    use crate::btc_on_eth::test_utils::get_sample_eth_tx_infos;
 
     #[test]
     fn should_filter_eth_tx_infos() {

@@ -1,7 +1,5 @@
 #![cfg(test)]
 use serde::{Deserialize, Serialize};
-#[cfg(test)]
-use serde_json;
 
 #[cfg(test)]
 use crate::{
@@ -51,11 +49,11 @@ impl Metadata {
             destination_chain_id: Some(destination_chain_id),
             version: MetadataVersion::from_bytes(&hex::decode(&json.version)?)?,
             protocol_options: match &json.protocol_options {
-                Some(options_hex) => Some(hex::decode(&options_hex)?),
+                Some(options_hex) => Some(hex::decode(options_hex)?),
                 None => None,
             },
             protocol_receipt: match &json.protocol_receipt {
-                Some(receipt_hex) => Some(hex::decode(&receipt_hex)?),
+                Some(receipt_hex) => Some(hex::decode(receipt_hex)?),
                 None => None,
             },
         })
@@ -116,8 +114,10 @@ mod tests {
 
     #[test]
     fn should_err_for_v2_metadata() {
-        let mut metadata = Metadata::default();
-        metadata.version = MetadataVersion::V2;
+        let metadata = Metadata {
+            version: MetadataVersion::V2,
+            ..Default::default()
+        };
         let expected_error = format!("Cannot convert metadata {} into json!", metadata.version);
         match metadata.to_json() {
             Ok(_) => panic!("Should not have succeeded!"),
@@ -128,8 +128,10 @@ mod tests {
 
     #[test]
     fn should_err_for_v1_metadata() {
-        let mut metadata = Metadata::default();
-        metadata.version = MetadataVersion::V1;
+        let metadata = Metadata {
+            version: MetadataVersion::V1,
+            ..Default::default()
+        };
         let expected_error = format!("Cannot convert metadata {} into json!", metadata.version);
         match metadata.to_json() {
             Ok(_) => panic!("Should not have succeeded!"),

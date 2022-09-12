@@ -188,7 +188,7 @@ impl RelayTransaction {
         ]);
 
         let signed_message = eth_private_key.sign_eth_prefixed_msg_bytes(&transaction_bytes)?;
-        self.signature = EthSignature::from_slice(&signed_message);
+        self.signature = EthSignature::from_slice(&signed_message.to_vec());
 
         Ok(self)
     }
@@ -290,12 +290,12 @@ impl RelayTransactionJson {
             deadline: relay_transaction.deadline,
             gas_limit: relay_transaction.gas_limit,
             chain_id: relay_transaction.chain_id.to_u64(),
-            to: format!("0x{}", hex::encode(&relay_transaction.to)),
+            to: format!("0x{}", hex::encode(relay_transaction.to)),
             data: format!("0x{}", hex::encode(&relay_transaction.data)),
-            from: format!("0x{}", hex::encode(&relay_transaction.from)),
+            from: format!("0x{}", hex::encode(relay_transaction.from)),
             compensation: format!("{}", relay_transaction.compensation),
-            signature: format!("0x{}", hex::encode(&relay_transaction.signature)),
-            relay_contract_address: format!("0x{}", hex::encode(&relay_transaction.relay_contract_address)),
+            signature: format!("0x{}", hex::encode(relay_transaction.signature)),
+            relay_contract_address: format!("0x{}", hex::encode(relay_transaction.relay_contract_address)),
         })
     }
 
