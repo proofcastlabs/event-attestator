@@ -15,7 +15,7 @@ use crate::{
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
         update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
-        validate_block_in_state::validate_block_in_state,
+        validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
     core_type::CoreType,
@@ -51,7 +51,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(validate_block_in_state)
+        .and_then(validate_eth_block_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
@@ -102,8 +102,14 @@ mod tests {
             eth::get_eth_output_json::EthOutput,
             test_utils::{
                 get_sample_eth_init_block_json_string,
+                get_sample_goerli_peg_in_init_block_json_string,
+                get_sample_goerli_peg_in_submission_string,
+                get_sample_goerli_token_dictionary_entry,
                 get_sample_int_init_block_json_string,
                 get_sample_peg_in_1_submission_string,
+                get_sample_sepolia_init_block_json_string,
+                get_sample_sepolia_peg_in_submission_string,
+                get_sample_sepolia_token_dictionary_entry,
                 get_sample_token_dictionary_entry,
             },
         },
@@ -112,6 +118,7 @@ mod tests {
 
     #[test]
     fn should_submit_eth_block_successfully() {
+        let eth_chain_id = EthChainId::Rinkeby;
         let db = get_test_database();
         let router_address = convert_hex_to_eth_address("0x0e1c8524b1D1891B201ffC7BB58a82c96f8Fc4F6").unwrap();
         let vault_address = convert_hex_to_eth_address("0x866e3fC7043EFb8ff3A994F7d59F53fe045d4d7A").unwrap();
@@ -122,7 +129,7 @@ mod tests {
         // NOTE: Initialize the ETH side of the core...
         initialize_eth_core_with_vault_and_router_contracts_and_return_state(
             &eth_init_block,
-            &EthChainId::Rinkeby,
+            &eth_chain_id,
             gas_price,
             confirmations,
             EthState::init(&db),
@@ -152,13 +159,13 @@ mod tests {
         // NOTE: Overwrite the nonce since the test sample used the 3rd nonce...
         let evm_nonce = 2;
         db_utils.put_eth_account_nonce_in_db(evm_nonce).unwrap();
+        assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), evm_nonce);
         db_utils
             .put_eth_address_in_db(&db_utils.get_eth_address_key(), &address)
             .unwrap();
         db_utils.put_eth_private_key_in_db(&private_key).unwrap();
         assert_eq!(db_utils.get_public_eth_address_from_db().unwrap(), address,);
         assert_eq!(db_utils.get_eth_private_key_from_db().unwrap(), private_key,);
-        assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), evm_nonce);
         let is_for_eth = true;
         // NOTE Save the token dictionary into the db...
         EthEvmTokenDictionary::new(vec![])
@@ -205,6 +212,304 @@ mod tests {
         });
         let expected_result = EthOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EthOutput::from_str(&output).unwrap();
+        // NOTE: We don't assert against the timestamp because it's not deterministic!
+        assert_eq!(result.eth_latest_block_number, expected_result.eth_latest_block_number);
+        assert_eq!(
+            result.int_signed_transactions[0]._id,
+            expected_result.int_signed_transactions[0]._id
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].broadcast,
+            expected_result.int_signed_transactions[0].broadcast
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_tx_hash,
+            expected_result.int_signed_transactions[0].int_tx_hash
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_tx_amount,
+            expected_result.int_signed_transactions[0].int_tx_amount
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].host_token_address,
+            expected_result.int_signed_transactions[0].host_token_address
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].originating_tx_hash,
+            expected_result.int_signed_transactions[0].originating_tx_hash
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].originating_address,
+            expected_result.int_signed_transactions[0].originating_address
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].native_token_address,
+            expected_result.int_signed_transactions[0].native_token_address
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_signed_tx,
+            expected_result.int_signed_transactions[0].int_signed_tx
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].any_sender_nonce,
+            expected_result.int_signed_transactions[0].any_sender_nonce
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_account_nonce,
+            expected_result.int_signed_transactions[0].int_account_nonce
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_latest_block_number,
+            expected_result.int_signed_transactions[0].int_latest_block_number
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].broadcast_tx_hash,
+            expected_result.int_signed_transactions[0].broadcast_tx_hash
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].broadcast_timestamp,
+            expected_result.int_signed_transactions[0].broadcast_timestamp
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].any_sender_tx,
+            expected_result.int_signed_transactions[0].any_sender_tx
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].destination_chain_id,
+            expected_result.int_signed_transactions[0].destination_chain_id
+        );
+    }
+
+    #[test]
+    fn should_submit_goerli_block_successfully() {
+        let eth_chain_id = EthChainId::Goerli;
+        let db = get_test_database();
+        let router_address = convert_hex_to_eth_address("0x0e1c8524b1D1891B201ffC7BB58a82c96f8Fc4F6").unwrap();
+        let vault_address = convert_hex_to_eth_address("0x711C50B31eE0B9e8ed4D434819AC20b4fBBb5532").unwrap();
+        let confirmations = 0;
+        let gas_price = 20_000_000_000;
+        let goerli_init_block = get_sample_goerli_peg_in_init_block_json_string();
+        let int_init_block = get_sample_int_init_block_json_string();
+        // NOTE: Initialize the ETH side of the core...
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &goerli_init_block,
+            &eth_chain_id,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::Erc20OnInt,
+            true, // NOTE: is_native
+        )
+        .unwrap();
+        // NOTE: Initialize the INT side of the core...
+        initialize_evm_core_with_no_contract_tx(
+            &int_init_block,
+            &EthChainId::Ropsten,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            false, // NOTE: is_native
+        )
+        .unwrap();
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let address = convert_hex_to_eth_address("8549cf9b30276305de31fa7533938e7ce366d12a").unwrap();
+        let private_key = EthPrivateKey::from_slice(
+            &hex::decode("d22ecd05f55019604c5484bdb55d6c78c631cd7a05cc31781900ce356186617e").unwrap(),
+        )
+        .unwrap();
+        let db_utils = EvmDbUtils::new(&db);
+
+        db_utils
+            .put_eth_address_in_db(&db_utils.get_eth_address_key(), &address)
+            .unwrap();
+        db_utils.put_eth_private_key_in_db(&private_key).unwrap();
+        assert_eq!(db_utils.get_public_eth_address_from_db().unwrap(), address,);
+        assert_eq!(db_utils.get_eth_private_key_from_db().unwrap(), private_key,);
+
+        // NOTE Save the token dictionary into the db...
+        EthEvmTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_goerli_token_dictionary_entry(), &db)
+            .unwrap();
+
+        let submission_string = get_sample_goerli_peg_in_submission_string();
+        get_sample_goerli_peg_in_submission_string();
+        // NOTE: Finally, submit the block containting the peg in....
+        let output = submit_eth_block_to_core(&db, &submission_string).unwrap();
+        let expected_result_json = json!({
+            "eth_latest_block_number": 7463642,
+            "int_signed_transactions": [{
+                "_id":"perc20-on-int-int-0",
+                "broadcast":false,
+                "int_tx_hash":"0x4d23e1bdba422eee5443b36ca60c3e73698f1521ef80eca9bd66db299e74b7cb",
+                "int_tx_amount":"1336",
+                "int_tx_recipient":"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC",
+                "witnessed_timestamp":1661344865,
+                "host_token_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+                "originating_tx_hash":"0xe9c9e2297cb5979904fb68c9593ff2cd2a07572e35dce0cfa03dcc0f041da50d",
+                "originating_address":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+                "native_token_address":"0x5eb802abe474290aacc1ef2786431e1ff6c03191",
+                "destination_chain_id":"0x00e4b170",
+                "int_signed_tx":"f9036b808504a817c8008306ddd094a83446f219baec0b6fd6b3031c5a49a54543045b80b90304dcdc7dd00000000000000000000000000e1c8524b1d1891b201ffc7bb58a82c96f8fc4f60000000000000000000000000000000000000000000000000000000000000538000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002e000000000000000000000000000000000000000000000000000000000000002400300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010000b4f6c500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014000e4b1700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000003c0ffee0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a30786665646665323631366562333636316362386665643237383266356630636339316435396463616300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a3078666564666532363136656233363631636238666564323738326635663063633931643539646361630000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029a067949d973c114bcb70e075ed1a34d0423f5c584f69d67aa79eaa6b60ef57c777a04a0f587c0bda107a5e2cf53cccf442b60413d4be85bde7b6d069f08274fa2746",
+                "any_sender_nonce":null,
+                "int_account_nonce":0,
+                "int_latest_block_number":11544277,
+                "broadcast_tx_hash":null,
+                "broadcast_timestamp":null,
+                "any_sender_tx":null,
+            }]
+        });
+        let expected_result = EthOutput::from_str(&expected_result_json.to_string()).unwrap();
+        let result = EthOutput::from_str(&output).unwrap();
+
+        // NOTE: We don't assert against the timestamp because it's not deterministic!
+        assert_eq!(result.eth_latest_block_number, expected_result.eth_latest_block_number);
+        assert_eq!(
+            result.int_signed_transactions[0]._id,
+            expected_result.int_signed_transactions[0]._id
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].broadcast,
+            expected_result.int_signed_transactions[0].broadcast
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_tx_hash,
+            expected_result.int_signed_transactions[0].int_tx_hash
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_tx_amount,
+            expected_result.int_signed_transactions[0].int_tx_amount
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].host_token_address,
+            expected_result.int_signed_transactions[0].host_token_address
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].originating_tx_hash,
+            expected_result.int_signed_transactions[0].originating_tx_hash
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].originating_address,
+            expected_result.int_signed_transactions[0].originating_address
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].native_token_address,
+            expected_result.int_signed_transactions[0].native_token_address
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_signed_tx,
+            expected_result.int_signed_transactions[0].int_signed_tx
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].any_sender_nonce,
+            expected_result.int_signed_transactions[0].any_sender_nonce
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_account_nonce,
+            expected_result.int_signed_transactions[0].int_account_nonce
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].int_latest_block_number,
+            expected_result.int_signed_transactions[0].int_latest_block_number
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].broadcast_tx_hash,
+            expected_result.int_signed_transactions[0].broadcast_tx_hash
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].broadcast_timestamp,
+            expected_result.int_signed_transactions[0].broadcast_timestamp
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].any_sender_tx,
+            expected_result.int_signed_transactions[0].any_sender_tx
+        );
+        assert_eq!(
+            result.int_signed_transactions[0].destination_chain_id,
+            expected_result.int_signed_transactions[0].destination_chain_id
+        );
+    }
+
+    #[test]
+    fn should_submit_sepolia_block_successfully() {
+        let db = get_test_database();
+        let router_address = convert_hex_to_eth_address("0x0e1c8524b1D1891B201ffC7BB58a82c96f8Fc4F6").unwrap();
+        let vault_address = convert_hex_to_eth_address("0x97B8CAA7aCe2daA7995bF679f5dA30aF187897DE").unwrap();
+        let confirmations = 0;
+        let gas_price = 20_000_000_000;
+        let int_init_block = get_sample_int_init_block_json_string();
+        // NOTE: Initialize the ETH side of the core...
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &get_sample_sepolia_init_block_json_string(),
+            &EthChainId::Sepolia,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::Erc20OnInt,
+            true, // NOTE is_native
+        )
+        .unwrap();
+        // NOTE: Initialize the INT side of the core...
+        initialize_evm_core_with_no_contract_tx(
+            &int_init_block,
+            &EthChainId::Ropsten,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            false, // NOTE is_native
+        )
+        .unwrap();
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let address = convert_hex_to_eth_address("8549cf9b30276305de31fa7533938e7ce366d12a").unwrap();
+        let private_key = EthPrivateKey::from_slice(
+            &hex::decode("d22ecd05f55019604c5484bdb55d6c78c631cd7a05cc31781900ce356186617e").unwrap(),
+        )
+        .unwrap();
+        let db_utils = EvmDbUtils::new(&db);
+
+        db_utils
+            .put_eth_address_in_db(&db_utils.get_eth_address_key(), &address)
+            .unwrap();
+        db_utils.put_eth_private_key_in_db(&private_key).unwrap();
+        assert_eq!(db_utils.get_public_eth_address_from_db().unwrap(), address,);
+        assert_eq!(db_utils.get_eth_private_key_from_db().unwrap(), private_key,);
+
+        // NOTE Save the token dictionary into the db...
+        EthEvmTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_sepolia_token_dictionary_entry(), &db)
+            .unwrap();
+
+        // NOTE: Finally, submit the block containting the peg in....
+        let output = submit_eth_block_to_core(&db, &get_sample_sepolia_peg_in_submission_string()).unwrap();
+        let expected_result_json = json!({
+            "eth_latest_block_number": 1756230,
+            "int_signed_transactions": [{
+                "_id":"perc20-on-int-int-0",
+                "broadcast":false,
+                "int_tx_hash":"0x789b38f40824f6a162c7b1cbae8d5a66a871d891783cda97f399f21d7dcb54b2",
+                "int_tx_amount":"1336",
+                "int_tx_recipient":"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC",
+                "witnessed_timestamp":1661442375,
+                "host_token_address":"0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+                "originating_tx_hash":"0x10cbe65e33d7a145b0807de618f8b638d34aaba307725d468dd3e516e9f24d85",
+                "originating_address":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+                "native_token_address":"0x5eb802abe474290aacc1ef2786431e1ff6c03191",
+                "destination_chain_id":"0x00e4b170",
+                "int_signed_tx":"f9036b808504a817c8008306ddd094a83446f219baec0b6fd6b3031c5a49a54543045b80b90304dcdc7dd00000000000000000000000000e1c8524b1d1891b201ffc7bb58a82c96f8fc4f60000000000000000000000000000000000000000000000000000000000000538000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002e00000000000000000000000000000000000000000000000000000000000000240030000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001000030d6b500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014000e4b1700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002200000000000000000000000000000000000000000000000000000000000000003c0ff330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a30786665646665323631366562333636316362386665643237383266356630636339316435396463616300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a3078666564666532363136656233363631636238666564323738326635663063633931643539646361630000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029a0291b447edbcbd36347501a6e20ce7cac471330100fd88b8a34fc1a326851c9aea04a217c3f9b01ae1d6ada699e70e091eca18d4f68ac19d46c26d395b72de20a7c",
+                "any_sender_nonce":null,
+                "int_account_nonce":0,
+                "int_latest_block_number":11544277,
+                "broadcast_tx_hash":null,
+                "broadcast_timestamp":null,
+                "any_sender_tx":null
+            }]
+        });
+        let expected_result = EthOutput::from_str(&expected_result_json.to_string()).unwrap();
+        let result = EthOutput::from_str(&output).unwrap();
+
         // NOTE: We don't assert against the timestamp because it's not deterministic!
         assert_eq!(result.eth_latest_block_number, expected_result.eth_latest_block_number);
         assert_eq!(

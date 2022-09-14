@@ -19,7 +19,7 @@ use crate::{
             eth_database_utils::EthDbUtilsExt,
             eth_state::EthState,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            validate_block_in_state::validate_block_in_state,
+            validate_block_in_state::validate_eth_block_in_state,
         },
     },
     core_type::CoreType,
@@ -36,7 +36,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
-        .and_then(validate_block_in_state)
+        .and_then(validate_eth_block_in_state)
         .and_then(filter_receipts_for_btc_on_int_redeem_events_in_state)
         .and_then(|state| {
             state

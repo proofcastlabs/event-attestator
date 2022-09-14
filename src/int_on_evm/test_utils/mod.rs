@@ -28,7 +28,10 @@ pub fn get_sample_evm_tx_info() -> IntOnEvmEvmTxInfo {
 }
 
 pub fn get_sample_token_dictionary() -> EthEvmTokenDictionary {
-    EthEvmTokenDictionary::new(vec![get_sample_token_dictionary_entry()])
+    EthEvmTokenDictionary::new(vec![
+        get_sample_token_dictionary_entry(),
+        get_sample_token_dictionary_entry_1(),
+    ])
 }
 
 pub fn get_sample_router_address() -> EthAddress {
@@ -60,8 +63,29 @@ pub fn get_sample_token_dictionary_entry() -> EthEvmTokenDictionaryEntry {
     .unwrap()
 }
 
+pub fn get_sample_token_dictionary_entry_1() -> EthEvmTokenDictionaryEntry {
+    EthEvmTokenDictionaryEntry::from_str(
+        &json!({
+            "eth_symbol": "tiPNT",
+            "evm_symbol": "pPNT",
+            "evm_address": "0xF8C69b3A5DB2E5384a0332325F5931cD5Aa4aAdA",
+            "eth_address": "0xa83446f219baec0b6fd6b3031c5a49a54543045b",
+            "eth_fee_basis_points": 10,
+            "evm_fee_basis_points": 25,
+            "eth_token_decimals": 18,
+            "evm_token_decimals": 18
+        })
+        .to_string(),
+    )
+    .unwrap()
+}
+
 pub fn get_sample_evm_init_block_json_string() -> String {
     read_to_string("src/int_on_evm/test_utils/evm-init-block.json").unwrap()
+}
+
+pub fn get_sample_evm_goerli_init_block_json_string() -> String {
+    read_to_string("src/int_on_evm/test_utils/goerli-core-peg-out-init-block.json").unwrap()
 }
 
 pub fn get_sample_int_init_block_json_string() -> String {

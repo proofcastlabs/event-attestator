@@ -33,7 +33,7 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        validate_block_in_state::validate_block_in_state,
+        validate_block_in_state::{validate_eth_block_in_state, validate_evm_block_in_state},
         vault_using_cores::VaultUsingCores,
     },
     core_type::CoreType,
@@ -61,7 +61,13 @@ fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseIn
                 put_evm_chain_id_in_db_and_return_state(chain_id, state)
             }
         })
-        .and_then(validate_block_in_state)
+        .and_then(|state| {
+            if is_for_eth {
+                validate_eth_block_in_state(state)
+            } else {
+                validate_evm_block_in_state(state)
+            }
+        })
         .and_then(remove_receipts_from_block_in_state)
         .and_then(|state| {
             if is_for_eth {

@@ -96,6 +96,8 @@ FantomMainnet,    // 0x0022af98
 AlgorandMainnet,  // 0x03c38e67
 PhoenixTestnet,   // 0x02a75f2c
 PhoenixMainnet,   // 0x026776fa
+EthereumGoerli,   // 0x00b4f6c5
+EthereumSepolia,  // 0x0030d6b5
 ```
 
 &nbsp;

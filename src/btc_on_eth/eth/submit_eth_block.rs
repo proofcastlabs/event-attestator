@@ -22,7 +22,7 @@ use crate::{
         update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
         update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
         update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
-        validate_block_in_state::validate_block_in_state,
+        validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
     core_type::CoreType,
@@ -42,7 +42,7 @@ pub fn submit_eth_block_to_enclave<D: DatabaseInterface>(db: &D, block_json_stri
     parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
         .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(start_eth_db_transaction_and_return_state)
-        .and_then(validate_block_in_state)
+        .and_then(validate_eth_block_in_state)
         .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)

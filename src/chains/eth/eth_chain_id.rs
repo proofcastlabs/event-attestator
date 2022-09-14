@@ -15,6 +15,8 @@ use crate::{
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter, Serialize, Deserialize)]
 pub enum EthChainId {
+    Goerli,
+    Sepolia,
     Mainnet,
     Rinkeby,
     Ropsten,
@@ -45,6 +47,8 @@ impl ToMetadataChainId for EthChainId {
         match self {
             Self::Unknown(_) => MetadataChainId::EthUnknown,
             Self::BscMainnet => MetadataChainId::BscMainnet,
+            Self::Goerli => MetadataChainId::EthereumGoerli,
+            Self::Sepolia => MetadataChainId::EthereumSepolia,
             Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
             Self::Mainnet => MetadataChainId::EthereumMainnet,
             Self::Rinkeby => MetadataChainId::EthereumRinkeby,
@@ -65,6 +69,7 @@ impl EthChainId {
 
     pub fn from_str(s: &str) -> Result<Self> {
         match &*s.to_lowercase() {
+            "goerli" | "5" => Ok(Self::Goerli),
             "mainnet" | "1" => Ok(Self::Mainnet),
             "ropsten" | "3" => Ok(Self::Ropsten),
             "rinkeby" | "4" => Ok(Self::Rinkeby),
@@ -72,6 +77,7 @@ impl EthChainId {
             "xdai" | "100" => Ok(Self::XDaiMainnet),
             "fantom" | "250" => Ok(Self::FantomMainnet),
             "interim" | "947" => Ok(Self::InterimChain),
+            "sepolia" | "11155111" => Ok(Self::Sepolia),
             "polygon" | "137" => Ok(Self::PolygonMainnet),
             "arbitrum" | "42161" => Ok(Self::ArbitrumMainnet),
             "luxo" | "luxochain" | "110" => Ok(Self::LuxochainMainnet),
@@ -99,11 +105,13 @@ impl EthChainId {
     fn from_unsigned_int<T: Into<u64>>(i: T) -> Result<Self> {
         let needle: u64 = i.into();
         match needle {
+            5 => Ok(Self::Goerli),
             1 => Ok(Self::Mainnet),
             3 => Ok(Self::Ropsten),
             4 => Ok(Self::Rinkeby),
             56 => Ok(Self::BscMainnet),
             100 => Ok(Self::XDaiMainnet),
+            11155111 => Ok(Self::Sepolia),
             947 => Ok(Self::InterimChain),
             250 => Ok(Self::FantomMainnet),
             137 => Ok(Self::PolygonMainnet),
@@ -129,12 +137,14 @@ impl EthChainId {
 
     pub fn to_u64(&self) -> u64 {
         match self {
+            Self::Goerli => 5,
             Self::Mainnet => 1,
             Self::Ropsten => 3,
             Self::Rinkeby => 4,
             Self::BscMainnet => 56,
             Self::XDaiMainnet => 100,
             Self::InterimChain => 947,
+            Self::Sepolia => 11155111,
             Self::FantomMainnet => 250,
             Self::PolygonMainnet => 137,
             Self::Unknown(u_64) => *u_64,
@@ -169,7 +179,9 @@ impl fmt::Display for EthChainId {
         let u_64 = self.to_u64();
         match self {
             Self::Mainnet => write!(f, "ETH Mainnet: {}", u_64),
+            Self::Goerli => write!(f, "Goerli Testnet: {}", u_64),
             Self::BscMainnet => write!(f, "BSC Mainnet: {}", u_64),
+            Self::Sepolia => write!(f, "Sepolia Testnet: {}", u_64),
             Self::Rinkeby => write!(f, "Rinekby Testnet: {}", u_64),
             Self::Ropsten => write!(f, "Ropsten Testnet: {}", u_64),
             Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", u_64),

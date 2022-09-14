@@ -23,7 +23,7 @@ use crate::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        validate_block_in_state::validate_block_in_state,
+        validate_block_in_state::{validate_eth_block_in_state, validate_evm_block_in_state},
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
@@ -177,7 +177,13 @@ fn debug_reset_chain<D: DatabaseInterface>(
         })
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(submission_material_json, EthState::init(db)))
-        .and_then(validate_block_in_state)
+        .and_then(|state| {
+            if is_for_eth {
+                validate_eth_block_in_state(state)
+            } else {
+                validate_evm_block_in_state(state)
+            }
+        })
         .and_then(|state| reset_eth_chain(state, canon_to_tip_length, is_for_eth))
         .and_then(end_eth_db_transaction_and_return_state)
         .map(|_| {
