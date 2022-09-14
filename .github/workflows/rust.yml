@@ -51,9 +51,9 @@ jobs:
       - name: Checkout ptokens_vanilla_apps
         uses: actions/checkout@v2
         with:
-          repository: provable-things/ptokens-vanilla-apps
+          repository: provable-things/ptokens-vanilla-apps-private
           token: ${{ secrets.VANILLA_APPS_PAT }}
-          path: ptokens-vanilla-apps
+          path: ptokens-vanilla-apps-private
 
       - name: Install stable Rust (minimal)
         uses: actions-rs/toolchain@v1
@@ -66,15 +66,15 @@ jobs:
         uses: Swatinem/rust-cache@v1
 
       - name: Check code
-        working-directory: ptokens-vanilla-apps
+        working-directory: ptokens-vanilla-apps-private
         run: cargo check $FEATURES
 
       - name: Build code
-        working-directory: ptokens-vanilla-apps
+        working-directory: ptokens-vanilla-apps-private
         run: cargo build $FEATURES
 
       - name: Run tests
-        working-directory: ptokens-vanilla-apps
+        working-directory: ptokens-vanilla-apps-private
         run: cargo test $FEATURES
 
   check_formating_and_clippy:
