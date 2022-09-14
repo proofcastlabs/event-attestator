@@ -449,6 +449,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::Erc20OnInt,
+            true, // NOTE is_native
         )
         .unwrap();
         // NOTE: Initialize the INT side of the core...
@@ -458,6 +459,7 @@ mod tests {
             gas_price,
             confirmations,
             EthState::init(&db),
+            false, // NOTE is_native
         )
         .unwrap();
         // NOTE: Overwrite the INT address & private key since it's generated randomly above...

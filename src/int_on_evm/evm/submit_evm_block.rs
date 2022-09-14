@@ -290,6 +290,7 @@ mod tests {
             &vault_address,
             &router_address,
             &VaultUsingCores::IntOnEvm,
+            true, // NOTE: is_native
         )
         .unwrap();
 
@@ -300,6 +301,7 @@ mod tests {
             gas_price,
             confirmations,
             EthState::init(&db),
+            false, // NOTE: is_native
         )
         .unwrap();
 
