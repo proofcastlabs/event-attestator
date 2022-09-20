@@ -41,6 +41,15 @@ impl EthSignature {
         ))
     }
 
+    pub fn recover_both_signer_addresses(&self, hash: &H256) -> Result<Vec<EthAddress>> {
+        // NOTE: Ignore the recovery param since in some protocols it is used for encoding things,
+        // so instead let's just recover signing addresses for both polarities on the curve.
+        Ok(vec![
+            EthAddress::from_slice(recover(hash.as_bytes(), &self[..64], 0)?.as_bytes()),
+            EthAddress::from_slice(recover(hash.as_bytes(), &self[..64], 1)?.as_bytes()),
+        ])
+    }
+
     pub fn empty() -> Self {
         Self([0u8; ETH_SIGNATURE_NUM_BYTES])
     }
