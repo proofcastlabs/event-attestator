@@ -20,16 +20,24 @@ impl EthSignature {
         mutable_self
     }
 
-    fn get_ecdsa_recovery_param(&self) -> u8 {
-        match self[64] {
-            0x1c => 1,
-            _ => 0,
+    fn get_ecdsa_recovery_param(&self) -> Result<u8> {
+        info!("✔ Getting ECDSA recovery param...");
+        let recovery_param = self[64];
+        match recovery_param {
+            i if i > 28 => Err("Cannot determine polarity from recovery param without chain ID knowledge!".into()),
+            // NOTE: These are where chain ID is used in the `v` param to avoid replay across
+            // different chains. See EIP155 for more info: https://eips.ethereum.org/EIPS/eip-155
+            28 | 1 => Ok(1),
+            27 | 0 => Ok(0),
+            // NOTE: 27 & 28 are ETH specific, as a hangover from BTC days,
+            // see: https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v
+            _ => Err(format!("Cannot determine polarity from recovery param `{}`!", recovery_param).into()),
         }
     }
 
     pub fn recover_signer_address(&self, hash: &H256) -> Result<EthAddress> {
         Ok(EthAddress::from_slice(
-            recover(hash.as_bytes(), &self[..64], self.get_ecdsa_recovery_param().into())?.as_bytes(),
+            recover(hash.as_bytes(), &self[..64], self.get_ecdsa_recovery_param()?.into())?.as_bytes(),
         ))
     }
 
