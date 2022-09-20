@@ -40,51 +40,59 @@ impl DebugSignatory {
             .map(|bytes| H256::from_slice(&bytes))
     }
 
-    fn recover_signer_address(
+    fn recover_signer_addresses(
         &self,
         signature: &EthSignature,
         core_type: &CoreType,
         debug_command_hash: &H256,
-    ) -> Result<EthAddress> {
+    ) -> Result<Vec<EthAddress>> {
         info!("✔ Recovering signature with NO ETH prefix...");
-        let address = signature.recover_signer_address(&self.hash(core_type, debug_command_hash)?)?;
-        debug!("Recovered address: {}", address);
-        Ok(address)
+        let addresses = signature.recover_both_signer_addresses(&self.hash(core_type, debug_command_hash)?)?;
+        debug!("Recovered addresses: {:?}", addresses);
+        Ok(addresses)
     }
 
-    fn recover_signer_address_using_eth_prefix_and_hex_prefix(
+    fn recover_signer_addresses_using_eth_prefix_and_hex_prefix(
         &self,
         signature: &EthSignature,
         core_type: &CoreType,
         debug_command_hash: &H256,
-    ) -> Result<EthAddress> {
+    ) -> Result<Vec<EthAddress>> {
         info!("✔ Recovering signature with ETH prefix AND hex prefix...");
-        let address =
-            signature.recover_signer_address(&self.hash_with_eth_prefix(core_type, debug_command_hash, true)?)?;
-        debug!("Recovered address: {}", address);
-        Ok(address)
+        let addresses = signature.recover_both_signer_addresses(&self.hash_with_eth_prefix(
+            core_type,
+            debug_command_hash,
+            true,
+        )?)?;
+        debug!("Recovered addresses: {:?}", addresses);
+        Ok(addresses)
     }
 
-    fn recover_signer_address_using_eth_prefix_and_no_hex_prefix(
+    fn recover_signer_addresses_using_eth_prefix_and_no_hex_prefix(
         &self,
         signature: &EthSignature,
         core_type: &CoreType,
         debug_command_hash: &H256,
-    ) -> Result<EthAddress> {
+    ) -> Result<Vec<EthAddress>> {
         info!("✔ Recovering signature with ETH prefix and NO hex prefix...");
-        let address =
-            signature.recover_signer_address(&self.hash_with_eth_prefix(core_type, debug_command_hash, false)?)?;
-        debug!("Recovered address: {}", address);
-        Ok(address)
+        let addresses = signature.recover_both_signer_addresses(&self.hash_with_eth_prefix(
+            core_type,
+            debug_command_hash,
+            false,
+        )?)?;
+        debug!("Recovered addresses: {:?}", addresses);
+        Ok(addresses)
     }
 
     pub fn validate(&self, signature: &EthSignature, core_type: &CoreType, debug_command_hash: &H256) -> Result<()> {
-        let recovered_addresses = vec![
-            self.recover_signer_address(signature, core_type, debug_command_hash)?,
-            self.recover_signer_address_using_eth_prefix_and_hex_prefix(signature, core_type, debug_command_hash)?,
-            self.recover_signer_address_using_eth_prefix_and_no_hex_prefix(signature, core_type, debug_command_hash)?,
-        ];
-        if recovered_addresses.contains(&self.eth_address) {
+        let needle = self.eth_address;
+        let haystack = vec![
+            self.recover_signer_addresses(signature, core_type, debug_command_hash)?,
+            self.recover_signer_addresses_using_eth_prefix_and_hex_prefix(signature, core_type, debug_command_hash)?,
+            self.recover_signer_addresses_using_eth_prefix_and_no_hex_prefix(signature, core_type, debug_command_hash)?,
+        ]
+        .concat();
+        if haystack.contains(&needle) {
             Ok(())
         } else {
             Err("Could not validate debug signature!".into())
@@ -120,6 +128,7 @@ mod tests {
 
     use super::*;
     use crate::{
+        chains::eth::eth_utils::convert_hex_to_eth_address,
         debug_functions::debug_signers::test_utils::{
             get_sample_debug_command_hash,
             get_sample_debug_signatory,
@@ -147,10 +156,10 @@ mod tests {
         let debug_command_hash = get_sample_debug_command_hash();
         let signature = signatory.sign(&pk, &core_type, &debug_command_hash).unwrap();
         let result = signatory
-            .recover_signer_address(&signature, &core_type, &debug_command_hash)
+            .recover_signer_addresses(&signature, &core_type, &debug_command_hash)
             .unwrap();
         let expected_result = pk.to_public_key().to_address();
-        assert_eq!(result, expected_result);
+        assert!(result.contains(&expected_result));
     }
 
     #[test]
@@ -187,10 +196,10 @@ mod tests {
             .sign_with_eth_prefix(&pk, &core_type, &debug_command_hash)
             .unwrap();
         let result = signatory
-            .recover_signer_address_using_eth_prefix_and_no_hex_prefix(&signature, &core_type, &debug_command_hash)
+            .recover_signer_addresses_using_eth_prefix_and_no_hex_prefix(&signature, &core_type, &debug_command_hash)
             .unwrap();
         let expected_result = pk.to_public_key().to_address();
-        assert_eq!(result, expected_result);
+        assert!(result.contains(&expected_result));
     }
 
     #[test]
