@@ -1,6 +1,11 @@
 use rust_algorand::AlgorandBlock;
 
-use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::algo::algo_state::AlgoState,
+    constants::CORE_IS_VALIDATING,
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 const NO_PARENT_ERROR: &str = "ALGO block rejected - no parent exists in database!";
 
@@ -22,11 +27,16 @@ fn check_submitted_block_hash_is_subsequent(
     latest_block_from_db: &AlgorandBlock,
 ) -> Result<()> {
     info!("✔ Checking if submitted ALGO block hash is subsequent...");
-    if submitted_block.get_previous_block_hash()? == latest_block_from_db.hash()? {
-        info!("✔ Submitted ALGO block hash IS subsequent to latest ALGO block in db!");
-        Ok(())
+    if CORE_IS_VALIDATING {
+        if submitted_block.get_previous_block_hash()? == latest_block_from_db.hash()? {
+            info!("✔ Submitted ALGO block hash IS subsequent to latest ALGO block in db!");
+            Ok(())
+        } else {
+            Err(NO_PARENT_ERROR.into())
+        }
     } else {
-        Err(NO_PARENT_ERROR.into())
+        warn!("✘ Core is NOT validating ∴ skipping ALGO header-hash subsequency check!");
+        Ok(())
     }
 }
 
