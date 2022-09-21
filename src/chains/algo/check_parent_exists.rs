@@ -1,13 +1,23 @@
-use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::algo::algo_state::AlgoState,
+    constants::CORE_IS_VALIDATING,
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 pub fn check_parent_of_algo_block_in_state_exists<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {
     info!("✔ Checking if ALGO submission material's parent exists in database...");
-    let parent_hash = state.get_algo_submission_material()?.block.get_previous_block_hash()?;
-    if state.algo_db_utils.get_submission_material(&parent_hash).is_ok() {
-        info!("✔ ALGO submission material's parent exists in database!");
-        Ok(state)
+    if CORE_IS_VALIDATING {
+        let parent_hash = state.get_algo_submission_material()?.block.get_previous_block_hash()?;
+        if state.algo_db_utils.get_submission_material(&parent_hash).is_ok() {
+            info!("✔ ALGO submission material's parent exists in database!");
+            Ok(state)
+        } else {
+            Err("✘ ALGO submission material rejected - no parent exists in database!".into())
+        }
     } else {
-        Err("✘ ALGO submission material rejected - no parent exists in database!".into())
+        warn!("✘ Core is NOT validating ∴ skipping ALGO header-hash subsequency check!");
+        Ok(state)
     }
 }
 
