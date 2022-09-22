@@ -21,7 +21,7 @@ pub fn check_parent_of_algo_block_in_state_exists<D: DatabaseInterface>(state: A
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "non-validating")))]
 mod tests {
     use super::*;
     use crate::{
