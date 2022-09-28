@@ -9,7 +9,7 @@ use crate::{
         eth_log::EthLogExt,
         eth_receipt::EthReceipt,
         eth_submission_material::EthSubmissionMaterial,
-        eth_utils::convert_eth_address_to_string,
+        eth_utils::{convert_eth_address_to_string, convert_hex_to_eth_address},
     },
     types::Result,
 };
@@ -24,6 +24,10 @@ lazy_static! {
                 .expect("✘ Invalid hex in `ERC20_TOKEN_TRANSFER_EVENT_TOPIC_HEX`!"),
         )
     };
+    static ref PNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD")
+        .expect("Invalid ETH address hex for `PNT_TOKEN_ADDRESS_ON_ETH`!");
+    static ref ETHPNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0x8474a898677C3bc97f35A86c387aE34Bf272C860")
+        .expect("Invalid ETH address hex for `ETHPNT_TOKEN_ADDRESS_ON_ETH`!");
 }
 
 pub trait ToErc20TokenTransferEvent {
@@ -85,6 +89,21 @@ impl Erc20TokenTransferEvents {
                     // corresponding token transfers events to exist.
                     mutable_self.remove(&event);
                     info!("✔ Event found in submission material!");
+                    return true;
+                }
+
+                let eth_pnt_event = event.update_emittance_address(&ETHPNT_TOKEN_ADDRESS_ON_ETH);
+
+                if event.token_address == *PNT_TOKEN_ADDRESS_ON_ETH && mutable_self.contains(&eth_pnt_event) {
+                    info!("✔ Checking if the event is for a ETHPNT");
+                    // NOTE: So a vault change will mean that a ETHPNT peg in will fire a peg-in event to make a
+                    // PNT peg in happen. This means the PNT peg-in event will NOT have a corresponding
+                    // ERC20 transfer event, but there will exist instead an ETHPNT erc20 transfer
+                    // event, which we will look for to pass this validation step instead.
+
+                    // NOTE: See above for why we remove the event.
+                    mutable_self.remove(&eth_pnt_event);
+                    info!("✔ ETHPNT transfer event found in submission material!");
                     true
                 } else {
                     warn!(
@@ -165,6 +184,12 @@ impl Erc20TokenTransferEvent {
                 })
 
             })
+    }
+
+    pub fn update_emittance_address(&self, address: &EthAddress) -> Self {
+        let mut mutable_self = self.clone();
+        mutable_self.token_address = *address;
+        mutable_self
     }
 }
 
@@ -326,5 +351,22 @@ mod tests {
             .iter()
             .filter(|thing| *thing != &repeated_thing)
             .for_each(|thing| assert!(!results.contains(thing)));
+    }
+
+    #[test]
+    fn pnt_event_should_not_get_filtered_out_if_ethpnt_transfer_event_exists() {
+        let mut events_to_filter = Erc20TokenTransferEvents::get_n_random_events(10);
+
+        // NOTE: Make the PNT event which won't have a corresponding event...
+        let pnt_event = Erc20TokenTransferEvent::random().update_emittance_address(&PNT_TOKEN_ADDRESS_ON_ETH);
+
+        // NOTE: But will have a corresponding EthPNT event
+        let ethpnt_event = pnt_event.update_emittance_address(&ETHPNT_TOKEN_ADDRESS_ON_ETH);
+        events_to_filter.push(ethpnt_event);
+        assert!(!events_to_filter.contains(&pnt_event));
+        let things_that_will_not_be_filtered_out = vec![pnt_event];
+        let result = events_to_filter.filter_if_no_transfer_event(&things_that_will_not_be_filtered_out);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result, things_that_will_not_be_filtered_out);
     }
 }
