@@ -26,7 +26,7 @@ lazy_static! {
     };
     static ref PNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD")
         .expect("Invalid ETH address hex for `PNT_TOKEN_ADDRESS_ON_ETH`!");
-    static ref ETHPNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0x8474a898677C3bc97f35A86c387aE34Bf272C860")
+    static ref ETHPNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0xf4ea6b892853413bd9d9f1a5d3a620a0ba39c5b2")
         .expect("Invalid ETH address hex for `ETHPNT_TOKEN_ADDRESS_ON_ETH`!");
 }
 
