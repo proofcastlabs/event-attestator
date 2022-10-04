@@ -3,8 +3,8 @@ use eos_chain::{Action as EosAction, Digest, NumBytes, SerializeData, UnsignedIn
 
 use crate::types::{Bytes, Result};
 
-pub fn get_action_digest(action: &EosAction) -> Result<Bytes> {
-    if cfg!(feature = "disable-action-return-value-protocol-feature") {
+pub fn get_action_digest(action: &EosAction, action_has_return_value: bool) -> Result<Bytes> {
+    if !action_has_return_value {
         debug!("Using original way to calculate action digest...");
         let digest = action.digest()?.as_bytes().to_vec();
         debug!("Action digest: 0x{}", hex::encode(&digest));
@@ -55,7 +55,7 @@ mod tests {
                 .unwrap(),
         };
 
-        let result = hex::encode(get_action_digest(&action).unwrap());
+        let result = hex::encode(get_action_digest(&action, true).unwrap());
         let expected_result = "9be5d1c3e18a4ae0c211f62f6885f6f17fd69e608191593663385e7a26301578";
         assert_eq!(result, expected_result);
     }
@@ -69,7 +69,7 @@ mod tests {
             data: hex::decode("70214658dd93d5c140771b0000000000085042544300000022334e465047724c7a6f664571416a46446d34707967796e5444417939797436635765").unwrap(),
         };
 
-        let result = hex::encode(get_action_digest(&action).unwrap());
+        let result = hex::encode(get_action_digest(&action, true).unwrap());
         let expected_result = "80755c538467ddcc65190622a118316aa7ac1406bdfa8263c73e5a9653a8fd59";
         assert_eq!(result, expected_result);
     }
@@ -83,7 +83,7 @@ mod tests {
             data: hex::decode("00a6823403ea3055fd030e656f73696f3a3a6162692f312e310008076163636f756e7400010762616c616e636505617373657405636c6f73650002056f776e6572046e616d650673796d626f6c0673796d626f6c06637265617465000206697373756572046e616d650e6d6178696d756d5f737570706c790561737365740e63757272656e63795f7374617473000306737570706c790561737365740a6d61785f737570706c7905617373657406697373756572046e616d65056973737565000302746f046e616d65087175616e74697479056173736574046d656d6f06737472696e67046f70656e0003056f776e6572046e616d650673796d626f6c0673796d626f6c0972616d5f7061796572046e616d65067265746972650002087175616e74697479056173736574046d656d6f06737472696e67087472616e7366657200040466726f6d046e616d6502746f046e616d65087175616e74697479056173736574046d656d6f06737472696e6706000000000085694405636c6f73650000000000a86cd44506637265617465000000000000a531760569737375650000000000003055a5046f70656e0000000000a8ebb2ba0672657469726500000000572d3ccdcd087472616e736665720002000000384f4d1132036936340000076163636f756e740000000000904dc60369363400000e63757272656e63795f73746174730000000000").unwrap(),
         };
 
-        let result = hex::encode(get_action_digest(&action).unwrap());
+        let result = hex::encode(get_action_digest(&action, true).unwrap());
         let expected_result = "a5a9db34733bd34d033fd9ecbdb72712c56957e7948548464452fdf7ee27af5f";
         assert_eq!(result, expected_result);
     }
