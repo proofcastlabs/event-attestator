@@ -23,8 +23,8 @@ pub fn filter_for_proofs_with_action_mroot(
         .filter(|proof_data| proof_data.action_proof[proof_data.action_proof.len() - 1] == action_mroot.to_string())
         .cloned()
         .collect::<EosActionProofs>();
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!("Num proofs after : {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
@@ -38,8 +38,8 @@ pub fn filter_proofs_for_account(
         .filter(|proof| proof.action.account == required_account_name)
         .cloned()
         .collect();
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!("Num proofs after: {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!("Num proofs after: {}", filtered.len());
     Ok(filtered)
 }
 
@@ -61,8 +61,8 @@ fn filter_for_proofs_with_action_name(action_proofs: &[EosActionProof], action_n
         .filter(|proof| proof.action.name == required_action_name)
         .cloned()
         .collect();
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!(" Num proofs after: {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!(" Num proofs after: {}", filtered.len());
     Ok(filtered)
 }
 
@@ -77,8 +77,8 @@ pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[EosActionPr
         .filter_map(|(proof_is_valid, proof)| if proof_is_valid { Some(proof) } else { None })
         .cloned()
         .collect::<EosActionProofs>();
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!("Num proofs after : {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
@@ -97,8 +97,8 @@ pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[EosActionProof
         })
         .cloned()
         .collect::<EosActionProofs>();
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!("Num proofs after : {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
@@ -121,8 +121,8 @@ pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
         })
         .cloned()
         .collect::<EosActionProofs>();
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!("Num proofs after : {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
@@ -133,8 +133,8 @@ pub fn filter_duplicate_proofs(action_proofs: &[EosActionProof]) -> Result<EosAc
             filtered.push(proof.clone());
         }
     });
-    debug!("Num proofs before: {}", action_proofs.len());
-    debug!("Num proofs after : {}", filtered.len());
+    info!("Num proofs before: {}", action_proofs.len());
+    info!("Num proofs after : {}", filtered.len());
     Ok(filtered)
 }
 
@@ -147,13 +147,13 @@ pub fn maybe_filter_out_proofs_for_accounts_not_in_token_dictionary<D: DatabaseI
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out proofs for accounts NOT in the token dictionary...");
-    debug!("✔ Number of proofs before: {}", state.action_proofs.len());
+    info!("✔ Number of proofs before: {}", state.action_proofs.len());
     filter_proofs_for_accounts(
         &state.action_proofs,
         &state.get_eos_eth_token_dictionary()?.to_unique_eos_accounts()?,
     )
     .and_then(|proofs| {
-        debug!("✔ Number of proofs after: {}", proofs.len());
+        info!("✔ Number of proofs after: {}", proofs.len());
         state.replace_action_proofs(proofs)
     })
 }
