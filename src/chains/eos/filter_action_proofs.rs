@@ -8,10 +8,10 @@ use crate::{
         eos_constants::{PEGIN_ACTION_NAME, REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
         eos_merkle_utils::verify_merkle_proof,
         eos_state::EosState,
-        eos_utils::{convert_bytes_to_checksum256, get_digest_from_eos_action},
+        get_action_digest::get_action_digest,
     },
     traits::DatabaseInterface,
-    types::Result,
+    types::{Bytes, Result},
 };
 
 pub fn filter_for_proofs_with_action_mroot(
@@ -105,15 +105,26 @@ pub fn filter_out_invalid_action_receipt_digests(action_proofs: &[EosActionProof
 pub fn filter_out_proofs_with_action_digests_not_in_action_receipts(
     action_proofs: &[EosActionProof],
 ) -> Result<EosActionProofs> {
+    let actions_without_return_digests = action_proofs
+        .iter()
+        .map(|proof| get_action_digest(&proof.action, false))
+        .collect::<Result<Vec<Bytes>>>()?;
+
+    let actions_with_return_digests = action_proofs
+        .iter()
+        .map(|proof| get_action_digest(&proof.action, true))
+        .collect::<Result<Vec<Bytes>>>()?;
+
     let filtered = action_proofs
         .iter()
-        .map(|proof| get_digest_from_eos_action(&proof.action))
-        .map(|digest_bytes| convert_bytes_to_checksum256(&digest_bytes?))
-        .collect::<Result<Vec<Checksum256>>>()?
-        .into_iter()
-        .zip(action_proofs.iter())
-        .filter_map(|(digest, proof)| {
-            if digest == proof.action_receipt.act_digest {
+        .enumerate()
+        .filter_map(|(i, proof)| {
+            let digest_from_receipt = proof.action_receipt.act_digest.as_bytes().to_vec();
+            if actions_without_return_digests[i] == digest_from_receipt {
+                debug!("Proof is valid for action digest with NO return value!");
+                Some(proof)
+            } else if actions_with_return_digests[i] == digest_from_receipt {
+                debug!("Proof is valid for action digest WITH return value!");
                 Some(proof)
             } else {
                 None
