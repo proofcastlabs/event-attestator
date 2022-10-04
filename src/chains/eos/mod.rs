@@ -30,6 +30,7 @@ pub(crate) mod eos_unit_conversions;
 pub(crate) mod eos_utils;
 pub(crate) mod extract_utxos_from_btc_txs;
 pub(crate) mod filter_action_proofs;
+pub(crate) mod get_action_digest;
 pub(crate) mod get_active_schedule;
 pub(crate) mod get_enabled_protocol_features;
 pub(crate) mod get_eos_incremerkle;
