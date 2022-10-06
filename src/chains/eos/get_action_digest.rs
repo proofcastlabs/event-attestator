@@ -87,4 +87,18 @@ mod tests {
         let expected_result = "a5a9db34733bd34d033fd9ecbdb72712c56957e7948548464452fdf7ee27af5f";
         assert_eq!(result, expected_result);
     }
+
+    #[test]
+    fn should_get_correct_action_digest_4() {
+        let action = EosAction {
+            account: AccountName::from_str("ptokensbtc1a").unwrap(),
+            name: ActionName::from_str("redeem").unwrap(),
+            authorization: vec![PermissionLevel::from_str("test1test2tt", "active").unwrap()],
+            data: hex::decode("90b3c858e590b1ca50c3000000000000085042544300000023324e3238545a684c586468566546764e33706359464667744776686a37575574507737").unwrap(),
+        };
+
+        let result = hex::encode(get_action_digest(&action, false).unwrap());
+        let expected_result = "364afa1cc13bca5dce1027f089e56889171373f66f5e3e59637251aaaeac4caa";
+        assert_eq!(result, expected_result);
+    }
 }
