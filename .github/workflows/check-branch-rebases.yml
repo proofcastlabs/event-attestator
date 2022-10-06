@@ -1,0 +1,18 @@
+name: Check Branch Rebases
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  check-branch-rebases:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ptokens_core
+        uses: actions/checkout@v2
+
+      - name: Run branch rebase check script
+        run: ./scripts/check-branches-are-rebased.sh
+        shell: bash
