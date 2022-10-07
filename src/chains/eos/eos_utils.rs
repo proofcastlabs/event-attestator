@@ -1,5 +1,4 @@
-use bitcoin::hashes::{sha256, Hash};
-use eos_chain::{Action as EosAction, Checksum256, SerializeData};
+use eos_chain::Checksum256;
 
 use crate::{
     chains::eos::eos_constants::{EOS_MAX_EXPIRATION_SECS, EOS_SCHEDULE_DB_PREFIX},
@@ -32,10 +31,6 @@ pub fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
 
 pub fn get_symbol_from_eos_asset(eos_asset: &str) -> &str {
     eos_asset.split_whitespace().collect::<Vec<&str>>()[1]
-}
-
-pub fn get_digest_from_eos_action(action: &EosAction) -> Result<Bytes> {
-    Ok(sha256::Hash::hash(&action.to_serialize_data()?).to_vec())
 }
 
 pub fn get_eos_tx_expiration_timestamp_with_offset(offset: u32) -> Result<u32> {
