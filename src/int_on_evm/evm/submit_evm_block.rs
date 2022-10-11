@@ -186,7 +186,7 @@ mod tests {
                 "broadcast": false,
                 "int_tx_hash": "0x9b8c6a306e07271f9b3c732654806ec83b80a34f2ab2c2fe14bd151adb55dc06",
                 "int_tx_amount": "665",
-                "int_tx_recipient": "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+                "int_tx_recipient": "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC",
                 "witnessed_timestamp": 1638902000,
                 "host_token_address": "0xdd9f905a34a6c507c7d68384985905cf5eb032e9",
                 "originating_tx_hash": "0x61ac238ba14d7f8bc1fff8546f61127d9b44be6955819adb0f9861da6723bef1",
@@ -204,72 +204,7 @@ mod tests {
         });
         let expected_result = EvmOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EvmOutput::from_str(&output).unwrap();
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.evm_latest_block_number, expected_result.evm_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id,
-        );
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -334,7 +269,7 @@ mod tests {
                 "broadcast":false,
                 "int_tx_hash":"0x57e812d2e7c25e4c990a7bd601e65027f37f7d47e670fe2f5dbc5b2cd513b60c",
                 "int_tx_amount":"1334",
-                "int_tx_recipient":"0x307866656466653236313665623336363163623866656432373832663566306363393164353964636163",
+                "int_tx_recipient":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
                 "witnessed_timestamp":1661357369,
                 "host_token_address":"0xf8c69b3a5db2e5384a0332325f5931cd5aa4aada",
                 "originating_tx_hash":"0x1823814ab29df921fc32f7a25158a0c4221a072f167162037f8ccf43fde12fb8",
@@ -352,72 +287,6 @@ mod tests {
         });
         let expected_result = EvmOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EvmOutput::from_str(&output).unwrap();
-
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.evm_latest_block_number, expected_result.evm_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id,
-        );
+        assert_eq!(result, expected_result);
     }
 }

@@ -20,7 +20,7 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EvmOutput {
     pub evm_latest_block_number: usize,
     pub int_signed_transactions: Vec<IntTxInfo>,
@@ -43,6 +43,7 @@ impl FromStr for EvmOutput {
             .iter()
             .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
             .collect::<Result<Vec<IntTxInfo>>>()?;
+
         Ok(Self {
             int_signed_transactions: tx_infos,
             evm_latest_block_number: temp_struct.evm_latest_block_number,
@@ -70,6 +71,91 @@ pub struct IntTxInfo {
     pub broadcast_tx_hash: Option<String>,
     pub broadcast_timestamp: Option<String>,
     pub any_sender_tx: Option<RelayTransaction>,
+}
+
+impl Eq for IntTxInfo {}
+
+impl PartialEq for IntTxInfo {
+    #[rustfmt::skip]
+    fn eq(&self, other: &Self) -> bool {
+        if cfg!(test) {
+            // NOTE: We do it this way so we can see what field is wrong in tests.
+            // NOTE: We SKIP the assertion on the witnessed timestamp when checking equality in test because
+            // we're assering output from a recent execution against external samples made prior.
+            assert_eq!(
+                self._id, other._id,
+                "Wrong field `_id`!"
+            );
+            assert_eq!(
+                self.broadcast, other.broadcast,
+                "Wrong field: `broadcast`!"
+            );
+            assert_eq!(
+                self.int_tx_hash, other.int_tx_hash,
+                "Wrong field: `int_tx_hash`!"
+            );
+            assert_eq!(
+                self.int_tx_amount, other.int_tx_amount,
+                "Wrong field: `int_tx_amount`!"
+            );
+            assert_eq!(
+                self.any_sender_tx, other.any_sender_tx,
+                "Wrong field: `any_sender_tx`!"
+            );
+            assert_eq!(
+                self.int_signed_tx, other.int_signed_tx,
+                "Wrong field: `int_signed_tx`!"
+            );
+            assert_eq!(
+                self.int_tx_recipient, other.int_tx_recipient,
+                "Wrong field: `int_tx_recipient`!"
+            );
+            assert_eq!(
+                self.any_sender_nonce, other.any_sender_nonce,
+                "Wrong field: `any_sender_nonce`!"
+            );
+            assert_eq!(
+                self.broadcast_tx_hash, other.broadcast_tx_hash,
+                "Wrong field: `broadcast_tx_hash`!"
+            );
+            assert_eq!(
+                self.int_account_nonce, other.int_account_nonce,
+                "Wrong field: `int_account_nonce`!"
+            );
+            assert_eq!(
+                self.host_token_address, other.host_token_address,
+                "Wrong field: `host_token_address`!"
+            );
+            assert_eq!(
+                self.originating_tx_hash, other.originating_tx_hash,
+                "Wrong field: `originating_tx_hash`!"
+            );
+            assert_eq!(
+                self.broadcast_timestamp, other.broadcast_timestamp,
+                "Wrong field: `broadcast_timestamp`!"
+            );
+            assert_eq!(
+                self.originating_address, other.originating_address,
+                "Wrong field: `originating_address`!"
+            );
+            assert_eq!(
+                self.native_token_address, other.native_token_address,
+                "Wrong field: `native_token_address`!"
+            );
+            assert_eq!(
+                self.destination_chain_id, other.destination_chain_id,
+                "Wrong field: `destination_chain_id`!"
+            );
+            assert_eq!(
+                self.int_latest_block_number, other.int_latest_block_number,
+                "Wrong field: `int_latest_block_number`!"
+            );
+            // NOTE: Finally we can return true since otherwise the above assertions would have panicked.
+            true
+        } else {
+            self == other
+        }
+    }
 }
 
 #[cfg(test)]
@@ -100,6 +186,7 @@ impl IntTxInfo {
                 format!("pint-on-evm-int-{}", nonce)
             },
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
+            int_tx_recipient: tx_info.destination_address.clone(),
             int_tx_amount: tx_info.native_token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
@@ -107,7 +194,6 @@ impl IntTxInfo {
             native_token_address: convert_eth_address_to_string(&tx_info.eth_token_address),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             host_token_address: convert_eth_address_to_string(&tx_info.evm_token_address.clone()),
-            int_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
         })
