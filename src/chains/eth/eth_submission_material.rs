@@ -30,7 +30,7 @@ impl FromStr for EthSubmissionMaterials {
         Ok(Self(
             temp_struct
                 .iter()
-                .map(|json| EthSubmissionMaterial::from_json(&json))
+                .map(EthSubmissionMaterial::from_json)
                 .collect::<Result<Vec<_>>>()?,
         ))
     }
