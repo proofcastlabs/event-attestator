@@ -1,4 +1,6 @@
-#![allow(clippy::manual_map)]
+use std::str::FromStr;
+
+use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::Deserialize;
 use serde_json::{json, Value as JsonValue};
@@ -9,9 +11,44 @@ use crate::{
         eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
         eth_state::EthState,
     },
+    errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
+
+#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
+pub struct EthSubmissionMaterials(Vec<EthSubmissionMaterial>);
+
+impl FromStr for EthSubmissionMaterials {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        info!("✔ Parsing `EthSubmissionMaterials`...");
+        #[derive(Deref, Deserialize)]
+        struct TempStruct(Vec<EthSubmissionMaterialJson>);
+        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
+        Ok(Self(
+            temp_struct
+                .iter()
+                .map(|json| EthSubmissionMaterial::from_json(&json))
+                .collect::<Result<Vec<_>>>()?,
+        ))
+    }
+}
+
+impl FromStr for EthSubmissionMaterial {
+    type Err = AppError;
+
+    fn from_str(json_str: &str) -> Result<Self> {
+        info!("✔ Parsing ETH submission material...");
+        let submission_material = Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?)?;
+        info!(
+            "✔ ETH submission material parsed! Block number: {}",
+            submission_material.get_block_number()?
+        );
+        Ok(submission_material)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
 pub struct EthSubmissionMaterial {
@@ -180,16 +217,6 @@ impl EthSubmissionMaterial {
         }
     }
 
-    pub fn from_str(json_str: &str) -> Result<Self> {
-        info!("✔ Parsing ETH submission material...");
-        let submission_material = Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?)?;
-        info!(
-            "✔ ETH submission material parsed! Block number: {}",
-            submission_material.get_block_number()?
-        );
-        Ok(submission_material)
-    }
-
     #[cfg(test)]
     pub fn to_string(&self) -> Result<String> {
         Ok(self.to_json()?.to_string())
@@ -260,8 +287,10 @@ pub struct EthSubmissionMaterialJson {
     pub algo_first_valid_round: Option<u64>,
 }
 
-impl EthSubmissionMaterialJson {
-    pub fn from_str(json_str: &str) -> Result<Self> {
+impl FromStr for EthSubmissionMaterialJson {
+    type Err = AppError;
+
+    fn from_str(json_str: &str) -> Result<Self> {
         match serde_json::from_str(json_str) {
             Ok(result) => Ok(result),
             Err(e) => Err(e.into()),
