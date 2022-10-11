@@ -1,7 +1,11 @@
+#[cfg(test)]
+use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(test)]
+use crate::errors::AppError;
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -23,8 +27,10 @@ pub struct EvmOutput {
 }
 
 #[cfg(test)]
-impl EvmOutput {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for EvmOutput {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         use serde_json::Value as JsonValue;
         #[derive(Deserialize)]
         struct TempStruct {

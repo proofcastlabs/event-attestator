@@ -79,7 +79,7 @@ pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
+    use std::{fs::read_to_string, str::FromStr};
 
     use serde_json::json;
 
