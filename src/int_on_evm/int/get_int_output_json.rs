@@ -1,7 +1,10 @@
-use std::{fmt, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    fmt,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
-use serde::{Deserialize, Serialize};
 use derive_more::{Constructor, Deref};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::{
@@ -155,9 +158,9 @@ pub fn get_evm_signed_tx_info_from_int_txs(
         .collect::<Result<Vec<EvmTxInfo>>>()
 }
 
-pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting ETH output json...");
-    let output = serde_json::to_string(&IntOutput {
+    let output = IntOutput {
         int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
         evm_signed_transactions: if state.int_on_evm_evm_signed_txs.is_empty() {
             info!("✔ No `int-on-evm-evm` signed transactions ∴ no txs to output!");
@@ -173,7 +176,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 &EthEvmTokenDictionary::get_from_db(state.db)?,
             )?
         },
-    })?;
+    };
     info!("✔ ETH output: {}", output);
     Ok(output)
 }

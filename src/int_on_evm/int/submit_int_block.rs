@@ -2,10 +2,6 @@ use crate::{
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
         check_parent_exists::check_for_parent_of_eth_block_in_state,
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
         eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
@@ -31,7 +27,7 @@ use crate::{
         filter_submission_material::filter_submission_material_for_peg_in_events_in_state,
         filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
         filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
-        get_int_output_json::get_int_output_json,
+        get_int_output_json::{get_int_output_json, IntOutput, IntOutputs},
         parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
         sign_txs::maybe_sign_evm_txs_and_add_to_eth_state,
     },
@@ -39,18 +35,8 @@ use crate::{
     types::Result,
 };
 
-/// # Submit INT Block to Core
-///
-/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
-/// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
-/// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
-/// transaction will be signed & returned to the caller.
-pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
-    info!("✔ Submitting ETH block to core...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
+fn submit_int_block<D: DatabaseInterface>(db: &D, block: &str) -> Result<IntOutput> {
+    parse_eth_submission_material_and_put_in_state(block, EthState::init(db))
         .and_then(validate_eth_block_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_eth_block_in_state)
@@ -73,8 +59,50 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(maybe_increment_evm_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
-        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_int_output_json)
+}
+
+/// # Submit INT Block to Core
+///
+/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
+/// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
+/// blockchain held by the enclave in it's encrypted database. Should the submitted block
+/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
+/// transaction will be signed & returned to the caller.
+pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Result<String> {
+    info!("✔ Submitting INT block to core...");
+
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| submit_int_block(db, block))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(output.to_string())
+        })
+}
+
+/// # Submit INT Blocks to Core
+///
+/// Submit multiple INT blocks to the core. See `submit_evm_block_to_core` for more information.
+pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
+    info!("✔ Batch submitting INT blocks to core...");
+    #[derive(serde::Deserialize, derive_more::Deref)]
+    struct TempStruct(Vec<String>);
+    let block_json_strings = serde_json::from_str::<TempStruct>(blocks)?;
+
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| {
+            block_json_strings
+                .iter()
+                .map(|block| submit_int_block(db, block))
+                .collect::<Result<Vec<_>>>()
+        })
+        .map(IntOutputs::new)
+        .and_then(|outputs| {
+            db.end_transaction()?;
+            Ok(outputs.to_output().to_string())
+        })
 }
 
 #[cfg(test)]
