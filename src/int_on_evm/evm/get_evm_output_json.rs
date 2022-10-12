@@ -5,7 +5,7 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use derive_more::{Constructor, Deref, DerefMut};
+use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
@@ -26,7 +26,7 @@ use crate::{
 
 // TODO need a marker trait with super traits to apply to outputters so that we can enforce things!
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, DerefMut, Deref, Constructor)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
 pub struct EvmOutputs(Vec<EvmOutput>);
 
 impl EvmOutputs {
