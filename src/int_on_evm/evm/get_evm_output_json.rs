@@ -64,48 +64,27 @@ impl fmt::Display for EvmOutput {
     }
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct IntTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub int_tx_hash: String,
-    pub int_tx_amount: String,
-    pub int_tx_recipient: String,
-    pub witnessed_timestamp: u64,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub native_token_address: String,
-    pub destination_chain_id: String,
-    pub int_signed_tx: Option<String>,
-    pub any_sender_nonce: Option<u64>,
-    pub int_account_nonce: Option<u64>,
-    pub int_latest_block_number: usize,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-    pub any_sender_tx: Option<RelayTransaction>,
-}
-
-impl_partial_eq_with_test_assertions_for_struct!(
-    IntTxInfo;
-    _id,
-    broadcast,
-    int_tx_hash,
-    int_tx_amount,
-    int_tx_recipient,
-    host_token_address,
-    originating_tx_hash,
-    originating_address,
-    native_token_address,
-    destination_chain_id,
-    int_signed_tx,
-    any_sender_nonce,
-    int_account_nonce,
-    int_latest_block_number,
-    broadcast_tx_hash,
-    broadcast_timestamp,
-    any_sender_tx
-    // NOTE: We don't assert against the witnessed timestamp since it's not deterministic.
+make_struct_with_test_assertions_on_equality_check!(
+    struct IntTxInfo {
+        _id: String,
+        broadcast: bool,
+        int_tx_hash: String,
+        int_tx_amount: String,
+        int_tx_recipient: String,
+        witnessed_timestamp: u64,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        native_token_address: String,
+        destination_chain_id: String,
+        int_signed_tx: Option<String>,
+        any_sender_nonce: Option<u64>,
+        int_account_nonce: Option<u64>,
+        int_latest_block_number: usize,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+        any_sender_tx: Option<RelayTransaction>,
+    }
 );
 
 impl IntTxInfo {

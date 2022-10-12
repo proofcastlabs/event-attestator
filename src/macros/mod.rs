@@ -13,4 +13,4 @@ pub(crate) mod tx_info_macros;
 #[macro_use]
 pub(crate) mod debug_command_hash_macros;
 #[macro_use]
-pub(crate) mod struct_partial_eq_with_test_assertion_macros;
+pub(crate) mod impl_partial_eq_on_struct_with_test_assertion_macros;
