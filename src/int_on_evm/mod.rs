@@ -64,7 +64,7 @@ pub use crate::{
             debug_set_fee_basis_points,
             debug_withdraw_fees_and_save_in_db,
         },
-        evm::{maybe_initialize_evm_core, submit_evm_block_to_core},
+        evm::{maybe_initialize_evm_core, submit_evm_block_to_core, submit_evm_blocks_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
         int::{maybe_initialize_int_core, submit_int_block_to_core},
