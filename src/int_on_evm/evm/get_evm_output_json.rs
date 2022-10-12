@@ -1,7 +1,7 @@
 #[cfg(test)]
 use std::str::FromStr;
 use std::{
-    cmp::Ordering,
+    fmt,
     time::{SystemTime, UNIX_EPOCH},
 };
 
@@ -53,15 +53,14 @@ pub struct EvmOutput {
     pub int_signed_transactions: Vec<IntTxInfo>,
 }
 
-impl Ord for EvmOutput {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.evm_latest_block_number.cmp(&other.evm_latest_block_number)
-    }
-}
-
-impl PartialOrd for EvmOutput {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+impl fmt::Display for EvmOutput {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            serde_json::to_string(self)
+                .unwrap_or_else(|_| r#"{"error': "Could not convert `EvmOutput` to string!"}"#.into())
+        )
     }
 }
 
@@ -174,9 +173,9 @@ pub fn get_int_signed_tx_info_from_evm_txs(
         .collect::<Result<Vec<IntTxInfo>>>()
 }
 
-pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-    info!("✔ Getting EVM output json...");
-    let output = serde_json::to_string(&EvmOutput {
+pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<EvmOutput> {
+    info!("✔ Getting EVM output...");
+    let output = EvmOutput {
         evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
         int_signed_transactions: if state.int_on_evm_int_signed_txs.is_empty() {
             vec![]
@@ -190,7 +189,7 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 state.eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
-    })?;
+    };
     info!("✔ EVM output: {}", output);
     Ok(output)
 }
