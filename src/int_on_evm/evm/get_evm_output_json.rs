@@ -1,7 +1,11 @@
 #[cfg(test)]
 use std::str::FromStr;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    cmp::Ordering,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
+use derive_more::{Constructor, Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
@@ -20,38 +24,48 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+// TODO need a marker trait with super traits to apply to outputters so that we can enforce things!
+
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, DerefMut, Deref, Constructor)]
+pub struct EvmOutputs(Vec<EvmOutput>);
+
+impl EvmOutputs {
+    pub fn to_output(&self) -> EvmOutput {
+        let latest_block_number = match self.last() {
+            Some(output) => output.evm_latest_block_number,
+            None => 0, // NOTE: This field isn't actually used anywhere, so it's safe to default to zero here.
+        };
+        let tx_infos = self
+            .iter()
+            .map(|output| output.int_signed_transactions.clone())
+            .collect::<Vec<Vec<IntTxInfo>>>()
+            .concat();
+        EvmOutput {
+            int_signed_transactions: tx_infos,
+            evm_latest_block_number: latest_block_number,
+        }
+    }
+}
+
+#[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EvmOutput {
     pub evm_latest_block_number: usize,
     pub int_signed_transactions: Vec<IntTxInfo>,
 }
 
-#[cfg(test)]
-impl FromStr for EvmOutput {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            evm_latest_block_number: usize,
-            int_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .int_signed_transactions
-            .iter()
-            .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<IntTxInfo>>>()?;
-
-        Ok(Self {
-            int_signed_transactions: tx_infos,
-            evm_latest_block_number: temp_struct.evm_latest_block_number,
-        })
+impl Ord for EvmOutput {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.evm_latest_block_number.cmp(&other.evm_latest_block_number)
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+impl PartialOrd for EvmOutput {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct IntTxInfo {
     pub _id: String,
     pub broadcast: bool,
@@ -94,13 +108,6 @@ impl_partial_eq_with_test_assertions_for_struct!(
     any_sender_tx
     // NOTE: We don't assert against the witnessed timestamp since it's not deterministic.
 );
-
-#[cfg(test)]
-impl IntTxInfo {
-    pub fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
 
 impl IntTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
@@ -186,4 +193,36 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     })?;
     info!("✔ EVM output: {}", output);
     Ok(output)
+}
+
+#[cfg(test)]
+impl IntTxInfo {
+    pub fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
+
+#[cfg(test)]
+impl FromStr for EvmOutput {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        use serde_json::Value as JsonValue;
+        #[derive(Deserialize)]
+        struct TempStruct {
+            evm_latest_block_number: usize,
+            int_signed_transactions: Vec<JsonValue>,
+        }
+        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
+        let tx_infos = temp_struct
+            .int_signed_transactions
+            .iter()
+            .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
+            .collect::<Result<Vec<IntTxInfo>>>()?;
+
+        Ok(Self {
+            int_signed_transactions: tx_infos,
+            evm_latest_block_number: temp_struct.evm_latest_block_number,
+        })
+    }
 }
