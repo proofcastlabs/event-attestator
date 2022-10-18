@@ -75,7 +75,7 @@ impl EthTxInfo {
         eth_latest_block_number: usize,
         eth_chain_id: &EthChainId,
     ) -> Result<EthTxInfo> {
-        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
         Ok(EthTxInfo {
             eth_latest_block_number,
             broadcast: false,

@@ -99,7 +99,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         })
         .map(|hash: Result<SigHash>| Ok(hash?.to_vec()))
         .map(|tx_hash_to_sign: Result<Bytes>| {
-            btc_private_key.sign_hash_and_append_btc_hash_type(tx_hash_to_sign?.to_vec(), SIGN_ALL_HASH_TYPE as u8)
+            btc_private_key.sign_hash_and_append_btc_hash_type(tx_hash_to_sign?.to_vec(), SIGN_ALL_HASH_TYPE)
         })
         .collect::<Result<Vec<Bytes>>>()?;
 

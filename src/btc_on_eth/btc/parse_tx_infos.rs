@@ -42,11 +42,15 @@ impl BtcOnEthEthTxInfos {
                 })
                 .filter(|(_, maybe_address)| maybe_address.is_some())
                 .map(|(tx_out, address)| {
-                    match deposit_info.get(&address.clone().ok_or(NoneError("Could not unwrap BTC address!"))?) {
+                    match deposit_info.get(
+                        &address
+                            .clone()
+                            .ok_or_else(|| NoneError("Could not unwrap BTC address!"))?,
+                    ) {
                         None => {
                             info!(
                                 "✘ BTC address {} not in deposit list!",
-                                address.ok_or(NoneError("Could not unwrap BTC address!"))?
+                                address.ok_or_else(|| NoneError("Could not unwrap BTC address!"))?
                             );
                             Err("Filtering out this err!".into())
                         },
@@ -56,7 +60,7 @@ impl BtcOnEthEthTxInfos {
                                 convert_satoshis_to_wei(tx_out.value),
                                 deposit_info.address.clone(),
                                 tx.txid(),
-                                address.ok_or(NoneError("Could not unwrap BTC address!"))?,
+                                address.ok_or_else(|| NoneError("Could not unwrap BTC address!"))?,
                                 if deposit_info.user_data.is_empty() {
                                     None
                                 } else {

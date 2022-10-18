@@ -62,14 +62,15 @@ impl EosSubmissionMaterial {
                 eos_block_header_json
                     .new_producers
                     .as_ref()
-                    .ok_or(NoneError("Could not unwrap `new_producers` field in EOS block json!"))?,
+                    .ok_or_else(|| NoneError("Could not unwrap `new_producers` field in EOS block json!"))?,
             )?))
         } else if eos_block_header_json.new_producer_schedule.is_some() {
             debug!("✔ `new_producer_schedule` field in EOS block json!");
             Ok(Some(Self::convert_schedule_json_value_to_v2_schedule_json(
-                &eos_block_header_json.new_producer_schedule.clone().ok_or(NoneError(
-                    "Could not unwrap `new_producer_schedule` field in EOS block json!",
-                ))?,
+                &eos_block_header_json
+                    .new_producer_schedule
+                    .clone()
+                    .ok_or_else(|| NoneError("Could not unwrap `new_producer_schedule` field in EOS block json!"))?,
             )?))
         } else {
             debug!("✔ No producers field in EOS block json!");
@@ -167,8 +168,7 @@ mod tests {
     #[test]
     fn should_parse_eos_block_header() {
         let expected_id =
-            convert_hex_to_checksum256(&"04cb6d0413d124ea2df08183d579967e3e47c9853c40126f06110bb20e9330d4".to_string())
-                .unwrap();
+            convert_hex_to_checksum256("04cb6d0413d124ea2df08183d579967e3e47c9853c40126f06110bb20e9330d4").unwrap();
         let submission_material_string = get_sample_eos_submission_material_string_n(2).unwrap();
         let json = EosSubmissionMaterialJson::from_str(&submission_material_string).unwrap();
         let result = EosSubmissionMaterial::parse_eos_block_header_from_json(&json.block_header).unwrap();

@@ -260,7 +260,7 @@ impl SerializedBlockInDbFormat {
         if self.prev_blockhash.is_some() {
             self.prev_blockhash
                 .clone()
-                .ok_or(NoneError("No `prev_blockhash` in `SerializedBlockInDbFormat`!"))
+                .ok_or_else(|| NoneError("No `prev_blockhash` in `SerializedBlockInDbFormat`!"))
                 .and_then(|bytes| Ok(BlockHash::from_slice(&bytes)?))
         } else {
             // NOTE: Blocks saved into the DB pre core v2.0.0 contain the block itself.
@@ -271,7 +271,7 @@ impl SerializedBlockInDbFormat {
     fn get_block(&self) -> Result<BtcBlock> {
         self.block
             .clone()
-            .ok_or(NoneError("No BTC block in serialized struct!"))
+            .ok_or_else(|| NoneError("No BTC block in serialized struct!"))
             .and_then(|bytes| Ok(btc_deserialize(&bytes)?))
     }
 
