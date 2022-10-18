@@ -1,9 +1,15 @@
+use std::str::FromStr;
+
 use crate::{
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
         check_parent_exists::check_for_parent_of_eth_block_in_state,
         eth_state::EthState,
-        eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        eth_submission_material::{
+            parse_eth_submission_material_json_and_put_in_state,
+            EthSubmissionMaterialJson,
+            EthSubmissionMaterialJsons,
+        },
         increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
@@ -35,8 +41,8 @@ use crate::{
     types::Result,
 };
 
-fn submit_int_block<D: DatabaseInterface>(db: &D, block: &str) -> Result<IntOutput> {
-    parse_eth_submission_material_and_put_in_state(block, EthState::init(db))
+fn submit_int_block<D: DatabaseInterface>(db: &D, json: &EthSubmissionMaterialJson) -> Result<IntOutput> {
+    parse_eth_submission_material_json_and_put_in_state(json, EthState::init(db))
         .and_then(validate_eth_block_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_eth_block_in_state)
@@ -71,10 +77,10 @@ fn submit_int_block<D: DatabaseInterface>(db: &D, block: &str) -> Result<IntOutp
 /// transaction will be signed & returned to the caller.
 pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Result<String> {
     info!("✔ Submitting INT block to core...");
-
     CoreType::check_is_initialized(db)
         .and_then(|_| db.start_transaction())
-        .and_then(|_| submit_int_block(db, block))
+        .and_then(|_| EthSubmissionMaterialJson::from_str(block))
+        .and_then(|json| submit_int_block(db, &json))
         .and_then(|output| {
             db.end_transaction()?;
             Ok(output.to_string())
@@ -86,14 +92,11 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Re
 /// Submit multiple INT blocks to the core. See `submit_evm_block_to_core` for more information.
 pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
     info!("✔ Batch submitting INT blocks to core...");
-    #[derive(serde::Deserialize, derive_more::Deref)]
-    struct TempStruct(Vec<String>);
-    let block_json_strings = serde_json::from_str::<TempStruct>(blocks)?;
-
     CoreType::check_is_initialized(db)
         .and_then(|_| db.start_transaction())
-        .and_then(|_| {
-            block_json_strings
+        .and_then(|_| EthSubmissionMaterialJsons::from_str(blocks))
+        .and_then(|jsons| {
+            jsons
                 .iter()
                 .map(|block| submit_int_block(db, block))
                 .collect::<Result<Vec<_>>>()
