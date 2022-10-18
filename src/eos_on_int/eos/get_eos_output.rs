@@ -68,7 +68,7 @@ impl TxInfo {
             host_token_address: convert_eth_address_to_string(&tx_info.int_token_address),
             int_signed_tx: tx
                 .eth_tx_hex()
-                .ok_or(NoneError("Error unwrapping INT tx for output!"))?,
+                .ok_or_else(|| NoneError("Error unwrapping INT tx for output!"))?,
         })
     }
 }

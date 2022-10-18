@@ -80,7 +80,7 @@ impl IntTxInfo {
         maybe_nonce: Option<u64>,
         int_latest_block_number: usize,
     ) -> Result<IntTxInfo> {
-        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
         Ok(IntTxInfo {
             broadcast: false,
             int_latest_block_number,

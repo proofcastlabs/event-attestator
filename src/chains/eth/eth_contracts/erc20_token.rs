@@ -81,21 +81,19 @@ impl Erc20TokenTransferEvents {
             .iter()
             .filter(|t| {
                 let event = t.to_erc20_token_transfer_event();
-                info!("Looking for transfer event: {}", event);
+                info!("Looking for this standard ERC20 transfer event: {}", event);
                 if mutable_self.contains(&event) {
                     // NOTE: If the event does exist in `mutable_self`, we MUST remove it before we
                     // check the next event's existence!  This way, multiple of the exact same
                     // peg-ins/outs in a single submission will correctly require the same number of
                     // corresponding token transfers events to exist.
                     mutable_self.remove(&event);
-                    info!("✔ Event found in submission material!");
+                    info!("✔ Standard ERC20 transfer event found in submission material!");
                     return true;
                 }
-
+                info!("✔ No standard ERC20 transfer event found. Checking if the event is for ETHPNT...");
                 let eth_pnt_event = event.update_emittance_address(&ETHPNT_TOKEN_ADDRESS_ON_ETH);
-
                 if event.token_address == *PNT_TOKEN_ADDRESS_ON_ETH && mutable_self.contains(&eth_pnt_event) {
-                    info!("✔ Checking if the event is for a ETHPNT");
                     // NOTE: So a vault change will mean that a ETHPNT peg in will fire a peg-in event to make a
                     // PNT peg in happen. This means the PNT peg-in event will NOT have a corresponding
                     // ERC20 transfer event, but there will exist instead an ETHPNT erc20 transfer
@@ -104,14 +102,26 @@ impl Erc20TokenTransferEvents {
                     // NOTE: See above for why we remove the event.
                     mutable_self.remove(&eth_pnt_event);
                     info!("✔ ETHPNT transfer event found in submission material!");
-                    true
-                } else {
-                    warn!(
-                        "✘ Filtering this out because it has no corresponding ERC20 transfer event: {}",
-                        t,
-                    );
-                    false
+                    return true;
                 }
+                info!("✔ No ETHPNT event found. Checking if the event is for a minting transfer event...");
+                let minting_transfer_event = event.update_the_from_address(&EthAddress::zero());
+                if mutable_self.contains(&minting_transfer_event) {
+                    // NOTE: So in the case of pegging in the wrapped version of a native token
+                    // (eg wETH) via the vault's `pegInEth(...)` function, the corresponding
+                    // transfer event will be a _minting_ event of that wETH token. This means that
+                    // the `from` address in the event will be the ETH zero address.
+
+                    // NOTE: See above for why we remove the event.
+                    mutable_self.remove(&minting_transfer_event);
+                    info!("✔ Minting transfer event found in submission material!");
+                    return true;
+                }
+                warn!(
+                    "✘ Filtering this out because it has no corresponding ERC20 transfer event: {}",
+                    t,
+                );
+                false
             })
             .cloned()
             .collect::<Vec<T>>();
@@ -189,6 +199,12 @@ impl Erc20TokenTransferEvent {
     pub fn update_emittance_address(&self, address: &EthAddress) -> Self {
         let mut mutable_self = self.clone();
         mutable_self.token_address = *address;
+        mutable_self
+    }
+
+    pub fn update_the_from_address(&self, address: &EthAddress) -> Self {
+        let mut mutable_self = self.clone();
+        mutable_self.from = *address;
         mutable_self
     }
 }
@@ -365,6 +381,25 @@ mod tests {
         events_to_filter.push(ethpnt_event);
         assert!(!events_to_filter.contains(&pnt_event));
         let things_that_will_not_be_filtered_out = vec![pnt_event];
+        let result = events_to_filter.filter_if_no_transfer_event(&things_that_will_not_be_filtered_out);
+        assert_eq!(result.len(), 1);
+        assert_eq!(result, things_that_will_not_be_filtered_out);
+    }
+
+    #[test]
+    fn event_should_not_be_filtered_out_if_it_has_a_corresponding_mint_transfer_event() {
+        let mut events_to_filter = Erc20TokenTransferEvents::get_n_random_events(10);
+
+        // NOTE: Make an event which won't have a corresponding transfer event...
+        let event = Erc20TokenTransferEvent::random();
+
+        // NOTE: But will have a corresponding minting transfer_event...
+        let minting_transfer_event = event.update_the_from_address(&EthAddress::zero());
+
+        events_to_filter.push(minting_transfer_event);
+        assert!(!events_to_filter.contains(&event));
+
+        let things_that_will_not_be_filtered_out = vec![event];
         let result = events_to_filter.filter_if_no_transfer_event(&things_that_will_not_be_filtered_out);
         assert_eq!(result.len(), 1);
         assert_eq!(result, things_that_will_not_be_filtered_out);

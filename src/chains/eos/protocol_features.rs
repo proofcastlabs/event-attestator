@@ -50,7 +50,7 @@ impl EnabledFeatures {
                     self.0
                         .iter()
                         .position(|x| x == &feature)
-                        .ok_or(NoneError("Could not unwrap EOS protocol feature while removing!"))?,
+                        .ok_or_else(|| NoneError("Could not unwrap EOS protocol feature while removing!"))?,
                 );
                 Ok(self)
             })

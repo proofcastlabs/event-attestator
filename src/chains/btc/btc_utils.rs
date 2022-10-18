@@ -341,9 +341,8 @@ mod tests {
 
     #[test]
     fn should_get_pay_to_pub_key_hash_script() {
-        let example_script = get_sample_testnet_block_and_txs().unwrap().block.txdata
-            [SAMPLE_TRANSACTION_INDEX as usize]
-            .output[SAMPLE_OUTPUT_INDEX_OF_UTXO as usize]
+        let example_script = get_sample_testnet_block_and_txs().unwrap().block.txdata[SAMPLE_TRANSACTION_INDEX].output
+            [SAMPLE_OUTPUT_INDEX_OF_UTXO as usize]
             .script_pubkey
             .clone();
         let expected_result = "76a91454102783c8640c5144d039cea53eb7dbb470081488ac";

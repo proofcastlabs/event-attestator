@@ -85,7 +85,7 @@ impl EvmTxInfo {
         int_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<EvmTxInfo> {
-        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
         Ok(EvmTxInfo {
             int_latest_block_number,
             broadcast: false,

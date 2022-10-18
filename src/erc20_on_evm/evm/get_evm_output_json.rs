@@ -49,7 +49,7 @@ impl EthTxInfo {
         maybe_nonce: Option<u64>,
         evm_latest_block_number: usize,
     ) -> Result<EthTxInfo> {
-        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
         Ok(EthTxInfo {
             evm_latest_block_number,
             broadcast: false,

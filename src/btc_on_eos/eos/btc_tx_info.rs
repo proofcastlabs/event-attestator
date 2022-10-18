@@ -239,7 +239,7 @@ mod tests {
             recipient: "mr6ioeUxNMoavbr2VjaSbPAovzzgDT7Su9".to_string(),
             from: EosAccountName::from_str("provabletest").unwrap(),
             originating_tx_id: convert_hex_to_checksum256(
-                &"34dff748d2bbb9504057d4be24c69b8ac38b2905f7e911dd0e9ed3bf369bae03".to_string(),
+                "34dff748d2bbb9504057d4be24c69b8ac38b2905f7e911dd0e9ed3bf369bae03",
             )
             .unwrap(),
         };
@@ -256,7 +256,7 @@ mod tests {
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             from: EosAccountName::from_str("provabletest").unwrap(),
             originating_tx_id: convert_hex_to_checksum256(
-                &"51f0dbbaf6989e9b980d0fa18bd70ddfc543851ff65140623d2cababce2ceb8c".to_string(),
+                "51f0dbbaf6989e9b980d0fa18bd70ddfc543851ff65140623d2cababce2ceb8c",
             )
             .unwrap(),
         };
@@ -273,7 +273,7 @@ mod tests {
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             from: EosAccountName::from_str("provtestable").unwrap(),
             originating_tx_id: convert_hex_to_checksum256(
-                &"8eaafcb796002a12e0f48ebc0f832bacca72a8b370e00967c65619a2c1814a04".to_string(),
+                "8eaafcb796002a12e0f48ebc0f832bacca72a8b370e00967c65619a2c1814a04",
             )
             .unwrap(),
         };
@@ -290,7 +290,7 @@ mod tests {
             recipient: "mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM".to_string(),
             from: EosAccountName::from_str("provtestable").unwrap(),
             originating_tx_id: convert_hex_to_checksum256(
-                &"aebe7cd1a4687485bc5db87bfb1bdfb44bd1b7f9c080e5cb178a411fd99d2fd5".to_string(),
+                "aebe7cd1a4687485bc5db87bfb1bdfb44bd1b7f9c080e5cb178a411fd99d2fd5",
             )
             .unwrap(),
         };

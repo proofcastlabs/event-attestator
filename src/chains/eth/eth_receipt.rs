@@ -175,7 +175,7 @@ impl EthReceipt {
     fn get_receipt_type(&self) -> Result<EthReceiptType> {
         self.receipt_type
             .clone()
-            .ok_or(NoneError("Could not get receipt type from receipt!"))
+            .ok_or_else(|| NoneError("Could not get receipt type from receipt!"))
     }
 
     pub fn to_json(&self) -> Result<JsonValue> {
