@@ -274,6 +274,17 @@ impl EthSubmissionMaterial {
     }
 }
 
+#[derive(Clone, Debug, Deserialize, Deref, Constructor)]
+pub struct EthSubmissionMaterialJsons(Vec<EthSubmissionMaterialJson>);
+
+impl FromStr for EthSubmissionMaterialJsons {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
+    }
+}
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct EthSubmissionMaterialJson {
     pub block: Option<EthBlockJson>,
@@ -290,11 +301,8 @@ pub struct EthSubmissionMaterialJson {
 impl FromStr for EthSubmissionMaterialJson {
     type Err = AppError;
 
-    fn from_str(json_str: &str) -> Result<Self> {
-        match serde_json::from_str(json_str) {
-            Ok(result) => Ok(result),
-            Err(e) => Err(e.into()),
-        }
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(serde_json::from_str(s)?)
     }
 }
 
@@ -304,6 +312,14 @@ pub fn parse_eth_submission_material_and_put_in_state<'a, D: DatabaseInterface>(
 ) -> Result<EthState<'a, D>> {
     info!("✔ Parsing ETH block & receipts...");
     EthSubmissionMaterial::from_str(block_json).and_then(|result| state.add_eth_submission_material(result))
+}
+
+pub fn parse_eth_submission_material_json_and_put_in_state<'a, D: DatabaseInterface>(
+    json: &EthSubmissionMaterialJson,
+    state: EthState<'a, D>,
+) -> Result<EthState<'a, D>> {
+    info!("✔ Parsing ETH block & receipts...");
+    EthSubmissionMaterial::from_json(json).and_then(|result| state.add_eth_submission_material(result))
 }
 
 #[cfg(test)]
