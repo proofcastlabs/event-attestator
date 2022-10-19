@@ -1,8 +1,10 @@
+use std::str::FromStr;
+
 use crate::{
     btc_on_int::int::{
         filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
         filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-        get_int_output::get_int_output_json,
+        get_int_output::{get_int_output_json, IntOutput, IntOutputs},
         parse_tx_infos::maybe_parse_btc_on_int_tx_infos_and_add_to_state,
         sign_txs::maybe_sign_btc_txs_and_add_to_state,
     },
@@ -11,12 +13,13 @@ use crate::{
         eth::{
             add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
             check_parent_exists::check_for_parent_of_eth_block_in_state,
-            eth_database_transactions::{
-                end_eth_db_transaction_and_return_state,
-                start_eth_db_transaction_and_return_state,
-            },
+            eth_database_transactions::end_eth_db_transaction_and_return_state,
             eth_state::EthState,
-            eth_submission_material::parse_eth_submission_material_and_put_in_state,
+            eth_submission_material::{
+                parse_eth_submission_material_json_and_put_in_state,
+                EthSubmissionMaterialJson,
+                EthSubmissionMaterialJsons,
+            },
             remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
             remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
             update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
@@ -32,18 +35,8 @@ use crate::{
     types::Result,
 };
 
-/// # Submit INT Block to Enclave
-///
-/// The main submission pipeline. Submitting an INT block to the enclave will - if that block is
-/// valid & subsequent to the enclave's current latest block - advanced the piece of the INT
-/// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain a redeem event emitted by the smart-contract the enclave is watching, a BTC
-/// transaction will be signed & returned to the caller.
-pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, submission_material: &str) -> Result<String> {
-    info!("✔ Submitting INT block to enclave...");
-    parse_eth_submission_material_and_put_in_state(submission_material, EthState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
+fn submit_int_block<D: DatabaseInterface>(db: &D, json: &EthSubmissionMaterialJson) -> Result<IntOutput> {
+    parse_eth_submission_material_json_and_put_in_state(json, EthState::init(db))
         .and_then(validate_eth_block_in_state)
         .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
@@ -61,6 +54,46 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, submission_materia
         .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_int_output_json)
+}
+
+/// # Submit INT Block to Core
+///
+/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
+/// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
+/// blockchain held by the enclave in it's encrypted database. Should the submitted block
+/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
+/// transaction will be signed & returned to the caller.
+pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Result<String> {
+    info!("✔ Submitting INT block to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthSubmissionMaterialJson::from_str(block))
+        .and_then(|json| submit_int_block(db, &json))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(output.to_string())
+        })
+}
+
+/// # Submit INT Blocks to Core
+///
+/// Submit multiple INT blocks to the core. See `submit_evm_block_to_core` for more information.
+pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
+    info!("✔ Batch submitting INT blocks to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthSubmissionMaterialJsons::from_str(blocks))
+        .and_then(|jsons| {
+            jsons
+                .iter()
+                .map(|block| submit_int_block(db, block))
+                .collect::<Result<Vec<_>>>()
+        })
+        .map(IntOutputs::new)
+        .and_then(|outputs| {
+            db.end_transaction()?;
+            Ok(outputs.to_output().to_string())
+        })
 }
 
 #[cfg(test)]
@@ -228,23 +261,7 @@ mod tests {
         assert_eq!(result.btc_signed_transactions.len(), 1);
         let tx_info = result.btc_signed_transactions[0].clone();
         let expected_tx_info = expected_result.btc_signed_transactions[0].clone();
-        assert_eq!(tx_info._id, expected_tx_info._id);
-        assert_eq!(tx_info.broadcast, expected_tx_info.broadcast);
-        assert_eq!(tx_info.btc_tx_hash, expected_tx_info.btc_tx_hash);
-        assert_eq!(tx_info.btc_tx_amount, expected_tx_info.btc_tx_amount);
-        assert_eq!(tx_info.btc_signed_tx, expected_tx_info.btc_signed_tx);
-        assert_eq!(tx_info.btc_tx_recipient, expected_tx_info.btc_tx_recipient);
-        assert_eq!(tx_info.btc_account_nonce, expected_tx_info.btc_account_nonce);
-        assert_eq!(tx_info.broadcast_tx_hash, expected_tx_info.broadcast_tx_hash);
-        assert_eq!(tx_info.host_token_address, expected_tx_info.host_token_address);
-        assert_eq!(tx_info.originating_address, expected_tx_info.originating_address);
-        assert_eq!(tx_info.originating_tx_hash, expected_tx_info.originating_tx_hash);
-        assert_eq!(tx_info.broadcast_timestamp, expected_tx_info.broadcast_timestamp);
-        assert_eq!(tx_info.destination_chain_id, expected_tx_info.destination_chain_id);
-        assert_eq!(
-            tx_info.btc_latest_block_number,
-            expected_tx_info.btc_latest_block_number
-        );
+        assert_eq!(tx_info, expected_tx_info);
 
         // NOTE: Check the tx is decodable...
         assert!(convert_hex_tx_to_btc_transaction(tx_info.btc_signed_tx).is_ok());

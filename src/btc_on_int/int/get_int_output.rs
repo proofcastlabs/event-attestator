@@ -1,9 +1,12 @@
 #[cfg(test)]
 use std::str::FromStr;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    fmt,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use derive_more::Constructor;
+use derive_more::{Constructor, Deref};
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 #[cfg(test)]
@@ -21,30 +24,49 @@ use crate::{
     types::Result,
 };
 
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
+pub struct IntOutputs(Vec<IntOutput>);
+
+impl IntOutputs {
+    pub fn to_output(&self) -> IntOutput {
+        let latest_block_number = match self.last() {
+            Some(output) => output.int_latest_block_number,
+            None => 0, // NOTE: This field isn't actually used anywhere, so it's safe to default to zero here.
+        };
+        let tx_infos = self
+            .iter()
+            .map(|output| output.btc_signed_transactions.clone())
+            .collect::<Vec<Vec<_>>>()
+            .concat();
+        IntOutput::new(latest_block_number, tx_infos)
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Constructor)]
 pub struct IntOutput {
     pub int_latest_block_number: usize,
     pub btc_signed_transactions: Vec<BtcTxInfo>,
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
-pub struct BtcTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub btc_tx_hash: String,
-    pub btc_tx_amount: u64,
-    pub btc_signed_tx: String,
-    pub btc_account_nonce: u64,
-    pub witnessed_timestamp: u64,
-    pub btc_tx_recipient: String,
-    pub host_token_address: String,
-    pub originating_address: String,
-    pub originating_tx_hash: String,
-    pub btc_latest_block_number: u64,
-    pub destination_chain_id: String,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<usize>,
-}
+make_struct_with_test_assertions_on_equality_check!(
+    struct BtcTxInfo {
+        _id: String,
+        broadcast: bool,
+        btc_tx_hash: String,
+        btc_tx_amount: u64,
+        btc_signed_tx: String,
+        btc_account_nonce: u64,
+        witnessed_timestamp: u64,
+        btc_tx_recipient: String,
+        host_token_address: String,
+        originating_address: String,
+        originating_tx_hash: String,
+        btc_latest_block_number: u64,
+        destination_chain_id: String,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<usize>,
+    }
+);
 
 #[cfg(test)]
 impl FromStr for BtcTxInfo {
@@ -75,6 +97,17 @@ impl FromStr for IntOutput {
             int_latest_block_number: interim.int_latest_block_number,
             btc_signed_transactions: tx_infos,
         })
+    }
+}
+
+impl fmt::Display for IntOutput {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            serde_json::to_string(self)
+                .unwrap_or_else(|_| r#"{"error': "Could not convert `IntOutput` to string!"}"#.into())
+        )
     }
 }
 
@@ -143,9 +176,9 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting INT output json...");
-    let output = serde_json::to_string(&IntOutput {
+    let output = IntOutput {
         int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
@@ -162,7 +195,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             )?,
             None => vec![],
         },
-    })?;
+    };
     info!("✔ INT Output: {}", output);
     Ok(output)
 }
