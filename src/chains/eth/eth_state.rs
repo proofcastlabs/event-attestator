@@ -1,4 +1,4 @@
-use ethereum_types::H256 as EthHash;
+use ethereum_types::{H256 as EthHash, U256};
 
 use crate::{
     btc_on_eth::BtcOnEthBtcTxInfos,
@@ -370,6 +370,10 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {
         self.get_eth_submission_material()?.get_parent_hash()
+    }
+
+    pub fn get_block_num(&self) -> Result<U256> {
+        self.get_eth_submission_material()?.get_block_number()
     }
 
     pub fn get_num_eos_txs(&self) -> usize {
