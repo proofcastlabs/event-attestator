@@ -1,7 +1,4 @@
-use std::{
-    fmt,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
@@ -20,42 +17,12 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
-pub struct IntOutputs(Vec<IntOutput>);
+make_plural_output_struct!(IntOutput, EvmTxInfo, evm_signed_transactions, int_latest_block_number);
 
-impl IntOutputs {
-    pub fn to_output(&self) -> IntOutput {
-        let latest_block_number = match self.last() {
-            Some(output) => output.int_latest_block_number,
-            None => 0, // NOTE: This field isn't actually used anywhere, so it's safe to default to zero here.
-        };
-        let tx_infos = self
-            .iter()
-            .map(|output| output.evm_signed_transactions.clone())
-            .collect::<Vec<Vec<_>>>()
-            .concat();
-        IntOutput {
-            evm_signed_transactions: tx_infos,
-            int_latest_block_number: latest_block_number,
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct IntOutput {
     pub int_latest_block_number: usize,
     pub evm_signed_transactions: Vec<EvmTxInfo>,
-}
-
-impl fmt::Display for IntOutput {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            serde_json::to_string(self)
-                .unwrap_or_else(|_| r#"{"error': "Could not convert `IntOutput` to string!"}"#.into())
-        )
-    }
 }
 
 make_struct_with_test_assertions_on_equality_check!(
@@ -179,41 +146,4 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<I
     };
     info!("✔ ETH output: {}", output);
     Ok(output)
-}
-
-#[cfg(test)]
-use std::str::FromStr;
-
-#[cfg(test)]
-use crate::errors::AppError;
-
-#[cfg(test)]
-impl FromStr for EvmTxInfo {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
-#[cfg(test)]
-impl IntOutput {
-    pub fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            int_latest_block_number: usize,
-            evm_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .evm_signed_transactions
-            .iter()
-            .map(|json_value| EvmTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<EvmTxInfo>>>()?;
-        Ok(Self {
-            evm_signed_transactions: tx_infos,
-            int_latest_block_number: temp_struct.int_latest_block_number,
-        })
-    }
 }

@@ -1,15 +1,10 @@
 #[cfg(test)]
 use std::str::FromStr;
-use std::{
-    fmt,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
 
-#[cfg(test)]
-use crate::errors::AppError;
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -24,44 +19,12 @@ use crate::{
     types::{NoneError, Result},
 };
 
-// TODO need a marker trait with super traits to apply to outputters so that we can enforce things!
+make_plural_output_struct!(EvmOutput, IntTxInfo, int_signed_transactions, evm_latest_block_number);
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
-pub struct EvmOutputs(Vec<EvmOutput>);
-
-impl EvmOutputs {
-    pub fn to_output(&self) -> EvmOutput {
-        let latest_block_number = match self.last() {
-            Some(output) => output.evm_latest_block_number,
-            None => 0, // NOTE: This field isn't actually used anywhere, so it's safe to default to zero here.
-        };
-        let tx_infos = self
-            .iter()
-            .map(|output| output.int_signed_transactions.clone())
-            .collect::<Vec<Vec<IntTxInfo>>>()
-            .concat();
-        EvmOutput {
-            int_signed_transactions: tx_infos,
-            evm_latest_block_number: latest_block_number,
-        }
-    }
-}
-
-#[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Default, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EvmOutput {
     pub evm_latest_block_number: usize,
     pub int_signed_transactions: Vec<IntTxInfo>,
-}
-
-impl fmt::Display for EvmOutput {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            serde_json::to_string(self)
-                .unwrap_or_else(|_| r#"{"error': "Could not convert `EvmOutput` to string!"}"#.into())
-        )
-    }
 }
 
 make_struct_with_test_assertions_on_equality_check!(
@@ -171,36 +134,4 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<E
     };
     info!("✔ EVM output: {}", output);
     Ok(output)
-}
-
-#[cfg(test)]
-impl IntTxInfo {
-    pub fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
-#[cfg(test)]
-impl FromStr for EvmOutput {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            evm_latest_block_number: usize,
-            int_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .int_signed_transactions
-            .iter()
-            .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<IntTxInfo>>>()?;
-
-        Ok(Self {
-            int_signed_transactions: tx_infos,
-            evm_latest_block_number: temp_struct.evm_latest_block_number,
-        })
-    }
 }

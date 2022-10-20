@@ -60,7 +60,7 @@ macro_rules! make_plural_output_struct {
                         .map(|json| $tx_info_struct_name::from_str(&json.to_string()))
                         .collect::<Result<Vec<_>>>()?;
                     Ok(Self {
-                        $latest_block_number_field_name: interim.int_latest_block_number,
+                        $latest_block_number_field_name: interim.$latest_block_number_field_name,
                         $txs_field_name: tx_infos,
                     })
                 }
