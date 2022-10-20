@@ -62,6 +62,7 @@ impl EthTxInfo {
                 format!("perc20-on-int-eth-{}", nonce)
             },
             eth_tx_hash: format!("0x{}", tx.get_tx_hash()),
+            eth_tx_recipient: tx_info.destination_address.clone(),
             eth_tx_amount: tx_info.native_token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             eth_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
@@ -69,7 +70,6 @@ impl EthTxInfo {
             host_token_address: format!("0x{}", hex::encode(tx_info.evm_token_address)),
             native_token_address: format!("0x{}", hex::encode(tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
-            eth_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&eth_chain_id.to_metadata_chain_id().to_bytes()?)),
         })

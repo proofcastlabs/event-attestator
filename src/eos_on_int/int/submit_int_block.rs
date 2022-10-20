@@ -196,22 +196,8 @@ mod tests {
         assert_eq!(output.eos_signed_transactions.len(), expected_num_txs);
         let result = output.eos_signed_transactions[0].clone();
         let expected_result = expected_output.eos_signed_transactions[0].clone();
-        assert_eq!(result._id, expected_result._id);
-        assert_eq!(result.broadcast, expected_result.broadcast);
-        assert_eq!(result.int_tx_amount, expected_result.int_tx_amount);
-        assert_eq!(result.int_tx_amount, expected_result.int_tx_amount);
-        assert_eq!(result.eos_account_nonce, expected_result.eos_account_nonce);
-        assert_eq!(result.eos_tx_recipient, expected_result.eos_tx_recipient);
-        assert_eq!(result.host_token_address, expected_result.host_token_address);
-        assert_eq!(result.originating_tx_hash, expected_result.originating_tx_hash);
-        assert_eq!(result.originating_address, expected_result.originating_address);
-        assert_eq!(result.native_token_address, expected_result.native_token_address);
-        assert_eq!(result.broadcast_tx_hash, expected_result.broadcast_tx_hash);
-        assert_eq!(result.broadcast_timestamp, expected_result.broadcast_timestamp);
-        assert_eq!(result.destination_chain_id, expected_result.destination_chain_id);
+        assert_eq!(result, expected_result);
         // NOTE: The first four bytes/8 hex chars are an encoded timestamp,
         assert_eq!(result.eos_serialized_tx[8..], expected_result.eos_serialized_tx[8..]);
-        assert_eq!(result.eos_latest_block_number, expected_result.eos_latest_block_number);
-        // NOTE: We don't assert the timestamp or the signature since they're deterministic.
     }
 }

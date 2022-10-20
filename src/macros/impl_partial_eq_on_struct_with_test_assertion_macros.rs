@@ -12,9 +12,18 @@ macro_rules! make_struct_with_test_assertions_on_equality_check {
             fn eq(&self, other: &Self) -> bool {
                 if cfg!(test) {
                     $(
-                        // NOTE: We skip the assertion if the field is a timestamp since it's (probably)
-                        // not deterministic...
-                        if !stringify!($field_name).contains("timestamp") {
+                        if stringify!($field_name).contains("timestamp") {
+                            // NOTE: We skip the assertion if the field is a timestamp since it's (probably)
+                            // not deterministic...
+                            assert!(true);
+                        } else if stringify!($field_name).contains("eos_serialized_tx") {
+                            // NOTE: We skip this and must assert it manually since it has a
+                            // timestamp encoded in it....
+                            assert!(true);
+                        } else if stringify!($field_name).contains("eos_tx_signature") {
+                            // NOTE: We skip this because it's not deterministic...
+                            assert!(true);
+                        } else {
                             assert_eq!(
                                 self.$field_name,
                                 other.$field_name,

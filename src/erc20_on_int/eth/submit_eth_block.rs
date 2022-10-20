@@ -212,72 +212,7 @@ mod tests {
         });
         let expected_result = EthOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EthOutput::from_str(&output).unwrap();
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.eth_latest_block_number, expected_result.eth_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id
-        );
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -362,73 +297,7 @@ mod tests {
         });
         let expected_result = EthOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EthOutput::from_str(&output).unwrap();
-
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.eth_latest_block_number, expected_result.eth_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id
-        );
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -509,72 +378,6 @@ mod tests {
         });
         let expected_result = EthOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EthOutput::from_str(&output).unwrap();
-
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.eth_latest_block_number, expected_result.eth_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id
-        );
+        assert_eq!(result, expected_result);
     }
 }
