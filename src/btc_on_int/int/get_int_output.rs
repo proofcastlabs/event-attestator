@@ -1,19 +1,10 @@
-#[cfg(test)]
-use std::str::FromStr;
-use std::{
-    fmt,
-    time::{SystemTime, UNIX_EPOCH},
-};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use derive_more::{Constructor, Deref};
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
-#[cfg(test)]
-use serde_json::Value as JsonValue;
 
-#[cfg(test)]
-use crate::errors::AppError;
 use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::{
@@ -24,23 +15,7 @@ use crate::{
     types::Result,
 };
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
-pub struct IntOutputs(Vec<IntOutput>);
-
-impl IntOutputs {
-    pub fn to_output(&self) -> IntOutput {
-        let latest_block_number = match self.last() {
-            Some(output) => output.int_latest_block_number,
-            None => 0, // NOTE: This field isn't actually used anywhere, so it's safe to default to zero here.
-        };
-        let tx_infos = self
-            .iter()
-            .map(|output| output.btc_signed_transactions.clone())
-            .collect::<Vec<Vec<_>>>()
-            .concat();
-        IntOutput::new(latest_block_number, tx_infos)
-    }
-}
+make_plural_output_struct!(IntOutput, BtcTxInfo, btc_signed_transactions, int_latest_block_number);
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Constructor)]
 pub struct IntOutput {
@@ -67,49 +42,6 @@ make_struct_with_test_assertions_on_equality_check!(
         broadcast_timestamp: Option<usize>,
     }
 );
-
-#[cfg(test)]
-impl FromStr for BtcTxInfo {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
-#[cfg(test)]
-impl FromStr for IntOutput {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        #[derive(Serialize, Deserialize)]
-        struct Interim {
-            int_latest_block_number: usize,
-            btc_signed_transactions: Vec<JsonValue>,
-        }
-        let interim = serde_json::from_str::<Interim>(s)?;
-        let tx_infos = interim
-            .btc_signed_transactions
-            .iter()
-            .map(|json| BtcTxInfo::from_str(&json.to_string()))
-            .collect::<Result<Vec<BtcTxInfo>>>()?;
-        Ok(Self {
-            int_latest_block_number: interim.int_latest_block_number,
-            btc_signed_transactions: tx_infos,
-        })
-    }
-}
-
-impl fmt::Display for IntOutput {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            serde_json::to_string(self)
-                .unwrap_or_else(|_| r#"{"error': "Could not convert `IntOutput` to string!"}"#.into())
-        )
-    }
-}
 
 impl BtcTxInfo {
     pub fn new(
