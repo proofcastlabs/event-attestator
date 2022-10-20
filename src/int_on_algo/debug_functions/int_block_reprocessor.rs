@@ -75,4 +75,5 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str,
         .and_then(maybe_increment_algo_account_nonce_and_return_eth_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_int_output_json)
+        .map(|output| output.to_string())
 }

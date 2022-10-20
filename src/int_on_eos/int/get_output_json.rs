@@ -63,9 +63,9 @@ impl EosTxInfo {
     }
 }
 
-pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting `IntOnEos` EOS output json...");
-    Ok(serde_json::to_string(&IntOutput {
+    Ok(IntOutput {
         int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
@@ -95,5 +95,5 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
                     .collect::<Result<Vec<EosTxInfo>>>()?
             },
         },
-    })?)
+    })
 }

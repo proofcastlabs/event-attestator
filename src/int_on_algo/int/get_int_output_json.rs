@@ -87,7 +87,7 @@ pub fn get_int_signed_tx_info_from_int_txs(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting INT output json...");
     let txs = state.algo_signed_group_txs.clone();
     let int_latest_block_num = state.eth_db_utils.get_latest_eth_block_number()?;
@@ -104,5 +104,5 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     } else {
         IntOutput::new(int_latest_block_num, vec![])
     };
-    Ok(serde_json::to_string(&output)?)
+    Ok(output)
 }

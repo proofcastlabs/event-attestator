@@ -13,7 +13,6 @@ use crate::{
         eth::{
             add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
             check_parent_exists::check_for_parent_of_eth_block_in_state,
-            eth_database_transactions::end_eth_db_transaction_and_return_state,
             eth_state::EthState,
             eth_submission_material::{
                 parse_eth_submission_material_json_and_put_in_state,
@@ -52,7 +51,6 @@ fn submit_int_block<D: DatabaseInterface>(db: &D, json: &EthSubmissionMaterialJs
         .and_then(maybe_increment_btc_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
-        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_int_output_json)
 }
 
@@ -77,7 +75,7 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Re
 
 /// # Submit INT Blocks to Core
 ///
-/// Submit multiple INT blocks to the core. See `submit_evm_block_to_core` for more information.
+/// Submit multiple INT blocks to the core.
 pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
     info!("✔ Batch submitting INT blocks to core...");
     CoreType::check_is_initialized(db)

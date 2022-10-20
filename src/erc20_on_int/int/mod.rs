@@ -31,4 +31,7 @@ pub(in crate::erc20_on_int) use self::{
     filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
     get_int_output_json::{get_eth_signed_tx_info_from_evm_txs, IntOutput},
 };
-pub use self::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core};
+pub use self::{
+    initialize_int_core::maybe_initialize_int_core,
+    submit_int_block::{submit_int_block_to_core, submit_int_blocks_to_core},
+};

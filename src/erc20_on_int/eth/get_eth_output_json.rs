@@ -120,9 +120,9 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
         .collect::<Result<Vec<IntTxInfo>>>()
 }
 
-pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<EthOutput> {
     info!("✔ Getting ETH output json...");
-    let output = serde_json::to_string(&EthOutput {
+    let output = EthOutput {
         eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
         int_signed_transactions: if state.erc20_on_int_int_signed_txs.is_empty() {
             vec![]
@@ -137,7 +137,7 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 &EthEvmTokenDictionary::get_from_db(state.db)?,
             )?
         },
-    })?;
+    };
     info!("✔ ETH output: {}", output);
     Ok(output)
 }
