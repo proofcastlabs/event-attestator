@@ -15,7 +15,7 @@ use crate::{
     types::Result,
 };
 
-make_plural_output_struct!(IntOutput, BtcTxInfo, btc_signed_transactions, int_latest_block_number);
+make_output_structs!(Int, Btc);
 
 make_struct_with_test_assertions_on_equality_check!(
     struct BtcTxInfo {

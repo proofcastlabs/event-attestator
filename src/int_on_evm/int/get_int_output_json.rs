@@ -17,7 +17,7 @@ use crate::{
     types::{NoneError, Result},
 };
 
-make_plural_output_struct!(IntOutput, EvmTxInfo, evm_signed_transactions, int_latest_block_number);
+make_output_structs!(Int, Evm);
 
 make_struct_with_test_assertions_on_equality_check!(
     struct EvmTxInfo {

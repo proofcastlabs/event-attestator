@@ -1,5 +1,3 @@
-#[cfg(test)]
-use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use derive_more::{Constructor, Deref};
@@ -19,7 +17,7 @@ use crate::{
     types::{NoneError, Result},
 };
 
-make_plural_output_struct!(EvmOutput, IntTxInfo, int_signed_transactions, evm_latest_block_number);
+make_output_structs!(Evm, Int);
 
 make_struct_with_test_assertions_on_equality_check!(
     struct IntTxInfo {
