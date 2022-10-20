@@ -58,8 +58,8 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
                             &submission_material,
                             &token_dictionary,
                             &int_db_utils.get_eth_chain_id_from_db()?,
-                            &int_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                             &int_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                            &int_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|tx_infos| state.add_int_on_eos_eos_tx_infos(tx_infos))
