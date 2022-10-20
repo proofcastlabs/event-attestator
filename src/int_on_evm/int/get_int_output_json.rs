@@ -19,12 +19,6 @@ use crate::{
 
 make_plural_output_struct!(IntOutput, EvmTxInfo, evm_signed_transactions, int_latest_block_number);
 
-#[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
-pub struct IntOutput {
-    pub int_latest_block_number: usize,
-    pub evm_signed_transactions: Vec<EvmTxInfo>,
-}
-
 make_struct_with_test_assertions_on_equality_check!(
     struct EvmTxInfo {
         _id: String,

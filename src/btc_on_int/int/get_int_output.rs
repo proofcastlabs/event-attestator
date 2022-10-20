@@ -17,12 +17,6 @@ use crate::{
 
 make_plural_output_struct!(IntOutput, BtcTxInfo, btc_signed_transactions, int_latest_block_number);
 
-#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Constructor)]
-pub struct IntOutput {
-    pub int_latest_block_number: usize,
-    pub btc_signed_transactions: Vec<BtcTxInfo>,
-}
-
 make_struct_with_test_assertions_on_equality_check!(
     struct BtcTxInfo {
         _id: String,

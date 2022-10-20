@@ -8,9 +8,15 @@ macro_rules! make_plural_output_struct {
         $latest_block_number_field_name:ident
     ) => {
         paste! {
+
+            #[derive(Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize, derive_more::Constructor)]
+            pub struct $tx_output_struct_name {
+                pub $latest_block_number_field_name: usize,
+                pub $txs_field_name: Vec<$tx_info_struct_name>,
+            }
+
             #[derive(Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
             pub struct [<$tx_output_struct_name s>](Vec<$tx_output_struct_name>);
-
             impl [< $tx_output_struct_name s>] {
                 pub fn to_output(&self) -> $tx_output_struct_name {
                     let latest_block_number = match self.last() {
