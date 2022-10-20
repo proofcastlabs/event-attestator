@@ -1,9 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use derive_more::{Constructor, Deref};
 use ethereum_types::Address as EthAddress;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},

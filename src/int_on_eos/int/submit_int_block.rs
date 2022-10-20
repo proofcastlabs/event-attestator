@@ -89,7 +89,7 @@ mod tests {
             },
         },
         int_on_eos::{
-            int::get_output_json::IntOnEosEosOutput,
+            int::get_output_json::IntOutput,
             test_utils::{
                 get_contiguous_int_block_json_strs,
                 get_sample_dictionary,
@@ -167,10 +167,9 @@ mod tests {
 
         // NOTE: Submit the block with the peg in in it...
         let output =
-            IntOnEosEosOutput::from_str(&submit_int_block_to_core(&db, &contiguous_int_block_json_strs[1]).unwrap())
-                .unwrap();
-        let expected_output = IntOnEosEosOutput::from_str(&json!({
-            "eth_latest_block_number":12236006,
+            IntOutput::from_str(&submit_int_block_to_core(&db, &contiguous_int_block_json_strs[1]).unwrap()).unwrap();
+        let expected_output = IntOutput::from_str(&json!({
+            "int_latest_block_number":12236006,
             "eos_signed_transactions":[{
                 "_id":"pint-on-eos-eos-0",
                 "broadcast":false,

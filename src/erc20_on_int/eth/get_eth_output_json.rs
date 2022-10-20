@@ -1,7 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -20,73 +18,41 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EthOutput {
-    pub eth_latest_block_number: usize,
-    pub int_signed_transactions: Vec<EvmTxInfo>,
-}
+make_output_structs!(Eth, Int);
 
-#[cfg(test)]
-impl EthOutput {
-    pub fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            eth_latest_block_number: usize,
-            int_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .int_signed_transactions
-            .iter()
-            .map(|json_value| EvmTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<EvmTxInfo>>>()?;
-        Ok(Self {
-            int_signed_transactions: tx_infos,
-            eth_latest_block_number: temp_struct.eth_latest_block_number,
-        })
+make_struct_with_test_assertions_on_equality_check!(
+    struct IntTxInfo {
+        _id: String,
+        broadcast: bool,
+        int_tx_hash: String,
+        int_tx_amount: String,
+        int_tx_recipient: String,
+        witnessed_timestamp: u64,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        native_token_address: String,
+        destination_chain_id: String,
+        int_signed_tx: Option<String>,
+        any_sender_nonce: Option<u64>,
+        int_account_nonce: Option<u64>,
+        int_latest_block_number: usize,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+        any_sender_tx: Option<RelayTransaction>,
     }
-}
+);
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EvmTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub int_tx_hash: String,
-    pub int_tx_amount: String,
-    pub int_tx_recipient: String,
-    pub witnessed_timestamp: u64,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub native_token_address: String,
-    pub destination_chain_id: String,
-    pub int_signed_tx: Option<String>,
-    pub any_sender_nonce: Option<u64>,
-    pub int_account_nonce: Option<u64>,
-    pub int_latest_block_number: usize,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-    pub any_sender_tx: Option<RelayTransaction>,
-}
-
-#[cfg(test)]
-impl EvmTxInfo {
-    pub fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
-impl EvmTxInfo {
+impl IntTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
         tx: &T,
         tx_info: &EthOnIntEvmTxInfo,
         maybe_nonce: Option<u64>,
         int_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
-    ) -> Result<EvmTxInfo> {
+    ) -> Result<IntTxInfo> {
         let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
-        Ok(EvmTxInfo {
+        Ok(IntTxInfo {
             int_latest_block_number,
             broadcast: false,
             broadcast_tx_hash: None,
@@ -123,7 +89,7 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
     any_sender_nonce: u64,
     eth_latest_block_number: usize,
     dictionary: &EthEvmTokenDictionary,
-) -> Result<Vec<EvmTxInfo>> {
+) -> Result<Vec<IntTxInfo>> {
     let number_of_txs = txs.len() as u64;
     let start_nonce = if use_any_sender_tx_type {
         info!("✔ Getting AnySender tx info from ETH txs...");
@@ -143,7 +109,7 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
     txs.iter()
         .enumerate()
         .map(|(i, tx)| {
-            EvmTxInfo::new(
+            IntTxInfo::new(
                 tx,
                 &evm_tx_info[i],
                 Some(start_nonce + i as u64),
@@ -151,7 +117,7 @@ pub fn get_evm_signed_tx_info_from_evm_txs(
                 dictionary,
             )
         })
-        .collect::<Result<Vec<EvmTxInfo>>>()
+        .collect::<Result<Vec<IntTxInfo>>>()
 }
 
 pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {

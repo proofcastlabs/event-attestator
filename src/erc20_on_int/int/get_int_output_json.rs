@@ -1,7 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -17,55 +15,30 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct IntOutput {
-    pub int_latest_block_number: usize,
-    pub eth_signed_transactions: Vec<EthTxInfo>,
-}
+make_output_structs!(Int, Eth);
 
-#[cfg(test)]
-impl IntOutput {
-    pub fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            int_latest_block_number: usize,
-            eth_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .eth_signed_transactions
-            .iter()
-            .map(|json_value| EthTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<EthTxInfo>>>()?;
-        Ok(Self {
-            eth_signed_transactions: tx_infos,
-            int_latest_block_number: temp_struct.int_latest_block_number,
-        })
+make_struct_with_test_assertions_on_equality_check!(
+    struct EthTxInfo {
+        _id: String,
+        broadcast: bool,
+        eth_tx_hash: String,
+        eth_tx_amount: String,
+        eth_tx_recipient: String,
+        witnessed_timestamp: u64,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        native_token_address: String,
+        destination_chain_id: String,
+        eth_signed_tx: Option<String>,
+        any_sender_nonce: Option<u64>,
+        eth_account_nonce: Option<u64>,
+        eth_latest_block_number: usize,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+        any_sender_tx: Option<RelayTransaction>,
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EthTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub eth_tx_hash: String,
-    pub eth_tx_amount: String,
-    pub eth_tx_recipient: String,
-    pub witnessed_timestamp: u64,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub native_token_address: String,
-    pub destination_chain_id: String,
-    pub eth_signed_tx: Option<String>,
-    pub any_sender_nonce: Option<u64>,
-    pub eth_account_nonce: Option<u64>,
-    pub eth_latest_block_number: usize,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-    pub any_sender_tx: Option<RelayTransaction>,
-}
+);
 
 impl EthTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
@@ -100,13 +73,6 @@ impl EthTxInfo {
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
             destination_chain_id: format!("0x{}", hex::encode(&eth_chain_id.to_metadata_chain_id().to_bytes()?)),
         })
-    }
-}
-
-#[cfg(test)]
-impl EthTxInfo {
-    pub fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
     }
 }
 
