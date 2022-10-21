@@ -40,6 +40,7 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
     pub producer_signature: String,
+    global_sequences: GlobalSequences,
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
     pub eth_signed_txs: EthTransactions,
@@ -77,6 +78,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             eos_db_utils: EosDbUtils::new(db),
+            global_sequences: GlobalSequences::default(),
             eth_signed_txs: EthTransactions::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
@@ -113,26 +115,31 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
     }
 
     pub fn add_btc_on_eos_btc_tx_infos(mut self, infos: BtcOnEosBtcTxInfos) -> Result<EosState<'a, D>> {
+        self.global_sequences = infos.get_global_sequences();
         self.btc_on_eos_btc_tx_infos = infos;
         Ok(self)
     }
 
     pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
+        self.global_sequences = infos.get_global_sequences();
         self.eos_on_eth_eos_tx_infos = infos;
         Ok(self)
     }
 
     pub fn add_eos_on_int_int_tx_info(mut self, infos: EosOnIntIntTxInfos) -> Result<EosState<'a, D>> {
+        self.global_sequences = infos.get_global_sequences();
         self.eos_on_int_int_tx_infos = infos;
         Ok(self)
     }
 
     pub fn add_int_on_eos_int_tx_infos(mut self, infos: IntOnEosIntTxInfos) -> Result<EosState<'a, D>> {
+        self.global_sequences = infos.get_global_sequences();
         self.int_on_eos_int_tx_infos = infos;
         Ok(self)
     }
 
     pub fn add_erc20_on_eos_eth_tx_infos(mut self, infos: Erc20OnEosEthTxInfos) -> Result<EosState<'a, D>> {
+        self.global_sequences = infos.get_global_sequences();
         self.erc20_on_eos_eth_tx_infos = infos;
         Ok(self)
     }
@@ -204,15 +211,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
     }
 
     pub fn get_global_sequences(&self) -> GlobalSequences {
-        GlobalSequences::new(
-            vec![
-                self.eos_on_eth_eos_tx_infos.get_global_sequences().to_vec(),
-                self.btc_on_eos_btc_tx_infos.get_global_sequences().to_vec(),
-                self.erc20_on_eos_eth_tx_infos.get_global_sequences().to_vec(),
-                self.int_on_eos_int_tx_infos.get_global_sequences().to_vec(),
-                self.eos_on_int_int_tx_infos.get_global_sequences().to_vec(),
-            ]
-            .concat(),
-        )
+        self.global_sequences.clone()
     }
 }
