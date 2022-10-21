@@ -34,6 +34,44 @@ make_state_setters_and_getters!(
     "eos_eth_token_dictionary" => EosEthTokenDictionary
 );
 
+macro_rules! impl_tx_info_fxns {
+    ($($tx_info:ident),* $(,)?) => {
+        paste! {
+            impl<'a, D: DatabaseInterface> EosState<'a, D> {
+                fn get_already_in_state_err_msg(thing: &str) -> String {
+                    format!("'{}' is already in EOS state - not overwriting it!", thing)
+                }
+
+                $(
+                    pub fn [< add_ $tx_info:snake >](mut self, infos: $tx_info) -> Result<Self> {
+                        if self.[< $tx_info:snake >].is_empty() {
+                            self.global_sequences = infos.get_global_sequences();
+                            self.[< $tx_info:snake >] = infos;
+                            Ok(self)
+                        } else {
+                            Err(Self::get_already_in_state_err_msg(stringify!($tx_info)).into())
+                        }
+                    }
+
+                    pub fn [< replace_ $tx_info:snake >](mut self, infos: $tx_info) -> Result<Self> {
+                        info!("✔ Replacing `{}` in state...", stringify!($tx_info));
+                        self.[< $tx_info:snake >] = infos;
+                        Ok(self)
+                    }
+                )*
+            }
+        }
+    }
+}
+
+impl_tx_info_fxns!(
+    BtcOnEosBtcTxInfos,
+    EosOnEthEosTxInfos,
+    EosOnIntIntTxInfos,
+    IntOnEosIntTxInfos,
+    Erc20OnEosEthTxInfos,
+);
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct EosState<'a, D: DatabaseInterface> {
     pub db: &'a D,
@@ -114,36 +152,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_btc_on_eos_btc_tx_infos(mut self, infos: BtcOnEosBtcTxInfos) -> Result<EosState<'a, D>> {
-        self.global_sequences = infos.get_global_sequences();
-        self.btc_on_eos_btc_tx_infos = infos;
-        Ok(self)
-    }
-
-    pub fn add_eos_on_eth_eos_tx_info(mut self, infos: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
-        self.global_sequences = infos.get_global_sequences();
-        self.eos_on_eth_eos_tx_infos = infos;
-        Ok(self)
-    }
-
-    pub fn add_eos_on_int_int_tx_info(mut self, infos: EosOnIntIntTxInfos) -> Result<EosState<'a, D>> {
-        self.global_sequences = infos.get_global_sequences();
-        self.eos_on_int_int_tx_infos = infos;
-        Ok(self)
-    }
-
-    pub fn add_int_on_eos_int_tx_infos(mut self, infos: IntOnEosIntTxInfos) -> Result<EosState<'a, D>> {
-        self.global_sequences = infos.get_global_sequences();
-        self.int_on_eos_int_tx_infos = infos;
-        Ok(self)
-    }
-
-    pub fn add_erc20_on_eos_eth_tx_infos(mut self, infos: Erc20OnEosEthTxInfos) -> Result<EosState<'a, D>> {
-        self.global_sequences = infos.get_global_sequences();
-        self.erc20_on_eos_eth_tx_infos = infos;
-        Ok(self)
-    }
-
     pub fn add_processed_tx_ids(mut self, tx_ids: ProcessedGlobalSequences) -> Result<Self> {
         self.processed_tx_ids = tx_ids;
         Ok(self)
@@ -172,36 +180,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         info!("✔ Replacing signed BTC txs infos in state...");
         self.btc_on_eos_signed_txs = replacements;
         self
-    }
-
-    pub fn replace_int_on_eos_int_tx_infos(mut self, infos: IntOnEosIntTxInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing `IntOnEosIntTxInfos` in state...");
-        self.int_on_eos_int_tx_infos = infos;
-        Ok(self)
-    }
-
-    pub fn replace_btc_on_eos_btc_tx_infos(mut self, replacements: BtcOnEosBtcTxInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing BTC tx infos in state...");
-        self.btc_on_eos_btc_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_erc20_on_eos_eth_tx_infos(mut self, replacements: Erc20OnEosEthTxInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing BTC tx infos in state...");
-        self.erc20_on_eos_eth_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_eos_on_eth_eos_tx_infos(mut self, replacements: EosOnEthEosTxInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing `EosOnEthEosTxInfos` in state...");
-        self.eos_on_eth_eos_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_eos_on_int_int_tx_infos(mut self, replacements: EosOnIntIntTxInfos) -> Result<EosState<'a, D>> {
-        info!("✔ Replacing `EosOnIntIntTxInfos` in state...");
-        self.eos_on_int_int_tx_infos = replacements;
-        Ok(self)
     }
 
     pub fn replace_action_proofs(mut self, replacements: EosActionProofs) -> Result<EosState<'a, D>> {
