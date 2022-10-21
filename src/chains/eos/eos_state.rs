@@ -209,6 +209,8 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
                 self.eos_on_eth_eos_tx_infos.get_global_sequences().to_vec(),
                 self.btc_on_eos_btc_tx_infos.get_global_sequences().to_vec(),
                 self.erc20_on_eos_eth_tx_infos.get_global_sequences().to_vec(),
+                self.int_on_eos_int_tx_infos.get_global_sequences().to_vec(),
+                self.eos_on_int_int_tx_infos.get_global_sequences().to_vec(),
             ]
             .concat(),
         )
