@@ -4,7 +4,7 @@ use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
     address::Address,
-    chains::eos::eos_global_sequences::GlobalSequence,
+    chains::eos::eos_global_sequences::{GlobalSequence, GlobalSequences},
     metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::Bytes,
@@ -39,3 +39,13 @@ impl_tx_info_trait!(
     Address::Eth,
     SAFE_ETH_ADDRESS_STR
 );
+
+impl IntOnEosIntTxInfos {
+    pub fn get_global_sequences(&self) -> GlobalSequences {
+        GlobalSequences::new(
+            self.iter()
+                .map(|info| info.global_sequence)
+                .collect::<Vec<GlobalSequence>>(),
+        )
+    }
+}

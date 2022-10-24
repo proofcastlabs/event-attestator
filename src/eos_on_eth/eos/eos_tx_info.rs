@@ -386,7 +386,7 @@ pub fn maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state<D: DatabaseInterface
     )
     .and_then(|tx_infos| {
         info!("✔ Parsed {} sets of redeem info!", tx_infos.len());
-        state.add_eos_on_eth_eos_tx_info(tx_infos)
+        state.add_eos_on_eth_eos_tx_infos(tx_infos)
     })
 }
 
@@ -400,7 +400,7 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
         .filter_out_already_processed_txs(&state.processed_tx_ids)
         .and_then(|filtered| {
             debug!("Num tx infos after: {}", filtered.len());
-            state.add_eos_on_eth_eos_tx_info(filtered)
+            state.replace_eos_on_eth_eos_tx_infos(filtered)
         })
 }
 

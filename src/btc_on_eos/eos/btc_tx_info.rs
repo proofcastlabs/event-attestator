@@ -193,7 +193,7 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
     state
         .btc_on_eos_btc_tx_infos
         .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.add_btc_on_eos_btc_tx_infos(filtered))
+        .and_then(|filtered| state.replace_btc_on_eos_btc_tx_infos(filtered))
 }
 
 #[cfg(test)]

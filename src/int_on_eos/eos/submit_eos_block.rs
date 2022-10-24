@@ -105,6 +105,7 @@ mod tests {
             eos::{
                 core_initialization::initialize_eos_core::initialize_eos_core_inner,
                 eos_crypto::eos_private_key::EosPrivateKey,
+                eos_global_sequences::ProcessedGlobalSequences,
             },
             eth::{
                 core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
@@ -190,6 +191,10 @@ mod tests {
         let dictionary = get_sample_dictionary();
         dictionary.save_to_db(&db).unwrap();
 
+        // NOTE: Assert that there are no processed global sequences in the db...
+        let processed_glob_sequences_before = ProcessedGlobalSequences::get_from_db(&db).unwrap();
+        assert!(processed_glob_sequences_before.is_empty());
+
         // NOTE: Submit the block with the peg in in it...
         let output =
             EosOutput::from_str(&submit_eos_block_to_core(&db, &get_sample_eos_submission_material_string()).unwrap())
@@ -239,5 +244,9 @@ mod tests {
         assert_eq!(result.broadcast_timestamp, expected_result.broadcast_timestamp);
         assert_eq!(result.destination_chain_id, expected_result.destination_chain_id);
         // NOTE: We don't assert the timestamp since it's not deterministic.
+
+        // NOTE: Assert that we processed the expected global sequence...
+        let processed_glob_sequences_after = ProcessedGlobalSequences::get_from_db(&db).unwrap();
+        assert!(processed_glob_sequences_after.contains(&9837463233));
     }
 }

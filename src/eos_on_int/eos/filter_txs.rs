@@ -48,7 +48,7 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
         .filter_out_already_processed_txs(&state.processed_tx_ids)
         .and_then(|filtered| {
             debug!("Num tx infos after: {}", filtered.len());
-            state.add_eos_on_int_int_tx_info(filtered)
+            state.replace_eos_on_int_int_tx_infos(filtered)
         })
 }
 

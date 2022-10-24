@@ -11,7 +11,7 @@ use crate::{
 
 pub type GlobalSequence = u64;
 
-#[derive(Clone, Debug, PartialEq, Eq, Constructor, Deref, DerefMut)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Constructor, Deref, DerefMut)]
 pub struct GlobalSequences(Vec<GlobalSequence>);
 
 impl GlobalSequences {

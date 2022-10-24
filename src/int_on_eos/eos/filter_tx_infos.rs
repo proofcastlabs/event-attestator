@@ -23,5 +23,5 @@ pub fn maybe_filter_out_already_processed_tx_infos_from_state<D: DatabaseInterfa
     state
         .int_on_eos_int_tx_infos
         .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.add_int_on_eos_int_tx_infos(filtered))
+        .and_then(|filtered| state.replace_int_on_eos_int_tx_infos(filtered))
 }
