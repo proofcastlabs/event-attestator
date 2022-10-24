@@ -43,20 +43,24 @@ macro_rules! impl_tx_info_fxns {
                 }
 
                 $(
-                    pub fn [< add_ $tx_info:snake >](mut self, infos: $tx_info) -> Result<Self> {
+                    fn [< update_ $tx_info:snake >](mut self, infos: $tx_info) -> Result<Self> {
+                        info!("✔ Updating `{}` in state...", stringify!($tx_info));
+                        self.global_sequences = infos.get_global_sequences();
+                        self.[< $tx_info:snake >] = infos;
+                        Ok(self)
+                    }
+
+                    pub fn [< add_ $tx_info:snake >](self, infos: $tx_info) -> Result<Self> {
                         if self.[< $tx_info:snake >].is_empty() {
-                            self.global_sequences = infos.get_global_sequences();
-                            self.[< $tx_info:snake >] = infos;
-                            Ok(self)
+                            self.[< update_ $tx_info:snake >](infos)
                         } else {
                             Err(Self::get_already_in_state_err_msg(stringify!($tx_info)).into())
                         }
                     }
 
-                    pub fn [< replace_ $tx_info:snake >](mut self, infos: $tx_info) -> Result<Self> {
+                    pub fn [< replace_ $tx_info:snake >](self, infos: $tx_info) -> Result<Self> {
                         info!("✔ Replacing `{}` in state...", stringify!($tx_info));
-                        self.[< $tx_info:snake >] = infos;
-                        Ok(self)
+                        self.[< update_ $tx_info:snake >](infos)
                     }
                 )*
             }
