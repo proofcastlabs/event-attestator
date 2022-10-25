@@ -1,7 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
@@ -16,62 +14,30 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct EvmOutput {
-    pub evm_latest_block_number: usize,
-    pub int_signed_transactions: Vec<IntTxInfo>,
-}
+make_output_structs!(Evm, Int);
 
-#[cfg(test)]
-impl EvmOutput {
-    pub fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            evm_latest_block_number: usize,
-            int_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .int_signed_transactions
-            .iter()
-            .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<IntTxInfo>>>()?;
-        Ok(Self {
-            int_signed_transactions: tx_infos,
-            evm_latest_block_number: temp_struct.evm_latest_block_number,
-        })
+make_struct_with_test_assertions_on_equality_check!(
+    struct IntTxInfo {
+        _id: String,
+        broadcast: bool,
+        int_tx_hash: String,
+        int_tx_amount: String,
+        int_tx_recipient: String,
+        witnessed_timestamp: u64,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        native_token_address: String,
+        destination_chain_id: String,
+        int_signed_tx: Option<String>,
+        any_sender_nonce: Option<u64>,
+        int_account_nonce: Option<u64>,
+        int_latest_block_number: usize,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+        any_sender_tx: Option<RelayTransaction>,
     }
-}
-
-#[derive(Debug, Serialize, Deserialize)]
-pub struct IntTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub int_tx_hash: String,
-    pub int_tx_amount: String,
-    pub int_tx_recipient: String,
-    pub witnessed_timestamp: u64,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub native_token_address: String,
-    pub destination_chain_id: String,
-    pub int_signed_tx: Option<String>,
-    pub any_sender_nonce: Option<u64>,
-    pub int_account_nonce: Option<u64>,
-    pub int_latest_block_number: usize,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-    pub any_sender_tx: Option<RelayTransaction>,
-}
-
-#[cfg(test)]
-impl IntTxInfo {
-    pub fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
+);
 
 impl IntTxInfo {
     pub fn new<T: EthTxInfoCompatible>(
@@ -80,7 +46,7 @@ impl IntTxInfo {
         maybe_nonce: Option<u64>,
         int_latest_block_number: usize,
     ) -> Result<IntTxInfo> {
-        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(IntTxInfo {
             broadcast: false,
             int_latest_block_number,
@@ -94,6 +60,7 @@ impl IntTxInfo {
                 format!("pint-on-evm-int-{}", nonce)
             },
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
+            int_tx_recipient: tx_info.destination_address.clone(),
             int_tx_amount: tx_info.native_token_amount.to_string(),
             any_sender_nonce: if tx.is_any_sender() { maybe_nonce } else { None },
             int_account_nonce: if tx.is_any_sender() { None } else { maybe_nonce },
@@ -101,9 +68,8 @@ impl IntTxInfo {
             native_token_address: convert_eth_address_to_string(&tx_info.eth_token_address),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             host_token_address: convert_eth_address_to_string(&tx_info.evm_token_address.clone()),
-            int_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            destination_chain_id: format!("0x{}", hex::encode(tx_info.destination_chain_id.to_bytes()?)),
         })
     }
 }
@@ -138,9 +104,9 @@ pub fn get_int_signed_tx_info_from_evm_txs(
         .collect::<Result<Vec<IntTxInfo>>>()
 }
 
-pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
-    info!("✔ Getting EVM output json...");
-    let output = serde_json::to_string(&EvmOutput {
+pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<EvmOutput> {
+    info!("✔ Getting EVM output...");
+    let output = EvmOutput {
         evm_latest_block_number: state.evm_db_utils.get_latest_eth_block_number()?,
         int_signed_transactions: if state.int_on_evm_int_signed_txs.is_empty() {
             vec![]
@@ -154,7 +120,7 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
                 state.eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
-    })?;
+    };
     info!("✔ EVM output: {}", output);
     Ok(output)
 }

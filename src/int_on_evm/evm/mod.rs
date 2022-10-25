@@ -29,4 +29,7 @@ pub(in crate::int_on_evm) use self::{
     filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
     get_evm_output_json::{get_int_signed_tx_info_from_evm_txs, EvmOutput},
 };
-pub use self::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core};
+pub use self::{
+    initialize_evm_core::maybe_initialize_evm_core,
+    submit_evm_block::{submit_evm_block_to_core, submit_evm_blocks_to_core},
+};

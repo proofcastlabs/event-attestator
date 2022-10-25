@@ -49,7 +49,7 @@ pub struct EthBlock {
 impl EthBlock {
     pub fn get_base_fee_per_gas(&self) -> Result<U256> {
         self.base_fee_per_gas
-            .ok_or_else(|| NoneError("Could not unwrap 'base_fee' from ETH block!"))
+            .ok_or(NoneError("Could not unwrap 'base_fee' from ETH block!"))
     }
 
     pub fn to_json(&self) -> Result<JsonValue> {

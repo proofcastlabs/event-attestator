@@ -65,9 +65,9 @@ pub use crate::{
             debug_set_fee_basis_points,
             debug_withdraw_fees_and_save_in_db,
         },
-        eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
+        eth::{maybe_initialize_eth_core, submit_eth_block_to_core, submit_eth_blocks_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{maybe_initialize_int_core, submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
     },
 };

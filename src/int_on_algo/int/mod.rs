@@ -18,4 +18,7 @@ pub(in crate::int_on_algo) use self::{
     get_int_output_json::get_int_output_json,
     sign_txs::maybe_sign_algo_txs_and_add_to_state,
 };
-pub use self::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core};
+pub use self::{
+    initialize_int_core::maybe_initialize_int_core,
+    submit_int_block::{submit_int_block_to_core, submit_int_blocks_to_core},
+};

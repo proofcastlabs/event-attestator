@@ -49,7 +49,7 @@ impl Metadata {
             MetadataVersion::V1 => Err("Cannot get destination chain ID from v1 metadata!".into()),
             _ => self
                 .destination_chain_id
-                .ok_or_else(|| NoneError("Error getting destinaction chain ID!")),
+                .ok_or(NoneError("Error getting destinaction chain ID!")),
         }
     }
 

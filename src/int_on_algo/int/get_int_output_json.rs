@@ -1,9 +1,4 @@
-#[cfg(test)]
-use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
-
-use derive_more::Constructor;
-use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
@@ -15,40 +10,37 @@ use crate::{
     types::Result,
 };
 
-#[derive(Debug, Serialize, Deserialize, Constructor)]
-pub struct IntOutput {
-    pub int_latest_block_number: usize,
-    pub algo_signed_transactions: Vec<IntTxInfo>,
-}
+make_output_structs!(Int, Algo);
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct IntTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub algo_tx_hash: String,
-    pub algo_signed_tx: String,
-    pub algo_tx_amount: String,
-    pub algo_account_nonce: u64,
-    pub witnessed_timestamp: u64,
-    pub algo_tx_recipient: String,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub native_token_address: String,
-    pub destination_chain_id: String,
-    pub algo_latest_block_number: u64,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-}
+make_struct_with_test_assertions_on_equality_check!(
+    struct AlgoTxInfo {
+        _id: String,
+        broadcast: bool,
+        algo_tx_hash: String,
+        algo_signed_tx: String,
+        algo_tx_amount: String,
+        algo_account_nonce: u64,
+        witnessed_timestamp: u64,
+        algo_tx_recipient: String,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        native_token_address: String,
+        destination_chain_id: String,
+        algo_latest_block_number: u64,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+    }
+);
 
-impl IntTxInfo {
+impl AlgoTxInfo {
     pub fn new(
         group_tx: AlgoSignedGroupTx,
         tx_info: &IntOnAlgoAlgoTxInfo,
         nonce: u64,
         algo_latest_block_number: u64,
-    ) -> Result<IntTxInfo> {
-        Ok(IntTxInfo {
+    ) -> Result<AlgoTxInfo> {
+        Ok(AlgoTxInfo {
             broadcast: false,
             broadcast_tx_hash: None,
             algo_latest_block_number,
@@ -63,7 +55,7 @@ impl IntTxInfo {
             native_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
             originating_address: convert_eth_address_to_string(&tx_info.token_sender.clone()),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            destination_chain_id: format!("0x{}", hex::encode(tx_info.destination_chain_id.to_bytes()?)),
             algo_tx_recipient: if tx_info.destination_is_app() {
                 tx_info.get_destination_app_id()?.to_string()
             } else {
@@ -78,7 +70,7 @@ pub fn get_int_signed_tx_info_from_int_txs(
     tx_infos: &IntOnAlgoAlgoTxInfos,
     algo_account_nonce: u64,
     algo_latest_block_num: u64,
-) -> Result<Vec<IntTxInfo>> {
+) -> Result<Vec<AlgoTxInfo>> {
     let number_of_txs = txs.len() as u64;
     let start_nonce = algo_account_nonce - number_of_txs;
     info!("✔ Getting INT tx info from ALGO txs...");
@@ -91,11 +83,11 @@ pub fn get_int_signed_tx_info_from_int_txs(
     txs.iter()
         .zip(tx_infos.iter())
         .enumerate()
-        .map(|(i, (tx, info))| IntTxInfo::new(tx.clone(), info, start_nonce + i as u64, algo_latest_block_num))
+        .map(|(i, (tx, info))| AlgoTxInfo::new(tx.clone(), info, start_nonce + i as u64, algo_latest_block_num))
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting INT output json...");
     let txs = state.algo_signed_group_txs.clone();
     let int_latest_block_num = state.eth_db_utils.get_latest_eth_block_number()?;
@@ -112,38 +104,5 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
     } else {
         IntOutput::new(int_latest_block_num, vec![])
     };
-    Ok(serde_json::to_string(&output)?)
-}
-
-#[cfg(test)]
-impl FromStr for IntOutput {
-    type Err = crate::errors::AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        use serde_json::Value as JsonValue;
-        #[derive(Deserialize)]
-        struct TempStruct {
-            int_latest_block_number: usize,
-            algo_signed_transactions: Vec<JsonValue>,
-        }
-        let temp_struct = serde_json::from_str::<TempStruct>(s)?;
-        let tx_infos = temp_struct
-            .algo_signed_transactions
-            .iter()
-            .map(|json_value| IntTxInfo::from_str(&json_value.to_string()))
-            .collect::<Result<Vec<IntTxInfo>>>()?;
-        Ok(Self {
-            algo_signed_transactions: tx_infos,
-            int_latest_block_number: temp_struct.int_latest_block_number,
-        })
-    }
-}
-
-#[cfg(test)]
-impl FromStr for IntTxInfo {
-    type Err = crate::errors::AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
+    Ok(output)
 }

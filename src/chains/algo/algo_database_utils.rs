@@ -193,7 +193,7 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 
     pub fn get_linker_hash_or_else_genesis_hash(&self) -> Result<AlgorandHash> {
         info!("✔ Getting linker hash or else genesis hash from db...");
-        self.get_linker_block_hash().or_else(|_| Ok(*ALGO_PTOKEN_GENESIS_HASH))
+        self.get_linker_block_hash().or(Ok(*ALGO_PTOKEN_GENESIS_HASH))
     }
 
     pub fn delete_submission_material_by_hash(&self, hash: &AlgorandHash) -> Result<()> {

@@ -71,6 +71,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_output_json)
+        .map(|output| output.to_string())
 }
 
 /// # Debug Reprocess INT Block For Stale EOS Transaction

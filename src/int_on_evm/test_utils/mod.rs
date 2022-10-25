@@ -1,5 +1,5 @@
 #![cfg(test)]
-use std::{fs::read_to_string, path::Path};
+use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use ethereum_types::Address as EthAddress;
 use serde_json::json;

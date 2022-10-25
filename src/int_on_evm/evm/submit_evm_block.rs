@@ -1,13 +1,15 @@
+use std::str::FromStr;
+
 use crate::{
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_evm_block_and_receipts_to_db_and_return_state,
         check_parent_exists::check_for_parent_of_evm_block_in_state,
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
         eth_state::EthState,
-        eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        eth_submission_material::{
+            parse_eth_submission_material_json_and_put_in_state,
+            EthSubmissionMaterialJson,
+            EthSubmissionMaterialJsons,
+        },
         increment_int_account_nonce::maybe_increment_int_account_nonce_and_return_eth_state,
         remove_old_eth_tail_block::maybe_remove_old_evm_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_evm_canon_block_and_return_state,
@@ -31,7 +33,7 @@ use crate::{
         filter_submission_material::filter_submission_material_for_redeem_events_in_state,
         filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
         filter_zero_value_tx_infos::filter_out_zero_value_eth_tx_infos_from_state,
-        get_evm_output_json::get_evm_output_json,
+        get_evm_output_json::{get_evm_output_json, EvmOutput, EvmOutputs},
         parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
         sign_txs::maybe_sign_eth_txs_and_add_to_evm_state,
     },
@@ -39,18 +41,8 @@ use crate::{
     types::Result,
 };
 
-/// # Submit EVM Block to Core
-///
-/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
-/// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
-/// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
-/// transaction will be signed & returned to the caller.
-pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
-    info!("✔ Submitting EVM block to core...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
+fn submit_evm_block<D: DatabaseInterface>(db: &D, json: &EthSubmissionMaterialJson) -> Result<EvmOutput> {
+    parse_eth_submission_material_json_and_put_in_state(json, EthState::init(db))
         .and_then(validate_evm_block_in_state)
         .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_evm_block_in_state)
@@ -73,13 +65,52 @@ pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(maybe_increment_int_account_nonce_and_return_eth_state)
         .and_then(maybe_remove_old_evm_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_evm_canon_block_and_return_state)
-        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_evm_output_json)
+}
+
+/// # Submit EVM Block to Core
+///
+/// The main submission pipeline. Submitting an ETH block to the enclave will - if that block is
+/// valid & subsequent to the enclave's current latest block - advanced the piece of the ETH
+/// blockchain held by the enclave in it's encrypted database. Should the submitted block
+/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
+/// transaction will be signed & returned to the caller.
+pub fn submit_evm_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Result<String> {
+    info!("✔ Submitting EVM block to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthSubmissionMaterialJson::from_str(block))
+        .and_then(|json| submit_evm_block(db, &json))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(output.to_string())
+        })
+}
+
+/// # Submit EVM Blocks to Core
+///
+/// Submit multiple EVM blocks to the core. See `submit_evm_block_to_core` for more information.
+pub fn submit_evm_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
+    info!("✔ Batch submitting EVM blocks to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthSubmissionMaterialJsons::from_str(blocks))
+        .and_then(|jsons| {
+            jsons
+                .iter()
+                .map(|json| submit_evm_block(db, json))
+                .collect::<Result<Vec<EvmOutput>>>()
+        })
+        .map(EvmOutputs::new)
+        .and_then(|outputs| {
+            db.end_transaction()?;
+            Ok(outputs.to_output().to_string())
+        })
 }
 
 #[cfg(test)]
 mod tests {
-    use std::fs::read_to_string;
+    use std::{fs::read_to_string, str::FromStr};
 
     use serde_json::json;
 
@@ -94,6 +125,7 @@ mod tests {
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::reset_eth_chain,
+            eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_utils::convert_hex_to_eth_address,
             vault_using_cores::VaultUsingCores,
         },
@@ -186,7 +218,7 @@ mod tests {
                 "broadcast": false,
                 "int_tx_hash": "0x9b8c6a306e07271f9b3c732654806ec83b80a34f2ab2c2fe14bd151adb55dc06",
                 "int_tx_amount": "665",
-                "int_tx_recipient": "0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
+                "int_tx_recipient": "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC",
                 "witnessed_timestamp": 1638902000,
                 "host_token_address": "0xdd9f905a34a6c507c7d68384985905cf5eb032e9",
                 "originating_tx_hash": "0x61ac238ba14d7f8bc1fff8546f61127d9b44be6955819adb0f9861da6723bef1",
@@ -204,72 +236,7 @@ mod tests {
         });
         let expected_result = EvmOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EvmOutput::from_str(&output).unwrap();
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.evm_latest_block_number, expected_result.evm_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id,
-        );
+        assert_eq!(result, expected_result);
     }
 
     #[test]
@@ -334,7 +301,7 @@ mod tests {
                 "broadcast":false,
                 "int_tx_hash":"0x57e812d2e7c25e4c990a7bd601e65027f37f7d47e670fe2f5dbc5b2cd513b60c",
                 "int_tx_amount":"1334",
-                "int_tx_recipient":"0x307866656466653236313665623336363163623866656432373832663566306363393164353964636163",
+                "int_tx_recipient":"0xfedfe2616eb3661cb8fed2782f5f0cc91d59dcac",
                 "witnessed_timestamp":1661357369,
                 "host_token_address":"0xf8c69b3a5db2e5384a0332325f5931cd5aa4aada",
                 "originating_tx_hash":"0x1823814ab29df921fc32f7a25158a0c4221a072f167162037f8ccf43fde12fb8",
@@ -352,72 +319,6 @@ mod tests {
         });
         let expected_result = EvmOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = EvmOutput::from_str(&output).unwrap();
-
-        // NOTE: We don't assert against the timestamp because it's not deterministic!
-        assert_eq!(result.evm_latest_block_number, expected_result.evm_latest_block_number);
-        assert_eq!(
-            result.int_signed_transactions[0]._id,
-            expected_result.int_signed_transactions[0]._id
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast,
-            expected_result.int_signed_transactions[0].broadcast
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_hash,
-            expected_result.int_signed_transactions[0].int_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_tx_amount,
-            expected_result.int_signed_transactions[0].int_tx_amount
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].host_token_address,
-            expected_result.int_signed_transactions[0].host_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_tx_hash,
-            expected_result.int_signed_transactions[0].originating_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].originating_address,
-            expected_result.int_signed_transactions[0].originating_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].native_token_address,
-            expected_result.int_signed_transactions[0].native_token_address
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_signed_tx,
-            expected_result.int_signed_transactions[0].int_signed_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_nonce,
-            expected_result.int_signed_transactions[0].any_sender_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_account_nonce,
-            expected_result.int_signed_transactions[0].int_account_nonce
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].int_latest_block_number,
-            expected_result.int_signed_transactions[0].int_latest_block_number
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_tx_hash,
-            expected_result.int_signed_transactions[0].broadcast_tx_hash
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].broadcast_timestamp,
-            expected_result.int_signed_transactions[0].broadcast_timestamp
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].any_sender_tx,
-            expected_result.int_signed_transactions[0].any_sender_tx
-        );
-        assert_eq!(
-            result.int_signed_transactions[0].destination_chain_id,
-            expected_result.int_signed_transactions[0].destination_chain_id,
-        );
+        assert_eq!(result, expected_result);
     }
 }

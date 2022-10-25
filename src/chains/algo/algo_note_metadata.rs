@@ -120,7 +120,7 @@ impl AlgoNoteMetadataVersion {
 
 impl std::fmt::Display for AlgoNoteMetadataVersion {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "0x{}", hex::encode(&vec![self.as_byte()]))
+        write!(f, "0x{}", hex::encode(vec![self.as_byte()]))
     }
 }
 

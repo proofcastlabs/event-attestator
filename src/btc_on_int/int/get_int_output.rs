@@ -1,16 +1,8 @@
-#[cfg(test)]
-use std::str::FromStr;
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use derive_more::Constructor;
 use ethereum_types::Address as EthAddress;
-use serde::{Deserialize, Serialize};
-#[cfg(test)]
-use serde_json::Value as JsonValue;
 
-#[cfg(test)]
-use crate::errors::AppError;
 use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::{
@@ -21,62 +13,27 @@ use crate::{
     types::Result,
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Constructor)]
-pub struct IntOutput {
-    pub int_latest_block_number: usize,
-    pub btc_signed_transactions: Vec<BtcTxInfo>,
-}
+make_output_structs!(Int, Btc);
 
-#[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize)]
-pub struct BtcTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub btc_tx_hash: String,
-    pub btc_tx_amount: u64,
-    pub btc_signed_tx: String,
-    pub btc_account_nonce: u64,
-    pub witnessed_timestamp: u64,
-    pub btc_tx_recipient: String,
-    pub host_token_address: String,
-    pub originating_address: String,
-    pub originating_tx_hash: String,
-    pub btc_latest_block_number: u64,
-    pub destination_chain_id: String,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<usize>,
-}
-
-#[cfg(test)]
-impl FromStr for BtcTxInfo {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
+make_struct_with_test_assertions_on_equality_check!(
+    struct BtcTxInfo {
+        _id: String,
+        broadcast: bool,
+        btc_tx_hash: String,
+        btc_tx_amount: u64,
+        btc_signed_tx: String,
+        btc_account_nonce: u64,
+        witnessed_timestamp: u64,
+        btc_tx_recipient: String,
+        host_token_address: String,
+        originating_address: String,
+        originating_tx_hash: String,
+        btc_latest_block_number: u64,
+        destination_chain_id: String,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<usize>,
     }
-}
-
-#[cfg(test)]
-impl FromStr for IntOutput {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        #[derive(Serialize, Deserialize)]
-        struct Interim {
-            int_latest_block_number: usize,
-            btc_signed_transactions: Vec<JsonValue>,
-        }
-        let interim = serde_json::from_str::<Interim>(s)?;
-        let tx_infos = interim
-            .btc_signed_transactions
-            .iter()
-            .map(|json| BtcTxInfo::from_str(&json.to_string()))
-            .collect::<Result<Vec<BtcTxInfo>>>()?;
-        Ok(Self {
-            int_latest_block_number: interim.int_latest_block_number,
-            btc_signed_transactions: tx_infos,
-        })
-    }
-}
+);
 
 impl BtcTxInfo {
     pub fn new(
@@ -143,9 +100,9 @@ pub fn get_btc_signed_tx_info_from_btc_txs(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting INT output json...");
-    let output = serde_json::to_string(&IntOutput {
+    let output = IntOutput {
         int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
@@ -162,7 +119,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             )?,
             None => vec![],
         },
-    })?;
+    };
     info!("✔ INT Output: {}", output);
     Ok(output)
 }

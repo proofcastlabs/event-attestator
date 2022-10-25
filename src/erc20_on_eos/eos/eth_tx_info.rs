@@ -176,7 +176,7 @@ impl Erc20OnEosEthTxInfo {
     }
 
     fn get_erc20_on_eos_eth_redeem_address(proof: &EosActionProof) -> Result<EthAddress> {
-        Ok(EthAddress::from_slice(&hex::decode(&strip_hex_prefix(
+        Ok(EthAddress::from_slice(&hex::decode(strip_hex_prefix(
             &Self::get_memo_string_from_proof(proof)?,
         ))?))
     }

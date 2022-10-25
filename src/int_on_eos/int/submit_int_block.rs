@@ -1,13 +1,15 @@
+use std::str::FromStr;
+
 use crate::{
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
         check_parent_exists::check_for_parent_of_eth_block_in_state,
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
         eth_state::EthState,
-        eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        eth_submission_material::{
+            parse_eth_submission_material_json_and_put_in_state,
+            EthSubmissionMaterialJson,
+            EthSubmissionMaterialJsons,
+        },
         increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
@@ -25,7 +27,7 @@ use crate::{
         filter_out_zero_tx_infos::filter_out_zero_value_eos_tx_infos_from_state,
         filter_submission_material::filter_submission_material_for_relevant_receipts_in_state,
         filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
-        get_output_json::get_output_json,
+        get_output_json::{get_output_json, IntOutput, IntOutputs},
         parse_tx_info::maybe_parse_eos_tx_info_from_canon_block_and_add_to_state,
         sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
     },
@@ -33,18 +35,8 @@ use crate::{
     types::Result,
 };
 
-/// # Submit INT Block to Core
-///
-/// The main submission pipeline. Submitting an INT block to the enclave will - if that block is
-/// valid & subsequent to the enclave's current latest block - advanced the piece of the INT
-/// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
-/// transaction will be signed & returned to the caller.
-pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
-    info!("✔ Submitting INT block to enclave...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
-        .and_then(start_eth_db_transaction_and_return_state)
+fn submit_int_block<D: DatabaseInterface>(db: &D, json: &EthSubmissionMaterialJson) -> Result<IntOutput> {
+    parse_eth_submission_material_json_and_put_in_state(json, EthState::init(db))
         .and_then(validate_eth_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(check_for_parent_of_eth_block_in_state)
@@ -63,8 +55,47 @@ pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(maybe_increment_eos_account_nonce_and_return_state)
         .and_then(maybe_remove_old_eth_tail_block_and_return_state)
         .and_then(maybe_remove_receipts_from_eth_canon_block_and_return_state)
-        .and_then(end_eth_db_transaction_and_return_state)
         .and_then(get_output_json)
+}
+
+/// # Submit INT Block to Core
+///
+/// The main submission pipeline. Submitting an INT block to the enclave will - if that block is
+/// valid & subsequent to the enclave's current latest block - advanced the piece of the INT
+/// blockchain held by the enclave in it's encrypted database. Should the submitted block
+/// contain a redeem event emitted by the smart-contract the enclave is watching, an EOS
+/// transaction will be signed & returned to the caller.
+pub fn submit_int_block_to_core<D: DatabaseInterface>(db: &D, block: &str) -> Result<String> {
+    info!("✔ Submitting INT block to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthSubmissionMaterialJson::from_str(block))
+        .and_then(|json| submit_int_block(db, &json))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(output.to_string())
+        })
+}
+
+/// # Submit INT Blocks to Core
+///
+/// Submit multiple INT blocks to the core.
+pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
+    info!("✔ Batch submitting INT blocks to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| EthSubmissionMaterialJsons::from_str(blocks))
+        .and_then(|jsons| {
+            jsons
+                .iter()
+                .map(|block| submit_int_block(db, block))
+                .collect::<Result<Vec<_>>>()
+        })
+        .map(IntOutputs::new)
+        .and_then(|outputs| {
+            db.end_transaction()?;
+            Ok(outputs.to_output().to_string())
+        })
 }
 
 #[cfg(test)]
@@ -89,7 +120,7 @@ mod tests {
             },
         },
         int_on_eos::{
-            int::get_output_json::IntOnEosEosOutput,
+            int::get_output_json::IntOutput,
             test_utils::{
                 get_contiguous_int_block_json_strs,
                 get_sample_dictionary,
@@ -167,10 +198,9 @@ mod tests {
 
         // NOTE: Submit the block with the peg in in it...
         let output =
-            IntOnEosEosOutput::from_str(&submit_int_block_to_core(&db, &contiguous_int_block_json_strs[1]).unwrap())
-                .unwrap();
-        let expected_output = IntOnEosEosOutput::from_str(&json!({
-            "eth_latest_block_number":12236006,
+            IntOutput::from_str(&submit_int_block_to_core(&db, &contiguous_int_block_json_strs[1]).unwrap()).unwrap();
+        let expected_output = IntOutput::from_str(&json!({
+            "int_latest_block_number":12236006,
             "eos_signed_transactions":[{
                 "_id":"pint-on-eos-eos-0",
                 "broadcast":false,
@@ -197,23 +227,6 @@ mod tests {
         assert_eq!(output.eos_signed_transactions.len(), expected_num_txs);
         let result = output.eos_signed_transactions[0].clone();
         let expected_result = expected_output.eos_signed_transactions[0].clone();
-        assert_eq!(result.eos_latest_block_number, expected_result.eos_latest_block_number);
-        assert_eq!(result._id, expected_result._id);
-        assert_eq!(result.broadcast, expected_result.broadcast);
-        assert_eq!(result.eos_tx_amount, expected_result.eos_tx_amount);
-        assert_eq!(result.int_tx_amount, expected_result.int_tx_amount);
-        assert_eq!(result.eos_account_nonce, expected_result.eos_account_nonce);
-        assert_eq!(result.eos_tx_recipient, expected_result.eos_tx_recipient);
-        // NOTE: We drop the first 4 bytes since they're a timestamp & thus is not deterministic.
-        assert_eq!(result.eos_serialized_tx[8..], expected_result.eos_serialized_tx[8..]);
-        // NOTE: We also don't assert the sig since it's also timestamp based and thus not deterministic.
-        assert_eq!(result.host_token_address, expected_result.host_token_address);
-        assert_eq!(result.originating_tx_hash, expected_result.originating_tx_hash);
-        assert_eq!(result.originating_address, expected_result.originating_address);
-        assert_eq!(result.eos_latest_block_number, expected_result.eos_latest_block_number);
-        assert_eq!(result.destination_chain_id, expected_result.destination_chain_id);
-        assert_eq!(result.native_token_address, expected_result.native_token_address);
-        assert_eq!(result.broadcast_tx_hash, expected_result.broadcast_tx_hash);
-        assert_eq!(result.broadcast_timestamp, expected_result.broadcast_timestamp);
+        assert_eq!(result, expected_result);
     }
 }

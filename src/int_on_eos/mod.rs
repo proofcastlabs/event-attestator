@@ -64,6 +64,6 @@ pub use crate::{
         eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
         get_enclave_state::get_enclave_state,
         get_latest_block_numbers::get_latest_block_numbers,
-        int::{maybe_initialize_int_core, submit_int_block_to_core},
+        int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
     },
 };

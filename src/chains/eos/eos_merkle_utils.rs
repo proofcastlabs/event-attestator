@@ -84,12 +84,7 @@ pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
             },
         }
     }
-    Ok(node
-        == hex::decode(
-            merkle_proof
-                .last()
-                .ok_or_else(|| NoneError("Could not unwrap merkle proof!"))?,
-        )?)
+    Ok(node == hex::decode(merkle_proof.last().ok_or(NoneError("Could not unwrap merkle proof!"))?)?)
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -210,7 +205,7 @@ impl Incremerkle {
             return Ok(0);
         }
         let implied_count =
-            u64::checked_next_power_of_two(node_count).ok_or_else(|| NoneError("Next power of two has overflowed!"))?;
+            u64::checked_next_power_of_two(node_count).ok_or(NoneError("Next power of two has overflowed!"))?;
         Ok(Self::count_leading_zeroes_of_a_power_of_2(implied_count)? + 1)
     }
 

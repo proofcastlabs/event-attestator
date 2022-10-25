@@ -79,7 +79,7 @@ pub fn convert_dec_str_to_u256(dec_str: &str) -> Result<U256> {
 pub fn convert_json_value_to_string(value: &JsonValue) -> Result<String> {
     Ok(value
         .as_str()
-        .ok_or_else(|| NoneError("Could not unwrap. JSON value isn't a String!"))?
+        .ok_or(NoneError("Could not unwrap. JSON value isn't a String!"))?
         .to_string())
 }
 

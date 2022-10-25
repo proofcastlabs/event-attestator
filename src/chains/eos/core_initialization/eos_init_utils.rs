@@ -276,12 +276,12 @@ pub fn maybe_put_eos_eth_token_dictionary_in_db_and_return_state<'a, D: Database
         init_json
             .erc20_on_eos_token_dictionary
             .as_ref()
-            .ok_or_else(|| NoneError("✘ Could not unwrap `erc20_on_eos_token_dictionary`!"))?
+            .ok_or(NoneError("✘ Could not unwrap `erc20_on_eos_token_dictionary`!"))?
     } else if init_json.eos_eth_token_dictionary.is_some() {
         init_json
             .eos_eth_token_dictionary
             .as_ref()
-            .ok_or_else(|| NoneError("✘ Could not unwrap `eos_eth_token_dictionary`!"))?
+            .ok_or(NoneError("✘ Could not unwrap `eos_eth_token_dictionary`!"))?
     } else {
         info!("✔ No `eos_eth_token_dictionary` in `init-json` ∴ doing nothing!");
         return Ok(state);

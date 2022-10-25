@@ -1,7 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     chains::{
         eos::eos_crypto::eos_transaction::EosSignedTransaction,
@@ -12,26 +10,29 @@ use crate::{
     types::Result,
 };
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct EosTxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub eos_tx_amount: String,
-    pub int_tx_amount: String,
-    pub eos_account_nonce: u64,
-    pub eos_tx_recipient: String,
-    pub eos_tx_signature: String,
-    pub witnessed_timestamp: u64,
-    pub eos_serialized_tx: String,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub eos_latest_block_number: u64,
-    pub destination_chain_id: String,
-    pub native_token_address: String,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-}
+make_output_structs!(Int, Eos);
+
+make_struct_with_test_assertions_on_equality_check!(
+    struct EosTxInfo {
+        _id: String,
+        broadcast: bool,
+        eos_tx_amount: String,
+        int_tx_amount: String,
+        eos_account_nonce: u64,
+        eos_tx_recipient: String,
+        eos_tx_signature: String,
+        witnessed_timestamp: u64,
+        eos_serialized_tx: String,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        eos_latest_block_number: u64,
+        destination_chain_id: String,
+        native_token_address: String,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+    }
+);
 
 impl EosTxInfo {
     pub fn new(
@@ -62,20 +63,14 @@ impl EosTxInfo {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct IntOnEosEosOutput {
-    pub eth_latest_block_number: u64,
-    pub eos_signed_transactions: Vec<EosTxInfo>,
-}
-
-pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting `IntOnEos` EOS output json...");
-    Ok(serde_json::to_string(&IntOnEosEosOutput {
-        eth_latest_block_number: state
+    Ok(IntOutput {
+        int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
             .get_block_number()?
-            .as_u64(),
+            .as_usize(),
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {
@@ -100,32 +95,5 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
                     .collect::<Result<Vec<EosTxInfo>>>()?
             },
         },
-    })?)
-}
-
-#[cfg(test)]
-use std::str::FromStr;
-
-#[cfg(test)]
-use serde_json;
-
-#[cfg(test)]
-use crate::errors::AppError;
-
-#[cfg(test)]
-impl FromStr for IntOnEosEosOutput {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
-#[cfg(test)]
-impl FromStr for EosTxInfo {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
+    })
 }

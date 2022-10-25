@@ -19,4 +19,7 @@ pub(in crate::int_on_eos) use self::{
     get_output_json::get_output_json,
     sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
 };
-pub use self::{initialize_int_core::maybe_initialize_int_core, submit_int_block::submit_int_block_to_core};
+pub use self::{
+    initialize_int_core::maybe_initialize_int_core,
+    submit_int_block::{submit_int_block_to_core, submit_int_blocks_to_core},
+};

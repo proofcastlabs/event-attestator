@@ -1,7 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use serde::{Deserialize, Serialize};
-
 use crate::{
     chains::{
         eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
@@ -13,36 +11,39 @@ use crate::{
     types::Result,
 };
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct TxInfo {
-    pub _id: String,
-    pub broadcast: bool,
-    pub eos_tx_amount: String,
-    pub int_tx_amount: String,
-    pub eos_account_nonce: u64,
-    pub eos_tx_recipient: String,
-    pub eos_tx_signature: String,
-    pub witnessed_timestamp: u64,
-    pub eos_serialized_tx: String,
-    pub host_token_address: String,
-    pub originating_tx_hash: String,
-    pub originating_address: String,
-    pub eos_latest_block_number: u64,
-    pub native_token_address: String,
-    pub destination_chain_id: String,
-    pub broadcast_tx_hash: Option<String>,
-    pub broadcast_timestamp: Option<String>,
-}
+make_output_structs!(Int, Eos);
 
-impl TxInfo {
+make_struct_with_test_assertions_on_equality_check!(
+    struct EosTxInfo {
+        _id: String,
+        broadcast: bool,
+        eos_tx_amount: String,
+        int_tx_amount: String,
+        eos_account_nonce: u64,
+        eos_tx_recipient: String,
+        eos_tx_signature: String,
+        witnessed_timestamp: u64,
+        eos_serialized_tx: String,
+        host_token_address: String,
+        originating_tx_hash: String,
+        originating_address: String,
+        eos_latest_block_number: u64,
+        native_token_address: String,
+        destination_chain_id: String,
+        broadcast_tx_hash: Option<String>,
+        broadcast_timestamp: Option<String>,
+    }
+);
+
+impl EosTxInfo {
     pub fn new(
         eos_tx: &EosSignedTransaction,
         tx_info: &EosOnIntEosTxInfo,
         eos_account_nonce: u64,
         eos_latest_block_number: u64,
         eos_chain_id: &EosChainId,
-    ) -> Result<TxInfo> {
-        Ok(TxInfo {
+    ) -> Result<EosTxInfo> {
+        Ok(EosTxInfo {
             broadcast: false,
             eos_account_nonce,
             eos_latest_block_number,
@@ -64,20 +65,14 @@ impl TxInfo {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct IntOutput {
-    pub int_latest_block_number: u64,
-    pub eos_signed_transactions: Vec<TxInfo>,
-}
-
-pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<String> {
+pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting `eos-on-int` INT submission output json...");
-    Ok(serde_json::to_string(&IntOutput {
+    Ok(IntOutput {
         int_latest_block_number: state
             .eth_db_utils
             .get_eth_latest_block_from_db()?
             .get_block_number()?
-            .as_u64(),
+            .as_usize(),
         eos_signed_transactions: match state.eos_transactions {
             None => vec![],
             Some(ref eos_txs) => {
@@ -92,7 +87,7 @@ pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<String
                     .iter()
                     .enumerate()
                     .map(|(i, eos_tx)| {
-                        TxInfo::new(
+                        EosTxInfo::new(
                             eos_tx,
                             &state.eos_on_int_eos_tx_infos[i],
                             start_nonce + i as u64,
@@ -100,35 +95,8 @@ pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<String
                             &state.eos_db_utils.get_eos_chain_id_from_db()?,
                         )
                     })
-                    .collect::<Result<Vec<TxInfo>>>()?
+                    .collect::<Result<Vec<EosTxInfo>>>()?
             },
         },
-    })?)
-}
-
-#[cfg(test)]
-use std::str::FromStr;
-
-#[cfg(test)]
-use serde_json;
-
-#[cfg(test)]
-use crate::errors::AppError;
-
-#[cfg(test)]
-impl FromStr for IntOutput {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
-}
-
-#[cfg(test)]
-impl FromStr for TxInfo {
-    type Err = AppError;
-
-    fn from_str(s: &str) -> Result<Self> {
-        Ok(serde_json::from_str(s)?)
-    }
+    })
 }
