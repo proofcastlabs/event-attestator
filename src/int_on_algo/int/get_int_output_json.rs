@@ -55,7 +55,7 @@ impl AlgoTxInfo {
             native_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
             originating_address: convert_eth_address_to_string(&tx_info.token_sender.clone()),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            destination_chain_id: format!("0x{}", hex::encode(tx_info.destination_chain_id.to_bytes()?)),
             algo_tx_recipient: if tx_info.destination_is_app() {
                 tx_info.get_destination_app_id()?.to_string()
             } else {

@@ -46,7 +46,7 @@ impl IntTxInfo {
         maybe_nonce: Option<u64>,
         int_latest_block_number: usize,
     ) -> Result<IntTxInfo> {
-        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(IntTxInfo {
             broadcast: false,
             int_latest_block_number,
@@ -69,7 +69,7 @@ impl IntTxInfo {
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             host_token_address: convert_eth_address_to_string(&tx_info.evm_token_address.clone()),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            destination_chain_id: format!("0x{}", hex::encode(tx_info.destination_chain_id.to_bytes()?)),
         })
     }
 }

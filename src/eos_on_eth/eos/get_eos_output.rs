@@ -51,7 +51,7 @@ impl EthTxInfo {
         maybe_nonce: Option<u64>,
         eth_latest_block_number: usize,
     ) -> Result<EthTxInfo> {
-        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for eth output!"))?;
+        let nonce = maybe_nonce.ok_or(NoneError("No nonce for eth output!"))?;
         Ok(EthTxInfo {
             eth_latest_block_number,
             broadcast: false,

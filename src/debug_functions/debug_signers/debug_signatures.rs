@@ -92,7 +92,7 @@ impl DebugSignatory {
     ) -> Result<Vec<EthAddress>> {
         info!("✔ Attempting to unsafely recover ethersjs-style signature...");
         self.hash_to_hex(core_type, debug_command_hash)
-            .and_then(|hex| Ok(hex::decode(&strip_hex_prefix(&hex))?))
+            .and_then(|hex| Ok(hex::decode(strip_hex_prefix(&hex))?))
             .map(|bytes| {
                 // NOTE: So apparently the ethersjs signing fxn for some reason will convert
                 // hex to UTF8 regardless of whether it's valid or not, and then form the message

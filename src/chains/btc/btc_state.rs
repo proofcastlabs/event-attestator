@@ -352,12 +352,12 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
 
     pub fn get_eos_ref_block_num(&self) -> Result<u16> {
         self.ref_block_num
-            .ok_or_else(|| NoneError("No `ref_block_num` in submission material!"))
+            .ok_or(NoneError("No `ref_block_num` in submission material!"))
     }
 
     pub fn get_eos_ref_block_prefix(&self) -> Result<u32> {
         self.ref_block_prefix
-            .ok_or_else(|| NoneError("No `ref_block_prefix` in submission material!"))
+            .ok_or(NoneError("No `ref_block_prefix` in submission material!"))
     }
 }
 

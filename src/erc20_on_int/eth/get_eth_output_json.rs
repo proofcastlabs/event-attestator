@@ -51,7 +51,7 @@ impl IntTxInfo {
         int_latest_block_number: usize,
         dictionary: &EthEvmTokenDictionary,
     ) -> Result<IntTxInfo> {
-        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(IntTxInfo {
             int_latest_block_number,
             broadcast: false,
@@ -73,7 +73,7 @@ impl IntTxInfo {
             native_token_address: format!("0x{}", hex::encode(tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(&tx_info.destination_chain_id.to_bytes()?)),
+            destination_chain_id: format!("0x{}", hex::encode(tx_info.destination_chain_id.to_bytes()?)),
             int_tx_amount: dictionary
                 .convert_eth_amount_to_evm_amount(&tx_info.eth_token_address, tx_info.native_token_amount)?
                 .to_string(),

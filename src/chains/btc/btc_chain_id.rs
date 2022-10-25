@@ -69,7 +69,7 @@ impl BtcChainId {
     }
 
     fn to_hex(&self) -> String {
-        hex::encode(&self.to_bytes())
+        hex::encode(self.to_bytes())
     }
 
     #[cfg(test)]

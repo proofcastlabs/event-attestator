@@ -48,7 +48,7 @@ impl EthTxInfo {
         eth_latest_block_number: usize,
         eth_chain_id: &EthChainId,
     ) -> Result<EthTxInfo> {
-        let nonce = maybe_nonce.ok_or_else(|| NoneError("No nonce for EVM output!"))?;
+        let nonce = maybe_nonce.ok_or(NoneError("No nonce for EVM output!"))?;
         Ok(EthTxInfo {
             eth_latest_block_number,
             broadcast: false,
@@ -71,7 +71,7 @@ impl EthTxInfo {
             native_token_address: format!("0x{}", hex::encode(tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(&eth_chain_id.to_metadata_chain_id().to_bytes()?)),
+            destination_chain_id: format!("0x{}", hex::encode(eth_chain_id.to_metadata_chain_id().to_bytes()?)),
         })
     }
 }

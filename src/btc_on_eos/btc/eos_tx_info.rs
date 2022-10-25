@@ -198,9 +198,7 @@ impl BtcOnEosEosTxInfos {
                     }
                 })
                 .filter(|maybe_eos_tx_infos| maybe_eos_tx_infos.is_some())
-                .map(|maybe_eos_tx_infos| {
-                    maybe_eos_tx_infos.ok_or_else(|| NoneError("Could not unwrap `BtcOnEosEosTxInfos`!"))
-                })
+                .map(|maybe_eos_tx_infos| maybe_eos_tx_infos.ok_or(NoneError("Could not unwrap `BtcOnEosEosTxInfos`!")))
                 .collect::<Result<Vec<BtcOnEosEosTxInfo>>>()?,
         ))
     }

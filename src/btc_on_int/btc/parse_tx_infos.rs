@@ -45,15 +45,11 @@ impl BtcOnIntIntTxInfos {
                 })
                 .filter(|(_, maybe_address)| maybe_address.is_some())
                 .map(|(tx_out, address)| {
-                    match deposit_info.get(
-                        &address
-                            .clone()
-                            .ok_or_else(|| NoneError("Could not unwrap BTC address!"))?,
-                    ) {
+                    match deposit_info.get(&address.clone().ok_or(NoneError("Could not unwrap BTC address!"))?) {
                         None => {
                             info!(
                                 "✘ BTC address {} not in deposit list!",
-                                address.ok_or_else(|| NoneError("Could not unwrap BTC address!"))?
+                                address.ok_or(NoneError("Could not unwrap BTC address!"))?
                             );
                             Err("Filtering out this err!".into())
                         },
@@ -73,7 +69,7 @@ impl BtcOnIntIntTxInfos {
                                     .to_metadata_chain_id()
                                     .to_bytes()?,
                                 originating_tx_address: address
-                                    .ok_or_else(|| NoneError("Could not unwrap BTC address!"))?
+                                    .ok_or(NoneError("Could not unwrap BTC address!"))?
                                     .to_string(),
                             })
                         },

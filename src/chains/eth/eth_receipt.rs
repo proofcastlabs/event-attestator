@@ -175,7 +175,7 @@ impl EthReceipt {
     fn get_receipt_type(&self) -> Result<EthReceiptType> {
         self.receipt_type
             .clone()
-            .ok_or_else(|| NoneError("Could not get receipt type from receipt!"))
+            .ok_or(NoneError("Could not get receipt type from receipt!"))
     }
 
     pub fn to_json(&self) -> Result<JsonValue> {
@@ -240,7 +240,7 @@ impl EthReceipt {
                 _ => convert_hex_to_eth_address(&convert_json_value_to_string(&json.contract_address)?)?,
             },
             receipt_type: match json.receipt_type {
-                Some(ref hex) => Some(EthReceiptType::from_byte(&hex::decode(&strip_hex_prefix(hex))?[0])),
+                Some(ref hex) => Some(EthReceiptType::from_byte(&hex::decode(strip_hex_prefix(hex))?[0])),
                 None => None,
             },
             logs,

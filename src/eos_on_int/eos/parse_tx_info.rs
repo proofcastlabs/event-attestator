@@ -118,7 +118,7 @@ impl EosOnIntIntTxInfo {
     fn get_destination_chain_id_from_proof(proof: &EosActionProof) -> Result<MetadataChainId> {
         // FIXME We need to parse this from the hex data for validation reasons!
         MetadataChainId::from_bytes(&hex::decode(
-            &proof
+            proof
                 .action_json
                 .data
                 .destination_chain_id
