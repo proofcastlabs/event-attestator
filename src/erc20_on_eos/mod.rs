@@ -62,6 +62,7 @@ pub use crate::{
         debug_functions::{
             debug_get_add_supported_token_tx,
             debug_get_all_db_keys,
+            debug_get_erc20_vault_migrate_single_tx,
             debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,
             debug_get_remove_supported_token_tx,
             debug_reprocess_eos_block,
