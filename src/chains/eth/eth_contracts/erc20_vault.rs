@@ -49,7 +49,7 @@ impl EthChainId {
     }
 }
 
-const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"setWEthUnwrapperAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
+const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"addresspayable\",\"name\":\"_to\",\"type\":\"address\"}],\"name\":\"migrate\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"addSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"removeSupportedToken\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"SUCCESS\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"},{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_address\",\"type\":\"address\"}],\"name\":\"setWEthUnwrapperAddress\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"inputs\":[{\"internalType\":\"address payable\",\"name\":\"_to\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"}],\"name\":\"migrateSingle\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
 // NOTE: Separate from the above ABI ∵ `ethabi` crate can't handle overloaded functions.
 const ERC20_VAULT_PEGOUT_WITH_USER_DATA_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"}]";
@@ -129,6 +129,16 @@ pub fn encode_erc20_vault_peg_out_fxn_data_with_user_data(
 
 pub fn encode_erc20_vault_migrate_fxn_data(migrate_to: EthAddress) -> Result<Bytes> {
     encode_fxn_call(ERC20_VAULT_ABI, "migrate", &[EthAbiToken::Address(migrate_to)])
+}
+
+pub fn encode_erc20_vault_migrate_single_fxn_data(
+    migrate_to: &EthAddress,
+    token_address: &EthAddress,
+) -> Result<Bytes> {
+    encode_fxn_call(ERC20_VAULT_ABI, "migrateSingle", &[
+        EthAbiToken::Address(*migrate_to),
+        EthAbiToken::Address(*token_address),
+    ])
 }
 
 pub fn encode_erc20_vault_set_weth_unwrapper_address_fxn_data(address: EthAddress) -> Result<Bytes> {
@@ -317,6 +327,7 @@ mod tests {
             eth_contracts::test_utils::get_sample_erc20_vault_log_with_user_data,
             eth_log::EthLog,
             eth_test_utils::{get_sample_eth_address, get_sample_log_with_erc20_peg_in_event},
+            eth_utils::convert_hex_to_eth_address,
         },
         errors::AppError,
     };
@@ -494,5 +505,14 @@ mod tests {
         let eth_gas_limit = eth_chain_id.get_erc20_vault_pegout_with_user_data_gas_limit();
         let arbitrum_gas_limit = arbitrum_chain_id.get_erc20_vault_pegout_with_user_data_gas_limit();
         assert_eq!(arbitrum_gas_limit, eth_gas_limit * ARBITRUM_GAS_MULTIPLIER);
+    }
+
+    #[test]
+    fn should_encode_migrate_single_fxn_data() {
+        let address = convert_hex_to_eth_address("0xedB86cd455ef3ca43f0e227e00469C3bDFA40628").unwrap();
+        let token_address = convert_hex_to_eth_address("0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD").unwrap();
+        let expected_result = "1328ed3c000000000000000000000000edb86cd455ef3ca43f0e227e00469c3bdfa4062800000000000000000000000089ab32156e46f46d02ade3fecbe5fc4243b9aaed";
+        let result = hex::encode(encode_erc20_vault_migrate_single_fxn_data(&address, &token_address).unwrap());
+        assert_eq!(result, expected_result)
     }
 }

@@ -1582,7 +1582,7 @@ dependencies = [
 
 [[package]]
 name = "ptokens_core"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "base64",
  "bitcoin",
