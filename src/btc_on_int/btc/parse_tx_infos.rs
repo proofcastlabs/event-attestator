@@ -34,11 +34,11 @@ impl BtcOnIntIntTxInfos {
                 .iter()
                 .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
                 .map(|tx_out| match BtcAddress::from_script(&tx_out.script_pubkey, network) {
-                    None => {
+                    Err(_) => {
                         info!("✘ Could not derive BTC address from tx: {:?}", tx);
                         (tx_out, None)
                     },
-                    Some(address) => {
+                    Ok(address) => {
                         info!("✔ BTC address extracted from `tx_out`: {}", address);
                         (tx_out, Some(address))
                     },

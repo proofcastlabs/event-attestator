@@ -10,12 +10,14 @@ use bitcoin::{
     hash_types::Txid,
     hashes::{sha256d, Hash},
     network::constants::Network as BtcNetwork,
-    secp256k1::key::ONE_KEY,
+    secp256k1::ONE_KEY,
     util::{
         base58::{encode_slice as base58_encode_slice, from as from_base58},
         key::PrivateKey,
     },
     Address as BtcAddress,
+    Sequence,
+    Witness,
 };
 use ethereum_types::U256;
 
@@ -54,13 +56,13 @@ pub fn calculate_dust_amount(dust_relay_fee: u64) -> u64 {
         output: vec![output],
         input: vec![BtcUtxo {
             script_sig,
-            witness: Vec::default(),
-            sequence: u32::default(),
+            witness: Witness::default(),
+            sequence: Sequence::default(),
             previous_output: BtcOutPoint::default(),
         }],
     };
     // NOTE: Then we calculate the size of that transaction...
-    let dummy_tx_size_in_bytes = dummy_tx.get_size() as u64;
+    let dummy_tx_size_in_bytes = dummy_tx.size() as u64;
     // NOTE: Which we use we calculate the minimum allowable fee to spend this output...
     let cost_to_spend_utxo = dust_relay_fee * dummy_tx_size_in_bytes;
     // NOTE: And so dust is any amount whose fee to spend it is > 1/3 of the value of the UTXO itself.
@@ -92,7 +94,7 @@ pub fn convert_hex_to_sha256_hash(hex: &str) -> Result<sha256d::Hash> {
 
 pub fn get_btc_one_key() -> PrivateKey {
     PrivateKey {
-        key: ONE_KEY,
+        inner: ONE_KEY,
         compressed: false,
         network: BtcNetwork::Bitcoin,
     }
@@ -123,7 +125,7 @@ pub fn create_unsigned_utxo_from_tx(tx: &BtcTransaction, output_index: u32) -> B
         vout: output_index,
     };
     BtcUtxo {
-        witness: vec![], // NOTE: We don't currently support segwit txs.
+        witness: Witness::default(), // NOTE: We don't currently support segwit txs.
         previous_output: outpoint,
         sequence: DEFAULT_BTC_SEQUENCE,
         script_sig: tx.output[output_index as usize].script_pubkey.clone(),
@@ -307,7 +309,7 @@ mod tests {
     fn should_deserialize_btc_utxo() {
         let expected_vout = SAMPLE_OUTPUT_INDEX_OF_UTXO;
         let expected_witness_length = 0;
-        let expected_sequence = 4294967295;
+        let expected_sequence = Sequence(4294967295);
         let expected_txid = Txid::from_str("04bf43a86a99fca519dbfce42566b78cda0895d78c0a07484162d5888f588d0e").unwrap();
         let serialized_btc_utxo = hex::decode(SAMPLE_SERIALIZED_BTC_UTXO).unwrap();
         let result = deserialize_btc_utxo(&serialized_btc_utxo).unwrap();

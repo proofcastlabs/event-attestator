@@ -352,7 +352,7 @@ impl DepositAddressInfo {
         Self::from_json(&DepositAddressInfoJson::from_str(s)?)
     }
 
-    fn calculate_btc_deposit_address(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
+    fn calculate_btc_deposit_address(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
         match self.version {
             DepositAddressInfoVersion::V0 => self.calculate_btc_deposit_address_v0(pub_key, network),
             DepositAddressInfoVersion::V1 => self.calculate_btc_deposit_address_v1(pub_key, network),
@@ -361,25 +361,25 @@ impl DepositAddressInfo {
         }
     }
 
-    fn calculate_btc_deposit_address_v0(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
+    fn calculate_btc_deposit_address_v0(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
         let btc_script = get_p2sh_redeem_script_sig(&pub_key[..], &self.commitment_hash);
-        BtcAddress::p2sh(&btc_script, *network)
+        Ok(BtcAddress::p2sh(&btc_script, *network)?)
     }
 
-    fn calculate_btc_deposit_address_v1(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
+    fn calculate_btc_deposit_address_v1(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
         self.calculate_btc_deposit_address_v0(pub_key, network)
     }
 
-    fn calculate_btc_deposit_address_v2(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
+    fn calculate_btc_deposit_address_v2(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
         self.calculate_btc_deposit_address_v0(pub_key, network)
     }
 
-    fn calculate_btc_deposit_address_v3(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> BtcAddress {
+    fn calculate_btc_deposit_address_v3(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<BtcAddress> {
         self.calculate_btc_deposit_address_v0(pub_key, network)
     }
 
     fn validate_btc_deposit_address(&self, pub_key: &BtcPubKeySlice, network: &BtcNetwork) -> Result<()> {
-        let calculated_address = self.calculate_btc_deposit_address(pub_key, network);
+        let calculated_address = self.calculate_btc_deposit_address(pub_key, network)?;
         if calculated_address != self.btc_deposit_address {
             debug!("   BTC deposit address: {}", self.btc_deposit_address);
             debug!("Calculated BTC address: {}", calculated_address);

@@ -20,30 +20,27 @@ fn is_address_locked_to_pub_key(
     enclave_public_key_slice: &BtcPubKeySlice,
     address_from_utxo: &BtcAddress,
     deposit_info: &DepositInfoHashMap,
-) -> bool {
+) -> Result<bool> {
     trace!("✔ Checking if address is locked to enclave's public key...");
     match deposit_info.get(address_from_utxo) {
         None => {
             trace!("✘ Address {} is NOT in hash map!", address_from_utxo);
-            false
+            Ok(false)
         },
         Some(deposit_info) => {
             let address_from_script = BtcAddress::p2sh(
                 &get_p2sh_redeem_script_sig(enclave_public_key_slice, &deposit_info.commitment_hash),
                 btc_network,
-            );
+            )?;
             debug!("Deposit info: {:?}", deposit_info);
             debug!("Address from UTXO  : {}", address_from_utxo);
-            debug!("Address from script: {}", address_from_script);
-            match &address_from_script == address_from_utxo {
-                true => {
-                    info!("✔ UTXO IS locked to the enclave!");
-                    true
-                },
-                false => {
-                    trace!("✘ UTXO is NOT locked to the enclave!");
-                    false
-                },
+            debug!("Address from script: {:?}", address_from_script);
+            if &address_from_script == address_from_utxo {
+                info!("✔ UTXO IS locked to the enclave!");
+                Ok(true)
+            } else {
+                trace!("✘ UTXO is NOT locked to the enclave!");
+                Ok(false)
             }
         },
     }
@@ -54,10 +51,10 @@ fn is_output_address_locked_to_pub_key(
     btc_network: BtcNetwork,
     enclave_public_key_slice: &BtcPubKeySlice,
     deposit_info: &DepositInfoHashMap,
-) -> bool {
+) -> Result<bool> {
     match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
-        None => false,
-        Some(address_from_utxo) => {
+        Err(_) => Ok(false),
+        Ok(address_from_utxo) => {
             is_address_locked_to_pub_key(btc_network, enclave_public_key_slice, &address_from_utxo, deposit_info)
         },
     }
@@ -70,16 +67,15 @@ fn is_output_address_in_hash_map(
 ) -> bool {
     info!("✔ Checking if output address is in hash map...");
     match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
-        None => false,
-        Some(address) => match deposit_info.contains_key(&address) {
-            true => {
+        Err(_) => false,
+        Ok(address) => {
+            if deposit_info.contains_key(&address) {
                 info!("✔ Output address {} IS in hash map!", address);
                 true
-            },
-            false => {
+            } else {
                 trace!("✘ Output address {} is NOT in hash map!", address);
                 false
-            },
+            }
         },
     }
 }
@@ -99,7 +95,15 @@ pub fn filter_p2sh_deposit_txs(
                 .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
                 .filter(|tx_out| is_output_address_in_hash_map(tx_out, deposit_info, btc_network))
                 .any(|tx_out| {
-                    is_output_address_locked_to_pub_key(tx_out, btc_network, enclave_public_key_slice, deposit_info)
+                    matches!(
+                        is_output_address_locked_to_pub_key(
+                            tx_out,
+                            btc_network,
+                            enclave_public_key_slice,
+                            deposit_info
+                        ),
+                        Ok(true)
+                    )
                 })
         })
         .cloned()
@@ -172,7 +176,8 @@ mod tests {
             &enclave_public_key_slice,
             &address_from_utxo,
             &deposit_info,
-        );
+        )
+        .unwrap();
         assert!(result);
     }
 
@@ -188,7 +193,8 @@ mod tests {
             &enclave_public_key_slice,
             &address_not_from_utxo,
             &deposit_info,
-        );
+        )
+        .unwrap();
         assert!(!result);
     }
 
@@ -200,7 +206,8 @@ mod tests {
         let deposit_info = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let tx_output = get_sample_tx_output_with_p2sh_deposit();
         let result =
-            is_output_address_locked_to_pub_key(&tx_output, btc_network, &enclave_public_key_slice, &deposit_info);
+            is_output_address_locked_to_pub_key(&tx_output, btc_network, &enclave_public_key_slice, &deposit_info)
+                .unwrap();
         assert!(result);
     }
 
@@ -212,7 +219,8 @@ mod tests {
         let deposit_info = create_hash_map_from_deposit_info_list(&deposit_address_list).unwrap();
         let tx_output = get_wrong_sample_tx_output();
         let result =
-            is_output_address_locked_to_pub_key(&tx_output, btc_network, &enclave_public_key_slice, &deposit_info);
+            is_output_address_locked_to_pub_key(&tx_output, btc_network, &enclave_public_key_slice, &deposit_info)
+                .unwrap();
         assert!(!result);
     }
 

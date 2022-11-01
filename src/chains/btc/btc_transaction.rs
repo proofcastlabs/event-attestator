@@ -1,6 +1,6 @@
 use bitcoin::{
     blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
-    SigHash,
+    Sighash,
 };
 
 use crate::{
@@ -45,7 +45,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         version: BTC_TX_VERSION,
         lock_time: BTC_TX_LOCK_TIME,
     };
-    let fee = zero_change_tx.get_size() as u64 * sats_per_byte;
+    let fee = zero_change_tx.size() as u64 * sats_per_byte;
     let utxo_total = utxos_and_values.sum();
     info!("✔ UTXO(s) total:  {}", utxo_total);
     info!("✔ Outgoing total: {}", total_to_spend);
@@ -97,7 +97,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
             };
             Ok(tx.signature_hash(i, &script, SIGN_ALL_HASH_TYPE as u32))
         })
-        .map(|hash: Result<SigHash>| Ok(hash?.to_vec()))
+        .map(|hash: Result<Sighash>| Ok(hash?.to_vec()))
         .map(|tx_hash_to_sign: Result<Bytes>| {
             btc_private_key.sign_hash_and_append_btc_hash_type(tx_hash_to_sign?.to_vec(), SIGN_ALL_HASH_TYPE)
         })
