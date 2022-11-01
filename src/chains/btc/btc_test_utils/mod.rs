@@ -7,12 +7,14 @@ use bitcoin::{
         transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo},
     },
     hashes::{sha256d, Hash},
+    Witness,
 };
 
 use crate::{
     btc_on_eth::BtcOnEthEthTxInfos, // FIXME We'll need this removing eventually.
     chains::btc::{
         btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
+        btc_constants::DEFAULT_BTC_SEQUENCE,
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_database_utils::BtcDbUtils,
         btc_submission_material::BtcSubmissionMaterialJson,
@@ -67,6 +69,8 @@ pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10: &str = "src/chains/btc/btc_test
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11: &str = "src/chains/btc/btc_test_utils/btc-1670534-block-and-txs.json";
 
 pub const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12: &str = "src/chains/btc/btc_test_utils/btc-1670541-block-and-txs.json";
+
+const SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_13: &str = "src/chains/btc/btc_test_utils/btc-761249-block-and-txs.json";
 
 pub const SAMPLE_SERIALIZED_BTC_UTXO: &str = "0e8d588f88d5624148070a8cd79508da8cb76625e4fcdb19a5fc996aa843bf04000000001976a91454102783c8640c5144d039cea53eb7dbb470081488acffffffff";
 
@@ -154,8 +158,8 @@ pub fn get_sample_btc_utxo() -> BtcUtxo {
         vout: SAMPLE_TRANSACTION_OUTPUT_INDEX as u32,
     };
     BtcUtxo {
-        witness: vec![],         // NOTE: Array of byte arrays (empty for non-segwit).
-        sequence: 4_294_967_295, // NOTE: Unused so just "0xFFFFFFFF" hardcoded
+        witness: Witness::default(), // NOTE: Array of byte arrays (empty for non-segwit).
+        sequence: DEFAULT_BTC_SEQUENCE,
         previous_output: outpoint,
         script_sig: get_sample_pay_to_pub_key_hash_script(),
     }
@@ -223,6 +227,7 @@ pub fn get_sample_btc_block_n(n: usize) -> Result<BtcBlockAndId> {
         10 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_10),
         11 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_11),
         12 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_12),
+        13 => Ok(SAMPLE_TESTNET_BTC_BLOCK_JSON_PATH_13),
         _ => Err(AppError::Custom("✘ Don't have sample for that number!".into())),
     }
     .unwrap();

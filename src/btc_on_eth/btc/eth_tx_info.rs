@@ -4,15 +4,15 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::btc::btc_metadata::ToMetadata,
+    chains::btc::{btc_constants::ZERO_HASH, btc_metadata::ToMetadata},
     safe_addresses::safely_convert_str_to_eth_address,
     types::{Byte, Bytes, Result},
 };
 
-#[derive(Debug, Default, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnEthEthTxInfos(pub Vec<BtcOnEthEthTxInfo>);
 
-#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BtcOnEthEthTxInfo {
     pub amount: U256,
     pub user_data: Option<Bytes>,
@@ -20,6 +20,21 @@ pub struct BtcOnEthEthTxInfo {
     pub eth_token_address: EthAddress,
     pub originating_tx_address: String,
     pub destination_address: EthAddress,
+}
+
+impl Default for BtcOnEthEthTxInfo {
+    fn default() -> Self {
+        Self {
+            // NOTE: The `rust_bitcoin` lib removed default from Txid. Didn't bump the major though so :/
+            originating_tx_hash: Txid::from(*ZERO_HASH),
+            // NOTE: And we can't use `..Default::default()` for the rest without recursing :/
+            amount: U256::default(),
+            user_data: Option::default(),
+            eth_token_address: EthAddress::default(),
+            originating_tx_address: String::default(),
+            destination_address: EthAddress::default(),
+        }
+    }
 }
 
 impl BtcOnEthEthTxInfos {

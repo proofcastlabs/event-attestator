@@ -163,14 +163,14 @@ impl BtcOnEosEosTxInfos {
                 .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
                 .map(|p2sh_tx_out| -> Option<BtcOnEosEosTxInfo> {
                     match BtcAddress::from_script(&p2sh_tx_out.script_pubkey, btc_network) {
-                        None => {
+                        Err(_) => {
                             info!(
                                 "✘ Could not derive BTC address from tx: {:?}",
                                 p2sh_deposit_containing_tx
                             );
                             None
                         },
-                        Some(btc_address) => {
+                        Ok(btc_address) => {
                             info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
                             match deposit_info_hash_map.get(&btc_address) {
                                 None => {

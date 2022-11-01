@@ -101,7 +101,7 @@ impl BtcSubmissionMaterial {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::btc::btc_test_utils::get_sample_btc_submission_material_json_string;
+    use crate::chains::btc::btc_test_utils::{get_sample_btc_block_n, get_sample_btc_submission_material_json_string};
 
     #[test]
     fn should_get_submission_material_json_from_str() {
@@ -114,6 +114,12 @@ mod tests {
     fn should_get_submission_material_from_str() {
         let string = get_sample_btc_submission_material_json_string();
         let result = BtcSubmissionMaterial::from_str(&string);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn should_get_submission_material_correctly() {
+        let result = get_sample_btc_block_n(13);
         assert!(result.is_ok());
     }
 }

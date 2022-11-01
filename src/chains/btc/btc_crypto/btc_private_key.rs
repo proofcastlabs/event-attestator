@@ -2,13 +2,7 @@ use std::fmt;
 
 use bitcoin::{
     network::constants::Network,
-    secp256k1::{
-        key::{PublicKey, SecretKey},
-        rand::thread_rng,
-        Message,
-        Secp256k1,
-        Signature,
-    },
+    secp256k1::{ecdsa::Signature, rand::thread_rng, Message, PublicKey, Secp256k1, SecretKey},
     util::{address::Address as BtcAddress, key::PrivateKey},
 };
 
@@ -31,7 +25,7 @@ impl BtcPrivateKey {
         Ok(Self(PrivateKey {
             network,
             compressed: true,
-            key: SecretKey::from_slice(slice)?,
+            inner: SecretKey::from_slice(slice)?,
         }))
     }
 
@@ -39,12 +33,12 @@ impl BtcPrivateKey {
         Ok(Self(PrivateKey {
             network,
             compressed: false,
-            key: SecretKey::new(&mut thread_rng()),
+            inner: SecretKey::new(&mut thread_rng()),
         }))
     }
 
     pub fn sign_hash(&self, hash: Bytes) -> Result<Signature> {
-        Ok(Secp256k1::new().sign(&Message::from_slice(&hash)?, &self.0.key))
+        Ok(Secp256k1::new().sign_ecdsa(&Message::from_slice(&hash)?, &self.0.inner))
     }
 
     pub fn sign_hash_and_append_btc_hash_type(&self, hash: Bytes, hash_type: u8) -> Result<Bytes> {
@@ -57,7 +51,7 @@ impl BtcPrivateKey {
     }
 
     pub fn to_public_key(&self) -> PublicKey {
-        PublicKey::from_secret_key(&Secp256k1::new(), &self.0.key)
+        PublicKey::from_secret_key(&Secp256k1::new(), &self.0.inner)
     }
 
     pub fn to_public_key_slice(&self) -> BtcPubKeySlice {
@@ -68,7 +62,7 @@ impl BtcPrivateKey {
     pub fn from_wif(wif: &str) -> Result<Self> {
         let pk = PrivateKey::from_wif(wif)?;
         Ok(Self(PrivateKey {
-            key: pk.key,
+            inner: pk.inner,
             network: pk.network,
             compressed: pk.compressed,
         }))

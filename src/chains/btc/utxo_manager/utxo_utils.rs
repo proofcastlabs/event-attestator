@@ -126,7 +126,7 @@ fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
         input: inputs.to_utxos()?,
         lock_time: BTC_TX_LOCK_TIME,
     };
-    let fee = dummy_tx.get_size() as u64 * sats_per_byte;
+    let fee = dummy_tx.size() as u64 * sats_per_byte;
 
     // NOTE: Calculate total + fee to check if we have enough UTXOs to cover it...
     let total_cost = fee + sats_required;

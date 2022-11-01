@@ -23,14 +23,15 @@ fn maybe_extract_p2sh_utxo(
     deposit_info_hash_map: &DepositInfoHashMap,
 ) -> Option<BtcUtxoAndValue> {
     info!("✔ Extracting UTXOs from single `p2sh` transaction...");
-    match tx_output.script_pubkey.is_p2sh() {
-        false => None,
-        true => match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
-            None => {
+    if !tx_output.script_pubkey.is_p2sh() {
+        None
+    } else {
+        match BtcAddress::from_script(&tx_output.script_pubkey, btc_network) {
+            Err(_) => {
                 info!("✘ Could not derive BTC address from tx outout: {:?}", tx_output);
                 None
             },
-            Some(btc_address) => {
+            Ok(btc_address) => {
                 info!("✔ BTC address extracted from `tx_out`: {}", btc_address);
                 match deposit_info_hash_map.get(&btc_address) {
                     None => {
@@ -51,7 +52,7 @@ fn maybe_extract_p2sh_utxo(
                     },
                 }
             },
-        },
+        }
     }
 }
 
