@@ -124,4 +124,26 @@ mod tests {
         let expected_result = "27c6c28b348d330aa15629b26b15743aaa1733bfda8b09ffaadf1f4ad92c60c7".to_string();
         assert_eq!(result, expected_result);
     }
+
+    #[test]
+    fn should_get_correct_action_digest_6() {
+        let action = EosAction {
+            account: AccountName::from_str("btc.ptokens").unwrap(),
+            name: ActionName::from_str("redeem").unwrap(),
+            authorization: vec![
+                PermissionLevel::from_str("aaaaaaaaaabf", "active").unwrap(),
+                PermissionLevel::from_str("stakecasino1", "owner").unwrap(),
+                PermissionLevel::from_str("carol", "custom").unwrap(),
+                PermissionLevel::from_str("richsingsing", "active").unwrap(),
+            ],
+            data: hex::decode("c0a6c36c3adc90bb8d6e0d0000000000085042544300000022314e393348584a687848754732444e59356b786a51373147347463726b5278354341")
+                .unwrap(),
+        };
+        let results = vec![
+            hex::encode(get_action_digest(&action, true).unwrap()), // Assum the action HAS return value...
+            hex::encode(get_action_digest(&action, false).unwrap()), // Assume the action has NO return value...
+        ];
+        let expected_result = "af063d81db44ab38f3bfa7b408c8218cda2e112eaa2820b5b88fb7eb181635e7".to_string();
+        assert!(results.contains(&expected_result));
+    }
 }
