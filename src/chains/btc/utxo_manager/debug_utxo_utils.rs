@@ -30,6 +30,12 @@ use crate::{
     types::Result,
 };
 
+// NOTE: Some functions in here have their debug signature requirement temporarily removed, to
+// allow for the automated `ptokens-utxo-recovery` tool to work. Once that tool has been updated to
+// provide correct signatures, the signatures required for these functions will be re-instated.
+
+const SKIP_DEBUG_SIGNATURE_CHECK: bool = true;
+
 /// # Debug Clear All UTXOS
 ///
 /// This function will remove ALL UTXOS from the core's encrypted database
@@ -40,7 +46,14 @@ use crate::{
 pub fn debug_clear_all_utxos<D: DatabaseInterface>(db: &D, core_type: &CoreType, signature: &str) -> Result<String> {
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), core_type)())
-        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
+        .and_then(|hash| {
+            if SKIP_DEBUG_SIGNATURE_CHECK {
+                warn!("✘ Debug signature check SKIPPED for fxn: {}", function_name!());
+                Ok(())
+            } else {
+                validate_debug_command_signature(db, core_type, signature, &hash)
+            }
+        })
         .map(|_| get_all_utxo_db_keys(db).to_vec())
         .and_then(|db_keys| {
             db_keys
@@ -71,7 +84,14 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(
 ) -> Result<String> {
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), tx_id, &v_out, core_type)())
-        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
+        .and_then(|hash| {
+            if SKIP_DEBUG_SIGNATURE_CHECK {
+                warn!("✘ Debug signature check SKIPPED for fxn: {}", function_name!());
+                Ok(())
+            } else {
+                validate_debug_command_signature(db, core_type, signature, &hash)
+            }
+        })
         .and_then(|_| get_btc_tx_id_from_str(tx_id))
         .and_then(|id| get_utxo_with_tx_id_and_v_out(db, v_out, &id))
         .and_then(|_| db.end_transaction())
@@ -211,7 +231,14 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
 ) -> Result<String> {
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), json_str, core_type)())
-        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
+        .and_then(|hash| {
+            if SKIP_DEBUG_SIGNATURE_CHECK {
+                warn!("✘ Debug signature check SKIPPED for fxn: {}", function_name!());
+                Ok(())
+            } else {
+                validate_debug_command_signature(db, core_type, signature, &hash)
+            }
+        })
         .and_then(|_| BtcUtxosAndValues::from_str(json_str))
         .and_then(|utxos| {
             utxos
