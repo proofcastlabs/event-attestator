@@ -26,6 +26,12 @@ use crate::{
     utils::prepend_debug_output_marker_to_string,
 };
 
+// NOTE: Some functions in here have their debug signature requirement temporarily removed, to
+// allow for the automated `ptokens-utxo-recovery` tool to work. Once that tool has been updated to
+// provide correct signatures, the signatures required for these functions will be re-instated.
+
+const SKIP_DEBUG_SIGNATURE_CHECK: bool = true;
+
 /// # Debug Maybe Add UTXO To DB
 ///
 /// This function accepts as its param BTC submission material, in which it inspects all the
@@ -43,7 +49,14 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
 ) -> Result<String> {
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), &btc_submission_material_json)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| {
+            if SKIP_DEBUG_SIGNATURE_CHECK {
+                warn!("✘ Debug signature check SKIPPED for fxn: {}", function_name!());
+                Ok(())
+            } else {
+                validate_debug_command_signature(db, &CORE_TYPE, signature, &hash)
+            }
+        })
         .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
         .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
