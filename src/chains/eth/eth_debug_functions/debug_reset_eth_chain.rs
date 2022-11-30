@@ -25,6 +25,7 @@ use crate::{
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::{validate_eth_block_in_state, validate_evm_block_in_state},
     },
+    constants::ZERO_CONFS_WARNING,
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
@@ -187,12 +188,15 @@ fn debug_reset_chain<D: DatabaseInterface>(
         .and_then(|state| reset_eth_chain(state, canon_to_tip_length, is_for_eth))
         .and_then(end_eth_db_transaction_and_return_state)
         .map(|_| {
-            let json = if is_for_eth {
-                json!({"eth-chain-reset-success":true})
-            } else {
-                json!({"evm-chain-reset-success":true})
-            };
-            json.to_string()
+            json!({
+                format!("{}_chain_reset_success", if is_for_eth { "eth" } else { "evm" }): true,
+                "number_of_confirmations": if canon_to_tip_length == 0 {
+                    ZERO_CONFS_WARNING.to_string()
+                } else {
+                    canon_to_tip_length.to_string()
+                },
+            })
+            .to_string()
         })
 }
 
