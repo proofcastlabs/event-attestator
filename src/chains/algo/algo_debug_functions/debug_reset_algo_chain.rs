@@ -12,6 +12,7 @@ use crate::{
         core_initialization::initialize_algo_core::initialize_algo_chain_db_keys,
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
     },
+    constants::ZERO_CONFS_WARNING,
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
@@ -113,7 +114,17 @@ pub fn debug_reset_algo_chain<D: DatabaseInterface>(
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(|state| reset_algo_chain_and_return_state(state, canon_to_tip_length))
         .and_then(end_algo_db_transaction_and_return_state)
-        .map(|_| json!({"algo-chain-reset-success":true}).to_string())
+        .map(|_| {
+            json!({
+                "algo-chain-reset-success":true,
+                "number_of_confirmations": if canon_to_tip_length == 0 {
+                    ZERO_CONFS_WARNING.to_string()
+                } else {
+                    canon_to_tip_length.to_string()
+                },
+            })
+            .to_string()
+        })
 }
 
 #[cfg(test)]
