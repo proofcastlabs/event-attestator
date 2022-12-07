@@ -81,7 +81,7 @@ impl Erc20TokenTransferEvents {
             .iter()
             .filter(|t| {
                 let event = t.to_erc20_token_transfer_event();
-                info!("Looking for this standard ERC20 transfer event: {}", event);
+                info!("✔ Looking for this standard ERC20 transfer event: {}", event);
                 if mutable_self.contains(&event) {
                     // NOTE: If the event does exist in `mutable_self`, we MUST remove it before we
                     // check the next event's existence!  This way, multiple of the exact same
@@ -91,7 +91,7 @@ impl Erc20TokenTransferEvents {
                     info!("✔ Standard ERC20 transfer event found in submission material!");
                     return true;
                 }
-                info!("✔ No standard ERC20 transfer event found. Checking if the event is for ETHPNT...");
+                info!("✘ No standard ERC20 transfer event found. Checking if the event is for ETHPNT...");
                 let eth_pnt_event = event.update_emittance_address(&ETHPNT_TOKEN_ADDRESS_ON_ETH);
                 if event.token_address == *PNT_TOKEN_ADDRESS_ON_ETH && mutable_self.contains(&eth_pnt_event) {
                     // NOTE: So a vault change will mean that a ETHPNT peg in will fire a peg-in event to make a
@@ -104,7 +104,7 @@ impl Erc20TokenTransferEvents {
                     info!("✔ ETHPNT transfer event found in submission material!");
                     return true;
                 }
-                info!("✔ No ETHPNT event found. Checking if the event is for a minting transfer event...");
+                info!("✘ No ETHPNT event found. Checking if the event is for a minting transfer event...");
                 let minting_transfer_event = event.update_the_from_address(&EthAddress::zero());
                 if mutable_self.contains(&minting_transfer_event) {
                     // NOTE: So in the case of pegging in the wrapped version of a native token
