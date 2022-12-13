@@ -1,3 +1,6 @@
+use std::str::FromStr;
+
+use bitcoin::Address as BtcAddress;
 use function_name::named;
 use serde_json::json;
 
@@ -101,14 +104,13 @@ pub fn debug_remove_utxo<D: DatabaseInterface>(
 /// # Debug Consolidate Utxos
 ///
 /// This function removes X number of UTXOs from the database then crafts them into a single
-/// transcation to itself before returning the serialized output ready for broadcasting, thus
+/// transaction to itself before returning the serialized output ready for broadcasting, thus
 /// consolidating those X UTXOs into a single one.
 ///
 /// ### BEWARE:
 /// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
 /// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
 /// bricked. Use ONLY if you know exactly what you're doing and why!
-#[named]
 pub fn debug_consolidate_utxos<D: DatabaseInterface>(
     db: &D,
     fee: u64,
@@ -116,26 +118,82 @@ pub fn debug_consolidate_utxos<D: DatabaseInterface>(
     core_type: &CoreType,
     signature: &str,
 ) -> Result<String> {
+    info!("✔ Debug consolidating UTXOs to enclave's address...");
+    consolidate_utxos(db, fee, num_utxos, None, core_type, signature)
+}
+
+/// # Debug Consolidate Utxos To Address
+///
+/// This function removes X number of UTXOs from the database then crafts them into a single
+/// transaction to the provided change address before returning the serialized output ready
+/// for broadcasting, thus consolidating those X UTXOs into a single one.
+///
+/// ### BEWARE:
+/// This function spends UTXOs and outputs a signed transaction. If the outputted transaction is NOT
+/// broadcast, the consolidated  output saved in the DB will NOT be spendable, leaving the enclave
+/// bricked. Use ONLY if you know exactly what you're doing and why!
+pub fn debug_consolidate_utxos_to_address<D: DatabaseInterface>(
+    db: &D,
+    fee: u64,
+    num_utxos: usize,
+    change_address: &str,
+    core_type: &CoreType,
+    signature: &str,
+) -> Result<String> {
+    info!("✔ Debug consolidating UTXOs to address...");
+    consolidate_utxos(db, fee, num_utxos, Some(change_address), core_type, signature)
+}
+
+#[named]
+fn consolidate_utxos<D: DatabaseInterface>(
+    db: &D,
+    fee: u64,
+    num_utxos: usize,
+    maybe_change_address: Option<&str>,
+    core_type: &CoreType,
+    signature: &str,
+) -> Result<String> {
     if num_utxos < 1 {
         return Err("Cannot consolidate 0 UTXOs!".into());
     };
     let btc_db_utils = BtcDbUtils::new(db);
+
+    let enclave_address = btc_db_utils.get_btc_address_from_db()?;
+
+    let change_address = match maybe_change_address {
+        None => {
+            info!("✔ Using enclave's own address to send the change to...");
+            enclave_address.to_string()
+        },
+        Some(address_str) => {
+            // NOTE: This is to ensure the address is a valid one...
+            let address = BtcAddress::from_str(address_str)?;
+            info!("✔ Using passed address to send the change to...");
+            address.to_string()
+        },
+    };
+    info!("✔ Consolidating UTXOS to address: '{}'", change_address);
+
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), &fee, &num_utxos, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
         .and_then(|_| get_x_utxos(db, num_utxos))
         .and_then(|utxos| {
-            let btc_address = btc_db_utils.get_btc_address_from_db()?;
-            let target_script = get_pay_to_pub_key_hash_script(&btc_address)?;
             let btc_tx = create_signed_raw_btc_tx_for_n_input_n_outputs(
                 fee,
                 BtcRecipientsAndAmounts::default(),
-                &btc_address,
+                &change_address,
                 &btc_db_utils.get_btc_private_key_from_db()?,
                 utxos,
             )?;
-            let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
-            save_utxos_to_db(db, &change_utxos)?;
+            if change_address == enclave_address {
+                info!("✔ Extracting change output and saving in db!");
+                let target_script = get_pay_to_pub_key_hash_script(&change_address)?;
+                let change_utxos = extract_utxos_from_p2pkh_txs(&target_script, &[btc_tx.clone()]);
+                save_utxos_to_db(db, &change_utxos)?;
+            } else {
+                info!("✘ NOT extracting change output ∵ it's not this enclave's address!");
+            }
             Ok(btc_tx)
         })
         .and_then(|btc_tx| {
