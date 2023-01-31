@@ -14,6 +14,19 @@ mod int;
 mod test_utils;
 
 // FIXME Used in `State`
+pub use self::{
+    constants::CORE_TYPE,
+    debug_functions::{
+        debug_get_all_db_keys,
+        debug_reprocess_eos_block,
+        debug_reprocess_eos_block_with_nonce,
+        debug_reprocess_int_block,
+    },
+    eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
+    get_enclave_state::get_enclave_state,
+    get_latest_block_numbers::get_latest_block_numbers,
+    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
+};
 pub(crate) use self::{eos::EosOnIntIntTxInfos, int::EosOnIntEosTxInfos};
 pub use crate::{
     chains::{
@@ -47,18 +60,5 @@ pub use crate::{
         debug_get_key_from_db,
         debug_remove_debug_signer,
         debug_set_key_in_db_to_value,
-    },
-    eos_on_int::{
-        constants::CORE_TYPE,
-        debug_functions::{
-            debug_get_all_db_keys,
-            debug_reprocess_eos_block,
-            debug_reprocess_eos_block_with_nonce,
-            debug_reprocess_int_block,
-        },
-        eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
-        get_enclave_state::get_enclave_state,
-        get_latest_block_numbers::get_latest_block_numbers,
-        int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
     },
 };

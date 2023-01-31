@@ -14,6 +14,25 @@ mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
 
+pub use self::{
+    constants::CORE_TYPE,
+    debug_functions::{
+        debug_get_all_db_keys,
+        debug_reprocess_eos_block,
+        debug_reprocess_eos_block_with_fee_accrual,
+        debug_reprocess_eos_block_with_nonce,
+        debug_reprocess_eth_block,
+        debug_reprocess_eth_block_with_fee_accrual,
+        debug_set_accrued_fees_in_dictionary,
+        debug_set_eos_fee_basis_points,
+        debug_set_eth_fee_basis_points,
+        debug_withdraw_fees,
+    },
+    eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
+    eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
+    get_enclave_state::get_enclave_state,
+    get_latest_block_numbers::get_latest_block_numbers,
+};
 pub(crate) use self::{eos::EosOnEthEosTxInfos, eth::EosOnEthEthTxInfos};
 pub use crate::{
     chains::{
@@ -48,24 +67,5 @@ pub use crate::{
         debug_get_key_from_db,
         debug_remove_debug_signer,
         debug_set_key_in_db_to_value,
-    },
-    eos_on_eth::{
-        constants::CORE_TYPE,
-        debug_functions::{
-            debug_get_all_db_keys,
-            debug_reprocess_eos_block,
-            debug_reprocess_eos_block_with_fee_accrual,
-            debug_reprocess_eos_block_with_nonce,
-            debug_reprocess_eth_block,
-            debug_reprocess_eth_block_with_fee_accrual,
-            debug_set_accrued_fees_in_dictionary,
-            debug_set_eos_fee_basis_points,
-            debug_set_eth_fee_basis_points,
-            debug_withdraw_fees,
-        },
-        eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
-        eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
-        get_enclave_state::get_enclave_state,
-        get_latest_block_numbers::get_latest_block_numbers,
     },
 };

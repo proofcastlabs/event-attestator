@@ -14,26 +14,26 @@ mod int;
 mod test_utils;
 
 // FIXME Used in `State`.
+pub use self::{
+    btc::submit_btc_block_to_core,
+    constants::CORE_TYPE,
+    debug_functions::{
+        debug_get_all_db_keys,
+        debug_get_signed_erc777_change_pnetwork_tx,
+        debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+        debug_get_signed_erc777_proxy_change_pnetwork_tx,
+        debug_maybe_add_utxo_to_db,
+        debug_mint_pbtc,
+        debug_reprocess_btc_block,
+        debug_reprocess_btc_block_with_nonce,
+        debug_reprocess_int_block,
+    },
+    get_enclave_state::get_enclave_state,
+    get_latest_block_numbers::get_latest_block_numbers,
+    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
+};
 pub(crate) use self::{btc::BtcOnIntIntTxInfos, int::BtcOnIntBtcTxInfos};
 pub use crate::{
-    btc_on_int::{
-        btc::submit_btc_block_to_core,
-        constants::CORE_TYPE,
-        debug_functions::{
-            debug_get_all_db_keys,
-            debug_get_signed_erc777_change_pnetwork_tx,
-            debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
-            debug_get_signed_erc777_proxy_change_pnetwork_tx,
-            debug_maybe_add_utxo_to_db,
-            debug_mint_pbtc,
-            debug_reprocess_btc_block,
-            debug_reprocess_btc_block_with_nonce,
-            debug_reprocess_int_block,
-        },
-        get_enclave_state::get_enclave_state,
-        get_latest_block_numbers::get_latest_block_numbers,
-        int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
-    },
     chains::{
         btc::{
             btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_fee, debug_set_btc_utxo_nonce},

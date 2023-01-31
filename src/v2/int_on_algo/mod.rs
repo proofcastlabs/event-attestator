@@ -15,6 +15,26 @@ mod test_utils;
 
 // FIXME Used in `State`.
 pub(crate) use self::{algo::IntOnAlgoIntTxInfos, int::IntOnAlgoAlgoTxInfos};
+pub use self::{
+    algo::{maybe_initialize_algo_core, submit_algo_block_to_core},
+    constants::CORE_TYPE,
+    debug_functions::{
+        debug_add_dictionary_entry,
+        debug_get_add_supported_token_tx,
+        debug_get_algo_pay_tx,
+        debug_get_all_db_keys,
+        debug_opt_in_to_application,
+        debug_opt_in_to_asset,
+        debug_remove_dictionary_entry,
+        debug_reprocess_algo_block,
+        debug_reprocess_algo_block_with_nonce,
+        debug_reprocess_int_block,
+        debug_set_algo_account_nonce,
+    },
+    get_enclave_state::get_enclave_state,
+    get_latest_block_numbers::get_latest_block_numbers,
+    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
+};
 pub use crate::{
     chains::{
         algo::{algo_debug_functions::debug_reset_algo_chain, algo_note_metadata::encode_algo_note_metadata},
@@ -30,25 +50,5 @@ pub use crate::{
         debug_get_key_from_db,
         debug_remove_debug_signer,
         debug_set_key_in_db_to_value,
-    },
-    int_on_algo::{
-        algo::{maybe_initialize_algo_core, submit_algo_block_to_core},
-        constants::CORE_TYPE,
-        debug_functions::{
-            debug_add_dictionary_entry,
-            debug_get_add_supported_token_tx,
-            debug_get_algo_pay_tx,
-            debug_get_all_db_keys,
-            debug_opt_in_to_application,
-            debug_opt_in_to_asset,
-            debug_remove_dictionary_entry,
-            debug_reprocess_algo_block,
-            debug_reprocess_algo_block_with_nonce,
-            debug_reprocess_int_block,
-            debug_set_algo_account_nonce,
-        },
-        get_enclave_state::get_enclave_state,
-        get_latest_block_numbers::get_latest_block_numbers,
-        int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
     },
 };

@@ -18,6 +18,30 @@ mod test_utils;
 // FIXME Used in `State`.
 #[cfg(test)]
 pub(self) use self::eth::Erc20OnEosEosTxInfo;
+pub use self::{
+    add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
+    constants::CORE_TYPE,
+    debug_functions::{
+        debug_get_add_supported_token_tx,
+        debug_get_all_db_keys,
+        debug_get_erc20_vault_migrate_single_tx,
+        debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,
+        debug_get_remove_supported_token_tx,
+        debug_reprocess_eos_block,
+        debug_reprocess_eos_block_with_fee_accrual,
+        debug_reprocess_eos_block_with_nonce,
+        debug_reprocess_eth_block,
+        debug_reprocess_eth_block_with_fee_accrual,
+        debug_set_accrued_fees_in_dictionary,
+        debug_set_eos_fee_basis_points,
+        debug_set_eth_fee_basis_points,
+        debug_withdraw_fees_and_save_in_db,
+    },
+    eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
+    eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
+    get_enclave_state::get_enclave_state,
+    get_latest_block_numbers::get_latest_block_numbers,
+};
 pub(crate) use self::{eos::Erc20OnEosEthTxInfos, eth::Erc20OnEosEosTxInfos};
 pub use crate::{
     chains::{
@@ -55,29 +79,5 @@ pub use crate::{
         debug_get_key_from_db,
         debug_remove_debug_signer,
         debug_set_key_in_db_to_value,
-    },
-    erc20_on_eos::{
-        add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
-        constants::CORE_TYPE,
-        debug_functions::{
-            debug_get_add_supported_token_tx,
-            debug_get_all_db_keys,
-            debug_get_erc20_vault_migrate_single_tx,
-            debug_get_erc20_vault_migration_tx as debug_get_perc20_migration_tx,
-            debug_get_remove_supported_token_tx,
-            debug_reprocess_eos_block,
-            debug_reprocess_eos_block_with_fee_accrual,
-            debug_reprocess_eos_block_with_nonce,
-            debug_reprocess_eth_block,
-            debug_reprocess_eth_block_with_fee_accrual,
-            debug_set_accrued_fees_in_dictionary,
-            debug_set_eos_fee_basis_points,
-            debug_set_eth_fee_basis_points,
-            debug_withdraw_fees_and_save_in_db,
-        },
-        eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
-        eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
-        get_enclave_state::get_enclave_state,
-        get_latest_block_numbers::get_latest_block_numbers,
     },
 };

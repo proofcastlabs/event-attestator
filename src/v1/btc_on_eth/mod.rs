@@ -16,32 +16,32 @@ mod utils;
 
 #[cfg(test)]
 pub(crate) use self::btc::BtcOnEthEthTxInfo; // FIXME Current used in `chains::btc::btc_test_utils`
+pub use self::{
+    btc::submit_btc_block_to_enclave,
+    constants::CORE_TYPE,
+    debug_functions::{
+        debug_get_all_db_keys,
+        debug_get_fee_withdrawal_tx,
+        debug_get_signed_erc777_change_pnetwork_tx,
+        debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+        debug_get_signed_erc777_proxy_change_pnetwork_tx,
+        debug_maybe_add_utxo_to_db,
+        debug_mint_pbtc,
+        debug_put_btc_on_eth_peg_in_basis_points_in_db,
+        debug_put_btc_on_eth_peg_out_basis_points_in_db,
+        debug_reprocess_btc_block,
+        debug_reprocess_btc_block_with_fee_accrual,
+        debug_reprocess_btc_block_with_nonce,
+        debug_reprocess_eth_block,
+        debug_reprocess_eth_block_with_fee_accrual,
+        debug_set_accrued_fees,
+    },
+    eth::{maybe_add_erc777_contract_address, maybe_initialize_eth_enclave, submit_eth_block_to_enclave},
+    get_enclave_state::get_enclave_state,
+    get_latest_block_numbers::get_latest_block_numbers,
+};
 pub(crate) use self::{btc::BtcOnEthEthTxInfos, eth::BtcOnEthBtcTxInfos}; // FIXME Currently used in `State`.
 pub use crate::{
-    btc_on_eth::{
-        btc::submit_btc_block_to_enclave,
-        constants::CORE_TYPE,
-        debug_functions::{
-            debug_get_all_db_keys,
-            debug_get_fee_withdrawal_tx,
-            debug_get_signed_erc777_change_pnetwork_tx,
-            debug_get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
-            debug_get_signed_erc777_proxy_change_pnetwork_tx,
-            debug_maybe_add_utxo_to_db,
-            debug_mint_pbtc,
-            debug_put_btc_on_eth_peg_in_basis_points_in_db,
-            debug_put_btc_on_eth_peg_out_basis_points_in_db,
-            debug_reprocess_btc_block,
-            debug_reprocess_btc_block_with_fee_accrual,
-            debug_reprocess_btc_block_with_nonce,
-            debug_reprocess_eth_block,
-            debug_reprocess_eth_block_with_fee_accrual,
-            debug_set_accrued_fees,
-        },
-        eth::{maybe_add_erc777_contract_address, maybe_initialize_eth_enclave, submit_eth_block_to_enclave},
-        get_enclave_state::get_enclave_state,
-        get_latest_block_numbers::get_latest_block_numbers,
-    },
     chains::{
         btc::{
             btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_fee, debug_set_btc_utxo_nonce},
