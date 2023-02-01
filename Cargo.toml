@@ -1,6 +1,7 @@
 [workspace]
 members = [
-    "core",
+    "common",
+    "btc_on_int",
 ]
 
 [profile.dev]
