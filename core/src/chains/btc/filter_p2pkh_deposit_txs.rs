@@ -5,10 +5,10 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_state::BtcState,
         btc_types::{BtcPubKeySlice, BtcTransactions},
         btc_utils::get_pay_to_pub_key_hash_script,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

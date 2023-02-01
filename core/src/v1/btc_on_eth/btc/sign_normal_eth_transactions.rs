@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfo,
     chains::{
-        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
+        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
         eth::{
             eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
@@ -10,6 +10,7 @@ use crate::{
         },
     },
     metadata::metadata_protocol_id::MetadataProtocolId,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

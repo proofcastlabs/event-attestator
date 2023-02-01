@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfo,
     chains::{
-        btc::{btc_constants::PLACEHOLDER_BTC_ADDRESS, btc_state::BtcState},
+        btc::btc_constants::PLACEHOLDER_BTC_ADDRESS,
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
@@ -11,6 +11,7 @@ use crate::{
             eth_traits::EthTxInfoCompatible,
         },
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::get_unix_timestamp,

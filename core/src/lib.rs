@@ -36,6 +36,7 @@ mod errors;
 mod fees;
 mod metadata;
 mod safe_addresses;
+mod state;
 #[cfg(test)]
 mod test_utils;
 mod traits;

@@ -1,11 +1,6 @@
 use bitcoin::{blockdata::block::BlockHeader as BtcBlockHeader, network::constants::Network as BtcNetwork};
 
-use crate::{
-    chains::btc::btc_state::BtcState,
-    constants::CORE_IS_VALIDATING,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{constants::CORE_IS_VALIDATING, state::BtcState, traits::DatabaseInterface, types::Result};
 
 fn check_difficulty_is_above_threshold(
     threshold: u64,

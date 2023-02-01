@@ -1,8 +1,4 @@
-use crate::{
-    chains::btc::{btc_block::BtcBlockInDbFormat, btc_state::BtcState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::btc::btc_block::BtcBlockInDbFormat, state::BtcState, traits::DatabaseInterface, types::Result};
 
 pub fn create_btc_block_in_db_format_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Creating DB formatted BTC block from block in state...");

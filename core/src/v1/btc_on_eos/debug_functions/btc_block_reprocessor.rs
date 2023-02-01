@@ -17,7 +17,6 @@ use crate::{
     chains::{
         btc::{
             btc_database_utils::end_btc_db_transaction,
-            btc_state::BtcState,
             btc_submission_material::parse_submission_material_and_put_in_state,
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
@@ -33,6 +32,7 @@ use crate::{
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     fees::fee_database_utils::FeeDatabaseUtils,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,

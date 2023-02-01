@@ -1,8 +1,4 @@
-use crate::{
-    chains::btc::{btc_database_utils::BtcDbUtils, btc_state::BtcState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::btc::btc_database_utils::BtcDbUtils, state::BtcState, traits::DatabaseInterface, types::Result};
 
 fn remove_tx_infos_from_canon_block<D: DatabaseInterface>(db_utils: &BtcDbUtils<D>) -> Result<()> {
     db_utils

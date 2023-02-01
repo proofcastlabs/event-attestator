@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfos,
     chains::{
-        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata, btc_state::BtcState},
+        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
         eos::{
             eos_chain_id::EosChainId,
             eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
@@ -13,6 +13,7 @@ use crate::{
         },
     },
     metadata::metadata_protocol_id::MetadataProtocolId,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

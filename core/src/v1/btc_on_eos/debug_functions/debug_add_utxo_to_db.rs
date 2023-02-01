@@ -4,7 +4,6 @@ use crate::{
     btc_on_eos::constants::CORE_TYPE,
     chains::btc::{
         btc_database_utils::end_btc_db_transaction,
-        btc_state::BtcState,
         btc_submission_material::parse_submission_material_and_put_in_state,
         extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
         extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
@@ -21,6 +20,7 @@ use crate::{
     constants::SUCCESS_JSON,
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,

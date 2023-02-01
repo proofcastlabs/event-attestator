@@ -1,5 +1,6 @@
 use crate::{
-    chains::btc::{btc_state::BtcState, utxo_manager::utxo_database_utils::save_utxos_to_db},
+    chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

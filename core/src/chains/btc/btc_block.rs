@@ -17,11 +17,8 @@ use crate::{
     btc_on_eos::BtcOnEosEosTxInfos,
     btc_on_eth::BtcOnEthEthTxInfos,
     btc_on_int::BtcOnIntIntTxInfos,
-    chains::btc::{
-        btc_state::BtcState,
-        btc_submission_material::BtcSubmissionMaterialJson,
-        deposit_address_info::DepositInfoList,
-    },
+    chains::btc::{btc_submission_material::BtcSubmissionMaterialJson, deposit_address_info::DepositInfoList},
+    state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},

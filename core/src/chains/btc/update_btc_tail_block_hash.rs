@@ -1,10 +1,6 @@
 use crate::{
-    chains::btc::{
-        btc_block::BtcBlockInDbFormat,
-        btc_constants::BTC_TAIL_LENGTH,
-        btc_database_utils::BtcDbUtils,
-        btc_state::BtcState,
-    },
+    chains::btc::{btc_block::BtcBlockInDbFormat, btc_constants::BTC_TAIL_LENGTH, btc_database_utils::BtcDbUtils},
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

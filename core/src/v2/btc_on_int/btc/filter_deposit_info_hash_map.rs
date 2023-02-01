@@ -1,9 +1,9 @@
 use crate::{
     chains::btc::{
-        btc_state::BtcState,
         deposit_address_info::DepositAddressInfoVersion,
         filter_deposit_address_info_hash_map::filter_deposit_infos_for_allowed_versions,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

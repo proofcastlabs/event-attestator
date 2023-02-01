@@ -6,11 +6,11 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_state::BtcState,
         btc_utils::create_unsigned_utxo_from_tx,
         deposit_address_info::DepositInfoHashMap,
         utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

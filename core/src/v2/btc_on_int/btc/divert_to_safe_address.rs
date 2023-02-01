@@ -1,6 +1,6 @@
 use crate::{
     btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
-    chains::btc::btc_state::BtcState,
+    state::BtcState,
     traits::TxInfo,
 };
 

@@ -3,7 +3,8 @@ use crate::{
         btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
         utils::convert_satoshis_to_wei,
     },
-    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, btc_state::BtcState},
+    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -1,4 +1,4 @@
-use crate::{chains::btc::btc_state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{state::BtcState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_add_btc_block_to_db<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Checking if BTC block is already in the db...");

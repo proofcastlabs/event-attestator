@@ -12,10 +12,10 @@ use serde::Deserialize;
 use crate::{
     chains::btc::{
         btc_block::{BtcBlockAndId, BtcBlockJson},
-        btc_state::BtcState,
         btc_utils::convert_hex_tx_to_btc_transaction,
         deposit_address_info::DepositAddressInfoJsonList,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

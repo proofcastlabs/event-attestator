@@ -1,12 +1,12 @@
 use crate::{
     chains::btc::{
         btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-        btc_state::BtcState,
         utxo_manager::{
             utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
             utxo_utils::utxos_exist_in_db,
         },
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

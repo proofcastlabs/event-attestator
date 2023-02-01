@@ -1,11 +1,6 @@
 use serde_json::json;
 
-use crate::{
-    chains::btc::btc_state::BtcState,
-    constants::ZERO_CONFS_WARNING,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{constants::ZERO_CONFS_WARNING, state::BtcState, traits::DatabaseInterface, types::Result};
 
 pub fn get_btc_init_output_json<D: DatabaseInterface>(state: BtcState<D>) -> Result<String> {
     let number_of_confirmations = state.btc_db_utils.get_btc_canon_to_tip_length_from_db()?;

@@ -1,8 +1,4 @@
-use crate::{
-    chains::{btc::btc_state::BtcState, eos::eos_database_utils::EosDbUtils},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::eos::eos_database_utils::EosDbUtils, state::BtcState, traits::DatabaseInterface, types::Result};
 
 fn increment_eos_nonce<D: DatabaseInterface>(
     db_utils: &EosDbUtils<D>,

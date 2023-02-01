@@ -5,13 +5,13 @@ use crate::{
         btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
         utils::{convert_satoshis_to_wei, convert_wei_to_satoshis},
     },
-    chains::btc::btc_state::BtcState,
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::{
         fee_constants::DISABLE_FEES,
         fee_database_utils::FeeDatabaseUtils,
         fee_utils::sanity_check_basis_points_value,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

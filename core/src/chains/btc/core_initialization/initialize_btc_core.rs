@@ -3,7 +3,6 @@ use crate::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         btc_constants::BTC_CORE_IS_INITIALIZED_JSON,
         btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
-        btc_state::BtcState,
         btc_submission_material::parse_submission_material_and_put_in_state,
         core_initialization::{
             btc_init_utils::{
@@ -28,6 +27,7 @@ use crate::{
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
     core_type::CoreType,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

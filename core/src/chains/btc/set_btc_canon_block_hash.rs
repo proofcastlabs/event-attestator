@@ -1,4 +1,4 @@
-use crate::{chains::btc::btc_state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{state::BtcState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_set_btc_canon_block_hash<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Checking BTC canon block hash is set in database...");

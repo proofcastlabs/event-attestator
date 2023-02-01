@@ -10,10 +10,8 @@ use crate::{
         btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
         utils::convert_satoshis_to_wei,
     },
-    chains::{
-        btc::{btc_state::BtcState, deposit_address_info::DepositInfoHashMap},
-        eth::eth_database_utils::EthDbUtilsExt,
-    },
+    chains::{btc::deposit_address_info::DepositInfoHashMap, eth::eth_database_utils::EthDbUtilsExt},
+    state::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

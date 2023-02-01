@@ -4,10 +4,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfo,
-    chains::{
-        btc::btc_state::BtcState,
-        eos::{eos_crypto::eos_transaction::EosSignedTransaction, eos_unit_conversions::convert_eos_asset_to_u64},
-    },
+    chains::eos::{eos_crypto::eos_transaction::EosSignedTransaction, eos_unit_conversions::convert_eos_asset_to_u64},
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

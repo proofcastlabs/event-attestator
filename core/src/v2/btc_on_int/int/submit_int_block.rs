@@ -114,7 +114,6 @@ mod tests {
             btc::{
                 btc_crypto::btc_private_key::BtcPrivateKey,
                 btc_database_utils::BtcDbUtils,
-                btc_state::BtcState,
                 btc_utils::convert_hex_tx_to_btc_transaction,
                 core_initialization::initialize_btc_core::init_btc_core,
                 utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
@@ -127,6 +126,7 @@ mod tests {
                 eth_utils::convert_hex_to_eth_address,
             },
         },
+        state::BtcState,
         test_utils::get_test_database,
     };
 

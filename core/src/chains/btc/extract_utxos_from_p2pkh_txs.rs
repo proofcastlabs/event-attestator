@@ -2,11 +2,11 @@ use bitcoin::blockdata::script::Script as BtcScript;
 
 use crate::{
     chains::btc::{
-        btc_state::BtcState,
         btc_types::BtcTransaction,
         btc_utils::{create_unsigned_utxo_from_tx, get_pay_to_pub_key_hash_script},
         utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

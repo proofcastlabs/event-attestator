@@ -1,7 +1,8 @@
 use bitcoin::network::constants::Network as BtcNetwork;
 
 use crate::{
-    chains::btc::{btc_state::BtcState, utxo_manager::utxo_database_utils::set_utxo_balance_to_zero},
+    chains::btc::utxo_manager::utxo_database_utils::set_utxo_balance_to_zero,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

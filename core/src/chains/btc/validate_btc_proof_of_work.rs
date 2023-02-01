@@ -1,11 +1,6 @@
 use bitcoin::blockdata::block::BlockHeader as BtcBlockHeader;
 
-use crate::{
-    chains::btc::btc_state::BtcState,
-    constants::CORE_IS_VALIDATING,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{constants::CORE_IS_VALIDATING, state::BtcState, traits::DatabaseInterface, types::Result};
 
 fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<()> {
     match btc_block_header.validate_pow(&btc_block_header.target()) {

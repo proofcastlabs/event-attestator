@@ -1,6 +1,7 @@
 use crate::{
     btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
-    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, btc_state::BtcState, btc_utils::convert_satoshis_to_wei},
+    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, btc_utils::convert_satoshis_to_wei},
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

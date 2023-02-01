@@ -125,7 +125,7 @@ macro_rules! make_stateful_initialization_checkers {
     ($($chain:ident),*) => {
         paste! {
             $(
-                use $crate::chains::[< $chain:lower >]::[< $chain:lower _state>]::[< $chain:camel State>];
+                use $crate::state::[< $chain:camel State>];
 
                 impl CoreType {
                     pub fn [< check_core_is_initialized_and_return_ $chain:lower _state > ]<D: DatabaseInterface>(

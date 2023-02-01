@@ -2,9 +2,9 @@ use crate::{
     chains::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_database_utils::BtcDbUtils,
-        btc_state::BtcState,
         core_initialization::btc_init_utils::get_btc_network_from_arg,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -1,5 +1,6 @@
 use crate::{
-    chains::{btc::btc_state::BtcState, eth::eth_database_utils::EthDbUtilsExt},
+    chains::eth::eth_database_utils::EthDbUtilsExt,
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

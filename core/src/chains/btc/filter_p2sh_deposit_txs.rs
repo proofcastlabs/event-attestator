@@ -6,11 +6,11 @@ use bitcoin::{
 
 use crate::{
     chains::btc::{
-        btc_state::BtcState,
         btc_types::{BtcPubKeySlice, BtcTransaction, BtcTransactions},
         btc_utils::get_p2sh_redeem_script_sig,
         deposit_address_info::DepositInfoHashMap,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

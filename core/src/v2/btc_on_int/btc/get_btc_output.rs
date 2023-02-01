@@ -10,15 +10,13 @@ use serde_json::Value as JsonValue;
 use crate::errors::AppError;
 use crate::{
     btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
-    chains::{
-        btc::btc_state::BtcState,
-        eth::{
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::EthDbUtilsExt,
-            eth_traits::EthTxInfoCompatible,
-            eth_utils::convert_eth_address_to_string,
-        },
+    chains::eth::{
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::EthDbUtilsExt,
+        eth_traits::EthTxInfoCompatible,
+        eth_utils::convert_eth_address_to_string,
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
     utils::get_unix_timestamp,

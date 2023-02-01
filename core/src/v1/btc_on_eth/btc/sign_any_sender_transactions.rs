@@ -1,13 +1,11 @@
 use crate::{
     btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfo,
-    chains::{
-        btc::btc_state::BtcState,
-        eth::{
-            any_sender::relay_transaction::RelayTransaction,
-            eth_database_utils::EthDbUtilsExt,
-            eth_types::{AnySenderSigningParams, RelayTransactions},
-        },
+    chains::eth::{
+        any_sender::relay_transaction::RelayTransaction,
+        eth_database_utils::EthDbUtilsExt,
+        eth_types::{AnySenderSigningParams, RelayTransactions},
     },
+    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

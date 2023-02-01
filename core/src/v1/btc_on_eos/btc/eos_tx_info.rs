@@ -16,7 +16,6 @@ use crate::{
         btc::{
             btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
             btc_metadata::ToMetadata,
-            btc_state::BtcState,
             deposit_address_info::DepositInfoHashMap,
         },
         eos::{eos_unit_conversions::convert_eos_asset_to_u64, eos_utils::get_symbol_from_eos_asset},
@@ -24,6 +23,7 @@ use crate::{
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
     safe_addresses::SAFE_EOS_ADDRESS_STR,
+    state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };

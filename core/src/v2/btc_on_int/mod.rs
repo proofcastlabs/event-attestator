@@ -13,7 +13,6 @@ mod get_latest_block_numbers;
 mod int;
 mod test_utils;
 
-// FIXME Used in `State`.
 pub use self::{
     btc::submit_btc_block_to_core,
     constants::CORE_TYPE,
