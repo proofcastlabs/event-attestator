@@ -10,10 +10,10 @@ use crate::{
         eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
         eos_producer_key::EosProducerKeyV1,
         eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
-        eos_state::EosState,
         protocol_features::WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH,
     },
     constants::CORE_IS_VALIDATING,
+    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

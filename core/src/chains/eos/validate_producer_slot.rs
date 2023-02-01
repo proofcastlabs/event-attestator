@@ -3,9 +3,9 @@ use crate::{
         eos_block_header::EosBlockHeaderV2,
         eos_constants::PRODUCER_REPS,
         eos_producer_schedule::EosProducerScheduleV2,
-        eos_state::EosState,
     },
     constants::CORE_IS_VALIDATING,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

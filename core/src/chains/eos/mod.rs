@@ -22,7 +22,6 @@ pub(crate) mod eos_merkle_utils;
 pub(crate) mod eos_metadata;
 pub(crate) mod eos_producer_key;
 pub(crate) mod eos_producer_schedule;
-pub(crate) mod eos_state;
 pub(crate) mod eos_submission_material;
 pub(crate) mod eos_test_utils;
 pub(crate) mod eos_types;

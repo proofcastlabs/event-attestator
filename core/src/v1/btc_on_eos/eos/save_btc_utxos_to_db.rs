@@ -1,5 +1,6 @@
 use crate::{
-    chains::{btc::utxo_manager::utxo_database_utils::save_utxos_to_db, eos::eos_state::EosState},
+    chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

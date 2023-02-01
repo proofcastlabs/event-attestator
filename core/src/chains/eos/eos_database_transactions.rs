@@ -1,4 +1,4 @@
-use crate::{chains::eos::eos_state::EosState, traits::DatabaseInterface, types::Result};
+use crate::{state::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn start_eos_db_transaction_and_return_state<D>(state: EosState<D>) -> Result<EosState<D>>
 where

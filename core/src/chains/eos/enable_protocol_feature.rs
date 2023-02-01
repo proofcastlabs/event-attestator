@@ -1,9 +1,9 @@
 use crate::{
     chains::eos::{
         eos_database_utils::EosDbUtils,
-        eos_state::EosState,
         protocol_features::{EnabledFeatures, AVAILABLE_FEATURES},
     },
+    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Result},
 };

@@ -1,9 +1,9 @@
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    chains::eos::eos_state::EosState,
     erc20_on_eos::eos::eth_tx_info::{Erc20OnEosEthTxInfo, Erc20OnEosEthTxInfos},
     safe_addresses::SAFE_ETH_ADDRESS,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

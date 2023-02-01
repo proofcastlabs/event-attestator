@@ -10,11 +10,11 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-            eos_state::EosState,
         },
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
     utils::convert_bytes_to_u64,

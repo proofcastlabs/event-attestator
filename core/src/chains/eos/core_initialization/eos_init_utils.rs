@@ -10,7 +10,6 @@ use crate::{
         eos_global_sequences::ProcessedGlobalSequences,
         eos_merkle_utils::Incremerkle,
         eos_producer_schedule::EosProducerScheduleV2,
-        eos_state::EosState,
         eos_submission_material::EosSubmissionMaterial,
         eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules},
         eos_utils::convert_hex_to_checksum256,
@@ -19,6 +18,7 @@ use crate::{
     },
     constants::CORE_IS_VALIDATING,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
+    state::EosState,
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
 };

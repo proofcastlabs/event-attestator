@@ -16,7 +16,6 @@ use crate::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-            eos_state::EosState,
         },
         eth::{
             eth_chain_id::EthChainId,
@@ -35,6 +34,7 @@ use crate::{
         fees_calculator::{FeeCalculator, FeesCalculator},
     },
     safe_addresses::SAFE_ETH_ADDRESS,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
     utils::{convert_bytes_to_u64, strip_hex_prefix},

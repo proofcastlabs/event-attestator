@@ -10,7 +10,6 @@ use crate::{
             get_processed_global_sequences_and_add_to_state,
             maybe_add_global_sequences_to_processed_list_and_return_state,
         },
-        eos_state::EosState,
         eos_submission_material::parse_submission_material_and_add_to_state,
         filter_action_proofs::{
             maybe_filter_duplicate_proofs_from_state,
@@ -45,6 +44,7 @@ use crate::{
         parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,
         sign_int_txs::maybe_sign_int_txs_and_add_to_state,
     },
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

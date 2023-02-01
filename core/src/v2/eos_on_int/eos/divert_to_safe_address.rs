@@ -1,6 +1,6 @@
 use crate::{
-    chains::eos::eos_state::EosState,
     eos_on_int::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos},
+    state::EosState,
     traits::TxInfo,
 };
 

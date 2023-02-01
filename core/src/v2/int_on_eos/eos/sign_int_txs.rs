@@ -1,19 +1,17 @@
 use crate::{
-    chains::{
-        eos::eos_state::EosState,
-        eth::{
-            eth_chain_id::EthChainId,
-            eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_with_user_data,
-            eth_crypto::{
-                eth_private_key::EthPrivateKey,
-                eth_transaction::{EthTransaction, EthTransactions},
-            },
-            eth_database_utils::EthDbUtilsExt,
+    chains::eth::{
+        eth_chain_id::EthChainId,
+        eth_constants::ZERO_ETH_VALUE,
+        eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_with_user_data,
+        eth_crypto::{
+            eth_private_key::EthPrivateKey,
+            eth_transaction::{EthTransaction, EthTransactions},
         },
+        eth_database_utils::EthDbUtilsExt,
     },
     int_on_eos::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos},
     metadata::metadata_traits::ToMetadata,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

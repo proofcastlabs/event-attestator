@@ -1,6 +1,7 @@
 use crate::{
-    chains::eos::{eos_global_sequences::ProcessedGlobalSequences, eos_state::EosState},
+    chains::eos::eos_global_sequences::ProcessedGlobalSequences,
     int_on_eos::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos},
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

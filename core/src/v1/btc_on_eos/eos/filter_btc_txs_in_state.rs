@@ -1,5 +1,6 @@
 use crate::{
-    chains::{btc::filter_btc_txs::maybe_filter_out_btc_txs_with_too_many_outputs, eos::eos_state::EosState},
+    chains::btc::filter_btc_txs::maybe_filter_out_btc_txs_with_too_many_outputs,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

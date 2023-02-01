@@ -1,4 +1,4 @@
-use crate::{chains::eos::eos_state::EosState, traits::DatabaseInterface, types::Result};
+use crate::{state::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_add_new_eos_schedule_to_db_and_return_state<D: DatabaseInterface>(
     state: EosState<D>,

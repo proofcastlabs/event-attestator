@@ -1,4 +1,4 @@
-use crate::{chains::eos::eos_state::EosState, traits::DatabaseInterface, types::Result};
+use crate::{state::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn get_incremerkle_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     state

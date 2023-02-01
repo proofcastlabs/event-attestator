@@ -1,7 +1,7 @@
 use crate::{
     btc_on_eos::eos::btc_tx_info::BtcOnEosBtcTxInfos,
-    chains::eos::eos_state::EosState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

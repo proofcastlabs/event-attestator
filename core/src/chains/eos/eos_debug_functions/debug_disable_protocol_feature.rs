@@ -4,11 +4,11 @@ use crate::{
     chains::eos::{
         disable_protocol_feature::disable_feature_and_return_state,
         eos_database_transactions::end_eos_db_transaction_and_return_state,
-        eos_state::EosState,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

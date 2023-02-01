@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eos::eos::btc_tx_info::{BtcOnEosBtcTxInfo, BtcOnEosBtcTxInfos},
-    chains::{btc::btc_utils::get_hex_tx_from_signed_btc_tx, eos::eos_state::EosState},
+    chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

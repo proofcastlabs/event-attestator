@@ -3,8 +3,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eos::{eos_database_utils::EosDbUtils, eos_state::EosState},
+    chains::eos::eos_database_utils::EosDbUtils,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

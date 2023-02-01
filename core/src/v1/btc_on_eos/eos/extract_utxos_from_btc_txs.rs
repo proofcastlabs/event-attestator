@@ -1,5 +1,6 @@
 use crate::{
-    chains::eos::{eos_state::EosState, extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx},
+    chains::eos::extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx,
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

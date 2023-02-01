@@ -3,15 +3,13 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{
-        eos::eos_state::EosState,
-        eth::{
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::EthDbUtilsExt,
-            eth_traits::EthTxInfoCompatible,
-        },
+    chains::eth::{
+        eth_crypto::eth_transaction::EthTransaction,
+        eth_database_utils::EthDbUtilsExt,
+        eth_traits::EthTxInfoCompatible,
     },
     int_on_eos::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos},
+    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

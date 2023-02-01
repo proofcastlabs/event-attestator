@@ -11,10 +11,10 @@ use crate::{
         eos_block_header::EosBlockHeaderV2,
         eos_extension::EosExtensions,
         eos_producer_schedule::EosProducerScheduleV2,
-        eos_state::EosState,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
     },
+    state::EosState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

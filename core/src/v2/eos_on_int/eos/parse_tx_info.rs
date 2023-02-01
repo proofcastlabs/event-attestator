@@ -8,12 +8,13 @@ use ethereum_types::Address as EthAddress;
 
 use crate::{
     chains::{
-        eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId, eos_state::EosState},
+        eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
         eth::eth_database_utils::EthDbUtilsExt,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_int::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos},
     metadata::{MetadataChainId, ToMetadataChainId},
+    state::EosState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
