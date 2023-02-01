@@ -1,7 +1,6 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 use crate::{
-    btc_on_int::int::btc_tx_info::BtcOnIntBtcTxInfos,
     chains::btc::{
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_utils::get_pay_to_pub_key_hash_script,
@@ -10,6 +9,7 @@ use crate::{
     },
     state::EthState,
     traits::DatabaseInterface,
+    tx_infos::BtcOnIntBtcTxInfos,
     types::Result,
 };
 

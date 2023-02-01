@@ -6,13 +6,13 @@ use bitcoin::{
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_utils::convert_satoshis_to_wei, deposit_address_info::DepositInfoHashMap},
         eth::eth_database_utils::EthDbUtilsExt,
     },
     state::BtcState,
     traits::DatabaseInterface,
+    tx_infos::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     types::{NoneError, Result},
 };
 

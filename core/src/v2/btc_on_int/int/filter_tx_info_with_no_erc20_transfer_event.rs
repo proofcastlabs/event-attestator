@@ -1,4 +1,4 @@
-use crate::btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
+use crate::tx_infos::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
 
 impl_to_erc20_token_event!(BtcOnIntBtcTxInfo, amount_in_wei, to, from, token_address);
 

@@ -2,7 +2,6 @@ use ethereum_types::{H256 as EthHash, U256};
 
 use crate::{
     btc_on_eth::BtcOnEthBtcTxInfos,
-    btc_on_int::BtcOnIntBtcTxInfos,
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_signed_group_txs::AlgoSignedGroupTxs},
         btc::{
@@ -27,6 +26,7 @@ use crate::{
     int_on_eos::IntOnEosEosTxInfos,
     int_on_evm::{IntOnEvmEvmTxInfos, IntOnEvmIntTxInfos},
     traits::DatabaseInterface,
+    tx_infos::BtcOnIntBtcTxInfos,
     types::Result,
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };

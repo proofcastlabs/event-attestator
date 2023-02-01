@@ -9,7 +9,6 @@ use serde_json::Value as JsonValue;
 #[cfg(test)]
 use crate::errors::AppError;
 use crate::{
-    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
@@ -18,6 +17,7 @@ use crate::{
     },
     state::BtcState,
     traits::DatabaseInterface,
+    tx_infos::BtcOnIntIntTxInfo,
     types::{NoneError, Result},
     utils::get_unix_timestamp,
 };

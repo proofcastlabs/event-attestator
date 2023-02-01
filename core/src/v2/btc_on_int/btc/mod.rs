@@ -2,7 +2,6 @@ mod divert_to_safe_address;
 mod filter_deposit_info_hash_map;
 mod filter_int_tx_infos;
 mod get_btc_output;
-mod int_tx_info;
 mod metadata;
 mod parse_tx_infos;
 mod sign_txs;
@@ -10,8 +9,6 @@ mod submit_btc_block;
 
 pub use submit_btc_block::submit_btc_block_to_core;
 
-// FIXME Used in `State`.
-pub(crate) use self::int_tx_info::BtcOnIntIntTxInfos;
 pub(super) use self::{
     divert_to_safe_address::{
         divert_tx_infos_to_safe_address_if_destination_is_router_address,

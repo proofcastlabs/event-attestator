@@ -1,5 +1,4 @@
 use crate::{
-    btc_on_int::btc::int_tx_info::BtcOnIntIntTxInfo,
     chains::eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
     metadata::{
         metadata_address::MetadataAddress,
@@ -8,6 +7,7 @@ use crate::{
         metadata_traits::ToMetadata,
         Metadata,
     },
+    tx_infos::BtcOnIntIntTxInfo,
     types::{Bytes, Result},
 };
 

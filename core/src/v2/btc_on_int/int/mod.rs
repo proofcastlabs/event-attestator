@@ -1,4 +1,3 @@
-mod btc_tx_info;
 mod filter_receipts_in_state;
 mod filter_tx_info_with_no_erc20_transfer_event;
 mod filter_value_too_low_tx_infos;
@@ -8,8 +7,6 @@ mod parse_tx_infos;
 mod sign_txs;
 mod submit_int_block;
 
-// FIXME Used in `State`
-pub(crate) use self::btc_tx_info::BtcOnIntBtcTxInfos;
 #[cfg(test)]
 pub(super) use self::initialize_int_core::init_int_core;
 pub(super) use self::{

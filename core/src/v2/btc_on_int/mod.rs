@@ -31,7 +31,6 @@ pub use self::{
     get_latest_block_numbers::get_latest_block_numbers,
     int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
 };
-pub(crate) use self::{btc::BtcOnIntIntTxInfos, int::BtcOnIntBtcTxInfos};
 pub use crate::{
     chains::{
         btc::{

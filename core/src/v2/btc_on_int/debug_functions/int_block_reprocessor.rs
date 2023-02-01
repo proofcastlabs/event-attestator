@@ -8,7 +8,6 @@ use crate::{
             filter_receipts_for_btc_on_int_redeem_events_in_state,
             get_btc_signed_tx_info_from_btc_txs,
             maybe_sign_btc_txs_and_add_to_state,
-            BtcOnIntBtcTxInfos,
             IntOutput,
         },
     },
@@ -25,6 +24,7 @@ use crate::{
     debug_functions::validate_debug_command_signature,
     state::EthState,
     traits::DatabaseInterface,
+    tx_infos::BtcOnIntBtcTxInfos,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };

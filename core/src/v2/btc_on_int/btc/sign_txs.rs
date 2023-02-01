@@ -1,5 +1,4 @@
 use crate::{
-    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     chains::eth::{
         eth_chain_id::EthChainId,
         eth_constants::ZERO_ETH_VALUE,
@@ -14,6 +13,7 @@ use crate::{
     metadata::metadata_traits::ToMetadata,
     state::BtcState,
     traits::DatabaseInterface,
+    tx_infos::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     types::Result,
 };
 

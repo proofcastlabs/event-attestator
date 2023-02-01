@@ -2,7 +2,6 @@ use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::{
         btc::{
             btc_constants::MAX_NUM_OUTPUTS,
@@ -23,6 +22,7 @@ use crate::{
     safe_addresses::safely_convert_str_to_btc_address,
     state::EthState,
     traits::DatabaseInterface,
+    tx_infos::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     types::Result,
 };
 

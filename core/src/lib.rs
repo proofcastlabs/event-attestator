@@ -40,6 +40,7 @@ mod state;
 #[cfg(test)]
 mod test_utils;
 mod traits;
+mod tx_infos;
 mod types;
 mod utils;
 mod v1;

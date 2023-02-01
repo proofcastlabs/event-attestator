@@ -1,6 +1,6 @@
-use crate::btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
 #[cfg(not(test))]
 use crate::chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS;
+use crate::tx_infos::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
 
 impl BtcOnIntBtcTxInfos {
     pub fn filter_out_any_whose_value_is_too_low(&self) -> Self {

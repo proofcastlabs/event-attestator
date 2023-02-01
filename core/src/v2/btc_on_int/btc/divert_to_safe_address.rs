@@ -1,7 +1,7 @@
 use crate::{
-    btc_on_int::btc::int_tx_info::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
     state::BtcState,
     traits::TxInfo,
+    tx_infos::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
 };
 
 impl_safe_address_diversion_fxn_v2!("zero", BtcState<D>, btc_on_int_int_tx_info);

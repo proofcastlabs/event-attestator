@@ -1,7 +1,6 @@
 use crate::{
     btc_on_eos::BtcOnEosEosTxInfos,
     btc_on_eth::BtcOnEthEthTxInfos,
-    btc_on_int::BtcOnIntIntTxInfos,
     chains::{
         btc::{
             btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
@@ -19,6 +18,7 @@ use crate::{
         },
     },
     traits::DatabaseInterface,
+    tx_infos::BtcOnIntIntTxInfos,
     types::{NoneError, Result},
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
