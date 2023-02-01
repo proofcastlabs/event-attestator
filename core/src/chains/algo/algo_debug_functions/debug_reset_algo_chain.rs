@@ -7,7 +7,6 @@ use crate::{
         add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
         algo_database_transactions::end_algo_db_transaction_and_return_state,
         algo_database_utils::AlgoDbUtils,
-        algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         core_initialization::initialize_algo_core::initialize_algo_chain_db_keys,
         remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
@@ -15,6 +14,7 @@ use crate::{
     constants::ZERO_CONFS_WARNING,
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

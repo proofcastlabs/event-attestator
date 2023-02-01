@@ -4,7 +4,6 @@ use crate::{
     chains::{
         algo::{
             algo_database_transactions::end_algo_db_transaction_and_return_state,
-            algo_state::AlgoState,
             algo_submission_material::parse_algo_submission_material_and_put_in_state,
             increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
             maybe_update_latest_block_with_expired_participants::maybe_update_latest_block_with_expired_participants_and_return_state,
@@ -31,6 +30,7 @@ use crate::{
         },
         constants::CORE_TYPE,
     },
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

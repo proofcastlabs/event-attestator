@@ -6,11 +6,11 @@ use crate::{
     chains::algo::{
         add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
         algo_database_utils::AlgoDbUtils,
-        algo_state::AlgoState,
         algo_submission_material::AlgoSubmissionMaterial,
         remove_irrelevant_txs_from_submission_material_in_state::remove_irrelevant_txs_from_submission_material_in_state,
     },
     core_type::CoreType,
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

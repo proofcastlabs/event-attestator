@@ -1,5 +1,6 @@
 use crate::{
-    chains::algo::{algo_state::AlgoState, get_candidate_block_hash::maybe_get_new_candidate_block_hash},
+    chains::algo::get_candidate_block_hash::maybe_get_new_candidate_block_hash,
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

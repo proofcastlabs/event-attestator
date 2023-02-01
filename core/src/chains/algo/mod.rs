@@ -8,7 +8,6 @@ pub(crate) mod algo_enclave_state;
 pub(crate) mod algo_note_metadata;
 pub(crate) mod algo_relevant_asset_txs;
 pub(crate) mod algo_signed_group_txs;
-pub(crate) mod algo_state;
 pub(crate) mod algo_submission_material;
 pub(crate) mod algo_user_data;
 pub(crate) mod check_parent_exists;

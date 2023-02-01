@@ -3,11 +3,12 @@ use rust_algorand::{AlgorandGenesisId, AlgorandHash, AlgorandTransaction, Algora
 
 use crate::{
     chains::{
-        algo::{algo_chain_id::AlgoChainId, algo_note_metadata::AlgoNoteMetadata, algo_state::AlgoState},
+        algo::{algo_chain_id::AlgoChainId, algo_note_metadata::AlgoNoteMetadata},
         eth::eth_database_utils::EthDbUtilsExt,
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

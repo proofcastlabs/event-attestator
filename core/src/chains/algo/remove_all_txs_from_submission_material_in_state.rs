@@ -1,4 +1,4 @@
-use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
+use crate::{state::AlgoState, traits::DatabaseInterface, types::Result};
 
 pub fn remove_all_txs_from_submission_material_in_state<D: DatabaseInterface>(
     state: AlgoState<D>,

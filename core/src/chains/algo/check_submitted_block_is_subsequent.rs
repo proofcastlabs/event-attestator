@@ -1,11 +1,6 @@
 use rust_algorand::AlgorandBlock;
 
-use crate::{
-    chains::algo::algo_state::AlgoState,
-    constants::CORE_IS_VALIDATING,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{constants::CORE_IS_VALIDATING, state::AlgoState, traits::DatabaseInterface, types::Result};
 
 const NO_PARENT_ERROR: &str = "ALGO block rejected - no parent exists in database!";
 

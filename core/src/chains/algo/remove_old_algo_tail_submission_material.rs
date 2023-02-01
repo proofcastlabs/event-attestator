@@ -1,11 +1,8 @@
 use rust_algorand::AlgorandHash;
 
 use crate::{
-    chains::algo::{
-        algo_database_utils::AlgoDbUtils,
-        algo_state::AlgoState,
-        algo_submission_material::AlgoSubmissionMaterial,
-    },
+    chains::algo::{algo_database_utils::AlgoDbUtils, algo_submission_material::AlgoSubmissionMaterial},
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

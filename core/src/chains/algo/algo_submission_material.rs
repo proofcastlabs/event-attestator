@@ -11,8 +11,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
-    chains::algo::algo_state::AlgoState,
     errors::AppError,
+    state::AlgoState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

@@ -1,9 +1,4 @@
-use crate::{
-    chains::algo::algo_state::AlgoState,
-    constants::CORE_IS_VALIDATING,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{constants::CORE_IS_VALIDATING, state::AlgoState, traits::DatabaseInterface, types::Result};
 
 pub fn check_parent_of_algo_block_in_state_exists<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {
     info!("✔ Checking if ALGO submission material's parent exists in database...");

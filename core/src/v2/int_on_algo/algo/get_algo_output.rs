@@ -7,15 +7,13 @@ use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{
-        algo::algo_state::AlgoState,
-        eth::{
-            eth_crypto::eth_transaction::EthTransaction as IntTransaction,
-            eth_database_utils::EthDbUtilsExt,
-            eth_traits::EthTxInfoCompatible,
-        },
+    chains::eth::{
+        eth_crypto::eth_transaction::EthTransaction as IntTransaction,
+        eth_database_utils::EthDbUtilsExt,
+        eth_traits::EthTxInfoCompatible,
     },
     int_on_algo::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos},
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -5,13 +5,13 @@ use crate::{
             end_algo_db_transaction_and_return_state,
             start_algo_db_transaction_and_return_state,
         },
-        algo_state::AlgoState,
         core_initialization::{
             get_algo_core_init_output::AlgoInitializationOutput,
             initialize_algo_core::initialize_algo_core,
         },
     },
     core_type::CoreType,
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -1,5 +1,6 @@
 use crate::{
-    chains::algo::{algo_relevant_asset_txs::AlgoRelevantAssetTxs, algo_state::AlgoState},
+    chains::algo::algo_relevant_asset_txs::AlgoRelevantAssetTxs,
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

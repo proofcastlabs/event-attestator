@@ -1,6 +1,6 @@
 use rust_algorand::{AlgorandBlock, AlgorandTransaction, AlgorandTransactions};
 
-use crate::{chains::algo::algo_state::AlgoState, traits::DatabaseInterface, types::Result};
+use crate::{state::AlgoState, traits::DatabaseInterface, types::Result};
 
 fn remove_irrelevant_txs_from_block(block: &AlgorandBlock, asset_ids: Vec<u64>) -> Result<AlgorandTransactions> {
     Ok(block.get_transactions().map(|txs| {

@@ -5,7 +5,6 @@ use crate::{
             end_algo_db_transaction_and_return_state,
             start_algo_db_transaction_and_return_state,
         },
-        algo_state::AlgoState,
         algo_submission_material::parse_algo_submission_material_and_put_in_state,
         check_parent_exists::check_parent_of_algo_block_in_state_exists,
         check_submitted_block_is_subsequent::check_submitted_block_is_subsequent_and_return_state,
@@ -35,6 +34,7 @@ use crate::{
         sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
         validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
     },
+    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

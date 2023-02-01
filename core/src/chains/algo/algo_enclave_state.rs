@@ -73,10 +73,10 @@ mod tests {
     use super::*;
     use crate::{
         chains::algo::{
-            algo_state::AlgoState,
             core_initialization::initialize_algo_core::initialize_algo_core,
             test_utils::get_sample_submission_material_n,
         },
+        state::AlgoState,
         test_utils::get_test_database,
     };
 
