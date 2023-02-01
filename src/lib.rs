@@ -41,18 +41,13 @@ mod test_utils;
 mod traits;
 mod types;
 mod utils;
+mod v1;
+mod v2;
 
-pub mod btc_on_eos;
-pub mod btc_on_eth;
-pub mod btc_on_int;
-pub mod eos_on_eth;
-pub mod eos_on_int;
-pub mod erc20_on_eos;
-pub mod erc20_on_evm;
-pub mod erc20_on_int;
-pub mod int_on_algo;
-pub mod int_on_eos;
-pub mod int_on_evm;
+pub use self::{
+    v1::{btc_on_eos, btc_on_eth, eos_on_eth, erc20_on_eos, erc20_on_evm},
+    v2::{btc_on_int, eos_on_int, erc20_on_int, int_on_algo, int_on_eos, int_on_evm},
+};
 
 #[cfg(test)]
 extern crate simple_logger;

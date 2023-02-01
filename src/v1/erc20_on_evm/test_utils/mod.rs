@@ -1,19 +1,17 @@
 #![cfg(test)]
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
+use ethereum_types::Address as EthAddress;
+
 use crate::{
-    chains::eth::{
-        eth_crypto::eth_private_key::EthPrivateKey,
-        eth_log::EthLog,
-        eth_submission_material::EthSubmissionMaterial,
-    },
+    chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_submission_material::EthSubmissionMaterial},
     dictionaries::eth_evm::EthEvmTokenDictionary,
     types::Result,
 };
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
-        "src/chains/eth/eth_contracts/test_utils/{}-submission-material-{}.json",
+        "src/v1/erc20_on_evm/test_utils/{}-submission-material-{}.json",
         chain_type, n
     );
     match Path::new(&path).exists() {
@@ -41,6 +39,10 @@ pub fn get_sample_eth_evm_token_dictionary() -> EthEvmTokenDictionary {
     EthEvmTokenDictionary::from_str(ERC20_ON_EVM_DICTIONARY_JSON).unwrap()
 }
 
+pub fn get_sample_vault_address() -> EthAddress {
+    EthAddress::from_slice(&hex::decode("d608367b33c52293201af7fb578916a7c0784bd7").unwrap())
+}
+
 pub fn get_sample_eth_private_key() -> EthPrivateKey {
     EthPrivateKey::from_slice(&hex::decode("115bfcb3fd7cae5c2b996bf7bd1c012f804b98060f7e2f4d558542549e88440f").unwrap())
         .unwrap()
@@ -49,10 +51,6 @@ pub fn get_sample_eth_private_key() -> EthPrivateKey {
 pub fn get_sample_evm_private_key() -> EthPrivateKey {
     EthPrivateKey::from_slice(&hex::decode("57a5a09577a0604b84870577598d4a24fe9e5b879650a0248ac96be7d9d3f3aa").unwrap())
         .unwrap()
-}
-
-pub fn get_sample_erc20_vault_log_with_user_data() -> EthLog {
-    get_eth_submission_material_n(1).receipts[91].logs[3].clone()
 }
 
 mod tests {
