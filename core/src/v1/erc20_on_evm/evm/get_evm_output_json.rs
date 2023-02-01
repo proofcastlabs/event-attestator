@@ -7,10 +7,10 @@ use crate::{
         any_sender::relay_transaction::RelayTransaction,
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },
     erc20_on_evm::evm::eth_tx_info::{Erc20OnEvmEthTxInfo, Erc20OnEvmEthTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

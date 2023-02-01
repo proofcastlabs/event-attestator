@@ -1,12 +1,12 @@
 use ethereum_types::U256;
 
 use crate::{
-    chains::eth::eth_state::EthState,
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_int::{
         constants::MINIMUM_WEI_AMOUNT,
         int::eos_tx_info::{EosOnIntEosTxInfo, EosOnIntEosTxInfos},
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

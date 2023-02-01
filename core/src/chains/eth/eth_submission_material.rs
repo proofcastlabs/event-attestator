@@ -9,9 +9,9 @@ use crate::{
     chains::eth::{
         eth_block::{EthBlock, EthBlockJson},
         eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
-        eth_state::EthState,
     },
     errors::AppError,
+    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };

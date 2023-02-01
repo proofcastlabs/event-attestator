@@ -94,7 +94,6 @@ mod tests {
                 eth_chain_id::EthChainId,
                 eth_crypto::eth_private_key::EthPrivateKey,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-                eth_state::EthState,
                 eth_utils::convert_hex_to_eth_address,
                 vault_using_cores::VaultUsingCores,
             },
@@ -114,6 +113,7 @@ mod tests {
                 get_sample_vault_address,
             },
         },
+        state::EthState,
         test_utils::get_test_database,
         utils::get_prefixed_db_key,
     };

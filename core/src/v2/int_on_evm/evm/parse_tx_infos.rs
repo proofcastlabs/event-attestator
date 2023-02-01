@@ -5,11 +5,11 @@ use crate::{
         eth_contracts::erc777_token::Erc777RedeemEvent,
         eth_database_utils::EthDbUtilsExt,
         eth_receipt::EthReceipt,
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

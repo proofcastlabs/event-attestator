@@ -5,8 +5,8 @@ use crate::{
             ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
         },
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -10,12 +10,12 @@ use crate::{
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
     metadata::metadata_traits::ToMetadata,
     safe_addresses::safely_convert_str_to_eth_address,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

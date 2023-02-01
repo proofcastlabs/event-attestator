@@ -2,10 +2,10 @@ use crate::{
     chains::eth::{
         calculate_linker_hash::calculate_linker_hash,
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::EthHash,
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

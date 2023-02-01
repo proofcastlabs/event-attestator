@@ -16,8 +16,8 @@ macro_rules! make_erc20_token_event_filterer {
 
         paste! {
             use $crate::{
+                state::EthState,
                 chains::eth::{
-                    eth_state::EthState,
                     eth_contracts::erc20_token::Erc20TokenTransferEvents,
                     eth_database_utils::EthDbUtilsExt,
                 },

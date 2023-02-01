@@ -115,11 +115,11 @@ mod tests {
             eth::{
                 eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-                eth_state::EthState,
                 eth_utils::convert_hex_to_eth_address,
             },
         },
         metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId, Metadata},
+        state::EthState,
         test_utils::get_test_database,
     };
 

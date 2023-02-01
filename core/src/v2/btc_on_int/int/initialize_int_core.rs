@@ -13,10 +13,10 @@ use crate::{
             start_eth_db_transaction_and_return_state,
         },
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },
     core_type::CoreType,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -85,7 +85,8 @@ mod tests {
     use super::*;
     use crate::{
         btc_on_int::test_utils::get_sample_int_submission_material_json_str_n,
-        chains::eth::{eth_state::EthState, eth_utils::convert_hex_to_eth_address},
+        chains::eth::eth_utils::convert_hex_to_eth_address,
+        state::EthState,
         test_utils::get_test_database,
     };
 

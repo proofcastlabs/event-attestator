@@ -1,13 +1,13 @@
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
-    chains::eth::eth_state::EthState,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::{
         fees_calculator::{FeeCalculator, FeesCalculator},
         int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     },
     fees::fee_constants::DISABLE_FEES,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

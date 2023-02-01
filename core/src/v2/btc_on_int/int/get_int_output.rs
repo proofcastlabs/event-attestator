@@ -7,8 +7,9 @@ use crate::{
     btc_on_int::int::btc_tx_info::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_utils::get_hex_tx_from_signed_btc_tx},
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+        eth::eth_database_utils::EthDbUtilsExt,
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

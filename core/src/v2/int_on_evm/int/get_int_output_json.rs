@@ -5,11 +5,11 @@ use crate::{
         any_sender::relay_transaction::RelayTransaction,
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

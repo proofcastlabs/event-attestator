@@ -25,7 +25,6 @@ use crate::{
             },
             eth_database_utils::EthDbUtilsExt,
             eth_log::EthLog,
-            eth_state::EthState,
             eth_submission_material::EthSubmissionMaterial,
         },
     },
@@ -41,6 +40,7 @@ use crate::{
         Metadata,
     },
     safe_addresses::safely_convert_str_to_eos_address,
+    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

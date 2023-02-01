@@ -3,11 +3,11 @@ use crate::{
         eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::evm::int_tx_info::IntOnEvmIntTxInfos,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

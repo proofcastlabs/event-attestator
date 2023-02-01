@@ -3,11 +3,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::{
-        eos::eos_crypto::eos_transaction::EosSignedTransaction,
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
-    },
+    chains::{eos::eos_crypto::eos_transaction::EosSignedTransaction, eth::eth_database_utils::EthDbUtilsExt},
     erc20_on_eos::eth::eos_tx_info::Erc20OnEosEosTxInfo,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

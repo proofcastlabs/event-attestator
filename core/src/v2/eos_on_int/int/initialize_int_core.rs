@@ -10,10 +10,10 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_state::EthState,
         eth_utils::convert_hex_to_eth_address,
     },
     core_type::CoreType,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

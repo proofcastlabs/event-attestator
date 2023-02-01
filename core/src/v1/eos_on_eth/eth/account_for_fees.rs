@@ -1,8 +1,8 @@
 use crate::{
-    chains::eth::eth_state::EthState,
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::fees_calculator::FeesCalculator,
     fees::fee_constants::DISABLE_FEES,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

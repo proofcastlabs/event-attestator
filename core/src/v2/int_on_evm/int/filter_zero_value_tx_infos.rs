@@ -1,9 +1,9 @@
 use ethereum_types::U256;
 
 use crate::{
-    chains::eth::eth_state::EthState,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

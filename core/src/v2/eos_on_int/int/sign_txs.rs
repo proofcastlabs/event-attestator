@@ -1,21 +1,19 @@
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 
 use crate::{
-    chains::{
-        eos::{
-            eos_actions::PTokenPegOutAction,
-            eos_chain_id::EosChainId,
-            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_transaction::{EosSignedTransaction, EosSignedTransactions},
-            },
-            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
+    chains::eos::{
+        eos_actions::PTokenPegOutAction,
+        eos_chain_id::EosChainId,
+        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
+        eos_crypto::{
+            eos_private_key::EosPrivateKey,
+            eos_transaction::{EosSignedTransaction, EosSignedTransactions},
         },
-        eth::eth_state::EthState,
+        eos_utils::get_eos_tx_expiration_timestamp_with_offset,
     },
     eos_on_int::int::eos_tx_info::{EosOnIntEosTxInfo, EosOnIntEosTxInfos},
     metadata::metadata_traits::ToMetadata,
+    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Result},
 };

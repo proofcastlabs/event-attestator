@@ -6,7 +6,6 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_state,
         remove_old_eth_tail_block::maybe_remove_old_evm_tail_block_and_return_state,
@@ -34,6 +33,7 @@ use crate::{
         },
         get_evm_output_json::get_evm_output_json,
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

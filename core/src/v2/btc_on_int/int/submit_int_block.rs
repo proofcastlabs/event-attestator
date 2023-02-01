@@ -13,7 +13,6 @@ use crate::{
         eth::{
             add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
             check_parent_exists::check_for_parent_of_eth_block_in_state,
-            eth_state::EthState,
             eth_submission_material::{
                 parse_eth_submission_material_json_and_put_in_state,
                 EthSubmissionMaterialJson,
@@ -30,6 +29,7 @@ use crate::{
         },
     },
     core_type::CoreType,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -121,12 +121,11 @@ mod tests {
             eth::{
                 eth_crypto::eth_private_key::EthPrivateKey,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-                eth_state::EthState,
                 eth_submission_material::EthSubmissionMaterial,
                 eth_utils::convert_hex_to_eth_address,
             },
         },
-        state::BtcState,
+        state::{BtcState, EthState},
         test_utils::get_test_database,
     };
 

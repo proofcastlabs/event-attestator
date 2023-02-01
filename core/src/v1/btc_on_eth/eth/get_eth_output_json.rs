@@ -5,10 +5,8 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::eth::btc_tx_info::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos},
-    chains::{
-        btc::btc_utils::get_hex_tx_from_signed_btc_tx,
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
-    },
+    chains::{btc::btc_utils::get_hex_tx_from_signed_btc_tx, eth::eth_database_utils::EthDbUtilsExt},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

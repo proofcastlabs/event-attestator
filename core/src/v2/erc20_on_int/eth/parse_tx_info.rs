@@ -6,11 +6,11 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

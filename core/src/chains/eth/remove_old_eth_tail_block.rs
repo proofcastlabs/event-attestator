@@ -1,11 +1,8 @@
 use ethereum_types::H256 as EthHash;
 
 use crate::{
-    chains::eth::{
-        eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
-        eth_submission_material::EthSubmissionMaterial,
-    },
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_submission_material::EthSubmissionMaterial},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

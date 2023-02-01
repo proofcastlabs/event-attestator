@@ -3,9 +3,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use crate::{
     chains::{
         algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState, eth_utils::convert_eth_address_to_string},
+        eth::{eth_database_utils::EthDbUtilsExt, eth_utils::convert_eth_address_to_string},
     },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

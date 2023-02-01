@@ -1,5 +1,6 @@
 use crate::{
-    chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+    chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_database_utils::EthDbUtilsExt},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

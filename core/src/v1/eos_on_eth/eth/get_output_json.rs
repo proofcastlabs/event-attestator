@@ -8,9 +8,10 @@ use crate::{
             eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             eos_database_utils::EosDbUtils,
         },
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
+        eth::eth_database_utils::EthDbUtilsExt,
     },
     eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfo,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -13,11 +13,11 @@ use crate::{
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
     },
     erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     metadata::metadata_traits::ToMetadata,
     safe_addresses::safely_convert_str_to_eth_address,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

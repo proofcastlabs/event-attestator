@@ -6,11 +6,11 @@ use crate::{
         eth_chain_id::EthChainId,
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
-        eth_state::EthState,
         eth_traits::EthTxInfoCompatible,
     },
     erc20_on_int::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos},
     metadata::metadata_traits::ToMetadataChainId,
+    state::EthState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

@@ -4,7 +4,6 @@ use crate::{
     chains::eth::{
         add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
         check_parent_exists::check_for_parent_of_eth_block_in_state,
-        eth_state::EthState,
         eth_submission_material::{
             parse_eth_submission_material_json_and_put_in_state,
             EthSubmissionMaterialJson,
@@ -30,6 +29,7 @@ use crate::{
         parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
         sign_txs::maybe_sign_algo_txs_and_add_to_state,
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

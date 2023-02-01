@@ -1,7 +1,7 @@
 use crate::{
-    chains::eth::eth_state::EthState,
     int_on_eos::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos},
     safe_addresses::SAFE_EOS_ADDRESS_STR,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

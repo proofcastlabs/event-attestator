@@ -5,10 +5,10 @@ use crate::{
         eth_contracts::erc20_vault::ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
         eth_database_utils::EthDbUtilsExt,
         eth_receipt::{EthReceipt, EthReceipts},
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     int_on_evm::int::evm_tx_info::IntOnEvmEvmTxInfos,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

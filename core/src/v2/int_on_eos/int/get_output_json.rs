@@ -1,11 +1,9 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{
-    chains::{
-        eos::eos_crypto::eos_transaction::EosSignedTransaction,
-        eth::{eth_database_utils::EthDbUtilsExt, eth_state::EthState},
-    },
+    chains::{eos::eos_crypto::eos_transaction::EosSignedTransaction, eth::eth_database_utils::EthDbUtilsExt},
     int_on_eos::int::eos_tx_info::IntOnEosEosTxInfo,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

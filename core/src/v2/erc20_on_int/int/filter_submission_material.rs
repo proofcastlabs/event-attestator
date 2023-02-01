@@ -2,11 +2,11 @@ use crate::{
     chains::eth::{
         eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2,
         eth_receipt::{EthReceipt, EthReceipts},
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     erc20_on_int::int::eth_tx_info::Erc20OnIntEthTxInfos,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

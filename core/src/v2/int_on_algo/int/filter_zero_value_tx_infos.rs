@@ -1,8 +1,8 @@
 use ethereum_types::U256;
 
 use crate::{
-    chains::eth::eth_state::EthState,
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -9,16 +9,14 @@ use rust_algorand::{
 };
 
 use crate::{
-    chains::{
-        algo::{
-            algo_constants::ALGO_MAX_FOREIGN_ITEMS,
-            algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
-            algo_user_data::AlgoUserData,
-        },
-        eth::eth_state::EthState,
+    chains::algo::{
+        algo_constants::ALGO_MAX_FOREIGN_ITEMS,
+        algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
+        algo_user_data::AlgoUserData,
     },
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     metadata::metadata_traits::ToMetadata,
+    state::EthState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };

@@ -7,8 +7,8 @@ use crate::{
             extract_utxos_from_p2pkh_txs::extract_utxos_from_txs,
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
-        eth::eth_state::EthState,
     },
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

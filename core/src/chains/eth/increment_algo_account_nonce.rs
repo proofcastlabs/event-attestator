@@ -1,5 +1,6 @@
 use crate::{
-    chains::{algo::algo_database_utils::AlgoDbUtils, eth::eth_state::EthState},
+    chains::algo::algo_database_utils::AlgoDbUtils,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

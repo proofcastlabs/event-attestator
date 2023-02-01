@@ -19,7 +19,6 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
@@ -31,6 +30,7 @@ use crate::{
         Metadata,
     },
     safe_addresses::safely_convert_str_to_eth_address,
+    state::EthState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };

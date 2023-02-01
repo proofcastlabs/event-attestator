@@ -14,7 +14,6 @@ use crate::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
-        eth_state::EthState,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
@@ -26,6 +25,7 @@ use crate::{
         validate_receipts_in_state::validate_receipts_in_state,
     },
     core_type::CoreType,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

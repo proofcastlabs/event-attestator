@@ -1,6 +1,6 @@
 use crate::{
-    chains::eth::eth_state::EthState,
     int_on_evm::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos},
+    state::EthState,
     traits::TxInfo,
 };
 

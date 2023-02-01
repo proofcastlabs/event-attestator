@@ -9,12 +9,12 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
-        eth_state::EthState,
         eth_submission_material::EthSubmissionMaterial,
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     int_on_algo::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos},
     safe_addresses::SAFE_ALGO_ADDRESS,
+    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
