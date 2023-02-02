@@ -2,6 +2,7 @@
 members = [
     "common",
     "btc_on_int",
+    "eos_on_int",
 ]
 
 [profile.dev]
