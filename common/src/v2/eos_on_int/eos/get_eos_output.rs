@@ -98,7 +98,7 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
             0 => vec![],
             _ => get_int_signed_tx_info_from_txs(
                 &state.eth_signed_txs,
-                &state.eos_on_int_int_tx_infos,
+                &EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
                 state.eth_db_utils.get_eth_account_nonce_from_db()?,
                 state.eth_db_utils.get_latest_eth_block_number()?,
             )?,

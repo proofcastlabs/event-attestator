@@ -39,6 +39,7 @@ use crate::{
             maybe_filter_out_value_too_low_txs_from_state,
             maybe_increment_int_nonce_in_db_and_return_eos_state,
             maybe_parse_eos_on_int_int_tx_infos_and_put_in_state,
+            EosOnIntIntTxInfos,
             EosOutput,
         },
     },
@@ -79,7 +80,9 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
         .and_then(|state| {
-            let tx_infos = state.eos_on_int_int_tx_infos.clone();
+            // NOTE: If we're _re_ processing, we don't need to add the global sequence(s) since
+            // they'll have been added the first time this block was processed.
+            let tx_infos = EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?;
             if tx_infos.is_empty() {
                 info!("✔ No EOS tx info in state ∴ no INT transactions to sign!");
                 Ok(state)
@@ -123,7 +126,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                 } else {
                     get_int_signed_tx_info_from_txs(
                         &txs,
-                        &state.eos_on_int_int_tx_infos,
+                        &EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
                         match maybe_nonce {
                             // NOTE: We increment the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,

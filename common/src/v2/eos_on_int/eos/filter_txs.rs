@@ -43,22 +43,28 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Filtering out already processed tx IDs...");
-    let tx_infos = state.eos_on_int_int_tx_infos.clone();
-    debug!("Num tx infos before: {}", tx_infos.len());
-    tx_infos
-        .filter_out_already_processed_txs(&state.processed_tx_ids)
+    EosOnIntIntTxInfos::from_bytes(&state.tx_infos)
+        .and_then(|tx_infos| {
+            debug!("Num tx infos before: {}", tx_infos.len());
+            tx_infos.filter_out_already_processed_txs(&state.processed_tx_ids)
+        })
         .and_then(|filtered| {
             debug!("Num tx infos after: {}", filtered.len());
-            state.replace_eos_on_int_int_tx_infos(filtered)
+            filtered.to_bytes()
         })
+        .map(|bytes| state.add_tx_infos(bytes))
 }
 
 pub fn maybe_filter_out_value_too_low_txs_from_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Filtering out value too low txs from state...");
-    let tx_infos = state.eos_on_int_int_tx_infos.clone();
-    debug!("Num tx infos before: {}", tx_infos.len());
-    tx_infos.filter_out_those_with_value_too_low().and_then(|filtered| {
-        debug!("Num tx infos after: {}", &filtered.len());
-        state.replace_eos_on_int_int_tx_infos(filtered)
-    })
+    EosOnIntIntTxInfos::from_bytes(&state.tx_infos)
+        .and_then(|tx_infos| {
+            debug!("Num tx infos before: {}", tx_infos.len());
+            tx_infos.filter_out_those_with_value_too_low()
+        })
+        .and_then(|filtered| {
+            debug!("Num tx infos after: {}", &filtered.len());
+            filtered.to_bytes()
+        })
+        .map(|bytes| state.add_tx_infos(bytes))
 }

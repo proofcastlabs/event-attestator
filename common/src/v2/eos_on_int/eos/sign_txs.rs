@@ -57,7 +57,7 @@ impl EosOnIntIntTxInfos {
 }
 
 pub fn maybe_sign_int_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    let tx_infos = state.eos_on_int_int_tx_infos.clone();
+    let tx_infos = EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?;
     if tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no INT transactions to sign!");
         Ok(state)

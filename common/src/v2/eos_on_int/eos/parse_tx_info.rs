@@ -247,6 +247,7 @@ pub fn maybe_parse_eos_on_int_int_tx_infos_and_put_in_state<D: DatabaseInterface
     )
     .and_then(|tx_infos| {
         info!("✔ Parsed {} sets of redeem info!", tx_infos.len());
-        state.add_eos_on_int_int_tx_infos(tx_infos)
+        let updated_state = state.add_global_sequences(tx_infos.get_global_sequences());
+        Ok(updated_state.add_tx_infos(tx_infos.to_bytes()?))
     })
 }

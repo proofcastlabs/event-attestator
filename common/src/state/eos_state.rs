@@ -19,11 +19,10 @@ use crate::{
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     eos_on_eth::EosOnEthEosTxInfos,
-    eos_on_int::EosOnIntIntTxInfos,
     erc20_on_eos::Erc20OnEosEthTxInfos,
     int_on_eos::IntOnEosIntTxInfos,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Bytes, Result},
     utils::get_not_in_state_err,
 };
 
@@ -71,7 +70,6 @@ macro_rules! impl_tx_info_fxns {
 impl_tx_info_fxns!(
     BtcOnEosBtcTxInfos,
     EosOnEthEosTxInfos,
-    EosOnIntIntTxInfos,
     IntOnEosIntTxInfos,
     Erc20OnEosEthTxInfos,
 );
@@ -79,6 +77,7 @@ impl_tx_info_fxns!(
 #[derive(Clone, Debug, PartialEq)]
 pub struct EosState<'a, D: DatabaseInterface> {
     pub db: &'a D,
+    pub tx_infos: Bytes,
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
     pub producer_signature: String,
@@ -94,7 +93,6 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
     pub int_on_eos_int_tx_infos: IntOnEosIntTxInfos,
-    pub eos_on_int_int_tx_infos: EosOnIntIntTxInfos,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
     pub btc_on_eos_btc_tx_infos: BtcOnEosBtcTxInfos,
     pub active_schedule: Option<EosProducerScheduleV2>,
@@ -108,6 +106,7 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         EosState {
             db,
             block_num: None,
+            tx_infos: vec![],
             block_header: None,
             action_proofs: vec![],
             active_schedule: None,
@@ -126,10 +125,20 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
             eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
             int_on_eos_int_tx_infos: IntOnEosIntTxInfos::new(vec![]),
-            eos_on_int_int_tx_infos: EosOnIntIntTxInfos::new(vec![]),
             btc_on_eos_btc_tx_infos: BtcOnEosBtcTxInfos::new(vec![]),
             erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos::new(vec![]),
         }
+    }
+
+    pub fn add_global_sequences(mut self, global_sequences: GlobalSequences) -> Self {
+        self.global_sequences = global_sequences;
+        self
+    }
+
+    pub fn add_tx_infos(mut self, infos: Bytes) -> Self {
+        info!("✔ Adding tx infos to state...");
+        self.tx_infos = infos;
+        self
     }
 
     pub fn add_btc_on_eos_signed_txs(mut self, btc_on_eos_signed_txs: Vec<BtcTransaction>) -> Result<EosState<'a, D>> {
