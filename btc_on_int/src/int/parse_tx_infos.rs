@@ -124,7 +124,7 @@ pub fn maybe_parse_btc_on_int_tx_infos_and_add_to_state<D: DatabaseInterface>(
                     &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                 )
                 .and_then(|infos| infos.to_bytes())
-                .and_then(|bytes| state.add_btc_on_int_btc_tx_infos(&bytes))
+                .map(|bytes| state.add_tx_infos(bytes))
             }
         })
 }

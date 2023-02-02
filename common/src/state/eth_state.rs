@@ -26,7 +26,7 @@ use crate::{
     int_on_eos::IntOnEosEosTxInfos,
     int_on_evm::{IntOnEvmEvmTxInfos, IntOnEvmIntTxInfos},
     traits::DatabaseInterface,
-    types::{Byte, Bytes, Result},
+    types::{Bytes, Result},
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
 
@@ -36,13 +36,13 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthState<'a, D: DatabaseInterface> {
     pub db: &'a D,
+    pub tx_infos: Bytes,
     pub misc: Option<String>,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub evm_db_utils: EvmDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
     pub algo_db_utils: AlgoDbUtils<'a, D>,
-    pub btc_on_int_btc_tx_infos: Bytes,
     pub btc_transactions: Option<BtcTransactions>,
     pub algo_signed_group_txs: AlgoSignedGroupTxs,
     pub int_on_evm_int_signed_txs: EthTransactions,
@@ -76,6 +76,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         EthState {
             db,
             misc: None,
+            tx_infos: vec![],
             btc_transactions: None,
             eos_transactions: None,
             btc_utxos_and_values: None,
@@ -83,7 +84,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
             evm_algo_token_dictionary: None,
-            btc_on_int_btc_tx_infos: vec![],
             eth_db_utils: EthDbUtils::new(db),
             evm_db_utils: EvmDbUtils::new(db),
             eos_db_utils: EosDbUtils::new(db),
@@ -210,9 +210,9 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         self.replace_btc_on_eth_btc_tx_infos(BtcOnEthBtcTxInfos::new(new_infos))
     }
 
-    pub fn add_btc_on_int_btc_tx_infos(self, infos: &[Byte]) -> Result<Self> {
-        // FIXME
-        self.replace_btc_on_int_btc_tx_infos(infos)
+    pub fn add_tx_infos(mut self, infos: Bytes) -> Self {
+        self.tx_infos = infos;
+        self
     }
 
     pub fn add_erc20_on_eos_eos_tx_infos(self, mut infos: Erc20OnEosEosTxInfos) -> Result<Self> {
@@ -269,11 +269,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
 
     pub fn replace_erc20_on_int_eth_tx_infos(mut self, replacements: Erc20OnIntEthTxInfos) -> Result<Self> {
         self.erc20_on_int_eth_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_btc_on_int_btc_tx_infos(mut self, replacements: &[Byte]) -> Result<Self> {
-        self.btc_on_int_btc_tx_infos = replacements.into();
         Ok(self)
     }
 

@@ -18,7 +18,7 @@ macro_rules! impl_safe_address_diversion_fxn_v3 {
                     "✔ Diverting tx infos if destination address is the {} address...",
                     $thing_to_check,
                 );
-                let tx_infos = [< $tx_info_name:camel s>]::from_bytes(&state.[< $tx_info_name s>])?;
+                let tx_infos = [< $tx_info_name:camel s>]::from_bytes(&state.tx_infos)?;
                 let filtered = [< $tx_info_name:camel s>]::new(
                     tx_infos
                         .iter()
@@ -27,7 +27,7 @@ macro_rules! impl_safe_address_diversion_fxn_v3 {
                         .collect::<Vec<[< $tx_info_name:camel >]>>()
 
                 );
-                state.[< replace_ $tx_info_name s >](filtered.to_bytes()?)
+                Ok(state.add_tx_infos(filtered.to_bytes()?))
             }
         }
     }

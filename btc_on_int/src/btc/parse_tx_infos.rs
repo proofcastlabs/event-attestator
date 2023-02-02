@@ -105,5 +105,5 @@ pub fn parse_int_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
         &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
     )
     .and_then(|params| params.to_bytes())
-    .and_then(|bytes| state.add_btc_on_int_int_tx_infos(bytes))
+    .map(|bytes| state.add_tx_infos(bytes))
 }

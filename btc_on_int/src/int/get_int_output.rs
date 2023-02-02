@@ -113,7 +113,7 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<I
             Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                 state.btc_db_utils.get_btc_account_nonce_from_db()?,
                 txs,
-                &BtcOnIntBtcTxInfos::from_bytes(&state.btc_on_int_btc_tx_infos)?,
+                &BtcOnIntBtcTxInfos::from_bytes(&state.tx_infos)?,
                 state.btc_db_utils.get_latest_btc_block_number()?,
                 &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                 &state.btc_db_utils.get_btc_chain_id_from_db()?,

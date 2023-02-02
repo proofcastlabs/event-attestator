@@ -48,7 +48,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
                     )
                 })
                 .and_then(|params| params.to_bytes())
-                .and_then(|bytes| state.add_btc_on_int_btc_tx_infos(&bytes))
+                .map(|bytes| state.add_tx_infos(bytes))
         })
         .and_then(debug_filter_tx_info_with_no_erc20_transfer_event)
         .and_then(maybe_sign_btc_txs_and_add_to_state)
@@ -62,7 +62,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                         state.btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
-                        &BtcOnIntBtcTxInfos::from_bytes(&state.btc_on_int_btc_tx_infos)?,
+                        &BtcOnIntBtcTxInfos::from_bytes(&state.tx_infos)?,
                         state.btc_db_utils.get_latest_btc_block_number()?,
                         &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                         &state.btc_db_utils.get_btc_chain_id_from_db()?,

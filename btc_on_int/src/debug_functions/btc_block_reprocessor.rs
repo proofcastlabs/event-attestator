@@ -71,7 +71,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_token_address)
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
         .and_then(|state| {
-            BtcOnIntIntTxInfos::from_bytes(&state.btc_on_int_int_tx_infos)?
+            BtcOnIntIntTxInfos::from_bytes(&state.tx_infos)?
                 .to_int_signed_txs(&EthSigningParams {
                     gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
                     chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
@@ -100,7 +100,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                 0 => Ok(vec![]),
                 _ => get_eth_signed_tx_info_from_eth_txs(
                     &state.eth_signed_txs,
-                    &BtcOnIntIntTxInfos::from_bytes(&state.btc_on_int_int_tx_infos)?,
+                    &BtcOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
                     match maybe_nonce {
                         Some(nonce) => nonce,
                         None => state.eth_db_utils.get_eth_account_nonce_from_db()?,

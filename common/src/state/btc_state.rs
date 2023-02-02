@@ -31,7 +31,7 @@ pub struct BtcState<'a, D: DatabaseInterface> {
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
-    pub btc_on_int_int_tx_infos: Bytes,
+    pub tx_infos: Bytes,
     pub eth_signed_txs: EthTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
@@ -51,6 +51,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
     pub fn init(db: &'a D) -> BtcState<'a, D> {
         BtcState {
             db,
+            tx_infos: vec![],
             any_sender: None,
             ref_block_num: None,
             submission_json: None,
@@ -62,7 +63,6 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             deposit_info_hash_map: None,
             any_sender_signed_txs: None,
             btc_block_in_db_format: None,
-            btc_on_int_int_tx_infos: vec![],
             utxos_and_values: vec![].into(),
             btc_db_utils: BtcDbUtils::new(db),
             eth_db_utils: EthDbUtils::new(db),
@@ -201,10 +201,10 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_btc_on_int_int_tx_infos(mut self, bytes: Bytes) -> Result<BtcState<'a, D>> {
-        info!("✔ Adding `BtcOnIntIntTxInfos` to state...");
-        self.btc_on_int_int_tx_infos = bytes;
-        Ok(self)
+    pub fn add_tx_infos(mut self, bytes: Bytes) -> Self {
+        info!("✔ Adding tx infos bytes to state...");
+        self.tx_infos = bytes;
+        self
     }
 
     pub fn add_btc_on_eth_eth_tx_infos(mut self, mut params: BtcOnEthEthTxInfos) -> Result<BtcState<'a, D>> {
@@ -234,12 +234,6 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
     ) -> Result<BtcState<'a, D>> {
         info!("✔ Replacing `BtcOnEosEosTxInfos` in state...");
         self.btc_on_eos_eos_tx_infos = replacement_params;
-        Ok(self)
-    }
-
-    pub fn replace_btc_on_int_int_tx_infos(mut self, bytes: Bytes) -> Result<BtcState<'a, D>> {
-        info!("✔ Replacing `BtcOnIntIntTxInfos` in state...");
-        self.btc_on_int_int_tx_infos = bytes;
         Ok(self)
     }
 

@@ -32,8 +32,8 @@ impl BtcOnIntIntTxInfos {
 pub fn maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state<D: DatabaseInterface>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
-    BtcOnIntIntTxInfos::from_bytes(&state.btc_on_int_int_tx_infos)
+    BtcOnIntIntTxInfos::from_bytes(&state.tx_infos)
         .and_then(|infos| infos.filter_out_value_too_low())
         .and_then(|filtered| filtered.to_bytes())
-        .and_then(|bytes| state.replace_btc_on_int_int_tx_infos(bytes))
+        .map(|bytes| state.add_tx_infos(bytes))
 }

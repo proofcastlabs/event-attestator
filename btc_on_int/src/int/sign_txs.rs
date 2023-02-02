@@ -48,7 +48,7 @@ fn to_btc_txs_whilst_extracting_change_outputs<D: DatabaseInterface>(
 
 pub fn maybe_sign_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe signing BTC transaction(s) from `BtcOnIntBtcTxInfos`...");
-    let btc_tx_infos = BtcOnIntBtcTxInfos::from_bytes(&state.btc_on_int_btc_tx_infos)?;
+    let btc_tx_infos = BtcOnIntBtcTxInfos::from_bytes(&state.tx_infos)?;
     let num_tx_infos = btc_tx_infos.len();
     if num_tx_infos == 0 {
         info!("✔ No `BtcOnIntBtcTxInfos` in state ∴ not creating BTC txs!");
