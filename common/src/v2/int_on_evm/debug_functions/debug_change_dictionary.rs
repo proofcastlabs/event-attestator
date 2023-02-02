@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use function_name::named;
 use serde_json::json;
 

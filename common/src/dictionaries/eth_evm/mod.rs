@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
@@ -5,6 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::{dictionary_constants::ETH_EVM_DICTIONARY_KEY, dictionary_traits::DictionaryDecimalConverter},
+    errors::AppError,
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     state::EthState,
     traits::DatabaseInterface,
@@ -171,17 +174,6 @@ impl EthEvmTokenDictionary {
         self.iter().map(|entry| entry.evm_address).collect()
     }
 
-    #[cfg(test)]
-    pub fn from_str(s: &str) -> Result<Self> {
-        let entry_jsons: Vec<EthEvmTokenDictionaryEntryJson> = serde_json::from_str(s)?;
-        Ok(Self::new(
-            entry_jsons
-                .iter()
-                .map(EthEvmTokenDictionaryEntry::from_json)
-                .collect::<Result<Vec<EthEvmTokenDictionaryEntry>>>()?,
-        ))
-    }
-
     fn get_eth_fee_basis_points(&self, eth_address: &EthAddress) -> Result<u64> {
         Ok(self.get_entry_via_eth_address(eth_address)?.eth_fee_basis_points)
     }
@@ -318,6 +310,20 @@ impl EthEvmTokenDictionary {
     }
 }
 
+impl FromStr for EthEvmTokenDictionary {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let entry_jsons: Vec<EthEvmTokenDictionaryEntryJson> = serde_json::from_str(s)?;
+        Ok(Self::new(
+            entry_jsons
+                .iter()
+                .map(EthEvmTokenDictionaryEntry::from_json)
+                .collect::<Result<Vec<EthEvmTokenDictionaryEntry>>>()?,
+        ))
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
 pub struct EthEvmTokenDictionaryJson(pub Vec<EthEvmTokenDictionaryEntryJson>);
 
@@ -345,6 +351,14 @@ pub struct EthEvmTokenDictionaryEntry {
     pub last_withdrawal_human_readable: String,
     pub eth_token_decimals: Option<u16>,
     pub evm_token_decimals: Option<u16>,
+}
+
+impl FromStr for EthEvmTokenDictionaryEntry {
+    type Err = AppError;
+
+    fn from_str(json_string: &str) -> Result<Self> {
+        EthEvmTokenDictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
+    }
 }
 
 impl EthEvmTokenDictionaryEntry {
@@ -388,10 +402,6 @@ impl EthEvmTokenDictionaryEntry {
         new_entry.accrued_fees = fee;
         new_entry.accrued_fees_human_readable = fee.as_u128();
         new_entry
-    }
-
-    pub fn from_str(json_string: &str) -> Result<Self> {
-        EthEvmTokenDictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
     }
 
     pub fn add_to_accrued_fees(&self, addend: U256) -> Self {
@@ -479,8 +489,10 @@ pub struct EthEvmTokenDictionaryEntryJson {
     evm_token_decimals: Option<u16>,
 }
 
-impl EthEvmTokenDictionaryEntryJson {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for EthEvmTokenDictionaryEntryJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
 }

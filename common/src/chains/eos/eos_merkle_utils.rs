@@ -130,13 +130,6 @@ impl Incremerkle {
         IncremerkleJson::from_incremerkle(self)
     }
 
-    pub fn default() -> Self {
-        Incremerkle {
-            node_count: 0,
-            active_nodes: vec![],
-        }
-    }
-
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
         let mut canonical_l: Checksum256 = *val;
         canonical_l.set_hash0(canonical_l.hash0() & 0xFFFF_FFFF_FFFF_FF7F_u64);

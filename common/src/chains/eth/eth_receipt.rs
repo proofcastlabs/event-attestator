@@ -1,4 +1,4 @@
-use std::cmp::Ordering;
+use std::{cmp::Ordering, str::FromStr};
 
 use derive_more::{Constructor, Deref, From, Into};
 use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
@@ -14,6 +14,7 @@ use crate::{
         eth_receipt_type::EthReceiptType,
         eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
     },
+    errors::AppError,
     types::{Bytes, NoneError, Result},
     utils::{add_key_and_value_to_json, strip_hex_prefix},
 };
@@ -140,8 +141,10 @@ pub struct EthReceiptJson {
     pub receipt_type: Option<String>,
 }
 
-impl EthReceiptJson {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for EthReceiptJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
 }
@@ -163,13 +166,17 @@ pub struct EthReceipt {
     pub receipt_type: Option<EthReceiptType>,
 }
 
+impl FromStr for EthReceipt {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_json(&EthReceiptJson::from_str(s)?)
+    }
+}
+
 impl EthReceipt {
     pub fn to_string(&self) -> Result<String> {
         Ok(self.to_json()?.to_string())
-    }
-
-    pub fn from_str(s: &str) -> Result<Self> {
-        Self::from_json(&EthReceiptJson::from_str(s)?)
     }
 
     fn get_receipt_type(&self) -> Result<EthReceiptType> {

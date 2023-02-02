@@ -23,7 +23,7 @@ impl EosKnownSchedules {
         EosKnownSchedules(vec![EosKnownSchedule::new(version)])
     }
 
-    pub fn add(mut self, version: u32) -> Self {
+    pub fn add_new(mut self, version: u32) -> Self {
         let new_sched = EosKnownSchedule::new(version);
         if !self.0.contains(&new_sched) {
             self.0.push(new_sched);

@@ -12,7 +12,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Default, Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnIntIntTxInfos(pub Vec<BtcOnIntIntTxInfo>);
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Constructor)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BtcOnIntIntTxInfo {
     pub host_token_amount: U256,
     pub user_data: Bytes,

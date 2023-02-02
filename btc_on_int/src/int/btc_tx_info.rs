@@ -7,7 +7,6 @@ use common::{
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Constructor, Deref, IntoIterator, Serialize, Deserialize)]
 pub struct BtcOnIntBtcTxInfos(pub Vec<BtcOnIntBtcTxInfo>);

@@ -1,5 +1,5 @@
 #![cfg(test)]
-use std::{fs::read_to_string, path::Path};
+use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use bitcoin::hashes::{sha256, Hash as HashTrait};
 use eos_chain::{NumBytes, Write};

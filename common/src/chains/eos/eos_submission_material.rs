@@ -14,6 +14,7 @@ use crate::{
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
     },
+    errors::AppError,
     state::EosState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
@@ -26,6 +27,23 @@ pub struct EosSubmissionMaterial {
     pub action_proofs: EosActionProofs,
     pub block_header: EosBlockHeaderV2,
     pub interim_block_ids: Checksum256s,
+}
+
+impl FromStr for EosSubmissionMaterial {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        info!("✔ Parsing EOS submission material...");
+        EosSubmissionMaterialJson::from_str(s)
+            .and_then(|json| Self::from_json(&json))
+            .map(|submission_material| {
+                info!(
+                    "✔ EOS submission material parsed! Block number: {}",
+                    submission_material.block_num
+                );
+                submission_material
+            })
+    }
 }
 
 impl EosSubmissionMaterial {
@@ -104,19 +122,6 @@ impl EosSubmissionMaterial {
             action_proofs: Self::parse_eos_action_proof_jsons_to_action_proofs(&json.action_proofs)?,
         })
     }
-
-    pub fn from_str(s: &str) -> Result<Self> {
-        info!("✔ Parsing EOS submission material...");
-        EosSubmissionMaterialJson::from_str(s)
-            .and_then(|json| Self::from_json(&json))
-            .map(|submission_material| {
-                info!(
-                    "✔ EOS submission material parsed! Block number: {}",
-                    submission_material.block_num
-                );
-                submission_material
-            })
-    }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -126,8 +131,10 @@ pub struct EosSubmissionMaterialJson {
     pub block_header: EosBlockHeaderJson,
 }
 
-impl EosSubmissionMaterialJson {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for EosSubmissionMaterialJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
 }

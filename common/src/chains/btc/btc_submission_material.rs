@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 pub use bitcoin::{
     blockdata::{
         block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
@@ -15,6 +17,7 @@ use crate::{
         btc_utils::convert_hex_tx_to_btc_transaction,
         deposit_address_info::DepositAddressInfoJsonList,
     },
+    errors::AppError,
     state::BtcState,
     traits::DatabaseInterface,
     types::Result,
@@ -46,6 +49,18 @@ pub struct BtcSubmissionMaterialJson {
     pub deposit_address_list: DepositAddressInfoJsonList,
 }
 
+impl FromStr for BtcSubmissionMaterialJson {
+    type Err = AppError;
+
+    fn from_str(string: &str) -> Result<Self> {
+        info!("✔ Parsing `BtcSubmissionMaterialJson` from string...");
+        match serde_json::from_str(string) {
+            Ok(json) => Ok(json),
+            Err(err) => Err(err.into()),
+        }
+    }
+}
+
 impl BtcSubmissionMaterialJson {
     fn convert_hex_txs_to_btc_transactions(hex_txs: Vec<String>) -> Result<Vec<BtcTransaction>> {
         hex_txs
@@ -60,14 +75,6 @@ impl BtcSubmissionMaterialJson {
             header: self.block.to_block_header()?,
             txdata: Self::convert_hex_txs_to_btc_transactions(self.transactions.clone())?,
         })
-    }
-
-    pub fn from_str(string: &str) -> Result<Self> {
-        info!("✔ Parsing `BtcSubmissionMaterialJson` from string...");
-        match serde_json::from_str(string) {
-            Ok(json) => Ok(json),
-            Err(err) => Err(err.into()),
-        }
     }
 }
 
@@ -92,8 +99,12 @@ impl BtcSubmissionMaterial {
         );
         Ok(submission_material)
     }
+}
 
-    pub fn from_str(string: &str) -> Result<Self> {
+impl FromStr for BtcSubmissionMaterial {
+    type Err = AppError;
+
+    fn from_str(string: &str) -> Result<Self> {
         BtcSubmissionMaterialJson::from_str(string).and_then(|json| Self::from_json(&json))
     }
 }

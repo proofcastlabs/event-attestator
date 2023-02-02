@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use bitcoin::{
     blockdata::transaction::TxIn as BtcUtxo,
     hash_types::Txid,
@@ -12,6 +14,7 @@ use crate::{
         btc_utils::{deserialize_btc_utxo, serialize_btc_utxo},
         deposit_address_info::DepositAddressInfoJson,
     },
+    errors::AppError,
     types::{Bytes, Result},
 };
 
@@ -20,6 +23,19 @@ use crate::{
 )]
 pub struct BtcUtxosAndValues(pub Vec<BtcUtxoAndValue>);
 
+impl FromStr for BtcUtxosAndValues {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        let jsons: Vec<BtcUtxoAndValueJson> = serde_json::from_str(s)?;
+        let structs = jsons
+            .iter()
+            .map(BtcUtxoAndValue::from_json)
+            .collect::<Result<Vec<BtcUtxoAndValue>>>()?;
+        Ok(Self::new(structs))
+    }
+}
+
 impl BtcUtxosAndValues {
     pub fn to_string(&self) -> Result<String> {
         Ok(json!(self
@@ -27,15 +43,6 @@ impl BtcUtxosAndValues {
             .map(|utxo| utxo.to_json())
             .collect::<Result<Vec<BtcUtxoAndValueJson>>>()?)
         .to_string())
-    }
-
-    pub fn from_str(s: &str) -> Result<Self> {
-        let jsons: Vec<BtcUtxoAndValueJson> = serde_json::from_str(s)?;
-        let structs = jsons
-            .iter()
-            .map(BtcUtxoAndValue::from_json)
-            .collect::<Result<Vec<BtcUtxoAndValue>>>()?;
-        Ok(Self::new(structs))
     }
 
     pub fn to_utxos(&self) -> Result<Vec<BtcUtxo>> {
@@ -54,6 +61,14 @@ pub struct BtcUtxoAndValue {
     pub maybe_extra_data: Option<Bytes>,
     pub maybe_pointer: Option<sha256d::Hash>,
     pub maybe_deposit_info_json: Option<DepositAddressInfoJson>,
+}
+
+impl FromStr for BtcUtxoAndValue {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        BtcUtxoAndValueJson::from_str(s).and_then(|json| Self::from_json(&json))
+    }
 }
 
 impl BtcUtxoAndValue {
@@ -111,10 +126,6 @@ impl BtcUtxoAndValue {
         })
     }
 
-    pub fn from_str(s: &str) -> Result<Self> {
-        BtcUtxoAndValueJson::from_str(s).and_then(|json| Self::from_json(&json))
-    }
-
     pub fn to_string(&self) -> Result<String> {
         self.to_json().and_then(|json| json.to_string())
     }
@@ -131,11 +142,15 @@ pub struct BtcUtxoAndValueJson {
     pub v_out: Option<u32>,
 }
 
-impl BtcUtxoAndValueJson {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for BtcUtxoAndValueJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
+}
 
+impl BtcUtxoAndValueJson {
     pub fn to_string(&self) -> Result<String> {
         Ok(serde_json::to_string(self)?)
     }

@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use common::{
     chains::eth::{
         eth_chain_id::EthChainId,

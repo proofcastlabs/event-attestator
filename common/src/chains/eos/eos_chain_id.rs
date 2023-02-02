@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 use ethereum_types::H256 as KeccakHash;
 use strum::IntoEnumIterator;
@@ -7,6 +7,7 @@ use strum_macros::EnumIter;
 use crate::{
     constants::THIRTY_TWO_ZERO_BYTES,
     crypto_utils::keccak_hash_bytes,
+    errors::AppError,
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
@@ -83,14 +84,18 @@ lazy_static! {
             .expect("✘ Invalid hex in `FIO_MAINNET_BYTES`");
 }
 
+impl FromStr for EosChainId {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        decode_hex_with_err_msg(s, &format!("`EosChainId` error! Invalid hex: 0x{}", s))
+            .and_then(|ref bytes| Self::from_bytes(bytes))
+    }
+}
+
 impl EosChainId {
     pub fn unknown() -> Self {
         Self::Unknown(THIRTY_TWO_ZERO_BYTES.to_vec())
-    }
-
-    pub fn from_str(s: &str) -> Result<Self> {
-        decode_hex_with_err_msg(s, &format!("`EosChainId` error! Invalid hex: 0x{}", s))
-            .and_then(|ref bytes| Self::from_bytes(bytes))
     }
 
     pub fn to_hex(&self) -> String {

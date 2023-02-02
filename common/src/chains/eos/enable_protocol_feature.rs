@@ -20,7 +20,7 @@ fn enable_protocol_feature<D: DatabaseInterface>(
         info!("✔ Enabling new feature: {}", hex::encode(feature_hash));
         enabled_features
             .clone()
-            .add(feature_hash)
+            .add_new(feature_hash)
             .and_then(|new_features| db_utils.put_eos_enabled_protocol_features_in_db(&new_features))
     })
 }

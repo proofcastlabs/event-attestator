@@ -14,6 +14,12 @@ pub static DB_LOCK_ERRROR: &str = "Cannot get lock on DB!";
 #[derive(Debug)]
 pub struct TestDB(pub Mutex<HashMap<Bytes, Bytes>>);
 
+impl Default for TestDB {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl TestDB {
     pub fn new() -> Self {
         Self(Mutex::new(HashMap::new()))

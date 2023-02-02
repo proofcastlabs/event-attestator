@@ -17,6 +17,12 @@ macro_rules! create_db_utils_with_getters {
                 $([< $prefix:upper $key:upper >]: String,)*
             }
 
+            impl std::default::Default for [< $prefix:camel DatabaseKeysJson >] {
+                fn default() -> Self {
+                    Self::new()
+                }
+            }
+
             impl [< $prefix:camel DatabaseKeysJson >] {
                 pub fn new() -> Self {
                     Self {

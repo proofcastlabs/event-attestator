@@ -139,7 +139,7 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
                 debug!("✔ Putting EOS schedule in db: {:?}", schedule);
                 put_string_in_db(self.get_db(), &db_key, &serde_json::to_string(schedule)?)
                     .and_then(|_| self.get_eos_known_schedules_from_db())
-                    .map(|scheds| scheds.add(schedule.version))
+                    .map(|scheds| scheds.add_new(schedule.version))
                     .and_then(|scheds| self.put_eos_known_schedules_in_db(&scheds))
             },
         }

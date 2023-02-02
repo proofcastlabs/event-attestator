@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
 use ethereum_types::H256 as KeccakHash;
 use serde::{Deserialize, Serialize};
@@ -62,12 +62,10 @@ impl ToMetadataChainId for EthChainId {
     }
 }
 
-impl EthChainId {
-    pub fn unknown() -> Self {
-        Self::Unknown(0)
-    }
+impl FromStr for EthChainId {
+    type Err = AppError;
 
-    pub fn from_str(s: &str) -> Result<Self> {
+    fn from_str(s: &str) -> Result<Self> {
         match &*s.to_lowercase() {
             "goerli" | "5" => Ok(Self::Goerli),
             "mainnet" | "1" => Ok(Self::Mainnet),
@@ -86,6 +84,12 @@ impl EthChainId {
                 Err(_) => Err(format!("✘ Unrecognized ETH network: '{}'!", s).into()),
             },
         }
+    }
+}
+
+impl EthChainId {
+    pub fn unknown() -> Self {
+        Self::Unknown(0)
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {

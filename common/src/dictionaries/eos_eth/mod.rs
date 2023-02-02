@@ -11,6 +11,7 @@ use crate::{
     chains::eos::eos_utils::remove_symbol_from_eos_asset,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
+    errors::AppError,
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     state::{EosState, EthState},
     traits::DatabaseInterface,
@@ -411,6 +412,14 @@ pub struct EosEthTokenDictionaryEntry {
     pub last_withdrawal_human_readable: String,
 }
 
+impl FromStr for EosEthTokenDictionaryEntry {
+    type Err = AppError;
+
+    fn from_str(json_string: &str) -> Result<Self> {
+        EosEthTokenDictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
+    }
+}
+
 impl EosEthTokenDictionaryEntry {
     fn set_last_withdrawal_timestamp(&self, timestamp: u64) -> Self {
         let timestamp_human_readable = get_last_withdrawal_date_as_human_readable_string(timestamp);
@@ -502,10 +511,6 @@ impl EosEthTokenDictionaryEntry {
             last_withdrawal_human_readable: get_last_withdrawal_date_as_human_readable_string(timestamp),
             accrued_fees,
         })
-    }
-
-    pub fn from_str(json_string: &str) -> Result<Self> {
-        EosEthTokenDictionaryEntryJson::from_str(json_string).and_then(|entry_json| Self::from_json(&entry_json))
     }
 
     fn get_decimal_and_fractional_parts_of_eos_asset(eos_asset: &str) -> (&str, &str) {
@@ -601,8 +606,10 @@ pub struct EosEthTokenDictionaryEntryJson {
     pub last_withdrawal: Option<u64>,
 }
 
-impl EosEthTokenDictionaryEntryJson {
-    pub fn from_str(json_string: &str) -> Result<Self> {
+impl FromStr for EosEthTokenDictionaryEntryJson {
+    type Err = AppError;
+
+    fn from_str(json_string: &str) -> Result<Self> {
         match serde_json::from_str(json_string) {
             Ok(result) => Ok(result),
             Err(err) => Err(err.into()),

@@ -1,5 +1,7 @@
 #![cfg(test)]
 
+use std::str::FromStr;
+
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde_json::json;
 

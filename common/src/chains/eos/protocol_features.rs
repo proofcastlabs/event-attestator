@@ -56,7 +56,7 @@ impl EnabledFeatures {
             })
     }
 
-    pub fn add(mut self, feature_hash: &[Byte]) -> Result<Self> {
+    pub fn add_new(mut self, feature_hash: &[Byte]) -> Result<Self> {
         AVAILABLE_FEATURES
             .check_contains(feature_hash)
             .and_then(|_| AVAILABLE_FEATURES.get_feature_from_hash(feature_hash))
@@ -211,7 +211,7 @@ mod tests {
         assert!(!AVAILABLE_FEATURES.contains(&feature_hash));
         let enabled_features = EnabledFeatures::default();
         let expected_error = format!("Unrecognised feature hash: {}", hex::encode(feature_hash));
-        match enabled_features.add(&feature_hash) {
+        match enabled_features.add_new(&feature_hash) {
             Ok(_) => panic!("Should not have succeeded!"),
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
@@ -223,7 +223,7 @@ mod tests {
         let existing_feature_hash = hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap();
         assert!(AVAILABLE_FEATURES.contains(&existing_feature_hash));
         let enabled_features = EnabledFeatures::default();
-        let result = enabled_features.add(&existing_feature_hash);
+        let result = enabled_features.add_new(&existing_feature_hash);
         assert!(result.is_ok());
     }
 
@@ -262,7 +262,7 @@ mod tests {
     fn should_serde_enabled_features_to_and_from_bytes() {
         let features = EnabledFeatures::default();
         let updated_features = features
-            .add(&hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap())
+            .add_new(&hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH).unwrap())
             .unwrap();
         let bytes = updated_features.to_bytes().unwrap();
         let result = EnabledFeatures::from_bytes(&bytes).unwrap();

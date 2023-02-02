@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use derive_more::{Constructor, Deref, DerefMut};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
@@ -5,6 +7,7 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::eos::eos_database_utils::EosDbUtils,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
+    errors::AppError,
     state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -15,8 +18,10 @@ pub type GlobalSequence = u64;
 #[derive(Clone, Debug, PartialEq, Eq, Default, Constructor, Deref, DerefMut)]
 pub struct GlobalSequences(Vec<GlobalSequence>);
 
-impl GlobalSequences {
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for GlobalSequences {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         Ok(Self::new(serde_json::from_str::<Vec<u64>>(s)?))
     }
 }
