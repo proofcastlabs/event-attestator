@@ -2,6 +2,7 @@ use std::fmt;
 
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     address::Address,
@@ -10,11 +11,11 @@ use crate::{
         eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
     },
     safe_addresses::SAFE_ETH_ADDRESS_STR,
-    types::Bytes,
+    types::{Byte, Bytes, Result},
     utils::convert_bytes_to_string,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor, Serialize, Deserialize)]
 pub struct Erc20OnIntEthTxInfo {
     pub user_data: Bytes,
     pub host_token_amount: U256,
@@ -30,9 +31,18 @@ pub struct Erc20OnIntEthTxInfo {
     pub eth_token_address: EthAddress,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
+#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator, Serialize, Deserialize)]
 pub struct Erc20OnIntEthTxInfos(pub Vec<Erc20OnIntEthTxInfo>);
 
+impl Erc20OnIntEthTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Ok(serde_json::from_slice(bytes)?)
+    }
+}
 impl fmt::Display for Erc20OnIntEthTxInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(

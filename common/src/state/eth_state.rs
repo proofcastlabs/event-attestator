@@ -20,7 +20,6 @@ use crate::{
     eos_on_eth::EosOnEthEthTxInfos,
     erc20_on_eos::Erc20OnEosEosTxInfos,
     erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
-    erc20_on_int::{Erc20OnIntEthTxInfos, Erc20OnIntIntTxInfos},
     int_on_algo::IntOnAlgoAlgoTxInfos,
     int_on_eos::IntOnEosEosTxInfos,
     int_on_evm::{IntOnEvmEvmTxInfos, IntOnEvmIntTxInfos},
@@ -28,9 +27,6 @@ use crate::{
     types::{Bytes, Result},
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
 };
-
-// FIXME We can move the core specific setters & getters of this into their own mods!
-// FIXME Use a macro to generate a lot of this!
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthState<'a, D: DatabaseInterface> {
@@ -58,8 +54,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub int_on_algo_algo_tx_infos: IntOnAlgoAlgoTxInfos,
     pub erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos,
     pub erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos,
-    pub erc20_on_int_eth_tx_infos: Erc20OnIntEthTxInfos,
-    pub erc20_on_int_int_tx_infos: Erc20OnIntIntTxInfos,
     pub erc20_on_eos_eos_tx_infos: Erc20OnEosEosTxInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
@@ -102,8 +96,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             int_on_algo_algo_tx_infos: IntOnAlgoAlgoTxInfos::default(),
             erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos::new(vec![]),
             erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos::new(vec![]),
-            erc20_on_int_eth_tx_infos: Erc20OnIntEthTxInfos::new(vec![]),
-            erc20_on_int_int_tx_infos: Erc20OnIntIntTxInfos::new(vec![]),
             erc20_on_eos_eos_tx_infos: Erc20OnEosEosTxInfos::new(vec![]),
         }
     }
@@ -236,30 +228,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         self.replace_int_on_eos_eos_tx_infos(IntOnEosEosTxInfos::new(new_infos))
     }
 
-    pub fn add_erc20_on_int_int_tx_infos(self, mut infos: Erc20OnIntIntTxInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_int_int_tx_infos.0.clone();
-        new_infos.append(&mut infos.0);
-        self.replace_erc20_on_int_int_tx_infos(Erc20OnIntIntTxInfos::new(new_infos))
-    }
-
-    pub fn add_erc20_on_int_eth_tx_infos(self, mut infos: Erc20OnIntEthTxInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_int_eth_tx_infos.0.clone();
-        new_infos.append(&mut infos.0);
-        self.replace_erc20_on_int_eth_tx_infos(Erc20OnIntEthTxInfos::new(new_infos))
-    }
-
-    pub fn replace_erc20_on_int_int_tx_infos(mut self, replacements: Erc20OnIntIntTxInfos) -> Result<Self> {
-        self.erc20_on_int_int_tx_infos = replacements;
-        Ok(self)
-    }
-
     pub fn replace_int_on_eos_eos_tx_infos(mut self, replacements: IntOnEosEosTxInfos) -> Result<Self> {
         self.int_on_eos_eos_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_erc20_on_int_eth_tx_infos(mut self, replacements: Erc20OnIntEthTxInfos) -> Result<Self> {
-        self.erc20_on_int_eth_tx_infos = replacements;
         Ok(self)
     }
 

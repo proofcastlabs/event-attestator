@@ -11,9 +11,9 @@ mod parse_tx_info;
 mod sign_txs;
 mod submit_eth_block;
 
-// FIXME Used in `State`.
 #[cfg(test)]
-pub use self::int_tx_info::Erc20OnIntIntTxInfo;
+pub(super) use int_tx_info::Erc20OnIntIntTxInfo;
+
 pub(super) use self::{
     account_for_fees::{
         account_for_fees_in_evm_tx_infos_in_state,
@@ -29,9 +29,9 @@ pub(super) use self::{
     filter_tx_info_with_no_erc20_transfer_event::debug_filter_tx_info_with_no_erc20_transfer_event,
     filter_zero_value_tx_infos::filter_out_zero_value_evm_tx_infos_from_state,
     get_eth_output_json::{get_evm_signed_tx_info_from_evm_txs, EthOutput},
+    int_tx_info::Erc20OnIntIntTxInfos,
 };
 pub use self::{
     initialize_eth_core::maybe_initialize_eth_core,
-    int_tx_info::Erc20OnIntIntTxInfos,
     submit_eth_block::{submit_eth_block_to_core, submit_eth_blocks_to_core},
 };

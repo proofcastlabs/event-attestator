@@ -14,7 +14,6 @@ mod get_latest_block_numbers;
 mod int;
 mod test_utils;
 
-// FIXME Used in `State`.
 pub use self::{
     constants::CORE_TYPE,
     debug_functions::{
@@ -34,13 +33,11 @@ pub use self::{
         debug_set_fee_basis_points,
         debug_withdraw_fees_and_save_in_db,
     },
-    eth::{maybe_initialize_eth_core, submit_eth_block_to_core, submit_eth_blocks_to_core, Erc20OnIntIntTxInfos},
+    eth::{maybe_initialize_eth_core, submit_eth_block_to_core, submit_eth_blocks_to_core},
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
-    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core, Erc20OnIntEthTxInfos},
+    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
 };
-#[cfg(test)]
-pub(super) use self::{eth::Erc20OnIntIntTxInfo, int::Erc20OnIntEthTxInfo};
 pub use crate::{
     chains::eth::{
         eth_debug_functions::{

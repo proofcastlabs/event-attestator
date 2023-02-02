@@ -83,29 +83,27 @@ impl Erc20OnIntEthTxInfo {
 pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    let tx_infos = state.erc20_on_int_eth_tx_infos.clone();
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `{}`!", TX_INFO_TYPE);
         Ok(state)
-    } else if tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ No `{}` in state ∴ not taking any fees!", TX_INFO_TYPE);
         Ok(state)
     } else {
         info!("✔ Accruing fees during INT block submission...");
-        EthEvmTokenDictionary::get_from_db(state.db)
-            .and_then(|ref dictionary| {
-                dictionary.increment_accrued_fees_and_save_in_db(state.db, tx_infos.get_fees(dictionary)?)
-            })
+        let dictionary = EthEvmTokenDictionary::get_from_db(state.db)?;
+        let tx_infos = Erc20OnIntEthTxInfos::from_bytes(&state.tx_infos)?;
+        dictionary
+            .increment_accrued_fees_and_save_in_db(state.db, tx_infos.get_fees(&dictionary)?)
             .and(Ok(state))
     }
 }
 
 pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    let tx_infos = state.erc20_on_int_eth_tx_infos.clone();
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `EthOnEvmIntTxInfos`!");
         Ok(state)
-    } else if tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ No `{}` in state ∴ not taking any fees!", TX_INFO_TYPE);
         Ok(state)
     } else {
@@ -113,8 +111,12 @@ pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: Et
             "✔ Accounting for fees in `{}` during INT block submission...",
             TX_INFO_TYPE
         );
-        EthEvmTokenDictionary::get_from_db(state.db)
-            .and_then(|ref dictionary| state.replace_erc20_on_int_eth_tx_infos(tx_infos.subtract_fees(dictionary)?))
+        let dictionary = EthEvmTokenDictionary::get_from_db(state.db)?;
+        let tx_infos = Erc20OnIntEthTxInfos::from_bytes(&state.tx_infos)?;
+        tx_infos
+            .subtract_fees(&dictionary)
+            .and_then(|updated_tx_infos| updated_tx_infos.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
     }
 }
 

@@ -49,11 +49,11 @@ pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state
         "✔ Num `Erc20OnIntIntTxInfos` before: {}",
         state.erc20_on_int_int_signed_txs.len()
     );
-    state
-        .erc20_on_int_int_tx_infos
-        .filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?)
+    Erc20OnIntIntTxInfos::from_bytes(&state.tx_infos)
+        .and_then(|tx_infos| tx_infos.filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?))
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `Erc20OnIntIntTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_erc20_on_int_int_tx_infos(filtered_tx_infos)
+            filtered_tx_infos.to_bytes()
         })
+        .map(|bytes| state.add_tx_infos(bytes))
 }

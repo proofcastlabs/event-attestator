@@ -30,11 +30,11 @@ pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state
         "✔ Num `Erc20OnIntEthTxInfos` before: {}",
         state.erc20_on_int_eth_signed_txs.len()
     );
-    state
-        .erc20_on_int_eth_tx_infos
-        .filter_out_zero_values()
+    Erc20OnIntEthTxInfos::from_bytes(&state.tx_infos)
+        .and_then(|tx_infos| tx_infos.filter_out_zero_values())
         .and_then(|filtered_tx_infos| {
             debug!("✔ Num `Erc20OnIntEthTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_erc20_on_int_eth_tx_infos(filtered_tx_infos)
+            filtered_tx_infos.to_bytes()
         })
+        .map(|bytes| state.add_tx_infos(bytes))
 }

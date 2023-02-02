@@ -124,7 +124,7 @@ pub fn get_evm_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<I
         } else {
             get_eth_signed_tx_info_from_evm_txs(
                 &state.erc20_on_int_eth_signed_txs,
-                &state.erc20_on_int_eth_tx_infos,
+                &Erc20OnIntEthTxInfos::from_bytes(&state.tx_infos)?,
                 state.eth_db_utils.get_eth_account_nonce_from_db()?,
                 false, // TODO Get this from state submission material when/if we support AnySender
                 state.eth_db_utils.get_any_sender_nonce_from_db()?,
