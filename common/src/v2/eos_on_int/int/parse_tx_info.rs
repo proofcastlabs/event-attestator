@@ -124,7 +124,8 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                     &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                 )
-                .and_then(|tx_infos| state.add_eos_on_int_eos_tx_infos(tx_infos))
+                .and_then(|tx_infos| tx_infos.to_bytes())
+                .map(|tx_infos| state.add_tx_infos(tx_infos))
             },
         })
 }

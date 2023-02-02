@@ -5,7 +5,7 @@ use crate::{
         eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
         eth::eth_database_utils::EthDbUtilsExt,
     },
-    eos_on_int::int::eos_tx_info::EosOnIntEosTxInfo,
+    eos_on_int::int::{EosOnIntEosTxInfo, EosOnIntEosTxInfos},
     metadata::ToMetadataChainId,
     state::EthState,
     traits::DatabaseInterface,
@@ -79,6 +79,7 @@ pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOut
             Some(ref eos_txs) => {
                 let number_of_txs = eos_txs.len() as u64;
                 let eos_account_nonce = state.eos_db_utils.get_eos_account_nonce_from_db()?;
+                let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
                 let start_nonce = if number_of_txs > eos_account_nonce {
                     return Err("EOS account nonce has not been incremented correctly!".into());
                 } else {
@@ -90,7 +91,7 @@ pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOut
                     .map(|(i, eos_tx)| {
                         EosTxInfo::new(
                             eos_tx,
-                            &state.eos_on_int_eos_tx_infos[i],
+                            &tx_infos[i],
                             start_nonce + i as u64,
                             state.eos_db_utils.get_latest_eos_block_number()?,
                             &state.eos_db_utils.get_eos_chain_id_from_db()?,

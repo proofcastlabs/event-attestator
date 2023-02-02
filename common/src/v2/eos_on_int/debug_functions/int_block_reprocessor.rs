@@ -57,7 +57,8 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
                     &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                 )
-                .and_then(|tx_infos| state.add_eos_on_int_eos_tx_infos(tx_infos))
+                .and_then(|tx_infos| tx_infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
             }
         })
         .and_then(maybe_filter_out_int_tx_info_with_value_too_low_in_state)

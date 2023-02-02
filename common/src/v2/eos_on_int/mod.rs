@@ -13,7 +13,6 @@ mod get_latest_block_numbers;
 mod int;
 mod test_utils;
 
-// FIXME Used in `State`
 pub use self::{
     constants::CORE_TYPE,
     debug_functions::{
@@ -25,7 +24,7 @@ pub use self::{
     eos::{maybe_initialize_eos_core, submit_eos_block_to_core, EosOnIntIntTxInfos},
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
-    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core, EosOnIntEosTxInfos},
+    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
 };
 pub use crate::{
     chains::{
