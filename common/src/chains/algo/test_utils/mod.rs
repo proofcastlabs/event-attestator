@@ -1,4 +1,3 @@
-#![cfg(test)]
 use std::{fs::read_to_string, str::FromStr};
 
 use paste::paste;
@@ -58,6 +57,7 @@ pub fn get_sample_submission_material_n(n: usize) -> AlgoSubmissionMaterial {
     AlgoSubmissionMaterial::from_str(&get_sample_submission_material_str_n(n)).unwrap()
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 

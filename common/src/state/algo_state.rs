@@ -8,18 +8,17 @@ use crate::{
         eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
-    int_on_algo::IntOnAlgoIntTxInfos,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Bytes, Result},
 };
 
 #[derive(Clone, PartialEq, Eq)]
 pub struct AlgoState<'a, D: DatabaseInterface> {
     db: &'a D,
+    pub tx_infos: Bytes,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub eth_signed_txs: EthTransactions,
     pub algo_db_utils: AlgoDbUtils<'a, D>,
-    pub int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos,
     pub algo_relevant_asset_txs: Option<AlgoRelevantAssetTxs>,
     pub algo_submission_material: Option<AlgoSubmissionMaterial>,
     pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
@@ -29,14 +28,20 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
     fn init_inner(db: &'a D, evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>) -> Self {
         Self {
             db,
+            tx_infos: vec![],
             evm_algo_token_dictionary,
             algo_relevant_asset_txs: None,
             algo_submission_material: None,
             eth_db_utils: EthDbUtils::new(db),
             algo_db_utils: AlgoDbUtils::new(db),
             eth_signed_txs: EthTransactions::new(vec![]), // TODO impl default
-            int_on_algo_int_tx_infos: IntOnAlgoIntTxInfos::default(),
         }
+    }
+
+    pub fn add_tx_infos(mut self, bytes: Bytes) -> Self {
+        info!("✔ Adding tx infos to algo state!");
+        self.tx_infos = bytes;
+        self
     }
 
     pub fn init(db: &'a D) -> Self {
@@ -55,23 +60,9 @@ impl<'a, D: DatabaseInterface> AlgoState<'a, D> {
         format!("Cannot get {} from `AlgoState` - none exists!", item)
     }
 
-    pub fn replace_int_on_algo_int_tx_infos(self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
-        // NOTE: Alias so diversion fxn macro can work.
-        self.add_int_on_algo_int_tx_infos(infos)
-    }
-
-    pub fn add_int_on_algo_int_tx_infos(mut self, infos: IntOnAlgoIntTxInfos) -> Result<Self> {
-        self.int_on_algo_int_tx_infos = infos;
-        Ok(self)
-    }
-
     pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
         self.eth_signed_txs = txs;
         Ok(self)
-    }
-
-    pub fn get_int_on_algo_int_tx_infos(&self) -> IntOnAlgoIntTxInfos {
-        self.int_on_algo_int_tx_infos.clone()
     }
 
     pub fn update_algo_submission_material(mut self, material: &AlgoSubmissionMaterial) -> Result<Self> {

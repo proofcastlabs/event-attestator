@@ -21,19 +21,24 @@ macro_rules! make_erc20_token_event_filterer_v2 {
                 state: $state
             ) -> Result<$state> {
                 info!("✔ Filtering out tx infos which don't have corresponding ERC20 transfer events ...");
-                let tx_infos = [< $tx_infos_field:camel >]::from_bytes(&state.tx_infos)?;
-                state
-                    .$db_utils
-                    .get_eth_canon_block_from_db()
-                    .map(|submission_material| {
-                        Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
-                            &submission_material,
-                            &tx_infos,
-                        )
-                    })
-                    .map([< $tx_infos_field:camel >]::new)
-                    .and_then(|filtered| filtered.to_bytes())
-                    .map(|bytes| state.add_tx_infos(bytes))
+                if state.tx_infos.is_empty() {
+                    warn!("✔ NOT filtering because no tx infos exist!");
+                    Ok(state)
+                } else {
+                    let tx_infos = [< $tx_infos_field:camel >]::from_bytes(&state.tx_infos)?;
+                    state
+                        .$db_utils
+                        .get_eth_canon_block_from_db()
+                        .map(|submission_material| {
+                            Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
+                                &submission_material,
+                                &tx_infos,
+                            )
+                        })
+                        .map([< $tx_infos_field:camel >]::new)
+                        .and_then(|filtered| filtered.to_bytes())
+                        .map(|bytes| state.add_tx_infos(bytes))
+                }
             }
 
             pub fn debug_filter_tx_info_with_no_erc20_transfer_event<D: DatabaseInterface>(

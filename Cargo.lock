@@ -1365,6 +1365,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "int_on_algo"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "derive_more",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "log",
+ "paste",
+ "rust-algorand",
+ "serde",
+ "serde_json",
+ "serial_test",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2125,8 +2143,8 @@ dependencies = [
 
 [[package]]
 name = "rust-algorand"
-version = "1.5.1"
-source = "git+https://github.com/provable-things/rust-algorand?rev=b630b66#b630b665da853f8268cbd60414bd6137b9577344"
+version = "1.6.0"
+source = "git+https://github.com/provable-things/rust-algorand?rev=79768a3#79768a351205f20fed2762a9d7440d61515118a7"
 dependencies = [
  "base32",
  "base64 0.13.1",
