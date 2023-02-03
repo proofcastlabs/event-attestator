@@ -6,14 +6,16 @@ use common::{
         metadata_traits::ToMetadata,
         Metadata,
     },
+    safe_addresses::safely_convert_str_to_eth_address,
     types::{Bytes, Result},
 };
 
-use crate::eos::int_tx_info::IntOnEosIntTxInfo;
+use crate::int::evm_tx_info::IntOnEvmEvmTxInfo;
 
-impl ToMetadata for IntOnEosIntTxInfo {
+impl ToMetadata for IntOnEvmEvmTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
+            // TODO Test for this case!
             info!(
                 "✘ `user_data` redacted from `Metadata` ∵ it's > {} bytes",
                 MAX_BYTES_FOR_ETH_USER_DATA
@@ -22,10 +24,13 @@ impl ToMetadata for IntOnEosIntTxInfo {
         } else {
             self.user_data.clone()
         };
-        Ok(Metadata::new_v3(
+        Ok(Metadata::new_v2(
             &user_data,
-            &MetadataAddress::new(&self.origin_address.to_string(), &self.origin_chain_id)?,
-            &MetadataAddress::new(&self.destination_address.clone(), &self.destination_chain_id)?,
+            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?,
+            &MetadataAddress::new_from_eth_address(
+                &safely_convert_str_to_eth_address(&self.destination_address),
+                &self.destination_chain_id,
+            )?,
             None,
             None,
         ))

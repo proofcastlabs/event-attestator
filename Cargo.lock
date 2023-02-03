@@ -1400,6 +1400,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "int_on_evm"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "derive_more",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "log",
+ "paste",
+ "serde",
+ "serde_json",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
 name = "ipnet"
 version = "2.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

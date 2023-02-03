@@ -3,6 +3,7 @@ members = [
     "common",
     "btc_on_int",
     "int_on_eos",
+    "int_on_evm",
     "eos_on_int",
     "int_on_algo",
     "erc20_on_int",

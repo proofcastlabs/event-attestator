@@ -1,4 +1,3 @@
-
 use common::{
     chains::eos::eos_global_sequences::ProcessedGlobalSequences,
     state::EosState,

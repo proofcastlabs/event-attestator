@@ -1,4 +1,3 @@
-
 use common::{safe_addresses::SAFE_EOS_ADDRESS_STR, state::EthState, traits::DatabaseInterface, types::Result};
 
 use crate::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos};

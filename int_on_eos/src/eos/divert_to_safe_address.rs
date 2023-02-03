@@ -1,4 +1,3 @@
-
 use common::{state::EosState, traits::TxInfo};
 
 use crate::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos};
