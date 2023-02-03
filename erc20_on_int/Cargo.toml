@@ -1,0 +1,28 @@
+[package]
+license = "MIT"
+publish = false
+edition = "2021"
+version = "1.0.0"
+name = "erc20_on_int"
+readme = "README.md"
+rust-version = "1.56"
+keywords = ["provable", "defi", "crypto"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[dependencies]
+hex = "0.4.3"
+log = "0.4.14"
+paste = "1.0.6"
+serde_json = "1.0.68"
+function_name = "0.3.0"
+derive_more = "0.99.17"
+ethereum-types = "0.12.1"
+common = { path = "../common" }
+serde = { version = "1.0.130", features = ["derive"] }
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+
+[features]
+# NOTE: Turns off fee-taking capabilities.
+disable-fees = ["common/disable-fees"]
+# NOTE: Turns off block header & chain validation.
+non-validating = ["common/non-validating"]

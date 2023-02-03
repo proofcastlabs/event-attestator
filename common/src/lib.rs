@@ -47,7 +47,7 @@ pub mod v2;
 
 pub use self::{
     v1::{btc_on_eos, btc_on_eth, eos_on_eth, erc20_on_eos, erc20_on_evm},
-    v2::{erc20_on_int, int_on_algo, int_on_eos, int_on_evm},
+    v2::{int_on_algo, int_on_eos, int_on_evm},
 };
 
 #[cfg(test)]

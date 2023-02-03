@@ -1,4 +1,3 @@
-#![cfg(test)]
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -9,7 +8,7 @@ use crate::{
         eth_chain_id::EthChainId,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_log::{EthLog, EthLogExt, EthLogs},
+        eth_log::{EthLog, EthLogs},
         eth_receipt::EthReceipt,
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
     },
@@ -383,9 +382,10 @@ pub fn get_random_u256() -> U256 {
     U256::from(EthHash::random().as_bytes())
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chains::eth::eth_utils::convert_hex_to_h256;
+    use crate::chains::eth::{eth_log::EthLogExt, eth_utils::convert_hex_to_h256};
 
     #[test]
     fn should_convert_bytes_to_h256() {
