@@ -48,13 +48,19 @@ impl IntOnEosEosTxInfos {
 }
 
 pub fn filter_out_zero_value_eos_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering `INT-on-EOS` EOS tx infos...");
-    debug!("✔ Num infos before: {}", state.int_on_eos_eos_tx_infos.len());
-    state
-        .int_on_eos_eos_tx_infos
-        .filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
-        .and_then(|filtered_infos| {
-            debug!("✔ Num infos after: {}", filtered_infos.len());
-            state.replace_int_on_eos_eos_tx_infos(filtered_infos)
-        })
+    if state.tx_infos.is_empty() {
+        warn!("✘ Not filtering tx infos for zero values since there are none!");
+        Ok(state)
+    } else {
+        IntOnEosEosTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| {
+                debug!("✔ Num infos before: {}", tx_infos.len());
+                tx_infos.filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
+            })
+            .and_then(|filtered_infos| {
+                debug!("✔ Num infos after: {}", filtered_infos.len());
+                filtered_infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }

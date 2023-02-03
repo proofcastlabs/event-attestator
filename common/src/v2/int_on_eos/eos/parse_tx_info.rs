@@ -128,6 +128,7 @@ pub fn maybe_parse_int_tx_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
     )
     .and_then(|infos| {
         info!("✔ Parsed {} `IntOnEosIntTxInfos`!", infos.len());
-        state.add_int_on_eos_int_tx_infos(infos)
+        infos.to_bytes()
     })
+    .map(|bytes| state.add_tx_infos(bytes))
 }

@@ -67,18 +67,20 @@ impl IntOnEosIntTxInfo {
 }
 
 pub fn maybe_sign_int_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    let tx_infos = state.int_on_eos_int_tx_infos.clone();
-    if tx_infos.is_empty() {
-        info!("✔ No tx infos in state ∴ no INT transactions to sign!");
+    if state.tx_infos.is_empty() {
+        warn!("✘ No tx infos in state ∴ no INT transactions to sign!");
         Ok(state)
     } else {
-        tx_infos
-            .to_signed_txs(
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                state.eth_db_utils.get_eth_gas_price_from_db()?,
-                &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                &state.eth_db_utils.get_eth_private_key_from_db()?,
-            )
+        info!("✔ Signing INT transactions...");
+        IntOnEosIntTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| {
+                tx_infos.to_signed_txs(
+                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                )
+            })
             .and_then(|signed_txs| {
                 debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_eth_signed_txs(signed_txs)

@@ -62,7 +62,8 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
                             &int_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                         )
                     })
-                    .and_then(|tx_infos| state.add_int_on_eos_eos_tx_infos(tx_infos))
+                    .and_then(|tx_infos| tx_infos.to_bytes())
+                    .map(|bytes| state.add_tx_infos(bytes))
             }
         })
         .and_then(filter_out_zero_value_eos_tx_infos_from_state)

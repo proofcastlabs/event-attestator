@@ -82,16 +82,22 @@ impl IntOnEosEosTxInfo {
 }
 
 pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe signing `INT-on-EOS` EOS txs...");
-    let submission_material = state.get_eth_submission_material()?;
-    state
-        .int_on_eos_eos_tx_infos
-        .to_eos_signed_txs(
-            submission_material.get_eos_ref_block_num()?,
-            submission_material.get_eos_ref_block_prefix()?,
-            &state.eos_db_utils.get_eos_chain_id_from_db()?,
-            &EosPrivateKey::get_from_db(state.db)?,
-            &EosEthTokenDictionary::get_from_db(state.db)?,
-        )
-        .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    if state.tx_infos.is_empty() {
+        warn!("✘ NOT signing `INT-on-EOS` EOS txs because there's none to sign!");
+        Ok(state)
+    } else {
+        info!("✔ Maybe signing `INT-on-EOS` EOS txs...");
+        let submission_material = state.get_eth_submission_material()?;
+        IntOnEosEosTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| {
+                tx_infos.to_eos_signed_txs(
+                    submission_material.get_eos_ref_block_num()?,
+                    submission_material.get_eos_ref_block_prefix()?,
+                    &state.eos_db_utils.get_eos_chain_id_from_db()?,
+                    &EosPrivateKey::get_from_db(state.db)?,
+                    &EosEthTokenDictionary::get_from_db(state.db)?,
+                )
+            })
+            .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    }
 }

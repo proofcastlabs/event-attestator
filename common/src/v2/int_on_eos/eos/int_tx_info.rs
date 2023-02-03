@@ -1,19 +1,34 @@
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     address::Address,
     chains::eos::eos_global_sequences::{GlobalSequence, GlobalSequences},
     metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
-    types::Bytes,
+    types::{Byte, Bytes, Result},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Deref, Constructor, Serialize, Deserialize)]
 pub struct IntOnEosIntTxInfos(pub Vec<IntOnEosIntTxInfo>);
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Constructor)]
+impl IntOnEosIntTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Constructor, Serialize, Deserialize)]
 pub struct IntOnEosIntTxInfo {
     pub amount: U256,
     pub user_data: Bytes,

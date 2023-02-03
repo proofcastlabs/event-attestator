@@ -136,7 +136,8 @@ pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                             &state.eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                         )
                     })
-                    .and_then(|infos| state.add_int_on_eos_eos_tx_infos(infos))
+                    .and_then(|infos| infos.to_bytes())
+                    .map(|bytes| state.add_tx_infos(bytes))
             }
         })
 }

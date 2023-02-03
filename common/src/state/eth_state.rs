@@ -20,7 +20,6 @@ use crate::{
     eos_on_eth::EosOnEthEthTxInfos,
     erc20_on_eos::Erc20OnEosEosTxInfos,
     erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
-    int_on_eos::IntOnEosEosTxInfos,
     int_on_evm::{IntOnEvmEvmTxInfos, IntOnEvmIntTxInfos},
     traits::DatabaseInterface,
     types::{Bytes, Result},
@@ -44,7 +43,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub int_on_evm_evm_tx_infos: IntOnEvmEvmTxInfos,
     pub int_on_evm_int_tx_infos: IntOnEvmIntTxInfos,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
-    pub int_on_eos_eos_tx_infos: IntOnEosEosTxInfos,
     pub btc_on_eth_btc_tx_infos: BtcOnEthBtcTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
@@ -83,7 +81,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_tx_infos: IntOnEvmEvmTxInfos::new(vec![]),
-            int_on_eos_eos_tx_infos: IntOnEosEosTxInfos::new(vec![]),
             int_on_evm_int_tx_infos: IntOnEvmIntTxInfos::new(vec![]),
             btc_on_eth_btc_tx_infos: BtcOnEthBtcTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
@@ -211,17 +208,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_erc20_on_evm_evm_tx_infos(Erc20OnEvmEvmTxInfos::new(new_infos))
-    }
-
-    pub fn add_int_on_eos_eos_tx_infos(self, mut infos: IntOnEosEosTxInfos) -> Result<Self> {
-        let mut new_infos = self.int_on_eos_eos_tx_infos.0.clone();
-        new_infos.append(&mut infos.0);
-        self.replace_int_on_eos_eos_tx_infos(IntOnEosEosTxInfos::new(new_infos))
-    }
-
-    pub fn replace_int_on_eos_eos_tx_infos(mut self, replacements: IntOnEosEosTxInfos) -> Result<Self> {
-        self.int_on_eos_eos_tx_infos = replacements;
-        Ok(self)
     }
 
     pub fn replace_btc_on_eth_btc_tx_infos(mut self, replacements: BtcOnEthBtcTxInfos) -> Result<Self> {

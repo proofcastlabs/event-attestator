@@ -2,7 +2,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use crate::{
     chains::{eos::eos_crypto::eos_transaction::EosSignedTransaction, eth::eth_database_utils::EthDbUtilsExt},
-    int_on_eos::int::eos_tx_info::IntOnEosEosTxInfo,
+    int_on_eos::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos},
     state::EthState,
     traits::DatabaseInterface,
     types::Result,
@@ -73,7 +73,7 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOu
             None => vec![],
             Some(ref eos_txs) => {
                 let num_txs = eos_txs.len() as u64;
-                let tx_infos = state.int_on_eos_eos_tx_infos.clone();
+                let tx_infos = IntOnEosEosTxInfos::from_bytes(&state.tx_infos)?;
                 let eos_account_nonce = state.eos_db_utils.get_eos_account_nonce_from_db()?;
                 let eos_latest_block_num = state.eos_db_utils.get_latest_eos_block_number()?;
                 let start_nonce = if num_txs > eos_account_nonce {

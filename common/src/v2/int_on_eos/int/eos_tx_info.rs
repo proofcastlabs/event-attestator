@@ -2,18 +2,33 @@ use std::fmt;
 
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
     metadata::metadata_chain_id::MetadataChainId,
-    types::Bytes,
+    types::{Byte, Bytes, Result},
     utils::convert_bytes_to_string,
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor, Deref, Serialize, Deserialize)]
 pub struct IntOnEosEosTxInfos(pub Vec<IntOnEosEosTxInfo>);
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
+impl IntOnEosEosTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+}
+
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor, Serialize, Deserialize)]
 pub struct IntOnEosEosTxInfo {
     pub user_data: Bytes,
     pub token_amount: U256,
