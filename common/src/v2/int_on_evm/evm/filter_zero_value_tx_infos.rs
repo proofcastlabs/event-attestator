@@ -25,16 +25,19 @@ impl IntOnEvmIntTxInfos {
 }
 
 pub fn filter_out_zero_value_eth_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering out zero value `IntOnEvmIntTxInfos`...");
-    debug!(
-        "✔ Num `IntOnEvmIntTxInfos` before: {}",
-        state.int_on_evm_int_tx_infos.len()
-    );
-    state
-        .int_on_evm_int_tx_infos
-        .filter_out_zero_values()
-        .and_then(|filtered_tx_infos| {
-            debug!("✔ Num `IntOnEvmIntTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_int_on_evm_int_tx_infos(filtered_tx_infos)
-        })
+    if state.tx_infos.is_empty() {
+        warn!("✘ Not filtering out zero value `IntOnEvmIntTxInfos`, none to filter");
+        Ok(state)
+    } else {
+        IntOnEvmIntTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| {
+                debug!("✔ Num `IntOnEvmIntTxInfos` before: {}", tx_infos.len());
+                tx_infos.filter_out_zero_values()
+            })
+            .and_then(|filtered_tx_infos| {
+                debug!("✔ Num `IntOnEvmIntTxInfos` after: {}", filtered_tx_infos.len());
+                filtered_tx_infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }

@@ -175,7 +175,6 @@ mod tests {
         let address = convert_hex_to_eth_address("0x969c70bccf47406e6d27ec91a12e66aedc7ef23e").unwrap();
         let private_key = EthPrivateKey::from_slice(
             &hex::decode("f39d9bfba0555500b8b2c89cc46e90ae75fa80c23752ebae1ff31e3123d459dd").unwrap(),
-            //&hex::decode("8d8f01916c70ff01244200f1768b9fb246158714ac05dc34cb6fca71798075a5").unwrap(),
         )
         .unwrap();
         let db_utils = EvmDbUtils::new(&db);

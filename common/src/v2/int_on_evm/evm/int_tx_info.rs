@@ -2,17 +2,18 @@ use std::fmt;
 
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     address::Address,
     chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
     metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
-    types::Bytes,
+    types::{Byte, Bytes, Result},
     utils::convert_bytes_to_string,
 };
 
-#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor, Serialize, Deserialize)]
 pub struct IntOnEvmIntTxInfo {
     pub user_data: Bytes,
     pub host_token_amount: U256,
@@ -28,8 +29,22 @@ pub struct IntOnEvmIntTxInfo {
     pub destination_chain_id: MetadataChainId,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor, Deref, IntoIterator, Serialize, Deserialize)]
 pub struct IntOnEvmIntTxInfos(pub Vec<IntOnEvmIntTxInfo>);
+
+impl IntOnEvmIntTxInfos {
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
+    }
+}
 
 impl fmt::Display for IntOnEvmIntTxInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

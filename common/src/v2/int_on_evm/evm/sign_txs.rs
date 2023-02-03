@@ -92,20 +92,21 @@ impl IntOnEvmIntTxInfos {
 }
 
 pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.int_on_evm_int_tx_infos.is_empty() {
-        info!("✔ No tx infos in state ∴ no ETH transactions to sign!");
+    if state.tx_infos.is_empty() {
+        warn!("✘ No tx infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
         info!("✔ Signing transactions for `IntOnEvmIntTxInfos`...");
-        state
-            .int_on_evm_int_tx_infos
-            .to_eth_signed_txs(
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                state.eth_db_utils.get_eth_gas_price_from_db()?,
-                &state.eth_db_utils.get_eth_private_key_from_db()?,
-                &state.eth_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
-            )
+        IntOnEvmIntTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| {
+                tx_infos.to_eth_signed_txs(
+                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                    &state.eth_db_utils.get_int_on_evm_smart_contract_address_from_db()?,
+                )
+            })
             .and_then(|signed_txs| {
                 debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_int_on_evm_int_signed_txs(signed_txs)

@@ -82,18 +82,20 @@ pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     let tx_info_type = "IntOnEvmIntTxInfos";
-    let tx_infos = state.int_on_evm_int_tx_infos.clone();
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `{}`!", tx_info_type);
         Ok(state)
-    } else if tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ No `{}` in state ∴ not taking any fees!", tx_info_type);
         Ok(state)
     } else {
         info!("✔ Accruing fees during EVM block submission...");
         EthEvmTokenDictionary::get_from_db(state.db)
             .and_then(|ref dictionary| {
-                dictionary.increment_accrued_fees_and_save_in_db(state.db, tx_infos.get_fees(dictionary)?)
+                dictionary.increment_accrued_fees_and_save_in_db(
+                    state.db,
+                    IntOnEvmIntTxInfos::from_bytes(&state.tx_infos)?.get_fees(dictionary)?,
+                )
             })
             .and(Ok(state))
     }
@@ -101,11 +103,10 @@ pub fn update_accrued_fees_in_dictionary_and_return_state<D: DatabaseInterface>(
 
 pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     let tx_info_type = "IntOnEvmIntTxInfos";
-    let tx_infos = state.int_on_evm_int_tx_infos.clone();
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `{}`!", tx_info_type);
         Ok(state)
-    } else if tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ No `{}` in state ∴ not taking any fees!", tx_info_type);
         Ok(state)
     } else {
@@ -113,8 +114,11 @@ pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: Et
             "✔ Accounting for fees in `{}` during EVM block submission...",
             tx_info_type
         );
+        let tx_infos = IntOnEvmIntTxInfos::from_bytes(&state.tx_infos)?;
         EthEvmTokenDictionary::get_from_db(state.db)
-            .and_then(|ref dictionary| state.replace_int_on_evm_int_tx_infos(tx_infos.subtract_fees(dictionary)?))
+            .and_then(|ref dictionary| tx_infos.subtract_fees(dictionary))
+            .and_then(|updated_infos| updated_infos.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
     }
 }
 

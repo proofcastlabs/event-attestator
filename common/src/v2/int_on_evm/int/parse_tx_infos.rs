@@ -93,12 +93,11 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|submission_material| match submission_material.receipts.is_empty() {
-            true => {
-                info!("✔ No receipts in canon block ∴ no info to parse!");
+        .and_then(|submission_material| {
+            if submission_material.receipts.is_empty() {
+                warn!("✘ No receipts in canon block ∴ no info to parse!");
                 Ok(state)
-            },
-            false => {
+            } else {
                 info!(
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
@@ -109,8 +108,9 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &EthEvmTokenDictionary::get_from_db(state.db)?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                 )
-                .and_then(|tx_infos| state.add_int_on_evm_evm_tx_infos(tx_infos))
-            },
+                .and_then(|tx_infos| tx_infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
+            }
         })
 }
 

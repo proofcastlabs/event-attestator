@@ -8,4 +8,4 @@ impl_to_erc20_token_event!(
     evm_token_address
 );
 
-make_erc20_token_event_filterer!(EthState<D>, evm_db_utils, IntOnEvmIntTxInfos);
+make_erc20_token_event_filterer_v2!(EthState<D>, evm_db_utils, IntOnEvmIntTxInfos);
