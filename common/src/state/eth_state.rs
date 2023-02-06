@@ -16,7 +16,6 @@ use crate::{
         },
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
-    eos_on_eth::EosOnEthEthTxInfos,
     erc20_on_eos::Erc20OnEosEosTxInfos,
     erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
     traits::DatabaseInterface,
@@ -38,7 +37,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub algo_signed_group_txs: AlgoSignedGroupTxs,
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
-    pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub erc20_on_int_int_signed_txs: EthTransactions,
@@ -75,7 +73,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             algo_signed_group_txs: AlgoSignedGroupTxs::new(vec![]),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
-            eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
@@ -172,12 +169,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         self.replace_erc20_on_eos_eos_tx_infos(Erc20OnEosEosTxInfos::new(new_infos))
     }
 
-    pub fn add_eos_on_eth_eth_tx_infos(self, mut infos: EosOnEthEthTxInfos) -> Result<Self> {
-        let mut new_infos = self.eos_on_eth_eth_tx_infos.clone().0;
-        new_infos.append(&mut infos.0);
-        self.replace_eos_on_eth_eth_tx_infos(EosOnEthEthTxInfos::new(new_infos))
-    }
-
     pub fn add_erc20_on_evm_evm_tx_infos(self, mut infos: Erc20OnEvmEvmTxInfos) -> Result<Self> {
         let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
@@ -186,11 +177,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
 
     pub fn replace_erc20_on_eos_eos_tx_infos(mut self, replacements: Erc20OnEosEosTxInfos) -> Result<Self> {
         self.erc20_on_eos_eos_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_eos_on_eth_eth_tx_infos(mut self, replacements: EosOnEthEthTxInfos) -> Result<Self> {
-        self.eos_on_eth_eth_tx_infos = replacements;
         Ok(self)
     }
 

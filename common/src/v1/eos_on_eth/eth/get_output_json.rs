@@ -10,7 +10,7 @@ use crate::{
         },
         eth::eth_database_utils::EthDbUtilsExt,
     },
-    eos_on_eth::eth::eth_tx_info::EosOnEthEthTxInfo,
+    eos_on_eth::eth::{EosOnEthEosTxInfo, EosOnEthEosTxInfos},
     state::EthState,
     traits::DatabaseInterface,
     types::Result,
@@ -39,7 +39,7 @@ pub struct EosOnEthEthOutputDetails {
 impl EosOnEthEthOutputDetails {
     pub fn new(
         eos_tx: &EosSignedTransaction,
-        tx_info: &EosOnEthEthTxInfo,
+        tx_info: &EosOnEthEosTxInfo,
         eos_account_nonce: u64,
         eos_latest_block_number: u64,
     ) -> Result<EosOnEthEthOutputDetails> {
@@ -96,13 +96,14 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
             Some(ref eos_txs) => {
                 let eos_nonce = check_eos_nonce_is_sufficient(&state.eos_db_utils, eos_txs)?;
                 let start_nonce = eos_nonce - eos_txs.len() as u64;
+                let tx_infos = EosOnEthEosTxInfos::from_bytes(&state.tx_infos)?;
                 eos_txs
                     .iter()
                     .enumerate()
                     .map(|(i, eos_tx)| {
                         EosOnEthEthOutputDetails::new(
                             eos_tx,
-                            &state.eos_on_eth_eth_tx_infos[i],
+                            &tx_infos[i],
                             start_nonce + i as u64,
                             state.eos_db_utils.get_latest_eos_block_number()?,
                         )

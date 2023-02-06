@@ -17,7 +17,6 @@ use crate::{
         eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    eos_on_eth::EosOnEthEosTxInfos,
     erc20_on_eos::Erc20OnEosEthTxInfos,
     traits::DatabaseInterface,
     types::{Bytes, Result},
@@ -65,7 +64,7 @@ macro_rules! impl_tx_info_fxns {
     }
 }
 
-impl_tx_info_fxns!(EosOnEthEosTxInfos, Erc20OnEosEthTxInfos,);
+impl_tx_info_fxns!(Erc20OnEosEthTxInfos);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct EosState<'a, D: DatabaseInterface> {
@@ -85,7 +84,6 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
-    pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos,
@@ -114,7 +112,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             eth_signed_txs: EthTransactions::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
-            eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
             erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos::new(vec![]),
         }
     }

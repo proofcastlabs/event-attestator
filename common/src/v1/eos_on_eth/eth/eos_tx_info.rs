@@ -3,6 +3,7 @@ use std::str::FromStr;
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
@@ -47,8 +48,8 @@ use crate::{
 
 const ZERO_ETH_ASSET_STR: &str = "0.0000 EOS";
 
-#[derive(Debug, Default, Clone, PartialEq, Eq)]
-pub struct EosOnEthEthTxInfo {
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct EosOnEthEosTxInfo {
     pub user_data: Bytes,
     pub token_amount: U256,
     pub token_sender: EthAddress,
@@ -60,12 +61,12 @@ pub struct EosOnEthEthTxInfo {
     pub eth_token_address: EthAddress,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
-pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
+#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor, Deref, Serialize, Deserialize)]
+pub struct EosOnEthEosTxInfos(pub Vec<EosOnEthEosTxInfo>);
 
-impl FeesCalculator for EosOnEthEthTxInfos {
+impl FeesCalculator for EosOnEthEosTxInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
-        debug!("Calculating fees in `EosOnEthEthTxInfos`...");
+        debug!("Calculating fees in `EosOnEthEosTxInfos`...");
         self.iter()
             .map(|info| info.calculate_peg_out_fee_via_dictionary(dictionary))
             .collect()
@@ -90,7 +91,19 @@ impl FeesCalculator for EosOnEthEthTxInfos {
     }
 }
 
-impl EosOnEthEthTxInfos {
+impl EosOnEthEosTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
     pub fn from_eth_submission_material(
         material: &EthSubmissionMaterial,
         token_dictionary: &EosEthTokenDictionary,
@@ -129,23 +142,23 @@ impl EosOnEthEthTxInfos {
                         ])
                         .iter()
                         .map(|log| {
-                            EosOnEthEthTxInfo::from_eth_log(
+                            EosOnEthEosTxInfo::from_eth_log(
                                 log,
                                 &receipt.transaction_hash,
                                 token_dictionary,
                                 origin_chain_id,
                             )
                         })
-                        .collect::<Result<Vec<EosOnEthEthTxInfo>>>()
+                        .collect::<Result<Vec<EosOnEthEosTxInfo>>>()
                 })
-                .collect::<Result<Vec<Vec<EosOnEthEthTxInfo>>>>()?
+                .collect::<Result<Vec<Vec<EosOnEthEosTxInfo>>>>()?
                 .concat(),
         ))
     }
 
     pub fn filter_out_those_with_value_too_low(&self) -> Result<Self> {
         let min_amount = U256::from_dec_str(MINIMUM_WEI_AMOUNT)?;
-        Ok(EosOnEthEthTxInfos::new(
+        Ok(EosOnEthEosTxInfos::new(
             self.iter()
                 .filter(|info| {
                     if info.token_amount >= min_amount {
@@ -156,7 +169,7 @@ impl EosOnEthEthTxInfos {
                     }
                 })
                 .cloned()
-                .collect::<Vec<EosOnEthEthTxInfo>>(),
+                .collect::<Vec<EosOnEthEosTxInfo>>(),
         ))
     }
 
@@ -168,12 +181,12 @@ impl EosOnEthEthTxInfos {
         pk: &EosPrivateKey,
         eos_smart_contract: &EosAccountName,
     ) -> Result<EosSignedTransactions> {
-        info!("✔ Signing {} EOS txs from `EosOnEthEthTxInfos`...", self.len());
+        info!("✔ Signing {} EOS txs from `EosOnEthEosTxInfos`...", self.len());
         Ok(EosSignedTransactions::new(
             self.iter()
                 .enumerate()
                 .map(|(i, tx_info)| {
-                    info!("✔ Signing EOS tx from `EosOnEthEthTxInfo`: {:?}", tx_info);
+                    info!("✔ Signing EOS tx from `EosOnEthEosTxInfo`: {:?}", tx_info);
                     tx_info.to_eos_signed_tx(
                         ref_block_num,
                         ref_block_prefix,
@@ -189,7 +202,7 @@ impl EosOnEthEthTxInfos {
     }
 
     fn filter_out_those_with_zero_eos_asset_amount(&self, dictionary: &EosEthTokenDictionary) -> Self {
-        info!("✔ Filtering out `EosOnEthEthTxInfos` if they have a zero EOS asset amount...");
+        info!("✔ Filtering out `EosOnEthEosTxInfos` if they have a zero EOS asset amount...");
         Self::new(
             self.iter()
                 .filter(|tx_info| {
@@ -205,12 +218,12 @@ impl EosOnEthEthTxInfos {
                     }
                 })
                 .cloned()
-                .collect::<Vec<EosOnEthEthTxInfo>>(),
+                .collect::<Vec<EosOnEthEosTxInfo>>(),
         )
     }
 }
 
-impl ToMetadata for EosOnEthEthTxInfo {
+impl ToMetadata for EosOnEthEosTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
             &self.user_data,
@@ -223,15 +236,15 @@ impl ToMetadata for EosOnEthEthTxInfo {
     }
 }
 
-impl FeeCalculator for EosOnEthEthTxInfo {
+impl FeeCalculator for EosOnEthEosTxInfo {
     fn get_amount(&self) -> U256 {
-        info!("✔ Getting token amount in `EosOnEthEthTxInfo` of {}", self.token_amount);
+        info!("✔ Getting token amount in `EosOnEthEosTxInfo` of {}", self.token_amount);
         self.token_amount
     }
 
     fn get_eth_token_address(&self) -> EthAddress {
         debug!(
-            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
+            "Getting EOS token address in `EosOnEthEosTxInfo` of {}",
             self.eth_token_address
         );
         self.eth_token_address
@@ -239,7 +252,7 @@ impl FeeCalculator for EosOnEthEthTxInfo {
 
     fn get_eos_token_address(&self) -> Result<EosAccountName> {
         debug!(
-            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
+            "Getting EOS token address in `EosOnEthEosTxInfo` of {}",
             self.eos_token_address
         );
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
@@ -254,14 +267,14 @@ impl FeeCalculator for EosOnEthEthTxInfo {
     }
 }
 
-impl EosOnEthEthTxInfo {
+impl EosOnEthEosTxInfo {
     pub fn from_eth_log(
         log: &EthLog,
         tx_hash: &EthHash,
         token_dictionary: &EosEthTokenDictionary,
         origin_chain_id: &EthChainId,
     ) -> Result<Self> {
-        info!("✔ Parsing `EosOnEthEthTxInfo` from ETH log...");
+        info!("✔ Parsing `EosOnEthEosTxInfo` from ETH log...");
         Erc777RedeemEvent::from_eth_log(log).and_then(|params| {
             Ok(Self {
                 token_amount: params.value,
@@ -312,7 +325,7 @@ impl EosOnEthEthTxInfo {
         let metadata = if self.user_data.is_empty() {
             Ok(vec![])
         } else {
-            info!("✔ Wrapping `user_data` in metadata for `EosOnEthEthTxInfo`...");
+            info!("✔ Wrapping `user_data` in metadata for `EosOnEthEosTxInfo`...");
             self.to_metadata_bytes()
         }?;
         debug!(
@@ -342,56 +355,66 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `eos-on-eth` tx infos...");
-    state
-        .eth_db_utils
-        .get_eth_canon_block_from_db()
-        .and_then(|material| match material.receipts.is_empty() {
-            true => {
-                info!("✔ No receipts in canon block ∴ no info to parse!");
-                Ok(state)
-            },
-            false => {
-                info!(
-                    "✔ {} receipts in canon block ∴ parsing ETH tx info...",
-                    material.receipts.len()
-                );
-                EosOnEthEthTxInfos::from_eth_submission_material(
-                    &material,
-                    state.get_eos_eth_token_dictionary()?,
-                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                )
-                .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
-            },
-        })
+    state.eth_db_utils.get_eth_canon_block_from_db().and_then(|material| {
+        if material.receipts.is_empty() {
+            info!("✔ No receipts in canon block ∴ no info to parse!");
+            Ok(state)
+        } else {
+            info!(
+                "✔ {} receipts in canon block ∴ parsing ETH tx info...",
+                material.receipts.len()
+            );
+            EosOnEthEosTxInfos::from_eth_submission_material(
+                &material,
+                state.get_eos_eth_token_dictionary()?,
+                &state.eth_db_utils.get_eth_chain_id_from_db()?,
+            )
+            .and_then(|tx_infos| tx_infos.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
+        }
+    })
 }
 
 pub fn maybe_filter_out_eth_tx_info_with_value_too_low_in_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering `EosOnEthEthTxInfos`...");
-    debug!("✔ Num tx infos before: {}", state.eos_on_eth_eth_tx_infos.len());
-    state
-        .eos_on_eth_eth_tx_infos
-        .filter_out_those_with_value_too_low()
-        .and_then(|filtered_infos| {
-            debug!("✔ Num tx infos after: {}", filtered_infos.len());
-            state.replace_eos_on_eth_eth_tx_infos(filtered_infos)
-        })
+    if state.tx_infos.is_empty() {
+        info!("✔ Not filtering `EosOnEthEosTxInfos` because there are none to filter!");
+        Ok(state)
+    } else {
+        info!("✔ Maybe filtering `EosOnEthEosTxInfos`...");
+        EosOnEthEosTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                debug!("✔ Num tx infos before: {}", infos.len());
+                infos.filter_out_those_with_value_too_low()
+            })
+            .and_then(|filtered_infos| {
+                debug!("✔ Num tx infos after: {}", filtered_infos.len());
+                filtered_infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe signing `EosOnEthEthTxInfos`...");
-    let submission_material = state.get_eth_submission_material()?;
-    state
-        .eos_on_eth_eth_tx_infos
-        .to_eos_signed_txs(
-            submission_material.get_eos_ref_block_num()?,
-            submission_material.get_eos_ref_block_prefix()?,
-            &state.eos_db_utils.get_eos_chain_id_from_db()?,
-            &EosPrivateKey::get_from_db(state.db)?,
-            &state.eos_db_utils.get_eos_account_name_from_db()?,
-        )
-        .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    if state.tx_infos.is_empty() {
+        info!("✔ Not signing `EosOnEthEosTxInfos` because there are none to sign!");
+        Ok(state)
+    } else {
+        info!("✔ Signing `EosOnEthEosTxInfos`...");
+        let submission_material = state.get_eth_submission_material()?;
+        EosOnEthEosTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                infos.to_eos_signed_txs(
+                    submission_material.get_eos_ref_block_num()?,
+                    submission_material.get_eos_ref_block_prefix()?,
+                    &state.eos_db_utils.get_eos_chain_id_from_db()?,
+                    &EosPrivateKey::get_from_db(state.db)?,
+                    &state.eos_db_utils.get_eos_account_name_from_db()?,
+                )
+            })
+            .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    }
 }
 
 pub fn maybe_filter_out_zero_eos_asset_amounts_in_state<D: DatabaseInterface>(
@@ -399,10 +422,10 @@ pub fn maybe_filter_out_zero_eos_asset_amounts_in_state<D: DatabaseInterface>(
 ) -> Result<EthState<D>> {
     info!("✔ Maybe filtering out zero eos asset amounts in state...");
     let dictionary = EosEthTokenDictionary::get_from_db(state.db)?;
-    let filtered = state
-        .eos_on_eth_eth_tx_infos
-        .filter_out_those_with_zero_eos_asset_amount(&dictionary);
-    state.replace_eos_on_eth_eth_tx_infos(filtered)
+    EosOnEthEosTxInfos::from_bytes(&state.tx_infos)
+        .map(|infos| infos.filter_out_those_with_zero_eos_asset_amount(&dictionary))
+        .and_then(|filtered| filtered.to_bytes())
+        .map(|bytes| state.add_tx_infos(bytes))
 }
 
 #[cfg(test)]
@@ -428,8 +451,8 @@ mod tests {
         .unwrap()
     }
 
-    fn get_sample_eos_on_eth_eth_tx_infos() -> EosOnEthEthTxInfos {
-        EosOnEthEthTxInfos::from_eth_submission_material(
+    fn get_sample_eos_on_eth_eth_tx_infos() -> EosOnEthEosTxInfos {
+        EosOnEthEosTxInfos::from_eth_submission_material(
             &get_eth_submission_material_n(1).unwrap(),
             &get_sample_eos_eth_token_dictionary(),
             &EthChainId::Rinkeby,
@@ -437,7 +460,7 @@ mod tests {
         .unwrap()
     }
 
-    fn get_sample_eos_on_eth_eth_tx_info() -> EosOnEthEthTxInfo {
+    fn get_sample_eos_on_eth_eth_tx_info() -> EosOnEthEosTxInfo {
         get_sample_eos_on_eth_eth_tx_infos()[0].clone()
     }
 
@@ -492,7 +515,7 @@ mod tests {
         let expected_result_before = 1;
         let expected_result_after = 0;
         let origin_chain_id = EthChainId::Rinkeby;
-        let result_before = EosOnEthEthTxInfos::from_eth_submission_material_without_filtering(
+        let result_before = EosOnEthEosTxInfos::from_eth_submission_material_without_filtering(
             &submission_material,
             &dictionary,
             &origin_chain_id,
@@ -514,7 +537,7 @@ mod tests {
         let submission_material = get_eth_submission_material_with_bad_eos_account_name();
         let origin_chain_id = EthChainId::Rinkeby;
         let tx_infos =
-            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &token_dictionary, &origin_chain_id)
+            EosOnEthEosTxInfos::from_eth_submission_material(&submission_material, &token_dictionary, &origin_chain_id)
                 .unwrap();
         let ref_block_num = 1;
         let ref_block_prefix = 2;
@@ -531,7 +554,7 @@ mod tests {
         let dictionary = get_sample_eos_eth_token_dictionary();
         let origin_chain_id = EthChainId::Rinkeby;
         let tx_infos =
-            EosOnEthEthTxInfos::from_eth_submission_material(&submission_material, &dictionary, &origin_chain_id)
+            EosOnEthEosTxInfos::from_eth_submission_material(&submission_material, &dictionary, &origin_chain_id)
                 .unwrap();
         let ref_block_num = 1;
         let ref_block_prefix = 2;
@@ -579,7 +602,7 @@ mod tests {
         let infos = get_sample_eos_on_eth_eth_tx_infos();
         let result = infos.subtract_fees(&dictionary).unwrap();
         let expected_amount = U256::from_dec_str("99880000000000").unwrap();
-        let expected_result = EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info()
+        let expected_result = EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eth_tx_info()
             .update_amount(expected_amount, &dictionary)
             .unwrap()]);
         assert_eq!(result, expected_result);

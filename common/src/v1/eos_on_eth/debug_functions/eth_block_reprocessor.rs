@@ -23,7 +23,7 @@ use crate::{
             maybe_filter_out_zero_eos_asset_amounts_in_state,
             maybe_sign_eos_txs_and_add_to_eth_state,
             update_accrued_fees_in_dictionary_and_return_eth_state,
-            EosOnEthEthTxInfos,
+            EosOnEthEosTxInfos,
         },
     },
     state::EthState,
@@ -51,23 +51,21 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         .and_then(filter_receipts_for_eos_on_eth_eth_tx_info_in_state)
         .and_then(|state| {
             let submission_material = state.get_eth_submission_material()?.clone();
-            match submission_material.receipts.is_empty() {
-                true => {
-                    info!("✔ No receipts in block ∴ no info to parse!");
-                    Ok(state)
-                },
-                false => {
-                    info!(
-                        "✔ {} receipts in block ∴ parsing info...",
-                        submission_material.get_num_receipts()
-                    );
-                    EosOnEthEthTxInfos::from_eth_submission_material(
-                        state.get_eth_submission_material()?,
-                        state.get_eos_eth_token_dictionary()?,
-                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                    )
-                    .and_then(|tx_infos| state.add_eos_on_eth_eth_tx_infos(tx_infos))
-                },
+            if submission_material.receipts.is_empty() {
+                info!("✔ No receipts in block ∴ no info to parse!");
+                Ok(state)
+            } else {
+                info!(
+                    "✔ {} receipts in block ∴ parsing info...",
+                    submission_material.get_num_receipts()
+                );
+                EosOnEthEosTxInfos::from_eth_submission_material(
+                    state.get_eth_submission_material()?,
+                    state.get_eos_eth_token_dictionary()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                )
+                .and_then(|tx_infos| tx_infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
             }
         })
         .and_then(maybe_filter_out_eth_tx_info_with_value_too_low_in_state)

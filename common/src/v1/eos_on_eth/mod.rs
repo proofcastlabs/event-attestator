@@ -28,8 +28,8 @@ pub use self::{
         debug_set_eth_fee_basis_points,
         debug_withdraw_fees,
     },
-    eos::{maybe_initialize_eos_core, submit_eos_block_to_core, EosOnEthEosTxInfos},
-    eth::{maybe_initialize_eth_core, submit_eth_block_to_core, EosOnEthEthTxInfos},
+    eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
+    eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
 };

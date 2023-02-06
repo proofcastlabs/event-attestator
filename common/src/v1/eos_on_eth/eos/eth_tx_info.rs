@@ -36,14 +36,14 @@ use crate::{
     safe_addresses::SAFE_ETH_ADDRESS,
     state::EosState,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
 
 const REQUIRED_ACTION_NAME: &str = "pegin";
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, Constructor)]
-pub struct EosOnEthEosTxInfo {
+pub struct EosOnEthEthTxInfo {
     pub token_amount: U256,
     pub from: EosAccountName,
     pub destination_address: EthAddress,
@@ -53,15 +53,15 @@ pub struct EosOnEthEosTxInfo {
     pub eos_token_address: String,
 }
 
-impl FeeCalculator for EosOnEthEosTxInfo {
+impl FeeCalculator for EosOnEthEthTxInfo {
     fn get_amount(&self) -> U256 {
-        info!("✔ Getting token amount in `EosOnEthEosTxInfo` of {}", self.token_amount);
+        info!("✔ Getting token amount in `EosOnEthEthTxInfo` of {}", self.token_amount);
         self.token_amount
     }
 
     fn get_eth_token_address(&self) -> EthAddress {
         debug!(
-            "Getting EOS token address in `EosOnEthEosTxInfo` of {}",
+            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
             self.eth_token_address
         );
         self.eth_token_address
@@ -69,7 +69,7 @@ impl FeeCalculator for EosOnEthEosTxInfo {
 
     fn get_eos_token_address(&self) -> Result<EosAccountName> {
         debug!(
-            "Getting EOS token address in `EosOnEthEosTxInfo` of {}",
+            "Getting EOS token address in `EosOnEthEthTxInfo` of {}",
             self.eos_token_address
         );
         Ok(EosAccountName::from_str(&self.eos_token_address)?)
@@ -82,13 +82,13 @@ impl FeeCalculator for EosOnEthEosTxInfo {
     }
 }
 
-impl EosOnEthEosTxInfo {
+impl EosOnEthEthTxInfo {
     fn get_token_sender_from_proof(proof: &EosActionProof) -> Result<EosAccountName> {
         let end_index = 7;
         proof
             .check_proof_action_data_length(
                 end_index,
-                "Not enough data to parse `EosOnEthEosTxInfo` sender from proof!",
+                "Not enough data to parse `EosOnEthEthTxInfo` sender from proof!",
             )
             .and_then(|_| {
                 let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[..=end_index])?);
@@ -103,7 +103,7 @@ impl EosOnEthEosTxInfo {
         proof
             .check_proof_action_data_length(
                 end_index,
-                "Not enough data to parse `EosOnEthEosTxInfo` account from proof!",
+                "Not enough data to parse `EosOnEthEthTxInfo` account from proof!",
             )
             .and_then(|_| {
                 let result = EosAccountName::new(convert_bytes_to_u64(&proof.action.data[start_index..=end_index])?);
@@ -117,7 +117,7 @@ impl EosOnEthEosTxInfo {
         let start_index = 8;
         let serialized_action = proof.get_serialized_action()?;
         if serialized_action.len() < end_index + 1 {
-            Err("Not enough data to parse `EosOnEthEosTxInfo` action name from proof!".into())
+            Err("Not enough data to parse `EosOnEthEthTxInfo` action name from proof!".into())
         } else {
             let result = EosName::new(convert_bytes_to_u64(
                 &proof.get_serialized_action()?[start_index..=end_index],
@@ -131,7 +131,7 @@ impl EosOnEthEosTxInfo {
         let end_index = 7;
         let serialized_action = proof.get_serialized_action()?;
         if serialized_action.len() < end_index + 1 {
-            Err("Not enough data to parse `EosOnEthEosTxInfo` action sender from proof!".into())
+            Err("Not enough data to parse `EosOnEthEthTxInfo` action sender from proof!".into())
         } else {
             let result = EosAccountName::new(convert_bytes_to_u64(&serialized_action[..=end_index])?);
             debug!("✔ Action sender account name parsed from action proof: {}", result);
@@ -145,7 +145,7 @@ impl EosOnEthEosTxInfo {
         proof
             .check_proof_action_data_length(
                 end_index,
-                "Not enough data to parse `EosOnEthEosTxInfo` symbol from proof!",
+                "Not enough data to parse `EosOnEthEthTxInfo` symbol from proof!",
             )
             .and_then(|_| {
                 let result = EosSymbol::new(convert_bytes_to_u64(&proof.action.data[start_index..=end_index])?);
@@ -166,7 +166,7 @@ impl EosOnEthEosTxInfo {
         proof
             .check_proof_action_data_length(
                 end_index,
-                "Not enough data to parse `EosOnEthEosTxInfo` amount from proof!",
+                "Not enough data to parse `EosOnEthEthTxInfo` amount from proof!",
             )
             .and_then(|_| convert_bytes_to_u64(&proof.action.data[start_index..=end_index]))
     }
@@ -177,7 +177,7 @@ impl EosOnEthEosTxInfo {
         proof
             .check_proof_action_data_length(
                 end_index,
-                "Not enough data to parse `EosOnEthEosTxInfo` ETH address from proof!",
+                "Not enough data to parse `EosOnEthEthTxInfo` ETH address from proof!",
             )
             .and_then(|_| {
                 let result = EthAddress::from_slice(&hex::decode(strip_hex_prefix(from_utf8(
@@ -265,10 +265,24 @@ impl EosOnEthEosTxInfo {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
-pub struct EosOnEthEosTxInfos(pub Vec<EosOnEthEosTxInfo>);
+#[derive(Clone, Debug, PartialEq, Eq, Default, Serialize, Deserialize, Deref, Constructor)]
+pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
-impl FeesCalculator for EosOnEthEosTxInfos {
+impl EosOnEthEthTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+}
+
+impl FeesCalculator for EosOnEthEthTxInfos {
     fn get_fees(&self, dictionary: &EosEthTokenDictionary) -> Result<Vec<(EthAddress, U256)>> {
         debug!("Calculating fees in `Erc20OnEosEthTxInfos`...");
         self.iter()
@@ -295,26 +309,26 @@ impl FeesCalculator for EosOnEthEosTxInfos {
     }
 }
 
-impl EosOnEthEosTxInfos {
+impl EosOnEthEthTxInfos {
     pub fn from_eos_action_proofs(
         action_proofs: &[EosActionProof],
         token_dictionary: &EosEthTokenDictionary,
         eos_smart_contract: &EosAccountName,
     ) -> Result<Self> {
-        Ok(EosOnEthEosTxInfos::new(
+        Ok(EosOnEthEthTxInfos::new(
             action_proofs
                 .iter()
-                .map(|proof| EosOnEthEosTxInfo::from_eos_action_proof(proof, token_dictionary, eos_smart_contract))
-                .collect::<Result<Vec<EosOnEthEosTxInfo>>>()?,
+                .map(|proof| EosOnEthEthTxInfo::from_eos_action_proof(proof, token_dictionary, eos_smart_contract))
+                .collect::<Result<Vec<EosOnEthEthTxInfo>>>()?,
         ))
     }
 
     pub fn filter_out_already_processed_txs(&self, processed_tx_ids: &ProcessedGlobalSequences) -> Result<Self> {
-        Ok(EosOnEthEosTxInfos::new(
+        Ok(EosOnEthEthTxInfos::new(
             self.iter()
                 .filter(|info| !processed_tx_ids.contains(&info.global_sequence))
                 .cloned()
-                .collect::<Vec<EosOnEthEosTxInfo>>(),
+                .collect::<Vec<EosOnEthEthTxInfo>>(),
         ))
     }
 
@@ -328,7 +342,7 @@ impl EosOnEthEosTxInfos {
 
     pub fn filter_out_those_with_value_too_low(&self) -> Result<Self> {
         let min_amount = U256::from_dec_str(MINIMUM_WEI_AMOUNT)?;
-        Ok(EosOnEthEosTxInfos::new(
+        Ok(EosOnEthEthTxInfos::new(
             self.iter()
                 .filter(|info| {
                     if info.token_amount >= min_amount {
@@ -339,7 +353,7 @@ impl EosOnEthEosTxInfos {
                     }
                 })
                 .cloned()
-                .collect::<Vec<EosOnEthEosTxInfo>>(),
+                .collect::<Vec<EosOnEthEthTxInfo>>(),
         ))
     }
 
@@ -379,56 +393,73 @@ pub fn maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state<D: DatabaseInterface
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     info!("✔ Parsing redeem params from actions data...");
-    EosOnEthEosTxInfos::from_eos_action_proofs(
+    EosOnEthEthTxInfos::from_eos_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_account_name_from_db()?,
     )
     .and_then(|tx_infos| {
         info!("✔ Parsed {} sets of redeem info!", tx_infos.len());
-        state.add_eos_on_eth_eos_tx_infos(tx_infos)
+        let global_sequences = tx_infos.get_global_sequences();
+        let bytes = tx_infos.to_bytes()?;
+        Ok(state.add_global_sequences(global_sequences).add_tx_infos(bytes))
     })
 }
 
 pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    info!("✔ Filtering out already processed tx IDs...");
-    debug!("Num tx infos before: {}", &state.eos_on_eth_eos_tx_infos.len());
-    state
-        .eos_on_eth_eos_tx_infos
-        .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| {
-            debug!("Num tx infos after: {}", filtered.len());
-            state.replace_eos_on_eth_eos_tx_infos(filtered)
-        })
+    if state.tx_infos.is_empty() {
+        info!("✔ Nont filtering out already processed tx IDs since there are no txs to filter!");
+        Ok(state)
+    } else {
+        info!("✔ Filtering out already processed tx IDs...");
+        EosOnEthEthTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                debug!("Num tx infos before: {}", infos.len());
+                infos.filter_out_already_processed_txs(&state.processed_tx_ids)
+            })
+            .and_then(|filtered| {
+                debug!("Num tx infos after: {}", filtered.len());
+                filtered.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn maybe_filter_out_value_too_low_txs_from_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    info!("✔ Filtering out value too low txs from state...");
-    debug!("Num tx infos before: {}", &state.eos_on_eth_eos_tx_infos.len());
-    state
-        .eos_on_eth_eos_tx_infos
-        .filter_out_those_with_value_too_low()
-        .and_then(|filtered| {
-            debug!("Num tx infos after: {}", &filtered.len());
-            state.replace_eos_on_eth_eos_tx_infos(filtered)
-        })
+    if state.tx_infos.is_empty() {
+        info!("✔ NOT filtering out value too low txs since there are none to filter!");
+        Ok(state)
+    } else {
+        info!("✔ Filtering out value too low txs from state...");
+        EosOnEthEthTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                debug!("Num tx infos before: {}", infos.len());
+                infos.filter_out_those_with_value_too_low()
+            })
+            .and_then(|filtered| {
+                debug!("Num tx infos after: {}", &filtered.len());
+                filtered.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    if state.eos_on_eth_eos_tx_infos.len() == 0 {
+    if state.tx_infos.is_empty() {
         info!("✔ No EOS tx info in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
-        state
-            .eos_on_eth_eos_tx_infos
-            .to_eth_signed_txs(
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                state.eth_db_utils.get_eth_gas_price_from_db()?,
-                &state.eth_db_utils.get_eth_private_key_from_db()?,
-            )
+        EosOnEthEthTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                infos.to_eth_signed_txs(
+                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                )
+            })
             .and_then(|signed_txs| {
                 debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_eth_signed_txs(signed_txs)
@@ -454,8 +485,8 @@ mod tests {
         get_eos_submission_material_n(1).unwrap().action_proofs[0].clone()
     }
 
-    fn get_sample_eos_on_eth_eos_tx_info() -> EosOnEthEosTxInfo {
-        EosOnEthEosTxInfo::from_eos_action_proof(
+    fn get_sample_eos_on_eth_eos_tx_info() -> EosOnEthEthTxInfo {
+        EosOnEthEthTxInfo::from_eos_action_proof(
             &get_sample_proof(),
             &get_sample_eos_eth_token_dictionary(),
             &EosAccountName::from_str("t11ppntoneos").unwrap(),
@@ -463,14 +494,14 @@ mod tests {
         .unwrap()
     }
 
-    fn get_sample_eos_on_eth_eos_tx_infos() -> EosOnEthEosTxInfos {
-        EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()])
+    fn get_sample_eos_on_eth_eos_tx_infos() -> EosOnEthEthTxInfos {
+        EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()])
     }
 
     #[test]
     fn should_get_token_sender_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_token_sender_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_token_sender_from_proof(&proof).unwrap();
         let expected_result = EosAccountName::from_str("oraclizetest").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -478,7 +509,7 @@ mod tests {
     #[test]
     fn should_get_token_account_name_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_token_account_name_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_token_account_name_from_proof(&proof).unwrap();
         let expected_result = EosAccountName::from_str("eosio.token").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -486,7 +517,7 @@ mod tests {
     #[test]
     fn should_get_action_name_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_action_name_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_action_name_from_proof(&proof).unwrap();
         let expected_result = EosName::from_str("pegin").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -494,7 +525,7 @@ mod tests {
     #[test]
     fn should_get_action_sender_account_name_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_action_sender_account_name_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_action_sender_account_name_from_proof(&proof).unwrap();
         let expected_result = EosAccountName::from_str("t11ppntoneos").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -502,7 +533,7 @@ mod tests {
     #[test]
     fn should_get_eos_symbol_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_eos_symbol_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_eos_symbol_from_proof(&proof).unwrap();
         let expected_result = EosSymbol::from_str("4,EOS").unwrap();
         assert_eq!(result, expected_result);
     }
@@ -510,7 +541,7 @@ mod tests {
     #[test]
     fn should_get_token_symbol_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_token_symbol_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_token_symbol_from_proof(&proof).unwrap();
         let expected_result = "EOS".to_string();
         assert_eq!(result, expected_result);
     }
@@ -518,7 +549,7 @@ mod tests {
     #[test]
     fn should_get_eos_amount_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_eos_amount_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_eos_amount_from_proof(&proof).unwrap();
         let expected_result = 1_u64;
         assert_eq!(result, expected_result);
     }
@@ -526,7 +557,7 @@ mod tests {
     #[test]
     fn should_get_eth_address_from_proof() {
         let proof = get_sample_proof();
-        let result = EosOnEthEosTxInfo::get_eth_address_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_eth_address_from_proof(&proof).unwrap();
         let expected_result = EthAddress::from_slice(&hex::decode("5fDAEf0a0B11774dB68C38aB36957De8646aF1B5").unwrap());
         assert_eq!(result, expected_result);
     }
@@ -572,7 +603,7 @@ mod tests {
     fn should_get_asset_num_decimals_from_proof() {
         let proof = get_sample_proof();
         let expected_result = 4;
-        let result = EosOnEthEosTxInfo::get_asset_num_decimals_from_proof(&proof).unwrap();
+        let result = EosOnEthEthTxInfo::get_asset_num_decimals_from_proof(&proof).unwrap();
         assert_eq!(result, expected_result);
     }
 
@@ -584,7 +615,7 @@ mod tests {
         let dictionary_str = "[{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"pSEEDS\",\"eos_symbol\":\"SEEDS\",\"eth_address\":\"6db338e6ed75f67cd5a4ef8bdf59163b32d4bd46\",\"eos_address\":\"token.seeds\"},{\"eth_token_decimals\":18,\"eos_token_decimals\":4,\"eth_symbol\":\"TLOS\",\"eos_symbol\":\"TLOS\",\"eth_address\":\"7825e833d495f3d1c28872415a4aee339d26ac88\",\"eos_address\":\"eosio.token\"}]";
         let dictionary = EosEthTokenDictionary::from_str(dictionary_str).unwrap();
         let eos_smart_contract = EosAccountName::from_str("xeth.ptokens").unwrap();
-        let result = EosOnEthEosTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
+        let result = EosOnEthEthTxInfo::from_eos_action_proof(&proof, &dictionary, &eos_smart_contract).unwrap();
         let expected_recipient = *SAFE_ETH_ADDRESS;
         assert_eq!(result.destination_address, expected_recipient);
     }
@@ -618,7 +649,7 @@ mod tests {
         let infos = get_sample_eos_on_eth_eos_tx_infos();
         let result = infos.subtract_fees(&dictionary).unwrap();
         let expected_amount = U256::from_dec_str("99760000000000").unwrap();
-        let expected_result = EosOnEthEosTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()
+        let expected_result = EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()
             .update_amount(expected_amount, &dictionary)
             .unwrap()]);
         assert_eq!(result, expected_result);

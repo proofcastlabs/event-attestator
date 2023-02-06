@@ -34,7 +34,7 @@ use crate::{
     eos_on_eth::eos::{
         account_for_fees::maybe_account_for_fees,
         divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-        eos_tx_info::{
+        eth_tx_info::{
             maybe_filter_out_already_processed_tx_ids_from_state,
             maybe_filter_out_value_too_low_txs_from_state,
             maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,

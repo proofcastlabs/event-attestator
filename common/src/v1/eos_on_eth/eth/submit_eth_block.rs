@@ -22,7 +22,7 @@ use crate::{
     eos_on_eth::eth::{
         account_for_fees::maybe_account_for_fees,
         divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
-        eth_tx_info::{
+        eos_tx_info::{
             maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
             maybe_filter_out_zero_eos_asset_amounts_in_state,
             maybe_parse_eth_tx_info_from_canon_block_and_add_to_state,

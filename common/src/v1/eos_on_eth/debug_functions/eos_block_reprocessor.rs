@@ -39,6 +39,7 @@ use crate::{
             maybe_increment_eth_nonce_in_db_and_return_eos_state,
             maybe_parse_eos_on_eth_eos_tx_infos_and_put_in_state,
             update_accrued_fees_in_dictionary_and_return_eos_state,
+            EosOnEthEthTxInfos,
             EosOutput,
         },
     },
@@ -87,24 +88,25 @@ fn reprocess_eos_block<D: DatabaseInterface>(
             }
         })
         .and_then(|state| {
-            if state.eos_on_eth_eos_tx_infos.len() == 0 {
+            if state.tx_infos.is_empty() {
                 info!("✔ No EOS tx info in state ∴ no ETH transactions to sign!");
                 Ok(state)
             } else {
-                state
-                    .eos_on_eth_eos_tx_infos
-                    .to_eth_signed_txs(
-                        match maybe_nonce {
-                            Some(nonce) => {
-                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
-                                nonce
+                EosOnEthEthTxInfos::from_bytes(&state.tx_infos)
+                    .and_then(|infos| {
+                        infos.to_eth_signed_txs(
+                            match maybe_nonce {
+                                Some(nonce) => {
+                                    info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                                    nonce
+                                },
+                                None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
                             },
-                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                        },
-                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                        state.eth_db_utils.get_eth_gas_price_from_db()?,
-                        &state.eth_db_utils.get_eth_private_key_from_db()?,
-                    )
+                            &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                            state.eth_db_utils.get_eth_gas_price_from_db()?,
+                            &state.eth_db_utils.get_eth_private_key_from_db()?,
+                        )
+                    })
                     .and_then(|signed_txs| {
                         debug!("✔ Signed transactions: {:?}", signed_txs);
                         state.add_eth_signed_txs(signed_txs)
@@ -131,7 +133,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                 } else {
                     get_eth_signed_tx_info_from_eth_txs(
                         &txs,
-                        &state.eos_on_eth_eos_tx_infos,
+                        &EosOnEthEthTxInfos::from_bytes(&state.tx_infos)?,
                         match maybe_nonce {
                             // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,
