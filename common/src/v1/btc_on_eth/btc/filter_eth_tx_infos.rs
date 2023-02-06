@@ -34,10 +34,15 @@ impl BtcOnEthEthTxInfos {
 pub fn maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state<D: DatabaseInterface>(
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
-    state
-        .btc_on_eth_eth_tx_infos
-        .filter_out_value_too_low()
-        .and_then(|params| state.replace_btc_on_eth_eth_tx_infos(params))
+    if state.tx_infos.is_empty() {
+        warn!("✘ Not filtering value too low tx infos because there are none to filter!");
+        Ok(state)
+    } else {
+        BtcOnEthEthTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| infos.filter_out_value_too_low())
+            .and_then(|params| params.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 #[cfg(test)]

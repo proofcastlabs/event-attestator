@@ -1,5 +1,5 @@
 use crate::{
-    btc_on_eth::btc::eth_tx_info::BtcOnEthEthTxInfo,
+    btc_on_eth::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
         eth_database_utils::EthDbUtilsExt,
@@ -49,7 +49,7 @@ pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterfa
     info!("✔ Maybe signing AnySender txs...");
     get_any_sender_signed_txs(
         &state.eth_db_utils.get_any_sender_signing_params_from_db()?,
-        &state.btc_db_utils.get_btc_canon_block_from_db()?.get_eth_tx_infos(),
+        &BtcOnEthEthTxInfos::from_bytes(&state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes())?,
     )
     .and_then(|signed_txs| {
         debug!("✔ Signed AnySender transactions: {:?}", signed_txs);

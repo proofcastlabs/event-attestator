@@ -96,7 +96,8 @@ pub fn parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
         state.btc_db_utils.get_btc_network_from_db()?,
         &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
     )
-    .and_then(|params| state.add_btc_on_eth_eth_tx_infos(params))
+    .and_then(|params| params.to_bytes())
+    .map(|bytes| state.add_tx_infos(bytes))
 }
 
 #[cfg(test)]

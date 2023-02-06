@@ -39,11 +39,15 @@ impl Default for BtcOnEthEthTxInfo {
 
 impl BtcOnEthEthTxInfos {
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self.0)?)
+        Ok(serde_json::to_vec(&self)?)
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice(bytes)?)
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
     }
 }
 

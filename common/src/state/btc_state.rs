@@ -1,5 +1,4 @@
 use crate::{
-    btc_on_eth::BtcOnEthEthTxInfos,
     chains::{
         btc::{
             btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
@@ -38,7 +37,6 @@ pub struct BtcState<'a, D: DatabaseInterface> {
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub p2pkh_deposit_txs: Option<BtcTransactions>,
-    pub btc_on_eth_eth_tx_infos: BtcOnEthEthTxInfos,
     pub any_sender_signed_txs: Option<RelayTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
@@ -67,7 +65,6 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             eos_db_utils: EosDbUtils::new(db),
             eth_signed_txs: EthTransactions::new(vec![]),
             eos_signed_txs: EosSignedTransactions::new(vec![]),
-            btc_on_eth_eth_tx_infos: BtcOnEthEthTxInfos::new(vec![]),
         }
     }
 
@@ -198,24 +195,9 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         self
     }
 
-    pub fn add_btc_on_eth_eth_tx_infos(mut self, mut params: BtcOnEthEthTxInfos) -> Result<BtcState<'a, D>> {
-        info!("✔ Adding `BtcOnEthEthTxInfos` to state...");
-        self.btc_on_eth_eth_tx_infos.append(&mut params);
-        Ok(self)
-    }
-
     pub fn replace_utxos_and_values(mut self, replacement_utxos: BtcUtxosAndValues) -> Result<BtcState<'a, D>> {
         info!("✔ Replacing UTXOs in state...");
         self.utxos_and_values = replacement_utxos;
-        Ok(self)
-    }
-
-    pub fn replace_btc_on_eth_eth_tx_infos(
-        mut self,
-        replacement_params: BtcOnEthEthTxInfos,
-    ) -> Result<BtcState<'a, D>> {
-        info!("✔ Replacing `BtcOnEthEthTxInfos` in state...");
-        self.btc_on_eth_eth_tx_infos = replacement_params;
         Ok(self)
     }
 

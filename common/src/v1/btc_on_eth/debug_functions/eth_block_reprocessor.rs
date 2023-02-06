@@ -52,18 +52,23 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                         &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                     )
                 })
-                .and_then(|params| state.add_btc_on_eth_btc_tx_infos(params))
+                .and_then(|params| params.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
         })
         .and_then(|state| {
             if accrue_fees {
                 maybe_account_for_fees(state)
             } else {
                 info!("✘ Not accruing fees during ETH block reprocessing...");
-                let btc_tx_infos_minus_fees = subtract_fees_from_btc_tx_infos(
-                    &state.btc_on_eth_btc_tx_infos,
-                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
-                )?;
-                state.replace_btc_on_eth_btc_tx_infos(btc_tx_infos_minus_fees)
+                BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)
+                    .and_then(|tx_infos| {
+                        subtract_fees_from_btc_tx_infos(
+                            &tx_infos,
+                            FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
+                        )
+                    })
+                    .and_then(|infos| infos.to_bytes())
+                    .map(|bytes| state.add_tx_infos(bytes))
             }
         })
         .and_then(maybe_create_btc_txs_and_add_to_state)
@@ -77,7 +82,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                     Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                         state.btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
-                        &state.btc_on_eth_btc_tx_infos,
+                        &BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)?,
                     )?,
                     None => vec![],
                 },

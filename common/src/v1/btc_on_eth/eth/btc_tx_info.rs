@@ -3,6 +3,7 @@ use std::str::FromStr;
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     btc_on_eth::utils::convert_wei_to_satoshis,
@@ -31,10 +32,10 @@ use crate::{
     safe_addresses::SAFE_BTC_ADDRESS_STR,
     state::EthState,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Byte, Bytes, Result},
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Constructor)]
 pub struct BtcOnEthBtcTxInfo {
     pub amount_in_satoshis: u64,
     pub from: EthAddress,
@@ -94,10 +95,22 @@ impl BtcOnEthBtcTxInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Constructor, Deref, IntoIterator)]
 pub struct BtcOnEthBtcTxInfos(pub Vec<BtcOnEthBtcTxInfo>);
 
 impl BtcOnEthBtcTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
     pub fn filter_out_any_whose_value_is_too_low(&self) -> Self {
         info!("✘ Filtering out `BtcOnEthBtcTxInfo` whose amounts are too low...");
         Self::new(
@@ -206,19 +219,19 @@ pub fn maybe_parse_btc_tx_infos_and_add_to_state<D: DatabaseInterface>(state: Et
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|submission_material| match submission_material.receipts.is_empty() {
-            true => {
+        .and_then(|submission_material| {
+            if submission_material.receipts.is_empty() {
                 info!("✔ No receipts in canon block ∴ no infos to parse!");
                 Ok(state)
-            },
-            false => {
+            } else {
                 info!("✔ Receipts in canon block ∴ parsing infos...");
                 BtcOnEthBtcTxInfos::from_eth_submission_material(
                     &submission_material,
                     &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 )
-                .and_then(|infos| state.add_btc_on_eth_btc_tx_infos(infos))
-            },
+                .and_then(|infos| infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
+            }
         })
 }
 

@@ -80,7 +80,7 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             Some(txs) => get_btc_signed_tx_info_from_btc_txs(
                 state.btc_db_utils.get_btc_account_nonce_from_db()?,
                 txs,
-                &state.btc_on_eth_btc_tx_infos,
+                &BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)?,
             )?,
             None => vec![],
         },

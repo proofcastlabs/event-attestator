@@ -10,6 +10,7 @@ use crate::{
             maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
             parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
             subtract_fees_from_eth_tx_infos,
+            BtcOnEthEthTxInfos,
         },
         constants::CORE_TYPE,
     },
@@ -75,11 +76,12 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                 maybe_account_for_minting_fees(state)
             } else {
                 info!("✘ Not accruing fees during BTC block reprocessing...");
-                let minting_params_minus_fees = subtract_fees_from_eth_tx_infos(
-                    &state.btc_on_eth_eth_tx_infos,
+                subtract_fees_from_eth_tx_infos(
+                    &BtcOnEthEthTxInfos::from_bytes(&state.tx_infos)?,
                     FeeDatabaseUtils::new_for_btc_on_eth().get_peg_in_basis_points_from_db(state.db)?,
-                )?;
-                state.replace_btc_on_eth_eth_tx_infos(minting_params_minus_fees)
+                )
+                .and_then(|tx_infos| tx_infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
             }
         })
         .and_then(|state| {
@@ -97,7 +99,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                     },
                     smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 },
-                &state.btc_on_eth_eth_tx_infos,
+                &BtcOnEthEthTxInfos::from_bytes(&state.tx_infos)?,
                 &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )
             .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
@@ -118,7 +120,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
             } else {
                 get_eth_signed_tx_info_from_eth_txs(
                     &txs,
-                    &state.btc_on_eth_eth_tx_infos,
+                    &BtcOnEthEthTxInfos::from_bytes(&state.tx_infos)?,
                     match maybe_nonce {
                         // NOTE: We increment the passed in nonce ∵ of the way the report nonce is calculated.
                         Some(nonce) => nonce + num_txs as u64,

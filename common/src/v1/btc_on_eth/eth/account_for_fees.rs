@@ -54,16 +54,20 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EthState<D>) -> Resul
     if DISABLE_FEES {
         info!("✔ Taking fees is disabled ∴ not taking any fees!");
         Ok(state)
-    } else if state.btc_on_eth_btc_tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ Not redeem-info in state ∴ not taking any fees!");
         Ok(state)
     } else {
-        account_for_fees_in_btc_tx_infos(
-            state.db,
-            &state.btc_on_eth_btc_tx_infos,
-            FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
-        )
-        .and_then(|updated_btc_tx_infos| state.replace_btc_on_eth_btc_tx_infos(updated_btc_tx_infos))
+        BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| {
+                account_for_fees_in_btc_tx_infos(
+                    state.db,
+                    &tx_infos,
+                    FeeDatabaseUtils::new_for_btc_on_eth().get_peg_out_basis_points_from_db(state.db)?,
+                )
+            })
+            .and_then(|updated_btc_tx_infos| updated_btc_tx_infos.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
     }
 }
 

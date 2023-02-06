@@ -47,22 +47,17 @@ fn to_btc_txs_whilst_extracting_change_outputs<D: DatabaseInterface>(
 }
 
 pub fn maybe_create_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe creating BTC transaction(s) from redeem params...");
-    let num_btc_tx_infos = state.btc_on_eth_btc_tx_infos.len();
-    if num_btc_tx_infos == 0 {
+    if state.tx_infos.is_empty() {
         info!("✔ No `BtcOnEthBtcTxInfos` in state ∴ not creating BTC txs!");
         Ok(state)
     } else {
-        info!(
-            "✔ {} `BtcOnEthBtcTxInfos` in state ∴ creating BTC txs & extracting change outputs...",
-            num_btc_tx_infos
-        );
+        info!("✔ `BtcOnEthBtcTxInfos` in state ∴ creating BTC txs & extracting change outputs...");
         to_btc_txs_whilst_extracting_change_outputs(
             state.db,
             state.btc_db_utils.get_btc_fee_from_db()?,
             &state.btc_db_utils.get_btc_address_from_db()?,
             &state.btc_db_utils.get_btc_private_key_from_db()?,
-            &state.btc_on_eth_btc_tx_infos,
+            &BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)?,
         )
         .and_then(|signed_txs| {
             debug!("✔ Signed transactions: {:?}", signed_txs);

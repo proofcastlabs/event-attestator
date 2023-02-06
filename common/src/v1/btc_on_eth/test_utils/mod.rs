@@ -6,10 +6,9 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
     btc_on_eth::{
+        btc::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
         eth::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos},
         utils::convert_satoshis_to_wei,
-        BtcOnEthEthTxInfo,
-        BtcOnEthEthTxInfos,
     },
     chains::{btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS, eth::eth_submission_material::EthSubmissionMaterial},
     types::Result,

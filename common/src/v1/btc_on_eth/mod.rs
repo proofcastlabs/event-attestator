@@ -14,8 +14,6 @@ mod get_latest_block_numbers;
 mod test_utils;
 mod utils;
 
-#[cfg(test)]
-pub use self::btc::BtcOnEthEthTxInfo; // FIXME Current used in `chains::btc::btc_test_utils`
 pub use self::{
     btc::submit_btc_block_to_enclave,
     constants::CORE_TYPE,
@@ -40,7 +38,6 @@ pub use self::{
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
 };
-pub use self::{btc::BtcOnEthEthTxInfos, eth::BtcOnEthBtcTxInfos}; // FIXME Currently used in `State`.
 pub use crate::{
     chains::{
         btc::{

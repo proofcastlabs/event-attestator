@@ -1,7 +1,6 @@
 use ethereum_types::{H256 as EthHash, U256};
 
 use crate::{
-    btc_on_eth::BtcOnEthBtcTxInfos,
     chains::{
         algo::{algo_database_utils::AlgoDbUtils, algo_signed_group_txs::AlgoSignedGroupTxs},
         btc::{
@@ -40,7 +39,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
     pub eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos,
-    pub btc_on_eth_btc_tx_infos: BtcOnEthBtcTxInfos,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub erc20_on_int_int_signed_txs: EthTransactions,
@@ -77,7 +75,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             algo_signed_group_txs: AlgoSignedGroupTxs::new(vec![]),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
-            btc_on_eth_btc_tx_infos: BtcOnEthBtcTxInfos::new(vec![]),
             eos_on_eth_eth_tx_infos: EosOnEthEthTxInfos::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
@@ -164,12 +161,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_btc_on_eth_btc_tx_infos(self, mut infos: BtcOnEthBtcTxInfos) -> Result<Self> {
-        let mut new_infos = self.btc_on_eth_btc_tx_infos.clone().0;
-        new_infos.append(&mut infos.0);
-        self.replace_btc_on_eth_btc_tx_infos(BtcOnEthBtcTxInfos::new(new_infos))
-    }
-
     pub fn add_tx_infos(mut self, infos: Bytes) -> Self {
         self.tx_infos = infos;
         self
@@ -191,11 +182,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_erc20_on_evm_evm_tx_infos(Erc20OnEvmEvmTxInfos::new(new_infos))
-    }
-
-    pub fn replace_btc_on_eth_btc_tx_infos(mut self, replacements: BtcOnEthBtcTxInfos) -> Result<Self> {
-        self.btc_on_eth_btc_tx_infos = replacements;
-        Ok(self)
     }
 
     pub fn replace_erc20_on_eos_eos_tx_infos(mut self, replacements: Erc20OnEosEosTxInfos) -> Result<Self> {

@@ -11,7 +11,6 @@ use bitcoin::{
 };
 
 use crate::{
-    btc_on_eth::BtcOnEthEthTxInfos, // FIXME We'll need this removing eventually.
     chains::btc::{
         btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
         btc_constants::DEFAULT_BTC_SEQUENCE,
@@ -123,7 +122,7 @@ pub fn get_sample_p2sh_redeem_script_sig() -> BtcScript {
 }
 
 pub fn convert_sample_block_to_db_format(btc_block_and_id: BtcBlockAndId) -> Result<BtcBlockInDbFormat> {
-    get_btc_block_in_db_format(btc_block_and_id, BtcOnEthEthTxInfos::new(vec![]), vec![])
+    get_btc_block_in_db_format(btc_block_and_id, vec![])
 }
 
 pub fn get_sample_btc_submission_material_json_string() -> String {
@@ -324,11 +323,7 @@ pub fn get_sample_p2sh_utxo_and_value_3() -> Result<BtcUtxoAndValue> {
     })
 }
 
-pub fn get_btc_block_in_db_format(
-    btc_block_and_id: BtcBlockAndId,
-    _eth_minting_params: BtcOnEthEthTxInfos,
-    extra_data: Bytes,
-) -> Result<BtcBlockInDbFormat> {
+pub fn get_btc_block_in_db_format(btc_block_and_id: BtcBlockAndId, extra_data: Bytes) -> Result<BtcBlockInDbFormat> {
     Ok(BtcBlockInDbFormat::new(
         btc_block_and_id.height,
         btc_block_and_id.id,
