@@ -8,6 +8,6 @@ use crate::{
     types::Result,
 };
 
-create_safe_address_diversion_fxns!(
+create_safe_address_diversion_fxns_v2!(
     "Erc20OnEvmEvmTxInfo" => EthState => "evm" => *SAFE_ETH_ADDRESS => EthAddress => "token"
 );

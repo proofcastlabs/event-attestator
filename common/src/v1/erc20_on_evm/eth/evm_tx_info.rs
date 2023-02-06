@@ -1,5 +1,6 @@
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::{
@@ -29,10 +30,10 @@ use crate::{
     safe_addresses::safely_convert_str_to_eth_address,
     state::EthState,
     traits::DatabaseInterface,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
 };
 
-#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Constructor, Serialize, Deserialize)]
 pub struct Erc20OnEvmEvmTxInfo {
     pub native_token_amount: U256,
     pub token_sender: EthAddress,
@@ -153,7 +154,7 @@ impl Erc20OnEvmEvmTxInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor, Deref, Serialize, Deserialize)]
 pub struct Erc20OnEvmEvmTxInfos(pub Vec<Erc20OnEvmEvmTxInfo>);
 
 impl FeesCalculator for Erc20OnEvmEvmTxInfos {
@@ -184,6 +185,18 @@ impl FeesCalculator for Erc20OnEvmEvmTxInfos {
 }
 
 impl Erc20OnEvmEvmTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
     fn get_host_token_amounts(&self, dictionary: &EthEvmTokenDictionary) -> Result<Vec<U256>> {
         self.iter()
             .map(|tx_info| tx_info.get_host_token_amount(dictionary))
@@ -345,12 +358,11 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|submission_material| match submission_material.receipts.is_empty() {
-            true => {
+        .and_then(|submission_material| {
+            if submission_material.receipts.is_empty() {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
                 Ok(state)
-            },
-            false => {
+            } else {
                 info!(
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
@@ -361,24 +373,30 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                     &EthEvmTokenDictionary::get_from_db(state.db)?,
                     &state.eth_db_utils.get_eth_chain_id_from_db()?,
                 )
-                .and_then(|tx_infos| state.add_erc20_on_evm_evm_tx_infos(tx_infos))
-            },
+                .and_then(|infos| infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
+            }
         })
 }
 
 pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering out zero value `Erc20OnEvmEvmTxInfos`...");
-    debug!(
-        "✔ Num `Erc20OnEvmEvmTxInfos` before: {}",
-        state.erc20_on_evm_evm_signed_txs.len()
-    );
-    state
-        .erc20_on_evm_evm_tx_infos
-        .filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?)
-        .and_then(|filtered_tx_infos| {
-            debug!("✔ Num `Erc20OnEvmEvmTxInfos` after: {}", filtered_tx_infos.len());
-            state.replace_erc20_on_evm_evm_tx_infos(filtered_tx_infos)
-        })
+    if state.tx_infos.is_empty() {
+        info!("✔ NOT filtering out zero value `Erc20OnEvmEvmTxInfos` because there are none to filter!");
+        Ok(state)
+    } else {
+        info!("✔ Maybe filtering out zero value `Erc20OnEvmEvmTxInfos`...");
+        debug!(
+            "✔ Num `Erc20OnEvmEvmTxInfos` before: {}",
+            state.erc20_on_evm_evm_signed_txs.len()
+        );
+        Erc20OnEvmEvmTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| infos.filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?))
+            .and_then(|infos| {
+                debug!("✔ Num `Erc20OnEvmEvmTxInfos` after: {}", infos.len());
+                infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterface>(
@@ -401,21 +419,22 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if state.erc20_on_evm_evm_tx_infos.is_empty() {
+    if state.tx_infos.is_empty() {
         info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
         Ok(state)
     } else {
         let chain_id = state.evm_db_utils.get_eth_chain_id_from_db()?;
-        state
-            .erc20_on_evm_evm_tx_infos
-            .to_evm_signed_txs(
-                state.evm_db_utils.get_eth_account_nonce_from_db()?,
-                &chain_id,
-                chain_id.get_erc777_mint_with_data_gas_limit(),
-                state.evm_db_utils.get_eth_gas_price_from_db()?,
-                &state.evm_db_utils.get_eth_private_key_from_db()?,
-                &EthEvmTokenDictionary::get_from_db(state.db)?,
-            )
+        Erc20OnEvmEvmTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                infos.to_evm_signed_txs(
+                    state.evm_db_utils.get_eth_account_nonce_from_db()?,
+                    &chain_id,
+                    chain_id.get_erc777_mint_with_data_gas_limit(),
+                    state.evm_db_utils.get_eth_gas_price_from_db()?,
+                    &state.evm_db_utils.get_eth_private_key_from_db()?,
+                    &EthEvmTokenDictionary::get_from_db(state.db)?,
+                )
+            })
             .and_then(|signed_txs| {
                 debug!("✔ Signed transactions: {:?}", signed_txs);
                 state.add_erc20_on_evm_evm_signed_txs(signed_txs)

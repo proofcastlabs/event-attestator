@@ -5,7 +5,6 @@ mod get_evm_output_json;
 mod initialize_evm_core;
 mod submit_evm_block;
 
-// FIXME Used in `State`.
 pub(super) use self::{
     account_for_fees::{
         account_for_fees_in_eth_tx_infos_in_state,
@@ -15,11 +14,8 @@ pub(super) use self::{
     eth_tx_info::{
         filter_out_zero_value_eth_tx_infos_from_state,
         filter_submission_material_for_redeem_events_in_state,
+        Erc20OnEvmEthTxInfos,
     },
     get_evm_output_json::{get_eth_signed_tx_info_from_evm_txs, EvmOutput},
 };
-pub use self::{
-    eth_tx_info::Erc20OnEvmEthTxInfos,
-    initialize_evm_core::maybe_initialize_evm_core,
-    submit_evm_block::submit_evm_block_to_core,
-};
+pub use self::{initialize_evm_core::maybe_initialize_evm_core, submit_evm_block::submit_evm_block_to_core};

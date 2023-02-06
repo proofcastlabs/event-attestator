@@ -61,7 +61,8 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                         &state.eth_db_utils.get_eth_chain_id_from_db()?,
                     )
                 })
-                .and_then(|params| state.add_erc20_on_evm_evm_tx_infos(params))
+                .and_then(|infos| infos.to_bytes())
+                .map(|bytes| state.add_tx_infos(bytes))
         })
         .and_then(filter_out_zero_value_evm_tx_infos_from_state)
         .and_then(account_for_fees_in_evm_tx_infos_in_state)
@@ -75,27 +76,28 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         })
         .and_then(maybe_divert_evm_txs_to_safe_address_if_destination_is_token_address)
         .and_then(|state| {
-            if state.erc20_on_evm_evm_tx_infos.is_empty() {
+            if state.tx_infos.is_empty() {
                 info!("✔ No tx infos in state ∴ no EVM transactions to sign!");
                 Ok(state)
             } else {
                 let chain_id = state.evm_db_utils.get_eth_chain_id_from_db()?;
-                state
-                    .erc20_on_evm_evm_tx_infos
-                    .to_evm_signed_txs(
-                        match maybe_nonce {
-                            Some(nonce) => {
-                                info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
-                                nonce
+                Erc20OnEvmEvmTxInfos::from_bytes(&state.tx_infos)
+                    .and_then(|infos| {
+                        infos.to_evm_signed_txs(
+                            match maybe_nonce {
+                                Some(nonce) => {
+                                    info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
+                                    nonce
+                                },
+                                None => state.evm_db_utils.get_eth_account_nonce_from_db()?,
                             },
-                            None => state.evm_db_utils.get_eth_account_nonce_from_db()?,
-                        },
-                        &chain_id,
-                        chain_id.get_erc777_mint_with_data_gas_limit(),
-                        state.evm_db_utils.get_eth_gas_price_from_db()?,
-                        &state.evm_db_utils.get_eth_private_key_from_db()?,
-                        &EthEvmTokenDictionary::get_from_db(state.db)?,
-                    )
+                            &chain_id,
+                            chain_id.get_erc777_mint_with_data_gas_limit(),
+                            state.evm_db_utils.get_eth_gas_price_from_db()?,
+                            &state.evm_db_utils.get_eth_private_key_from_db()?,
+                            &EthEvmTokenDictionary::get_from_db(state.db)?,
+                        )
+                    })
                     .and_then(|signed_txs| {
                         debug!("✔ Signed transactions: {:?}", signed_txs);
                         state.add_erc20_on_evm_evm_signed_txs(signed_txs)
@@ -123,7 +125,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
                     let use_any_sender_tx = false;
                     get_evm_signed_tx_info_from_evm_txs(
                         &txs,
-                        &state.erc20_on_evm_evm_tx_infos,
+                        &Erc20OnEvmEvmTxInfos::from_bytes(&state.tx_infos)?,
                         match maybe_nonce {
                             // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,

@@ -16,7 +16,6 @@ use crate::{
         },
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
-    erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::{get_no_overwrite_state_err, get_not_in_state_err},
@@ -40,8 +39,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub erc20_on_int_int_signed_txs: EthTransactions,
     pub erc20_on_int_eth_signed_txs: EthTransactions,
-    pub erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos,
-    pub erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
@@ -75,8 +72,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
-            erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos::new(vec![]),
-            erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos::new(vec![]),
         }
     }
 
@@ -139,12 +134,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_erc20_on_evm_eth_tx_infos(self, mut infos: Erc20OnEvmEthTxInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_evm_eth_tx_infos.0.clone();
-        new_infos.append(&mut infos.0);
-        self.replace_erc20_on_evm_eth_tx_infos(Erc20OnEvmEthTxInfos::new(new_infos))
-    }
-
     pub fn add_eth_submission_material(mut self, eth_submission_material: EthSubmissionMaterial) -> Result<Self> {
         match self.eth_submission_material {
             Some(_) => Err(get_no_overwrite_state_err("eth_submission_material").into()),
@@ -158,22 +147,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
     pub fn add_tx_infos(mut self, infos: Bytes) -> Self {
         self.tx_infos = infos;
         self
-    }
-
-    pub fn add_erc20_on_evm_evm_tx_infos(self, mut infos: Erc20OnEvmEvmTxInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
-        new_infos.append(&mut infos.0);
-        self.replace_erc20_on_evm_evm_tx_infos(Erc20OnEvmEvmTxInfos::new(new_infos))
-    }
-
-    pub fn replace_erc20_on_evm_eth_tx_infos(mut self, replacements: Erc20OnEvmEthTxInfos) -> Result<Self> {
-        self.erc20_on_evm_eth_tx_infos = replacements;
-        Ok(self)
-    }
-
-    pub fn replace_erc20_on_evm_evm_tx_infos(mut self, replacements: Erc20OnEvmEvmTxInfos) -> Result<Self> {
-        self.erc20_on_evm_evm_tx_infos = replacements;
-        Ok(self)
     }
 
     pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<Self> {
