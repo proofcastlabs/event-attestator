@@ -1,12 +1,12 @@
 [workspace]
 members = [
     "common",
-    "btc_on_int",
-    "int_on_eos",
-    "int_on_evm",
-    "eos_on_int",
-    "int_on_algo",
-    "erc20_on_int",
+    "v2_bridges/btc_on_int",
+    "v2_bridges/int_on_eos",
+    "v2_bridges/int_on_evm",
+    "v2_bridges/eos_on_int",
+    "v2_bridges/int_on_algo",
+    "v2_bridges/erc20_on_int",
 ]
 
 [profile.dev]

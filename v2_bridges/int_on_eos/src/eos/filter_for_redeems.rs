@@ -1,10 +1,10 @@
-use crate::{
-    chains::eos::{
-        eos_chain_id::EosChainId,
-        eos_constants::{REDEEM_ACTION_NAME as V1_REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
-        eos_state::EosState,
-        filter_action_proofs::filter_for_proofs_with_action_name,
-    },
+use common_eos::{
+    eos_chain_id::EosChainId,
+    eos_constants::{REDEEM_ACTION_NAME as V1_REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
+    eos_state::EosState,
+    filter_action_proofs::filter_for_proofs_with_action_name,
+};
+use common::{
     traits::DatabaseInterface,
     types::Result,
 };
