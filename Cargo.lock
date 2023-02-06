@@ -240,6 +240,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "btc_on_eth"
+version = "1.0.0"
+dependencies = [
+ "bitcoin",
+ "common",
+ "derive_more",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "log",
+ "paste",
+ "serde",
+ "serde_json",
+ "simple_logger",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
 name = "btc_on_int"
 version = "1.0.0"
 dependencies = [

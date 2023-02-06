@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::btc::{btc_submission_material::BtcSubmissionMaterialJson, deposit_address_info::DepositInfoList},
+    errors::AppError,
     state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
@@ -38,6 +39,14 @@ impl BtcBlockAndId {
             id: BlockHash::from_str(&json.block.id)?,
             deposit_address_list: DepositInfoList::from_json(&json.deposit_address_list)?,
         })
+    }
+}
+
+impl FromStr for BtcBlockAndId {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Self::from_json(&BtcSubmissionMaterialJson::from_str(s)?)
     }
 }
 
