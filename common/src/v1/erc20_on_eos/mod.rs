@@ -15,9 +15,6 @@ mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
 
-// FIXME Used in `State`.
-#[cfg(test)]
-pub(self) use self::eth::Erc20OnEosEosTxInfo;
 pub use self::{
     add_vault_contract_address_to_db::maybe_add_vault_contract_address_to_db,
     constants::CORE_TYPE,
@@ -37,8 +34,8 @@ pub use self::{
         debug_set_eth_fee_basis_points,
         debug_withdraw_fees_and_save_in_db,
     },
-    eos::{maybe_initialize_eos_core, submit_eos_block_to_core, Erc20OnEosEthTxInfos},
-    eth::{maybe_initialize_eth_core, submit_eth_block_to_core, Erc20OnEosEosTxInfos},
+    eos::{maybe_initialize_eos_core, submit_eos_block_to_core},
+    eth::{maybe_initialize_eth_core, submit_eth_block_to_core},
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
 };

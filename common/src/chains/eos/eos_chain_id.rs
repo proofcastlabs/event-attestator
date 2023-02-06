@@ -1,6 +1,7 @@
 use std::{fmt, str::FromStr};
 
 use ethereum_types::H256 as KeccakHash;
+use serde::{Deserialize, Serialize};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
@@ -16,7 +17,7 @@ use crate::{
 
 const EOS_CHAIN_ID_LENGTH_IN_BYTES: usize = 32;
 
-#[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
+#[derive(Clone, Debug, PartialEq, Eq, EnumIter, Serialize, Deserialize)]
 pub enum EosChainId {
     EosMainnet,
     TelosMainnet,

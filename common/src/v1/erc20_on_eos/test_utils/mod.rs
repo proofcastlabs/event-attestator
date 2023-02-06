@@ -8,7 +8,7 @@ use serde_json::json;
 use crate::{
     chains::eth::eth_chain_id::EthChainId,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-    erc20_on_eos::{Erc20OnEosEosTxInfo, Erc20OnEosEosTxInfos},
+    erc20_on_eos::eth::{Erc20OnEosEosTxInfo, Erc20OnEosEosTxInfos},
     types::Result,
 };
 

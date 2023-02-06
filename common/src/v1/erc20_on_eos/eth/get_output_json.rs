@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{eos::eos_crypto::eos_transaction::EosSignedTransaction, eth::eth_database_utils::EthDbUtilsExt},
-    erc20_on_eos::eth::eos_tx_info::Erc20OnEosEosTxInfo,
+    erc20_on_eos::eth::eos_tx_info::{Erc20OnEosEosTxInfo, Erc20OnEosEosTxInfos},
     state::EthState,
     traits::DatabaseInterface,
     types::Result,
@@ -76,13 +76,14 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
             None => vec![],
             Some(ref eos_txs) => {
                 let start_nonce = state.eos_db_utils.get_eos_account_nonce_from_db()? - eos_txs.len() as u64;
+                let infos = Erc20OnEosEosTxInfos::from_bytes(&state.tx_infos)?;
                 eos_txs
                     .iter()
                     .enumerate()
                     .map(|(i, eos_tx)| {
                         EosTxInfo::new(
                             eos_tx,
-                            &state.erc20_on_eos_eos_tx_infos[i],
+                            &infos[i],
                             start_nonce + i as u64,
                             state.eos_db_utils.get_latest_eos_block_number()?,
                         )

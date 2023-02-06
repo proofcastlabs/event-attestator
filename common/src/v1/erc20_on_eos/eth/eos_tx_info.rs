@@ -3,6 +3,7 @@ use std::str::FromStr;
 use derive_more::{Constructor, Deref};
 use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
@@ -38,10 +39,10 @@ use crate::{
     safe_addresses::safely_convert_str_to_eos_address,
     state::EthState,
     traits::DatabaseInterface,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
 };
 
-#[derive(Debug, Clone, PartialEq, Eq, Default, Constructor)]
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Constructor)]
 pub struct Erc20OnEosEosTxInfo {
     pub token_amount: U256,
     pub token_sender: EthAddress,
@@ -178,10 +179,22 @@ impl Erc20OnEosEosTxInfo {
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref)]
+#[derive(Debug, Clone, PartialEq, Default, Eq, Constructor, Deref, Serialize, Deserialize)]
 pub struct Erc20OnEosEosTxInfos(pub Vec<Erc20OnEosEosTxInfo>);
 
 impl Erc20OnEosEosTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
     pub fn to_eos_signed_txs(
         &self,
         ref_block_num: u16,
@@ -350,12 +363,11 @@ pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state
         .eth_db_utils
         .get_eth_canon_block_from_db()
-        .and_then(|submission_material| match submission_material.receipts.is_empty() {
-            true => {
+        .and_then(|submission_material| {
+            if submission_material.receipts.is_empty() {
                 info!("✔ No receipts in canon block ∴ no info to parse!");
                 Ok(state)
-            },
-            false => {
+            } else {
                 info!(
                     "✔ {} receipts in canon block ∴ parsing info...",
                     submission_material.receipts.len()
@@ -368,22 +380,30 @@ pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                             &state.eth_db_utils.get_eth_chain_id_from_db()?,
                         )
                     })
-                    .and_then(|eos_tx_infos| state.add_erc20_on_eos_eos_tx_infos(eos_tx_infos))
+                    .and_then(|infos| infos.to_bytes())
+                    .map(|bytes| state.add_tx_infos(bytes))
                     .and_then(filter_out_zero_value_eos_tx_infos_from_state)
-            },
+            }
         })
 }
 
 pub fn filter_out_zero_value_eos_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe filtering `erc20-on-eos` peg-in infos...");
-    debug!("✔ Num peg-in infos before: {}", state.erc20_on_eos_eos_tx_infos.len());
-    state
-        .erc20_on_eos_eos_tx_infos
-        .filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
-        .and_then(|filtered_eos_tx_infos| {
-            debug!("✔ Num peg-in infos after: {}", filtered_eos_tx_infos.len());
-            state.replace_erc20_on_eos_eos_tx_infos(filtered_eos_tx_infos)
-        })
+    if state.tx_infos.is_empty() {
+        info!("✔ NOT filtering `erc20-on-eos` peg-in infos because there are none!");
+        Ok(state)
+    } else {
+        info!("✔ Maybe filtering `erc20-on-eos` peg-in infos...");
+        Erc20OnEosEosTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                debug!("✔ Num peg-in infos before: {}", infos.len());
+                infos.filter_out_zero_eos_values(&EosEthTokenDictionary::get_from_db(state.db)?)
+            })
+            .and_then(|infos| {
+                debug!("✔ Num peg-in infos after: {}", infos.len());
+                infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterface>(
@@ -409,18 +429,24 @@ pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterfac
 }
 
 pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    info!("✔ Maybe signing `erc20-on-eos` peg in txs...");
-    let submission_material = state.get_eth_submission_material()?;
-    state
-        .erc20_on_eos_eos_tx_infos
-        .to_eos_signed_txs(
-            submission_material.get_eos_ref_block_num()?,
-            submission_material.get_eos_ref_block_prefix()?,
-            &state.eos_db_utils.get_eos_chain_id_from_db()?,
-            &EosPrivateKey::get_from_db(state.db)?,
-            &EosEthTokenDictionary::get_from_db(state.db)?,
-        )
-        .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    if state.tx_infos.is_empty() {
+        info!("✔ NOT Signing `erc20-on-eos` peg in txs because there are none!");
+        Ok(state)
+    } else {
+        info!("✔ Signing `erc20-on-eos` peg in txs...");
+        let submission_material = state.get_eth_submission_material()?;
+        Erc20OnEosEosTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                infos.to_eos_signed_txs(
+                    submission_material.get_eos_ref_block_num()?,
+                    submission_material.get_eos_ref_block_prefix()?,
+                    &state.eos_db_utils.get_eos_chain_id_from_db()?,
+                    &EosPrivateKey::get_from_db(state.db)?,
+                    &EosEthTokenDictionary::get_from_db(state.db)?,
+                )
+            })
+            .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+    }
 }
 
 #[cfg(test)]

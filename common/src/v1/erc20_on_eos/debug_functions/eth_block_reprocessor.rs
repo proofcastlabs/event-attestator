@@ -48,27 +48,25 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         .and_then(filter_submission_material_for_peg_in_events_in_state)
         .and_then(|state| {
             let submission_material = state.get_eth_submission_material()?.clone();
-            match submission_material.receipts.is_empty() {
-                true => {
-                    info!("✔ No receipts in block ∴ no info to parse!");
-                    Ok(state)
-                },
-                false => {
-                    info!(
-                        "✔ {} receipts in block ∴ parsing info...",
-                        submission_material.get_block_number()?
-                    );
-                    EosEthTokenDictionary::get_from_db(state.db)
-                        .and_then(|token_dictionary| {
-                            Erc20OnEosEosTxInfos::from_submission_material(
-                                &submission_material,
-                                &token_dictionary,
-                                &EthDbUtils::new(db).get_eth_chain_id_from_db()?,
-                            )
-                        })
-                        .and_then(|eos_tx_infos| state.add_erc20_on_eos_eos_tx_infos(eos_tx_infos))
-                        .and_then(filter_out_zero_value_eos_tx_infos_from_state)
-                },
+            if submission_material.receipts.is_empty() {
+                info!("✔ No receipts in block ∴ no info to parse!");
+                Ok(state)
+            } else {
+                info!(
+                    "✔ {} receipts in block ∴ parsing info...",
+                    submission_material.get_block_number()?
+                );
+                EosEthTokenDictionary::get_from_db(state.db)
+                    .and_then(|token_dictionary| {
+                        Erc20OnEosEosTxInfos::from_submission_material(
+                            &submission_material,
+                            &token_dictionary,
+                            &EthDbUtils::new(db).get_eth_chain_id_from_db()?,
+                        )
+                    })
+                    .and_then(|eos_tx_infos| eos_tx_infos.to_bytes())
+                    .map(|bytes| state.add_tx_infos(bytes))
+                    .and_then(filter_out_zero_value_eos_tx_infos_from_state)
             }
         })
         .and_then(account_for_fees_in_eos_tx_infos_in_state)

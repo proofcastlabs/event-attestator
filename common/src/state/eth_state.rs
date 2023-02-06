@@ -16,7 +16,6 @@ use crate::{
         },
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
-    erc20_on_eos::Erc20OnEosEosTxInfos,
     erc20_on_evm::{Erc20OnEvmEthTxInfos, Erc20OnEvmEvmTxInfos},
     traits::DatabaseInterface,
     types::{Bytes, Result},
@@ -43,7 +42,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_int_eth_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos,
     pub erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos,
-    pub erc20_on_eos_eos_tx_infos: Erc20OnEosEosTxInfos,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
@@ -79,7 +77,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_evm_tx_infos: Erc20OnEvmEvmTxInfos::new(vec![]),
             erc20_on_evm_eth_tx_infos: Erc20OnEvmEthTxInfos::new(vec![]),
-            erc20_on_eos_eos_tx_infos: Erc20OnEosEosTxInfos::new(vec![]),
         }
     }
 
@@ -163,21 +160,10 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         self
     }
 
-    pub fn add_erc20_on_eos_eos_tx_infos(self, mut infos: Erc20OnEosEosTxInfos) -> Result<Self> {
-        let mut new_infos = self.erc20_on_eos_eos_tx_infos.clone().0;
-        new_infos.append(&mut infos.0);
-        self.replace_erc20_on_eos_eos_tx_infos(Erc20OnEosEosTxInfos::new(new_infos))
-    }
-
     pub fn add_erc20_on_evm_evm_tx_infos(self, mut infos: Erc20OnEvmEvmTxInfos) -> Result<Self> {
         let mut new_infos = self.erc20_on_evm_evm_tx_infos.0.clone();
         new_infos.append(&mut infos.0);
         self.replace_erc20_on_evm_evm_tx_infos(Erc20OnEvmEvmTxInfos::new(new_infos))
-    }
-
-    pub fn replace_erc20_on_eos_eos_tx_infos(mut self, replacements: Erc20OnEosEosTxInfos) -> Result<Self> {
-        self.erc20_on_eos_eos_tx_infos = replacements;
-        Ok(self)
     }
 
     pub fn replace_erc20_on_evm_eth_tx_infos(mut self, replacements: Erc20OnEvmEthTxInfos) -> Result<Self> {

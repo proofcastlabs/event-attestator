@@ -5,7 +5,6 @@ mod get_output_json;
 mod initialize_eth_core;
 mod submit_eth_block;
 
-// FIXME Used in `State`.
 #[cfg(test)]
 pub(super) use self::eos_tx_info::Erc20OnEosEosTxInfo;
 pub(super) use self::{
@@ -17,11 +16,8 @@ pub(super) use self::{
         filter_out_zero_value_eos_tx_infos_from_state,
         filter_submission_material_for_peg_in_events_in_state,
         maybe_sign_eos_txs_and_add_to_eth_state,
+        Erc20OnEosEosTxInfos,
     },
     get_output_json::get_output_json,
 };
-pub use self::{
-    eos_tx_info::Erc20OnEosEosTxInfos,
-    initialize_eth_core::maybe_initialize_eth_core,
-    submit_eth_block::submit_eth_block_to_core,
-};
+pub use self::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core};

@@ -1,6 +1,6 @@
 use crate::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    erc20_on_eos::fees_calculator::FeesCalculator,
+    erc20_on_eos::{eos::Erc20OnEosEthTxInfos, fees_calculator::FeesCalculator},
     fees::fee_constants::DISABLE_FEES,
     state::EosState,
     traits::DatabaseInterface,
@@ -13,18 +13,15 @@ pub fn update_accrued_fees_in_dictionary_and_return_eos_state<D: DatabaseInterfa
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `Erc20OnEosEthTxInfos`!");
         Ok(state)
-    } else if state.erc20_on_eos_eth_tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ No `Erc20OnEosEthTxInfos` in state during EOS block submission ∴ not taking any fees!");
         Ok(state)
     } else {
         info!("✔ Accruing fees during EOS block submission...");
-        EosEthTokenDictionary::get_from_db(state.db)
-            .and_then(|dictionary| {
-                dictionary.increment_accrued_fees_and_save_in_db(
-                    state.db,
-                    &state.erc20_on_eos_eth_tx_infos.get_fees(&dictionary)?,
-                )
-            })
+        let dictionary = EosEthTokenDictionary::get_from_db(state.db)?;
+        let fees = Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)?.get_fees(&dictionary)?;
+        dictionary
+            .increment_accrued_fees_and_save_in_db(state.db, &fees)
             .and(Ok(state))
     }
 }
@@ -33,15 +30,17 @@ pub fn account_for_fees_in_eth_tx_infos_in_state<D: DatabaseInterface>(state: Eo
     if DISABLE_FEES {
         info!("✔ Fees are disabled ∴ not accounting for any in `Erc20OnEthRedeemInfos`!");
         Ok(state)
-    } else if state.erc20_on_eos_eth_tx_infos.is_empty() {
+    } else if state.tx_infos.is_empty() {
         info!("✔ No `Erc20OnEthRedeemInfos` in state during EOS block submission ∴ not taking any fees!");
         Ok(state)
     } else {
         info!("✔ Accounting for fees in `Erc20OnEthRedeemInfos` during EOS block submission...");
-        EosEthTokenDictionary::get_from_db(state.db).and_then(|ref dictionary| {
-            let eth_tx_infos = state.erc20_on_eos_eth_tx_infos.clone();
-            state.replace_erc20_on_eos_eth_tx_infos(eth_tx_infos.subtract_fees(dictionary)?)
-        })
+        let dictionary = EosEthTokenDictionary::get_from_db(state.db)?;
+        let infos = Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)?;
+        infos
+            .subtract_fees(&dictionary)
+            .and_then(|updated_infos| updated_infos.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
     }
 }
 

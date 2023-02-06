@@ -17,7 +17,6 @@ use crate::{
         eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    erc20_on_eos::Erc20OnEosEthTxInfos,
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::get_not_in_state_err,
@@ -29,42 +28,6 @@ make_state_setters_and_getters!(
     "btc_utxos_and_values" => BtcUtxosAndValues,
     "eos_eth_token_dictionary" => EosEthTokenDictionary
 );
-
-macro_rules! impl_tx_info_fxns {
-    ($($tx_info:ident),* $(,)?) => {
-        paste! {
-            impl<'a, D: DatabaseInterface> EosState<'a, D> {
-                fn get_already_in_state_err_msg(thing: &str) -> String {
-                    format!("'{}' is already in EOS state - not overwriting it!", thing)
-                }
-
-                $(
-                    fn [< update_ $tx_info:snake >](mut self, infos: $tx_info) -> Result<Self> {
-                        info!("✔ Updating `{}` in state...", stringify!($tx_info));
-                        self.global_sequences = infos.get_global_sequences();
-                        self.[< $tx_info:snake >] = infos;
-                        Ok(self)
-                    }
-
-                    pub fn [< add_ $tx_info:snake >](self, infos: $tx_info) -> Result<Self> {
-                        if self.[< $tx_info:snake >].is_empty() {
-                            self.[< update_ $tx_info:snake >](infos)
-                        } else {
-                            Err(Self::get_already_in_state_err_msg(stringify!($tx_info)).into())
-                        }
-                    }
-
-                    pub fn [< replace_ $tx_info:snake >](self, infos: $tx_info) -> Result<Self> {
-                        info!("✔ Replacing `{}` in state...", stringify!($tx_info));
-                        self.[< update_ $tx_info:snake >](infos)
-                    }
-                )*
-            }
-        }
-    }
-}
-
-impl_tx_info_fxns!(Erc20OnEosEthTxInfos);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct EosState<'a, D: DatabaseInterface> {
@@ -86,7 +49,6 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub enabled_protocol_features: EnabledFeatures,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
-    pub erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos,
     eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
 }
 
@@ -112,7 +74,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             eth_signed_txs: EthTransactions::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
-            erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos::new(vec![]),
         }
     }
 

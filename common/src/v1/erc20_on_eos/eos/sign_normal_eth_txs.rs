@@ -55,21 +55,24 @@ pub fn get_eth_signed_txs(
 }
 
 pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    if state.erc20_on_eos_eth_tx_infos.len() == 0 {
+    if state.tx_infos.is_empty() {
         info!("✔ No redeem infos in state ∴ no ETH transactions to sign!");
         Ok(state)
     } else {
-        get_eth_signed_txs(
-            &state.erc20_on_eos_eth_tx_infos,
-            &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
-            state.eth_db_utils.get_eth_account_nonce_from_db()?,
-            &state.eth_db_utils.get_eth_chain_id_from_db()?,
-            state.eth_db_utils.get_eth_gas_price_from_db()?,
-            &state.eth_db_utils.get_eth_private_key_from_db()?,
-        )
-        .and_then(|signed_txs| {
-            debug!("✔ Signed transactions: {:?}", signed_txs);
-            state.add_eth_signed_txs(signed_txs)
-        })
+        Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| {
+                get_eth_signed_txs(
+                    &infos,
+                    &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                    state.eth_db_utils.get_eth_gas_price_from_db()?,
+                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                )
+            })
+            .and_then(|signed_txs| {
+                debug!("✔ Signed transactions: {:?}", signed_txs);
+                state.add_eth_signed_txs(signed_txs)
+            })
     }
 }

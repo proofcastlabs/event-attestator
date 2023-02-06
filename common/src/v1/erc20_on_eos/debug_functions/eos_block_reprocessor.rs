@@ -39,6 +39,7 @@ use crate::{
             maybe_parse_eth_tx_infos_and_put_in_state,
             update_accrued_fees_in_dictionary_and_return_eos_state,
             EosOutput,
+            Erc20OnEosEthTxInfos,
         },
     },
     state::EosState,
@@ -83,12 +84,12 @@ fn reprocess_eos_block<D: DatabaseInterface>(
             }
         })
         .and_then(|state| {
-            if state.erc20_on_eos_eth_tx_infos.len() == 0 {
+            if state.tx_infos.is_empty() {
                 info!("✔ No redeem infos in state ∴ no ETH transactions to sign!");
                 Ok(state)
             } else {
                 get_eth_signed_txs(
-                    &state.erc20_on_eos_eth_tx_infos,
+                    &Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)?,
                     &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
                     match maybe_nonce {
                         Some(nonce) => {
@@ -128,7 +129,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                 } else {
                     get_eth_signed_tx_info_from_eth_txs(
                         &txs,
-                        &state.erc20_on_eos_eth_tx_infos,
+                        &Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)?,
                         match maybe_nonce {
                             // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,

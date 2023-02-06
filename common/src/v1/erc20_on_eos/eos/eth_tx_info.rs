@@ -3,6 +3,7 @@ use std::str::{from_utf8, FromStr};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::{
@@ -24,14 +25,28 @@ use crate::{
     safe_addresses::SAFE_ETH_ADDRESS,
     state::EosState,
     traits::DatabaseInterface,
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Deref, Constructor, Serialize, Deserialize)]
 pub struct Erc20OnEosEthTxInfos(pub Vec<Erc20OnEosEthTxInfo>);
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Constructor)]
+impl Erc20OnEosEthTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default, PartialEq, Eq, Constructor, Serialize, Deserialize)]
 pub struct Erc20OnEosEthTxInfo {
     pub amount: U256,
     pub from: EosAccountName,
@@ -246,18 +261,26 @@ pub fn maybe_parse_eth_tx_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
     )
     .and_then(|eth_tx_infos| {
         info!("✔ Parsed {} redeem infos!", eth_tx_infos.len());
-        state.add_erc20_on_eos_eth_tx_infos(eth_tx_infos)
+        let global_seqs = eth_tx_infos.get_global_sequences();
+        Ok(state
+            .add_global_sequences(global_seqs)
+            .add_tx_infos(eth_tx_infos.to_bytes()?))
     })
 }
 
 pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    info!("✔ Filtering out already processed tx IDs...");
-    state
-        .erc20_on_eos_eth_tx_infos
-        .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.replace_erc20_on_eos_eth_tx_infos(filtered))
+    if state.tx_infos.is_empty() {
+        info!("✔ NOT filtering out already processed tx IDs because there are none to filter!");
+        Ok(state)
+    } else {
+        info!("✔ Filtering out already processed tx IDs...");
+        Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| infos.filter_out_already_processed_txs(&state.processed_tx_ids))
+            .and_then(|filtered| filtered.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 #[cfg(test)]
