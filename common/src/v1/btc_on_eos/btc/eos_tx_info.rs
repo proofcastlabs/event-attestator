@@ -53,7 +53,8 @@ pub fn parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
         &state.eos_db_utils.get_eos_account_name_string_from_db()?,
     )
     .and_then(|eos_tx_infos| eos_tx_infos.filter_params())
-    .and_then(|filtered_params| state.add_btc_on_eos_eos_tx_infos(filtered_params))
+    .and_then(|filtered_params| filtered_params.to_bytes())
+    .map(|bytes| state.add_tx_infos(bytes))
 }
 
 impl BtcOnEosEosTxInfos {
@@ -93,11 +94,15 @@ impl BtcOnEosEosTxInfos {
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self.0)?)
+        Ok(serde_json::to_vec(&self)?)
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
-        Ok(serde_json::from_slice(bytes)?)
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
     }
 
     pub fn filter_out_value_too_low(&self) -> Result<Self> {

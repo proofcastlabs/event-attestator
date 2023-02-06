@@ -13,6 +13,7 @@ use crate::{
             maybe_parse_btc_tx_infos_and_put_in_state,
             maybe_save_btc_utxos_to_db,
             maybe_sign_txs_and_add_to_state,
+            BtcOnEosBtcTxInfos,
         },
     },
     chains::{
@@ -79,8 +80,14 @@ fn debug_reprocess_eos_block_maybe_accruing_fees<D: DatabaseInterface>(
             } else {
                 info!("✔ Accounting for fees in signing params but NOT accruing them!");
                 let basis_points = FeeDatabaseUtils::new_for_btc_on_eos().get_peg_out_basis_points_from_db(state.db)?;
-                let updated_btc_tx_infos = state.btc_on_eos_btc_tx_infos.subtract_fees(basis_points)?;
-                state.replace_btc_on_eos_btc_tx_infos(updated_btc_tx_infos)
+                if state.tx_infos.is_empty() {
+                    Ok(state)
+                } else {
+                    BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)
+                        .and_then(|infos| infos.subtract_fees(basis_points))
+                        .and_then(|infos| infos.to_bytes())
+                        .map(|bytes| state.add_tx_infos(bytes))
+                }
             }
         })
         .and_then(maybe_sign_txs_and_add_to_state)

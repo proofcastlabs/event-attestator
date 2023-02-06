@@ -16,14 +16,26 @@ use crate::{
     fees::fee_utils::sanity_check_basis_points_value,
     state::EosState,
     traits::DatabaseInterface,
-    types::Result,
+    types::{Byte, Bytes, Result},
     utils::convert_bytes_to_u64,
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize, Deref, Constructor)]
 pub struct BtcOnEosBtcTxInfos(pub Vec<BtcOnEosBtcTxInfo>);
 
 impl BtcOnEosBtcTxInfos {
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(&self)?)
+    }
+
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
     pub fn subtract_fees(&self, fee_basis_points: u64) -> Result<Self> {
         let (fees, _) = self.calculate_fees(sanity_check_basis_points_value(fee_basis_points)?);
         info!("`BtcOnEosBtcTxInfos` fees: {:?}", fees);
@@ -82,7 +94,7 @@ impl BtcOnEosBtcTxInfos {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct BtcOnEosBtcTxInfo {
     pub amount: u64,
     pub recipient: String,
@@ -154,7 +166,9 @@ pub fn maybe_parse_btc_tx_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
     info!("✔ Parsing BTC tx infos from actions data...");
     BtcOnEosBtcTxInfos::from_action_proofs(&state.action_proofs).and_then(|btc_tx_infos| {
         info!("✔ Parsed {} sets of BTC tx info!", btc_tx_infos.len());
-        state.add_btc_on_eos_btc_tx_infos(btc_tx_infos)
+        let global_sequences = btc_tx_infos.get_global_sequences();
+        let bytes = btc_tx_infos.to_bytes()?;
+        Ok(state.add_global_sequences(global_sequences).add_tx_infos(bytes))
     })
 }
 
@@ -181,19 +195,31 @@ pub fn filter_out_value_too_low_btc_on_eos_btc_tx_infos(
 pub fn maybe_filter_value_too_low_btc_tx_infos_in_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    info!("✔ Filtering out any BTC tx infos below minimum # of Satoshis...");
-    filter_out_value_too_low_btc_on_eos_btc_tx_infos(&state.btc_on_eos_btc_tx_infos)
-        .and_then(|new_infos| state.replace_btc_on_eos_btc_tx_infos(new_infos))
+    if state.tx_infos.is_empty() {
+        warn!("✔ Not filtering out any BTC tx infos because none in state!");
+        Ok(state)
+    } else {
+        info!("✔ Filtering out any BTC tx infos below minimum # of Satoshis...");
+        BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| filter_out_value_too_low_btc_on_eos_btc_tx_infos(&infos))
+            .and_then(|filtered| filtered.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface>(
     state: EosState<D>,
 ) -> Result<EosState<D>> {
-    info!("✔ Filtering out already processed tx IDs...");
-    state
-        .btc_on_eos_btc_tx_infos
-        .filter_out_already_processed_txs(&state.processed_tx_ids)
-        .and_then(|filtered| state.replace_btc_on_eos_btc_tx_infos(filtered))
+    if state.tx_infos.is_empty() {
+        warn!("✔ Not filtering out already processed tx IDs because there are none in state!");
+        Ok(state)
+    } else {
+        info!("✔ Filtering out already processed tx IDs...");
+        BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|infos| infos.filter_out_already_processed_txs(&state.processed_tx_ids))
+            .and_then(|filtered| filtered.to_bytes())
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 #[cfg(test)]

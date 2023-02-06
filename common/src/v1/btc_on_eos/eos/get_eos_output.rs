@@ -74,7 +74,7 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
             _ => get_btc_signed_tx_info_from_btc_txs(
                 state.btc_db_utils.get_btc_account_nonce_from_db()?,
                 &state.btc_on_eos_signed_txs,
-                &state.btc_on_eos_btc_tx_infos,
+                &BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)?,
             )?,
         },
     })?;

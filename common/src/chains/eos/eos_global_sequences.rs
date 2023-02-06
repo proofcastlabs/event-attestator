@@ -103,18 +103,15 @@ pub fn maybe_add_global_sequences_to_processed_list_and_return_state<D: Database
     state: EosState<D>,
 ) -> Result<EosState<D>> {
     let mut global_sequences = state.get_global_sequences();
-    match global_sequences.len() {
-        0 => {
-            info!("✔ No `global_sequences` to add to processed tx list!");
-            Ok(state)
-        },
-        _ => {
-            info!(
-                "✔ Adding '{:?}' to `ProcessedGlobalSequences` in db...",
-                global_sequences
-            );
-            ProcessedGlobalSequences::add_global_sequences_to_list_in_db(state.db, &mut global_sequences).and(Ok(state))
-        },
+    if global_sequences.is_empty() {
+        info!("✔ No `global_sequences` to add to processed tx list!");
+        Ok(state)
+    } else {
+        info!(
+            "✔ Adding '{:?}' to `ProcessedGlobalSequences` in db...",
+            global_sequences
+        );
+        ProcessedGlobalSequences::add_global_sequences_to_list_in_db(state.db, &mut global_sequences).and(Ok(state))
     }
 }
 

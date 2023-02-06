@@ -14,7 +14,6 @@ use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::BtcOnEosEosTxInfos,
     btc_on_eth::BtcOnEthEthTxInfos,
     chains::btc::{btc_submission_material::BtcSubmissionMaterialJson, deposit_address_info::DepositInfoList},
     state::BtcState,
@@ -74,17 +73,18 @@ pub struct BtcBlockInDbFormat {
     pub height: u64,
     pub id: BlockHash,
     pub extra_data: Bytes,
-    pub eos_minting_params: Option<BtcOnEosEosTxInfos>,
-    pub eth_minting_params: Option<BtcOnEthEthTxInfos>,
-    pub btc_on_int_int_tx_infos: Option<Bytes>,
+    eos_minting_params: Option<Bytes>,
+    pub eth_minting_params: Option<BtcOnEthEthTxInfos>, // FIXME Privatise
+    pub btc_on_int_int_tx_infos: Option<Bytes>,         // FIXME Privatise
     pub prev_blockhash: BlockHash,
 }
 
 impl BtcBlockInDbFormat {
-    pub fn get_btc_on_eos_eos_tx_infos(&self) -> BtcOnEosEosTxInfos {
-        self.eos_minting_params
-            .clone()
-            .unwrap_or_else(|| BtcOnEosEosTxInfos::new(vec![]))
+    pub fn get_tx_info_bytes(&self) -> Bytes {
+        // NOTE: As of v7.0.0 we're using just the one field to store tx info as bytes.
+        // So now the name is meaningless but we can't change it as it would break the
+        // serialization for blocks already stored in a db.
+        self.btc_on_int_int_tx_infos.clone().unwrap_or_default()
     }
 
     pub fn get_btc_on_int_int_tx_infos(&self) -> Bytes {
@@ -98,11 +98,8 @@ impl BtcBlockInDbFormat {
     }
 
     pub fn get_eos_minting_param_bytes(&self) -> Result<Option<Bytes>> {
-        if self.eos_minting_params.is_some() {
-            Ok(Some(self.get_btc_on_eos_eos_tx_infos().to_bytes()?))
-        } else {
-            Ok(None)
-        }
+        // TODO rm!
+        Ok(self.eos_minting_params.clone())
     }
 
     pub fn get_btc_on_int_int_tx_infos_bytes(&self) -> Result<Option<Bytes>> {
@@ -165,7 +162,7 @@ impl BtcBlockInDbFormat {
                 convert_bytes_to_u64(&serialized_block_in_db_format.height)?,
                 BlockHash::from_slice(&serialized_block_in_db_format.id)?,
                 serialized_block_in_db_format.extra_data.clone(),
-                serialized_block_in_db_format.get_btc_on_eos_eos_tx_infos()?,
+                serialized_block_in_db_format.eos_minting_params.clone(),
                 serialized_block_in_db_format.get_btc_on_eth_eth_tx_infos()?,
                 serialized_block_in_db_format.get_btc_on_int_int_tx_infos()?,
                 serialized_block_in_db_format.get_prev_blockhash()?,
@@ -219,15 +216,6 @@ impl SerializedBlockInDbFormat {
             eth_minting_params: legacy_struct.eth_minting_params.clone(),
             eos_minting_params: legacy_struct.eos_minting_params.clone(),
             btc_on_int_int_tx_infos: None,
-        }
-    }
-
-    pub fn get_btc_on_eos_eos_tx_infos(&self) -> Result<Option<BtcOnEosEosTxInfos>> {
-        let bytes = self.eos_minting_params.clone().unwrap_or_default();
-        if bytes.is_empty() {
-            Ok(None)
-        } else {
-            Ok(Some(BtcOnEosEosTxInfos::from_bytes(&bytes)?))
         }
     }
 

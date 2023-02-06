@@ -3,8 +3,6 @@ use crate::{chains::btc::btc_block::BtcBlockInDbFormat, state::BtcState, traits:
 pub fn create_btc_block_in_db_format_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Creating DB formatted BTC block from block in state...");
     let block = state.get_btc_block_and_id()?.clone();
-    let eth_minting_params = state.btc_on_eth_eth_tx_infos.clone();
-    let eos_minting_params = state.btc_on_eos_eos_tx_infos.clone();
     let tx_infos = if state.tx_infos.is_empty() {
         None
     } else {
@@ -15,8 +13,8 @@ pub fn create_btc_block_in_db_format_and_put_in_state<D: DatabaseInterface>(stat
         block.height,
         block.id,
         extra_data,
-        Some(eos_minting_params),
-        Some(eth_minting_params),
+        None,
+        None,
         tx_infos,
         block.block.header.prev_blockhash,
     ))

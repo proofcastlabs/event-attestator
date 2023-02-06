@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    btc_on_eos::btc::eos_tx_info::BtcOnEosEosTxInfo,
+    btc_on_eos::btc::eos_tx_info::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos},
     chains::eos::{eos_crypto::eos_transaction::EosSignedTransaction, eos_unit_conversions::convert_eos_asset_to_u64},
     state::BtcState,
     traits::DatabaseInterface,
@@ -64,10 +64,9 @@ pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcS
             0 => vec![],
             _ => get_eos_signed_tx_info(
                 &state.eos_signed_txs,
-                &state
-                    .btc_db_utils
-                    .get_btc_canon_block_from_db()?
-                    .get_btc_on_eos_eos_tx_infos(),
+                &BtcOnEosEosTxInfos::from_bytes(
+                    &state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes(),
+                )?,
                 state.eos_db_utils.get_eos_account_nonce_from_db()?,
             )?,
         },

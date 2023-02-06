@@ -1,7 +1,6 @@
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 
 use crate::{
-    btc_on_eos::BtcOnEosBtcTxInfos,
     chains::{
         btc::{btc_database_utils::BtcDbUtils, utxo_manager::utxo_types::BtcUtxosAndValues},
         eos::{
@@ -66,7 +65,7 @@ macro_rules! impl_tx_info_fxns {
     }
 }
 
-impl_tx_info_fxns!(BtcOnEosBtcTxInfos, EosOnEthEosTxInfos, Erc20OnEosEthTxInfos,);
+impl_tx_info_fxns!(EosOnEthEosTxInfos, Erc20OnEosEthTxInfos,);
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct EosState<'a, D: DatabaseInterface> {
@@ -87,7 +86,6 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
     pub eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos,
-    pub btc_on_eos_btc_tx_infos: BtcOnEosBtcTxInfos,
     pub active_schedule: Option<EosProducerScheduleV2>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos,
@@ -117,7 +115,6 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
             eos_on_eth_eos_tx_infos: EosOnEthEosTxInfos::new(vec![]),
-            btc_on_eos_btc_tx_infos: BtcOnEosBtcTxInfos::new(vec![]),
             erc20_on_eos_eth_tx_infos: Erc20OnEosEthTxInfos::new(vec![]),
         }
     }

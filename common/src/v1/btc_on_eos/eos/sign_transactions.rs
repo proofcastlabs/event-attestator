@@ -64,26 +64,23 @@ fn sign_txs_from_btc_tx_infos<D: DatabaseInterface>(
 
 pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Maybe signing tx(s) from redeem params...");
-    match &state.btc_on_eos_btc_tx_infos.len() {
-        0 => {
-            info!("✔ No redeem params in state ∴ not signing txs!");
-            Ok(state)
-        },
-        _ => {
-            info!("✔ Redeem params in state ∴ signing txs...");
-            sign_txs_from_btc_tx_infos(
-                &state.btc_db_utils,
-                state.btc_db_utils.get_btc_fee_from_db()?,
-                state.btc_db_utils.get_btc_network_from_db()?,
-                &state.btc_on_eos_btc_tx_infos,
-                &state.btc_db_utils.get_btc_address_from_db()?[..],
-                &state.btc_db_utils.get_btc_private_key_from_db()?,
-            )
-            .and_then(|signed_tx| {
-                debug!("✔ Signed transaction: {:?}", signed_tx);
-                state.add_btc_on_eos_signed_txs(vec![signed_tx])
-            })
-        },
+    if state.tx_infos.is_empty() {
+        info!("✔ No redeem params in state ∴ not signing txs!");
+        Ok(state)
+    } else {
+        info!("✔ Redeem params in state ∴ signing txs...");
+        sign_txs_from_btc_tx_infos(
+            &state.btc_db_utils,
+            state.btc_db_utils.get_btc_fee_from_db()?,
+            state.btc_db_utils.get_btc_network_from_db()?,
+            &BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)?,
+            &state.btc_db_utils.get_btc_address_from_db()?[..],
+            &state.btc_db_utils.get_btc_private_key_from_db()?,
+        )
+        .and_then(|signed_tx| {
+            debug!("✔ Signed transaction: {:?}", signed_tx);
+            state.add_btc_on_eos_signed_txs(vec![signed_tx])
+        })
     }
 }
 

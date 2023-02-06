@@ -32,8 +32,6 @@ pub use self::{
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
 };
-// NOTE: These are because they're used in state. TODO Refactor to make these private again.
-pub use self::{btc::BtcOnEosEosTxInfos, eos::BtcOnEosBtcTxInfos};
 pub use crate::{
     chains::{
         btc::{
