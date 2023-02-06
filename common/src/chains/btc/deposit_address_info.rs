@@ -105,7 +105,6 @@ impl DepositAddressInfoJson {
     }
 }
 
-#[cfg(test)]
 impl DepositAddressInfoJson {
     pub fn new(
         nonce: u64,

@@ -20,7 +20,7 @@ use crate::{
     types::{NoneError, Result},
 };
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, Serialize, Deserialize)]
 pub struct EosSubmissionMaterial {
     pub block_num: u64,
     pub producer_signature: String,

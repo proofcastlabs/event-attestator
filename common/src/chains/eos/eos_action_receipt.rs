@@ -41,7 +41,6 @@ pub struct EosActionReceipt {
 impl SerializeData for EosActionReceipt {}
 
 impl EosActionReceipt {
-    #[cfg(test)]
     pub fn new(
         recipient: &str,
         act_digest_string: &str,

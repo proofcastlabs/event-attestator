@@ -222,6 +222,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 
 [[package]]
+name = "btc_on_eos"
+version = "1.0.0"
+dependencies = [
+ "bitcoin",
+ "common",
+ "derive_more",
+ "eos-chain",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "log",
+ "paste",
+ "serde",
+ "serde_json",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
 name = "btc_on_int"
 version = "1.0.0"
 dependencies = [
