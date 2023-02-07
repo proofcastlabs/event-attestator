@@ -1,4 +1,3 @@
-#![cfg(test)]
 use std::{fs::read_to_string, str::FromStr};
 
 use crate::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
@@ -13,6 +12,7 @@ pub fn get_sample_eth_evm_dictionary() -> EthEvmTokenDictionary {
     EthEvmTokenDictionary::from_str(&get_sample_eth_evm_dictionary_json_str().unwrap()).unwrap()
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
 
