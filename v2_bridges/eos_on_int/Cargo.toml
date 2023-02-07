@@ -17,7 +17,7 @@ serde_json = "1.0.68"
 function_name = "0.3.0"
 derive_more = "0.99.17"
 ethereum-types = "0.12.1"
-common = { path = "../../common" }
+common = { path = "../../common/common" }
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
