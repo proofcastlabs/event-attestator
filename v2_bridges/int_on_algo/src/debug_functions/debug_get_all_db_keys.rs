@@ -1,5 +1,6 @@
+use algorand::AlgoDatabaseKeysJson;
 use common::{
-    chains::{algo::algo_database_utils::AlgoDatabaseKeysJson, eth::eth_database_utils::EthDatabaseKeysJson},
+    chains::eth::eth_database_utils::EthDatabaseKeysJson,
     constants::DB_KEY_PREFIX,
     debug_functions::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY},
     dictionaries::dictionary_constants::EVM_ALGO_DICTIONARY_KEY,

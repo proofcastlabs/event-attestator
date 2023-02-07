@@ -1,8 +1,6 @@
+use algorand::{AlgoUserData, MAX_BYTES_FOR_ALGO_USER_DATA};
 use common::{
-    chains::{
-        algo::{algo_constants::MAX_BYTES_FOR_ALGO_USER_DATA, algo_user_data::AlgoUserData},
-        eth::eth_utils::convert_eth_address_to_string,
-    },
+    chains::eth::eth_utils::convert_eth_address_to_string,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,

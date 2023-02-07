@@ -103,7 +103,7 @@ fn get_sample_eth_submission_material_n(num: usize) -> EthSubmissionMaterial {
         1 => "src/test_utils/eth-submission-material-block-8739996-with-erc20-peg-in-event.json",
         _ => "src/test_utils/eth-submission-material-block-11087536-with-erc20-peg-in-event.json",
     };
-    EthSubmissionMaterial::from_str(&read_to_string(&Path::new(s)).unwrap()).unwrap()
+    EthSubmissionMaterial::from_str(&read_to_string(Path::new(s)).unwrap()).unwrap()
 }
 
 fn get_sample_receipt_n(sample_block_num: usize, receipt_index: usize) -> EthReceipt {

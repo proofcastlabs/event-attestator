@@ -178,7 +178,7 @@ mod tests {
         let core_type = CoreType::BtcOnInt;
         let signatory = get_sample_debug_signatory();
         let debug_command_hash = get_sample_debug_command_hash();
-        let result = hex::encode(&signatory.sign(&pk, &core_type, &debug_command_hash).unwrap().to_vec());
+        let result = hex::encode(signatory.sign(&pk, &core_type, &debug_command_hash).unwrap().to_vec());
         let expected_result = "7ee719e38908f63a26aca7a3957b7573156e01e9a853ada12ae877789d4c95a06334c13f397b050a5318867325cf60ebdcce1145c9f786ca522cb3d9bc9ab5a91b";
         assert_eq!(result, expected_result);
     }

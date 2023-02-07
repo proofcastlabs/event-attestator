@@ -1,4 +1,5 @@
-use common::{state::AlgoState, traits::DatabaseInterface, types::Result};
+use algorand::AlgoState;
+use common::{traits::DatabaseInterface, types::Result};
 
 pub fn filter_out_invalid_txs_and_update_in_state<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoState<D>> {
     info!("✔ Validating relevant Algo asset txs and updating in state...");

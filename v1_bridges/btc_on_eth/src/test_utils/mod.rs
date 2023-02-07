@@ -49,7 +49,7 @@ fn get_file_at_path(n: usize) -> String {
         2 => "src/test_utils/1660807-testnet-block-and-txs-with-2-p2sh-deposits.json",
         _ => "src/chains/eth/eth_test_utils/eth-submission-material-block-13257531.json",
     };
-    read_to_string(Path::new(s)).unwrap().to_string()
+    read_to_string(Path::new(s)).unwrap()
 }
 
 pub fn get_sample_btc_block_n(n: usize) -> BtcBlockAndId {
@@ -61,7 +61,7 @@ pub fn get_sample_eth_submission_material_n(n: usize) -> EthSubmissionMaterial {
         1 => "src/test_utils/eth-7420497-ropsten-eth-block-and-receipts.json",
         _ => "src/test_utils/eth-submission-material-with-new-erc777-event.json",
     };
-    EthSubmissionMaterial::from_str(&read_to_string(Path::new(s)).unwrap().to_string()).unwrap()
+    EthSubmissionMaterial::from_str(&read_to_string(Path::new(s)).unwrap()).unwrap()
 }
 
 pub fn get_sample_btc_on_eth_btc_tx_info_1() -> BtcOnEthBtcTxInfo {

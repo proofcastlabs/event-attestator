@@ -1,4 +1,5 @@
 pub const ETH_HASH_LENGTH: usize = 32;
+pub const ALGO_TAIL_LENGTH: u64 = 30;
 pub const PTOKEN_ERC777_NUM_DECIMALS: u32 = 18;
 pub const FIELD_NOT_SET_MSG: &str = "Not set!";
 pub const SUCCESS_JSON: &str = "{success:true}";
@@ -15,4 +16,8 @@ lazy_static! {
     // NOTE: Used to create a core with DB key prefixes if one is supplied as an env var. Because
     // a core's DB keys are hashed, this can be used to avoid collisions between similar bridges.
     pub static ref DB_KEY_PREFIX: &'static str = option_env!("DB_KEY_PREFIX").unwrap_or("");
+}
+
+lazy_static! {
+    pub static ref ALGO_PTOKEN_GENESIS_HASH: rust_algorand::AlgorandHash = rust_algorand::AlgorandHash::default();
 }

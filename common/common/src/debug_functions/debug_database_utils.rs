@@ -2,7 +2,6 @@ use function_name::named;
 
 use crate::{
     chains::{
-        algo::algo_database_utils::AlgoDbUtils,
         btc::btc_database_utils::BtcDbUtils,
         eos::eos_database_utils::EosDbUtils,
         eth::eth_database_utils::{EthDbUtils, EvmDbUtils},
@@ -12,14 +11,15 @@ use crate::{
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::{Byte, Result},
+    utils::get_prefixed_db_key,
 };
 
 fn is_private_key_key<D: DatabaseInterface>(db: &D, key: &[Byte]) -> bool {
     key == EthDbUtils::new(db).get_eth_private_key_db_key()
-        || key == AlgoDbUtils::new(db).get_algo_private_key_key()
         || key == EvmDbUtils::new(db).get_evm_private_key_db_key()
         || key == BtcDbUtils::new(db).get_btc_private_key_db_key()
         || key == EosDbUtils::new(db).get_eos_private_key_db_key()
+        || key == get_prefixed_db_key("algo_private_key_key").to_vec()
 }
 /// Debug Set Key In Db To Value
 ///

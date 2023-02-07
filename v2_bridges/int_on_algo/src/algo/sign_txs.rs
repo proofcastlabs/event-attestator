@@ -1,3 +1,4 @@
+use algorand::AlgoState;
 use common::{
     chains::eth::{
         eth_chain_id::EthChainId,
@@ -10,7 +11,6 @@ use common::{
         eth_database_utils::EthDbUtilsExt,
     },
     metadata::metadata_traits::ToMetadata,
-    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -98,7 +98,7 @@ impl EthSignature {
         let random_bytes = (0..ETH_SIGNATURE_NUM_BYTES)
             .map(|_| rand::random::<u8>())
             .collect::<Bytes>();
-        Self::from_str(&hex::encode(&random_bytes))
+        Self::from_str(&hex::encode(random_bytes))
     }
 }
 

@@ -1,9 +1,9 @@
+use algorand::AlgoDbUtils;
 use common::{
     chains::eth::{
         eth_database_transactions::end_eth_db_transaction_and_return_state,
         eth_database_utils::EthDbUtilsExt,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        increment_algo_account_nonce::maybe_increment_algo_account_nonce_and_return_eth_state,
         validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
     },
@@ -23,6 +23,7 @@ use crate::{
         filter_out_zero_value_tx_infos_from_state,
         filter_submission_material_for_peg_in_events_in_state,
         get_int_output_json,
+        maybe_increment_algo_account_nonce_and_return_eth_state,
         maybe_sign_algo_txs_and_add_to_state,
         IntOnAlgoAlgoTxInfos,
     },
@@ -64,7 +65,7 @@ pub fn debug_reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str,
                     &state.eth_db_utils.get_int_on_algo_smart_contract_address()?,
                     state.get_evm_algo_token_dictionary()?,
                     &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
-                    &state.algo_db_utils.get_algo_app_id()?,
+                    &AlgoDbUtils::new(state.db).get_algo_app_id()?,
                 )?;
                 Ok(state.add_tx_infos(tx_infos.to_bytes()?))
             }

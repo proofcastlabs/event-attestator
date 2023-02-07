@@ -25,6 +25,7 @@ pub use crate::{
 #[macro_use]
 pub mod macros;
 pub mod address;
+pub mod algo_chain_id; // FIXME Ideally factor these out
 pub mod chains;
 pub mod constants;
 pub mod core_type;

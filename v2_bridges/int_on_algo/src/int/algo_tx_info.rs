@@ -208,7 +208,7 @@ mod tests {
         info.destination_address = Some(AlgorandAddress::create_random().unwrap());
         info.destination_app_id = Some(AlgorandAppId(1337));
         let infos = IntOnAlgoAlgoTxInfos::new(vec![IntOnAlgoAlgoTxInfo::default()]);
-        let bytes = infos.clone().to_bytes().unwrap();
+        let bytes = infos.to_bytes().unwrap();
         let result = IntOnAlgoAlgoTxInfos::from_bytes(&bytes).unwrap();
         assert_eq!(result, infos);
     }
@@ -240,7 +240,7 @@ mod tests {
             ),
         };
         let infos = IntOnAlgoAlgoTxInfos::new(vec![info]);
-        let bytes = infos.clone().to_bytes().unwrap();
+        let bytes = infos.to_bytes().unwrap();
         let result = IntOnAlgoAlgoTxInfos::from_bytes(&bytes).unwrap();
         assert_eq!(result, infos);
     }

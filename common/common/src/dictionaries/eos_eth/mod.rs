@@ -667,7 +667,7 @@ mod tests {
             "SYM".to_string(),
             "SYM".to_string(),
             "SampleTokenx".to_string(),
-            EthAddress::from_slice(&hex::decode(&token_address_hex).unwrap()),
+            EthAddress::from_slice(&hex::decode(token_address_hex).unwrap()),
             eth_basis_points,
             eos_basis_points,
             U256::zero(),

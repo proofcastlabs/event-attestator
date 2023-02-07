@@ -10,11 +10,7 @@ use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
 use crate::{
-    chains::{
-        algo::algo_constants::ALGO_ADDRESS_LENGTH_IN_BYTES,
-        eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES,
-        eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES,
-    },
+    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
     types::Byte,
 };
 use crate::{
@@ -153,7 +149,8 @@ impl MetadataAddress {
     // FIXME Test!
     fn from_bytes_for_algo(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataAddress` from bytes for ALGO...");
-        if bytes.len() == ALGO_ADDRESS_LENGTH_IN_BYTES {
+        let algo_address_length_in_bytes: usize = 32;
+        if bytes.len() == algo_address_length_in_bytes {
             Self::new(&AlgorandAddress::from_bytes(bytes)?.to_string(), metadata_chain_id)
         } else {
             Err("Incorrect number of bytes to convert to ALGO address in `MetadataAddress`!".into())

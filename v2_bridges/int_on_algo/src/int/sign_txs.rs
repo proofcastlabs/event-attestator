@@ -1,9 +1,5 @@
+use algorand::{AlgoDbUtils, AlgoUserData, ALGO_MAX_FOREIGN_ITEMS};
 use common::{
-    chains::algo::{
-        algo_constants::ALGO_MAX_FOREIGN_ITEMS,
-        algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
-        algo_user_data::AlgoUserData,
-    },
     metadata::metadata_traits::ToMetadata,
     state::EthState,
     traits::DatabaseInterface,
@@ -65,7 +61,7 @@ impl IntOnAlgoAlgoTxInfo {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<AlgoSignedGroupTx> {
+    ) -> Result<(String, AlgorandTxGroup)> {
         info!(
             "✔ Signing ALGO group transaction for a user peg-in with tx info: {:?}",
             self
@@ -102,10 +98,7 @@ impl IntOnAlgoAlgoTxInfo {
 
         let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
 
-        Ok(AlgoSignedGroupTx::new(
-            group_tx.sign_transactions(&[private_key])?,
-            group_tx,
-        ))
+        Ok((group_tx.sign_transactions(&[private_key])?, group_tx))
     }
 
     fn to_application_peg_in_signed_group_tx(
@@ -115,7 +108,7 @@ impl IntOnAlgoAlgoTxInfo {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<AlgoSignedGroupTx> {
+    ) -> Result<(String, AlgorandTxGroup)> {
         info!(
             "✔ Signing ALGO group transaction for an application peg-in with tx info: {:?}",
             self
@@ -181,10 +174,7 @@ impl IntOnAlgoAlgoTxInfo {
 
         let group_tx = AlgorandTxGroup::new(&vec![asset_transfer_tx, app_call_tx])?;
 
-        Ok(AlgoSignedGroupTx::new(
-            group_tx.sign_transactions(&[private_key])?,
-            group_tx,
-        ))
+        Ok((group_tx.sign_transactions(&[private_key])?, group_tx))
     }
 
     pub fn to_algo_signed_group_tx(
@@ -194,7 +184,7 @@ impl IntOnAlgoAlgoTxInfo {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<AlgoSignedGroupTx> {
+    ) -> Result<(String, AlgorandTxGroup)> {
         if self.destination_is_app() {
             self.to_application_peg_in_signed_group_tx(fee, first_valid, genesis_hash, sender, private_key)
         } else {
@@ -211,16 +201,14 @@ impl IntOnAlgoAlgoTxInfos {
         genesis_hash: &AlgorandHash,
         sender: &AlgorandAddress,
         private_key: &AlgorandKeys,
-    ) -> Result<AlgoSignedGroupTxs> {
+    ) -> Result<Vec<(String, AlgorandTxGroup)>> {
         info!("✔ Signing `erc20-on-int` INT transactions...");
-        Ok(AlgoSignedGroupTxs::new(
-            self.iter()
-                .enumerate()
-                .map(|(i, info)| {
-                    info.to_algo_signed_group_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key)
-                })
-                .collect::<Result<Vec<_>>>()?,
-        ))
+        self.iter()
+            .enumerate()
+            .map(|(i, info)| {
+                info.to_algo_signed_group_tx(fee, first_valid + i as u64, genesis_hash, sender, private_key)
+            })
+            .collect::<Result<Vec<_>>>()
     }
 }
 
@@ -229,19 +217,20 @@ pub fn maybe_sign_algo_txs_and_add_to_state<D: DatabaseInterface>(state: EthStat
         info!("✔ No tx infos in state ∴ no ALGO transactions to sign!");
         Ok(state)
     } else {
+        let algo_db_utils = AlgoDbUtils::new(state.db);
         IntOnAlgoAlgoTxInfos::from_bytes(&state.tx_infos)
             .and_then(|tx_infos| {
                 tx_infos.to_algo_signed_group_tx(
-                    &state.algo_db_utils.get_algo_fee()?,
+                    &algo_db_utils.get_algo_fee()?,
                     state.get_eth_submission_material()?.get_algo_first_valid_round()?,
-                    &state.algo_db_utils.get_genesis_hash()?,
-                    &state.algo_db_utils.get_redeem_address()?,
-                    &state.algo_db_utils.get_algo_private_key()?,
+                    &algo_db_utils.get_genesis_hash()?,
+                    &algo_db_utils.get_redeem_address()?,
+                    &algo_db_utils.get_algo_private_key()?,
                 )
             })
-            .and_then(|signed_txs| {
+            .map(|signed_txs| {
                 debug!("✔ Signed transactions: {:?}", signed_txs);
-                state.add_algo_signed_group_txs(&signed_txs)
+                state.add_algo_txs(signed_txs)
             })
     }
 }

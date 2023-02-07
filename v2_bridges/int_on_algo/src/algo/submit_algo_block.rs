@@ -1,43 +1,38 @@
-use common::{
-    chains::algo::{
-        add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
-        algo_database_transactions::{
-            end_algo_db_transaction_and_return_state,
-            start_algo_db_transaction_and_return_state,
-        },
-        algo_submission_material::parse_algo_submission_material_and_put_in_state,
-        check_parent_exists::check_parent_of_algo_block_in_state_exists,
-        check_submitted_block_is_subsequent::check_submitted_block_is_subsequent_and_return_state,
-        increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_algo_state,
-        maybe_update_latest_block_with_expired_participants::maybe_update_latest_block_with_expired_participants_and_return_state,
-        remove_all_txs_from_submission_material_in_state::remove_all_txs_from_submission_material_in_state,
-        remove_old_algo_tail_submission_material::maybe_remove_old_algo_tail_submission_material_and_return_state,
-        remove_txs_from_canon_submission_material::maybe_remove_txs_from_algo_canon_submission_material_and_return_state,
-        update_algo_canon_block_hash::maybe_update_algo_canon_block_hash_and_return_state,
-        update_algo_linker_hash::maybe_update_algo_linker_hash_and_return_state,
-        update_algo_tail_block_hash::maybe_update_algo_tail_block_hash_and_return_state,
-    },
-    core_type::CoreType,
-    dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_algo_state,
-    state::AlgoState,
-    traits::DatabaseInterface,
-    types::Result,
+use algorand::{
+    add_latest_algo_submission_material_to_db_and_return_state,
+    check_parent_of_algo_block_in_state_exists,
+    check_submitted_block_is_subsequent_and_return_state,
+    end_algo_db_transaction_and_return_state,
+    maybe_remove_old_algo_tail_submission_material_and_return_state,
+    maybe_remove_txs_from_algo_canon_submission_material_and_return_state,
+    maybe_update_algo_canon_block_hash_and_return_state,
+    maybe_update_algo_linker_hash_and_return_state,
+    maybe_update_algo_tail_block_hash_and_return_state,
+    maybe_update_latest_block_with_expired_participants_and_return_state,
+    parse_algo_submission_material_and_put_in_state,
+    remove_all_txs_from_submission_material_in_state,
+    AlgoState,
 };
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 
-use crate::algo::{
-    add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
-    divert_to_safe_address::{
-        divert_tx_infos_to_safe_address_if_destination_is_router_address,
-        divert_tx_infos_to_safe_address_if_destination_is_token_address,
-        divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-        divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+use crate::{
+    algo::{
+        add_relevant_txs_to_submission_material::add_relevant_validated_txs_to_submission_material_in_state,
+        divert_to_safe_address::{
+            divert_tx_infos_to_safe_address_if_destination_is_router_address,
+            divert_tx_infos_to_safe_address_if_destination_is_token_address,
+            divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+            divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+        },
+        filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
+        get_algo_output::get_algo_output,
+        get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
+        maybe_increment_eth_account_nonce_and_return_algo_state,
+        parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
+        sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
+        validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
     },
-    filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-    get_algo_output::get_algo_output,
-    get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
-    parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
-    sign_txs::maybe_sign_int_txs_and_add_to_algo_state,
-    validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
+    token_dictionary::get_evm_algo_token_dictionary_and_add_to_algo_state,
 };
 
 /// Submit Algo Block To Core
@@ -49,9 +44,9 @@ use crate::algo::{
 /// transaction will be signed & returned to the caller.
 pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ALGO block to core...");
-    parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_algo_state)
-        .and_then(start_algo_db_transaction_and_return_state)
+    db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
+        .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
@@ -82,17 +77,15 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
 mod tests {
     use std::str::FromStr;
 
+    use algorand::AlgoDbUtils;
     use common::{
-        chains::{
-            algo::algo_database_utils::AlgoDbUtils,
-            eth::{
-                core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                eth_chain_id::EthChainId,
-                eth_crypto::eth_private_key::EthPrivateKey,
-                eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-                eth_utils::convert_hex_to_eth_address,
-                vault_using_cores::VaultUsingCores,
-            },
+        chains::eth::{
+            core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+            eth_chain_id::EthChainId,
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+            eth_utils::convert_hex_to_eth_address,
+            vault_using_cores::VaultUsingCores,
         },
         constants::MIN_DATA_SENSITIVITY_LEVEL,
         dictionaries::evm_algo::EvmAlgoTokenDictionary,

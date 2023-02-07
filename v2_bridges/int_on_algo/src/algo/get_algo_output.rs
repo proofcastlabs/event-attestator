@@ -3,13 +3,13 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+use algorand::AlgoState;
 use common::{
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction as IntTransaction,
         eth_database_utils::EthDbUtilsExt,
         eth_traits::EthTxInfoCompatible,
     },
-    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

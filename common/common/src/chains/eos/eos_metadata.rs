@@ -34,7 +34,7 @@ mod tests {
             "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string(),
         );
         let serialized = metadata.to_bytes().unwrap();
-        let result = hex::encode(&serialized);
+        let result = hex::encode(serialized);
         let expected_result = "0103decaff040069c3222a307866454446653236313645423336363143423846456432373832463546306343393144353944436143";
         assert_eq!(result, expected_result);
     }

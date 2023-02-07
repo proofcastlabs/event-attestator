@@ -1,10 +1,8 @@
+use algorand::{AlgoDbUtils, AlgoEnclaveState};
 use common::{
-    chains::{
-        algo::{algo_database_utils::AlgoDbUtils, algo_enclave_state::AlgoEnclaveState},
-        eth::{
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_enclave_state::EthEnclaveState,
-        },
+    chains::eth::{
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        eth_enclave_state::EthEnclaveState,
     },
     core_type::CoreType,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,

@@ -1,14 +1,13 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
+use algorand::AlgoDbUtils;
 use common::{
-    chains::{
-        algo::algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
-        eth::{eth_database_utils::EthDbUtilsExt, eth_utils::convert_eth_address_to_string},
-    },
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_utils::convert_eth_address_to_string},
     state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
+use rust_algorand::AlgorandTxGroup;
 
 use crate::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos};
 
@@ -37,7 +36,7 @@ make_struct_with_test_assertions_on_equality_check!(
 
 impl AlgoTxInfo {
     pub fn new(
-        group_tx: AlgoSignedGroupTx,
+        group_tx: (String, AlgorandTxGroup),
         tx_info: &IntOnAlgoAlgoTxInfo,
         nonce: u64,
         algo_latest_block_number: u64,
@@ -48,8 +47,8 @@ impl AlgoTxInfo {
             algo_latest_block_number,
             broadcast_timestamp: None,
             algo_account_nonce: nonce,
-            algo_signed_tx: group_tx.signed_tx,
-            algo_tx_hash: group_tx.group_tx.to_id()?,
+            algo_signed_tx: group_tx.0,
+            algo_tx_hash: group_tx.1.to_id()?,
             _id: format!("pint-on-algo-algo-{}", nonce),
             algo_tx_amount: tx_info.host_token_amount.to_string(),
             host_token_address: format!("{}", tx_info.algo_asset_id),
@@ -68,7 +67,7 @@ impl AlgoTxInfo {
 }
 
 pub fn get_int_signed_tx_info_from_int_txs(
-    txs: AlgoSignedGroupTxs,
+    txs: Vec<(String, AlgorandTxGroup)>,
     tx_infos: &IntOnAlgoAlgoTxInfos,
     algo_account_nonce: u64,
     algo_latest_block_num: u64,
@@ -91,16 +90,17 @@ pub fn get_int_signed_tx_info_from_int_txs(
 
 pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOutput> {
     info!("✔ Getting INT output json...");
-    let txs = state.algo_signed_group_txs.clone();
+    let txs = state.algo_signed_txs.clone();
     let int_latest_block_num = state.eth_db_utils.get_latest_eth_block_number()?;
     let output = if !txs.is_empty() {
+        let algo_db_utils = AlgoDbUtils::new(state.db);
         IntOutput::new(
             int_latest_block_num,
             get_int_signed_tx_info_from_int_txs(
                 txs,
                 &IntOnAlgoAlgoTxInfos::from_bytes(&state.tx_infos)?,
-                state.algo_db_utils.get_algo_account_nonce()?,
-                state.algo_db_utils.get_latest_block_number()?,
+                algo_db_utils.get_algo_account_nonce()?,
+                algo_db_utils.get_latest_block_number()?,
             )?,
         )
     } else {

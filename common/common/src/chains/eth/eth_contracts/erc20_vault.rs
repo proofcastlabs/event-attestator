@@ -373,7 +373,7 @@ mod tests {
         let expected_result = "6d69fcaf0000000000000000000000001739624f5cd969885a224da84418d12b8570d61a";
         let address = get_sample_eth_address();
         let result = encode_erc20_vault_add_supported_token_fx_data(address).unwrap();
-        assert_eq!(hex::encode(&result), expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -381,7 +381,7 @@ mod tests {
         let expected_result = "c26bbfe10000000000000000000000001739624f5cd969885a224da84418d12b8570d61a";
         let address = get_sample_eth_address();
         let result = encode_erc20_vault_set_weth_unwrapper_address_fxn_data(address).unwrap();
-        assert_eq!(hex::encode(&result), expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]
@@ -389,7 +389,7 @@ mod tests {
         let expected_result = "763191900000000000000000000000001739624f5cd969885a224da84418d12b8570d61a";
         let address = get_sample_eth_address();
         let result = encode_erc20_vault_remove_supported_token_fx_data(address).unwrap();
-        assert_eq!(hex::encode(&result), expected_result);
+        assert_eq!(hex::encode(result), expected_result);
     }
 
     #[test]

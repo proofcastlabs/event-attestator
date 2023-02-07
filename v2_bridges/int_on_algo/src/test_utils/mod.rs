@@ -1,11 +1,9 @@
 #![cfg(test)]
 use std::{fs::read_to_string, str::FromStr};
 
+use algorand::AlgoSubmissionMaterial;
 use common::{
-    chains::{
-        algo::algo_submission_material::AlgoSubmissionMaterial,
-        eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
-    },
+    chains::eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
     dictionaries::evm_algo::EvmAlgoTokenDictionaryEntry,
     errors::AppError,
     types::Result,

@@ -239,7 +239,7 @@ mod tests {
     fn should_encode_eth_metadata_for_eos() {
         let metadata = get_sample_eth_metadata();
         let bytes = metadata.to_bytes_for_eos().unwrap();
-        let hex_encoded_bytes = hex::encode(&bytes);
+        let hex_encoded_bytes = hex::encode(bytes);
         let expected_hex_encode_bytes = "0103c0ffee04005fe7f92a307835613062353464356463313765306161646333383364326462343362306130643365303239633463";
         assert_eq!(hex_encoded_bytes, expected_hex_encode_bytes);
     }

@@ -12,15 +12,14 @@ mod get_enclave_state;
 mod get_latest_block_numbers;
 mod int;
 mod test_utils;
+mod token_dictionary;
 
+pub use algorand::{debug_reset_algo_chain, encode_algo_note_metadata};
 pub use common::{
-    chains::{
-        algo::{algo_debug_functions::debug_reset_algo_chain, algo_note_metadata::encode_algo_note_metadata},
-        eth::eth_debug_functions::{
-            debug_reset_eth_chain as debug_reset_int_chain,
-            debug_set_eth_account_nonce as debug_set_int_account_nonce,
-            debug_set_eth_gas_price as debug_set_int_gas_price,
-        },
+    chains::eth::eth_debug_functions::{
+        debug_reset_eth_chain as debug_reset_int_chain,
+        debug_set_eth_account_nonce as debug_set_int_account_nonce,
+        debug_set_eth_gas_price as debug_set_int_gas_price,
     },
     debug_functions::{
         debug_add_debug_signer,
@@ -32,7 +31,7 @@ pub use common::{
 };
 
 pub use self::{
-    algo::{maybe_initialize_algo_core, submit_algo_block_to_core, IntOnAlgoIntTxInfos},
+    algo::{maybe_initialize_algo_core, submit_algo_block_to_core},
     constants::CORE_TYPE,
     debug_functions::{
         debug_add_dictionary_entry,
@@ -49,7 +48,7 @@ pub use self::{
     },
     get_enclave_state::get_enclave_state,
     get_latest_block_numbers::get_latest_block_numbers,
-    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core, IntOnAlgoAlgoTxInfos},
+    int::{maybe_initialize_int_core, submit_int_block_to_core, submit_int_blocks_to_core},
 };
 
 #[macro_use]

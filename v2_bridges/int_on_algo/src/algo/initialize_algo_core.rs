@@ -1,20 +1,12 @@
-use common::{
-    chains::algo::{
-        algo_constants::ALGO_CORE_IS_INITIALIZED_JSON,
-        algo_database_transactions::{
-            end_algo_db_transaction_and_return_state,
-            start_algo_db_transaction_and_return_state,
-        },
-        core_initialization::{
-            get_algo_core_init_output::AlgoInitializationOutput,
-            initialize_algo_core::initialize_algo_core,
-        },
-    },
-    core_type::CoreType,
-    state::AlgoState,
-    traits::DatabaseInterface,
-    types::Result,
+use algorand::{
+    end_algo_db_transaction_and_return_state,
+    initialize_algo_core,
+    start_algo_db_transaction_and_return_state,
+    AlgoInitializationOutput,
+    AlgoState,
+    ALGO_CORE_IS_INITIALIZED_JSON,
 };
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 
 /// # Maybe Initialize ALGO Core
 ///
@@ -59,7 +51,8 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::algo::algo_database_utils::AlgoDbUtils, test_utils::get_test_database};
+    use algorand::AlgoDbUtils;
+    use common::test_utils::get_test_database;
     use rust_algorand::{AlgorandAppId, AlgorandHash, MicroAlgos};
 
     use super::*;

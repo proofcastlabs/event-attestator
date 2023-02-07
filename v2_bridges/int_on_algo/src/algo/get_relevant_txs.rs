@@ -1,9 +1,5 @@
-use common::{
-    chains::algo::algo_relevant_asset_txs::AlgoRelevantAssetTxs,
-    state::AlgoState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use algorand::{AlgoRelevantAssetTxs, AlgoState};
+use common::{traits::DatabaseInterface, types::Result};
 
 pub fn get_relevant_asset_txs_from_submission_material_and_add_to_state<D: DatabaseInterface>(
     state: AlgoState<D>,

@@ -5,12 +5,8 @@ use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
 use crate::{
-    chains::{
-        algo::algo_chain_id::AlgoChainId,
-        btc::btc_chain_id::BtcChainId,
-        eos::eos_chain_id::EosChainId,
-        eth::eth_chain_id::EthChainId,
-    },
+    algo_chain_id::AlgoChainId,
+    chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId, eth::eth_chain_id::EthChainId},
     constants::THIRTY_TWO_ZERO_BYTES,
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,

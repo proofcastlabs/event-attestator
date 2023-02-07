@@ -114,7 +114,7 @@ use std::str::FromStr;
 #[cfg(test)]
 use common::errors::AppError;
 #[cfg(test)]
-use serde_json;
+
 
 #[cfg(test)]
 impl FromStr for EosOutput {

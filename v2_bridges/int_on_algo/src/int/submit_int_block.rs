@@ -9,7 +9,6 @@ use common::{
             EthSubmissionMaterialJson,
             EthSubmissionMaterialJsons,
         },
-        increment_algo_account_nonce::maybe_increment_algo_account_nonce_and_return_eth_state,
         remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
         remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
         update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
@@ -31,6 +30,7 @@ use crate::int::{
     filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
     filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
     get_int_output_json::{get_int_output_json, IntOutput, IntOutputs},
+    increment_algo_account_nonce::maybe_increment_algo_account_nonce_and_return_eth_state,
     parse_tx_infos::maybe_parse_tx_info_from_canon_block_and_add_to_state,
     sign_txs::maybe_sign_algo_txs_and_add_to_state,
 };
@@ -101,17 +101,15 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 mod tests {
     use std::str::FromStr;
 
+    use algorand::AlgoDbUtils;
     use common::{
-        chains::{
-            algo::algo_database_utils::AlgoDbUtils,
-            eth::{
-                core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                eth_chain_id::EthChainId,
-                eth_crypto::eth_private_key::EthPrivateKey,
-                eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
-                eth_utils::convert_hex_to_eth_address,
-                vault_using_cores::VaultUsingCores,
-            },
+        chains::eth::{
+            core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+            eth_chain_id::EthChainId,
+            eth_crypto::eth_private_key::EthPrivateKey,
+            eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
+            eth_utils::convert_hex_to_eth_address,
+            vault_using_cores::VaultUsingCores,
         },
         constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
         dictionaries::evm_algo::EvmAlgoTokenDictionary,

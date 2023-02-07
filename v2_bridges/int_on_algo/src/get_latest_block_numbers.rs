@@ -1,8 +1,6 @@
+use algorand::AlgoDbUtils;
 use common::{
-    chains::{
-        algo::algo_database_utils::AlgoDbUtils,
-        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
+    chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,

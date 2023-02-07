@@ -1,8 +1,8 @@
 use ethereum_types::{H256 as EthHash, U256};
+use rust_algorand::AlgorandTxGroup;
 
 use crate::{
     chains::{
-        algo::{algo_database_utils::AlgoDbUtils, algo_signed_group_txs::AlgoSignedGroupTxs},
         btc::{
             btc_database_utils::BtcDbUtils,
             btc_types::BtcTransactions,
@@ -25,20 +25,20 @@ use crate::{
 pub struct EthState<'a, D: DatabaseInterface> {
     pub db: &'a D,
     pub tx_infos: Bytes,
+    pub signed_txs: Bytes,
     pub misc: Option<String>,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub evm_db_utils: EvmDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
-    pub algo_db_utils: AlgoDbUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
-    pub algo_signed_group_txs: AlgoSignedGroupTxs,
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_eth_signed_txs: EthTransactions,
     pub erc20_on_int_int_signed_txs: EthTransactions,
     pub erc20_on_int_eth_signed_txs: EthTransactions,
+    pub algo_signed_txs: Vec<(String, AlgorandTxGroup)>,
     pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
@@ -53,8 +53,10 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             db,
             misc: None,
             tx_infos: vec![],
+            signed_txs: vec![],
             btc_transactions: None,
             eos_transactions: None,
+            algo_signed_txs: vec![],
             btc_utxos_and_values: None,
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
@@ -64,8 +66,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             evm_db_utils: EvmDbUtils::new(db),
             eos_db_utils: EosDbUtils::new(db),
             btc_db_utils: BtcDbUtils::new(db),
-            algo_db_utils: AlgoDbUtils::new(db),
-            algo_signed_group_txs: AlgoSignedGroupTxs::new(vec![]),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
@@ -73,6 +73,11 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
         }
+    }
+
+    pub fn add_algo_txs(mut self, txs: Vec<(String, AlgorandTxGroup)>) -> Self {
+        self.algo_signed_txs = txs;
+        self
     }
 
     pub fn get_eth_evm_token_dictionary(&self) -> Result<&EthEvmTokenDictionary> {
@@ -245,11 +250,11 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_algo_signed_group_txs(mut self, txs: &AlgoSignedGroupTxs) -> Result<Self> {
-        if !self.algo_signed_group_txs.is_empty() {
-            Err(get_no_overwrite_state_err("algo signed group txs").into())
+    pub fn add_signed_txs(mut self, txs: Bytes) -> Result<Self> {
+        if !self.signed_txs.is_empty() {
+            Err(get_no_overwrite_state_err("signed_txs").into())
         } else {
-            self.algo_signed_group_txs = txs.clone();
+            self.signed_txs = txs;
             Ok(self)
         }
     }

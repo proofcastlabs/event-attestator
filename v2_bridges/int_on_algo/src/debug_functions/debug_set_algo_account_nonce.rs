@@ -1,5 +1,5 @@
+use algorand::AlgoDbUtils;
 use common::{
-    chains::algo::algo_database_utils::AlgoDbUtils,
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,

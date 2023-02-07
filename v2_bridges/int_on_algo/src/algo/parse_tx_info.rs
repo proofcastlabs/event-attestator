@@ -1,10 +1,7 @@
+use algorand::{AlgoChainId, AlgoNoteMetadata, AlgoState};
 use common::{
-    chains::{
-        algo::{algo_chain_id::AlgoChainId, algo_note_metadata::AlgoNoteMetadata},
-        eth::eth_database_utils::EthDbUtilsExt,
-    },
+    chains::eth::eth_database_utils::EthDbUtilsExt,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
-    state::AlgoState,
     traits::DatabaseInterface,
     types::Result,
 };

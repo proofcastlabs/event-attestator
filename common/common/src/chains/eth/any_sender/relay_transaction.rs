@@ -279,9 +279,9 @@ impl RelayTransactionJson {
             from: convert_hex_to_eth_address(&self.from)?,
             chain_id: EthChainId::try_from(self.chain_id)?,
             compensation: self.compensation.parse::<u64>()?,
-            data: hex::decode(&strip_hex_prefix(&self.data))?,
+            data: hex::decode(strip_hex_prefix(&self.data))?,
             relay_contract_address: convert_hex_to_eth_address(&self.relay_contract_address)?,
-            signature: EthSignature::from_slice(&hex::decode(&strip_hex_prefix(&self.signature))?),
+            signature: EthSignature::from_slice(&hex::decode(strip_hex_prefix(&self.signature))?),
         })
     }
 

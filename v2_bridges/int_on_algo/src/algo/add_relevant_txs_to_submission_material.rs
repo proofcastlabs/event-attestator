@@ -1,4 +1,5 @@
-use common::{state::AlgoState, traits::DatabaseInterface, types::Result};
+use algorand::AlgoState;
+use common::{traits::DatabaseInterface, types::Result};
 
 pub fn add_relevant_validated_txs_to_submission_material_in_state<D: DatabaseInterface>(
     state: AlgoState<D>,
