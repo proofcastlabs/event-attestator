@@ -44,7 +44,7 @@ pub mod types;
 pub mod utils;
 pub mod v1;
 
-pub use self::v1::{erc20_on_eos, erc20_on_evm};
+pub use self::v1::erc20_on_evm;
 
 #[cfg(test)]
 extern crate simple_logger;

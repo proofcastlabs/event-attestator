@@ -721,6 +721,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "erc20_on_eos"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "derive_more",
+ "eos-chain",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "log",
+ "paste",
+ "serde",
+ "serde_json",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
 name = "erc20_on_int"
 version = "1.0.0"
 dependencies = [

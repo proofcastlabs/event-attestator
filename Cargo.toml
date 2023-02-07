@@ -9,6 +9,7 @@ members = [
     "v2_bridges/int_on_evm",
     "v2_bridges/eos_on_int",
     "v2_bridges/int_on_algo",
+    "v1_bridges/erc20_on_eos",
     "v2_bridges/erc20_on_int",
 ]
 
