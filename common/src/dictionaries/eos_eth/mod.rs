@@ -370,9 +370,12 @@ impl EosEthTokenDictionary {
         self.get_entry_via_eth_address(eth_address)
             .map(|entry| entry.get_zero_eos_asset())
     }
+}
 
-    #[cfg(test)]
-    pub fn from_str(s: &str) -> Result<Self> {
+impl FromStr for EosEthTokenDictionary {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
         let entry_jsons: Vec<EosEthTokenDictionaryEntryJson> = serde_json::from_str(s)?;
         Ok(Self::new(
             entry_jsons

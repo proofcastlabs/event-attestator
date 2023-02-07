@@ -1,4 +1,3 @@
-
 use common::{
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},

@@ -1,4 +1,3 @@
-
 use common::{
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     state::EthState,

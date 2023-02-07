@@ -1,4 +1,3 @@
-
 use common::{
     chains::btc::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,

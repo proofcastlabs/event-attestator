@@ -4,6 +4,7 @@ members = [
     "v2_bridges/btc_on_int",
     "v1_bridges/btc_on_eos",
     "v1_bridges/btc_on_eth",
+    "v1_bridges/eos_on_eth",
     "v2_bridges/int_on_eos",
     "v2_bridges/int_on_evm",
     "v2_bridges/eos_on_int",
