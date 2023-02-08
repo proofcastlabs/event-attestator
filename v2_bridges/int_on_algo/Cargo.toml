@@ -27,7 +27,5 @@ rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev 
 serial_test = "0.6.0"
 
 [features]
-# NOTE: Turns off fee-taking capabilities.
-disable-fees = ["common/disable-fees"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common/non-validating", "algorand/non-validating"]
