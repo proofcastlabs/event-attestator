@@ -18,6 +18,7 @@ pub mod eth_enclave_state;
 pub mod eth_log;
 pub mod eth_receipt;
 pub mod eth_receipt_type;
+mod eth_state;
 pub mod eth_submission_material;
 pub mod eth_test_utils;
 pub mod eth_traits;
@@ -36,3 +37,5 @@ pub mod update_latest_block_hash;
 pub mod validate_block_in_state;
 pub mod validate_receipts_in_state;
 pub mod vault_using_cores;
+
+pub use self::eth_state::EthState;

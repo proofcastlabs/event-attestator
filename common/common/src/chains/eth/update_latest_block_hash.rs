@@ -1,6 +1,5 @@
 use crate::{
-    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_submission_material::EthSubmissionMaterial},
-    state::EthState,
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_submission_material::EthSubmissionMaterial, EthState},
     traits::DatabaseInterface,
     types::Result,
 };

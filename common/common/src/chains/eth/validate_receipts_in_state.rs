@@ -1,4 +1,4 @@
-use crate::{constants::CORE_IS_VALIDATING, state::EthState, traits::DatabaseInterface, types::Result};
+use crate::{chains::eth::EthState, constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
 
 pub fn validate_receipts_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     if !CORE_IS_VALIDATING {

@@ -9,9 +9,9 @@ use common::{
         },
         eth_database_utils::EthDbUtilsExt,
         eth_utils::convert_eth_address_to_string,
+        EthState,
     },
     metadata::metadata_traits::ToMetadata,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

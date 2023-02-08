@@ -15,10 +15,10 @@ use common::{
             eth_log::{EthLog, EthLogExt},
             eth_receipt::EthReceipt,
             eth_submission_material::EthSubmissionMaterial,
+            EthState,
         },
     },
     safe_addresses::safely_convert_str_to_btc_address,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

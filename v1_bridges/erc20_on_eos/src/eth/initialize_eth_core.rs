@@ -12,9 +12,9 @@ use common::{
         },
         eth_database_utils::EthDbUtilsExt,
         eth_utils::convert_hex_to_eth_address,
+        EthState,
     },
     core_type::CoreType,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

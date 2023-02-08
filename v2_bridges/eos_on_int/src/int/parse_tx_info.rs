@@ -5,11 +5,11 @@ use common::{
         eth_database_utils::EthDbUtilsExt,
         eth_log::EthLog,
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::ToMetadataChainId,
     safe_addresses::safely_convert_str_to_eos_address,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

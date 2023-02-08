@@ -17,10 +17,10 @@ use common::{
         update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
         validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
+        EthState,
     },
     core_type::CoreType,
     dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_eth_state,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

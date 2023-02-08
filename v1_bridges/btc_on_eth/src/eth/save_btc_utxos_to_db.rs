@@ -1,6 +1,6 @@
 use common::{
     chains::{btc::utxo_manager::utxo_database_utils::save_utxos_to_db},
-    state::EthState,
+    chains::eth::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

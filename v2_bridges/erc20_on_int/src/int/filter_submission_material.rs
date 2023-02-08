@@ -3,9 +3,9 @@ use common::{
         eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2,
         eth_receipt::{EthReceipt, EthReceipts},
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

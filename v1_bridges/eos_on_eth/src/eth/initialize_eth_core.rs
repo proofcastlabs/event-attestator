@@ -11,9 +11,9 @@ use common::{
             end_eth_db_transaction_and_return_state,
             start_eth_db_transaction_and_return_state,
         },
+        EthState,
     },
     core_type::CoreType,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

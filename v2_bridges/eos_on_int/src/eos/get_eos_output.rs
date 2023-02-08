@@ -114,8 +114,6 @@ use std::str::FromStr;
 #[cfg(test)]
 use common::errors::AppError;
 #[cfg(test)]
-
-
 #[cfg(test)]
 impl FromStr for EosOutput {
     type Err = AppError;

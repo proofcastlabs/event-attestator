@@ -1,12 +1,14 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::btc::{
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_utils::get_pay_to_pub_key_hash_script,
-        extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_tx,
-        utxo_manager::utxo_database_utils::save_utxos_to_db,
+    chains::{
+        btc::{
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_utils::get_pay_to_pub_key_hash_script,
+            extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_tx,
+            utxo_manager::utxo_database_utils::save_utxos_to_db,
+        },
+        eth::EthState,
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -1,6 +1,5 @@
 use common::{
-    chains::eth::eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2,
-    state::EthState,
+    chains::eth::{eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2, EthState},
     traits::DatabaseInterface,
     types::Result,
 };

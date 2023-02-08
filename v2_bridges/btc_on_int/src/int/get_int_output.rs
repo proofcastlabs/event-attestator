@@ -4,9 +4,8 @@ use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_utils::get_hex_tx_from_signed_btc_tx},
-        eth::eth_database_utils::EthDbUtilsExt,
+        eth::{eth_database_utils::EthDbUtilsExt, EthState},
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

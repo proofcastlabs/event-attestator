@@ -139,7 +139,7 @@ macro_rules! make_stateful_initialization_checkers {
     }
 }
 
-make_stateful_initialization_checkers!(Eth, Eos, Btc);
+make_stateful_initialization_checkers!(Eos, Btc);
 
 #[cfg(test)]
 mod tests {

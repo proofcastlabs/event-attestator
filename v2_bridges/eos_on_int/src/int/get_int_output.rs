@@ -3,10 +3,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use common::{
     chains::{
         eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
-        eth::eth_database_utils::EthDbUtilsExt,
+        eth::{eth_database_utils::EthDbUtilsExt, EthState},
     },
     metadata::ToMetadataChainId,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

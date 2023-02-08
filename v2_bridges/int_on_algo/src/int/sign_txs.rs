@@ -1,7 +1,7 @@
 use algorand::{AlgoDbUtils, AlgoUserData, ALGO_MAX_FOREIGN_ITEMS};
 use common::{
+    chains::eth::EthState,
     metadata::metadata_traits::ToMetadata,
-    state::EthState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };

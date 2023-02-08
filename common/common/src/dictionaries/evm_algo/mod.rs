@@ -4,7 +4,7 @@ pub use crate::dictionaries::evm_algo::{
     dictionary::EvmAlgoTokenDictionary,
     dictionary_entry::EvmAlgoTokenDictionaryEntry,
 };
-use crate::{state::EthState, traits::DatabaseInterface, types::Result};
+use crate::{chains::eth::EthState, traits::DatabaseInterface, types::Result};
 
 pub fn get_evm_algo_token_dictionary_and_add_to_eth_state<D: DatabaseInterface>(
     state: EthState<D>,

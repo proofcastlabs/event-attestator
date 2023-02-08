@@ -6,11 +6,11 @@ use common::{
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::metadata_traits::ToMetadataChainId,
     safe_addresses::safely_convert_str_to_eos_address,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

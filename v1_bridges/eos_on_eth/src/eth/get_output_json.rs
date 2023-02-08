@@ -6,9 +6,8 @@ use common::{
             eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
             eos_database_utils::EosDbUtils,
         },
-        eth::eth_database_utils::EthDbUtilsExt,
+        eth::{eth_database_utils::EthDbUtilsExt, EthState},
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

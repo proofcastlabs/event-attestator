@@ -110,9 +110,9 @@ mod tests {
                 eth_chain_id::EthChainId,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 vault_using_cores::VaultUsingCores,
+                EthState as IntState,
             },
         },
-        state::EthState as IntState,
         test_utils::get_test_database,
     };
     use serde_json::json;

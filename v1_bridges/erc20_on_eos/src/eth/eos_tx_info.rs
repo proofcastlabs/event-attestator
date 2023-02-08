@@ -21,6 +21,7 @@ use common::{
             eth_log::{EthLog, EthLogExt, EthLogs},
             eth_receipt::{EthReceipt, EthReceipts},
             eth_submission_material::EthSubmissionMaterial,
+            EthState,
         },
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
@@ -31,7 +32,6 @@ use common::{
         Metadata,
     },
     safe_addresses::safely_convert_str_to_eos_address,
-    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

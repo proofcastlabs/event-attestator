@@ -1,6 +1,5 @@
 use crate::{
-    chains::eos::increment_eos_account_nonce::increment_eos_account_nonce,
-    state::EthState,
+    chains::{eos::increment_eos_account_nonce::increment_eos_account_nonce, eth::EthState},
     traits::DatabaseInterface,
     types::Result,
 };

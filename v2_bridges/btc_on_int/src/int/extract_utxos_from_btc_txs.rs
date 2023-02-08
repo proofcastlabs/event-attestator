@@ -8,7 +8,7 @@ use common::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
     },
-            state::EthState,
+            chains::eth::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

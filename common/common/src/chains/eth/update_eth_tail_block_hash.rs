@@ -3,8 +3,8 @@ use crate::{
         eth_constants::ETH_TAIL_LENGTH,
         eth_database_utils::EthDbUtilsExt,
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

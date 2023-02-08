@@ -5,8 +5,8 @@ use common::{
             ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
         },
         eth_database_utils::EthDbUtilsExt,
+        EthState,
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

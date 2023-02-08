@@ -20,12 +20,12 @@ use common::{
             eth_log::{EthLog, EthLogExt},
             eth_receipt::EthReceipt,
             eth_submission_material::EthSubmissionMaterial,
+            EthState,
         },
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
     safe_addresses::SAFE_BTC_ADDRESS_STR,
-    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

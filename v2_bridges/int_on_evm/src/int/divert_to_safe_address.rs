@@ -1,4 +1,4 @@
-use common::{state::EthState, traits::TxInfo};
+use common::{chains::eth::EthState, traits::TxInfo};
 
 use crate::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos};
 

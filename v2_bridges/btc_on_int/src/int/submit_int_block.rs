@@ -19,10 +19,10 @@ use common::{
             update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
             validate_block_in_state::validate_eth_block_in_state,
             validate_receipts_in_state::validate_receipts_in_state,
+            EthState,
         },
     },
     core_type::CoreType,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -113,9 +113,10 @@ mod tests {
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 eth_submission_material::EthSubmissionMaterial,
                 eth_utils::convert_hex_to_eth_address,
+                EthState,
             },
         },
-        state::{BtcState, EthState},
+        state::BtcState,
         test_utils::get_test_database,
     };
     use serde_json::json;

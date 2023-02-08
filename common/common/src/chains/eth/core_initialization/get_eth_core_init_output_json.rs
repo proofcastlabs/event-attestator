@@ -3,9 +3,8 @@ use serde::{Deserialize, Serialize};
 use serde_json::to_string;
 
 use crate::{
-    chains::eth::eth_database_utils::EthDbUtilsExt,
+    chains::eth::{eth_database_utils::EthDbUtilsExt, EthState},
     constants::ZERO_CONFS_WARNING,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

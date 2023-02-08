@@ -1,16 +1,18 @@
 use common::{
-    chains::eos::{
-        eos_actions::PTokenPegOutAction,
-        eos_chain_id::EosChainId,
-        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
-        eos_crypto::{
-            eos_private_key::EosPrivateKey,
-            eos_transaction::{EosSignedTransaction, EosSignedTransactions},
+    chains::{
+        eos::{
+            eos_actions::PTokenPegOutAction,
+            eos_chain_id::EosChainId,
+            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
+            eos_crypto::{
+                eos_private_key::EosPrivateKey,
+                eos_transaction::{EosSignedTransaction, EosSignedTransactions},
+            },
+            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
-        eos_utils::get_eos_tx_expiration_timestamp_with_offset,
+        eth::EthState,
     },
     metadata::metadata_traits::ToMetadata,
-    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Result},
 };

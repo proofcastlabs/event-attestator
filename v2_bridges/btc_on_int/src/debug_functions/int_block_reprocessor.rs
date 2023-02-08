@@ -6,11 +6,11 @@ use common::{
             eth_database_utils::EthDbUtilsExt,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             validate_block_in_state::validate_eth_block_in_state,
+            EthState,
         },
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -32,10 +32,10 @@ use crate::{
 #[named]
 fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature: &str) -> Result<String> {
     db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(validate_eth_block_in_state)
         .and_then(filter_receipts_for_btc_on_int_redeem_events_in_state)
         .and_then(|state| {

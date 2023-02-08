@@ -1,8 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::{eos::eos_crypto::eos_transaction::EosSignedTransaction, eth::eth_database_utils::EthDbUtilsExt},
-    state::EthState,
+    chains::{
+        eos::eos_crypto::eos_transaction::EosSignedTransaction,
+        eth::{eth_database_utils::EthDbUtilsExt, EthState},
+    },
     traits::DatabaseInterface,
     types::Result,
 };

@@ -34,9 +34,9 @@ use crate::{
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::{validate_eth_block_in_state, validate_evm_block_in_state},
         vault_using_cores::VaultUsingCores,
+        EthState,
     },
     core_type::CoreType,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

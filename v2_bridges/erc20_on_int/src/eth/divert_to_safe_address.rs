@@ -1,4 +1,4 @@
-use common::{state::EthState, traits::TxInfo};
+use common::{chains::eth::EthState, traits::TxInfo};
 
 use crate::eth::int_tx_info::{Erc20OnIntIntTxInfo, Erc20OnIntIntTxInfos};
 

@@ -6,9 +6,9 @@ use common::{
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
         eth_traits::EthTxInfoCompatible,
+        EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    state::EthState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

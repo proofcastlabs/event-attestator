@@ -17,6 +17,7 @@ use common::{
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::{EthReceipt, EthReceipts},
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     metadata::{
@@ -26,7 +27,6 @@ use common::{
         Metadata,
     },
     safe_addresses::safely_convert_str_to_eth_address,
-    state::EthState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

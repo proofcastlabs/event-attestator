@@ -1,9 +1,8 @@
 use std::str::FromStr;
 
 use common::{
-    chains::eos::eos_utils::remove_symbol_from_eos_asset,
+    chains::{eos::eos_utils::remove_symbol_from_eos_asset, eth::EthState},
     dictionaries::eos_eth::EosEthTokenDictionary,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

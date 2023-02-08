@@ -2,8 +2,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use algorand::AlgoDbUtils;
 use common::{
-    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_utils::convert_eth_address_to_string},
-    state::EthState,
+    chains::eth::{eth_database_utils::EthDbUtilsExt, eth_utils::convert_eth_address_to_string, EthState},
     traits::DatabaseInterface,
     types::Result,
 };

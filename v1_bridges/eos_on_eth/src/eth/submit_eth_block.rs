@@ -16,10 +16,10 @@ use common::{
         update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
         validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
+        EthState,
     },
     core_type::CoreType,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -46,8 +46,8 @@ use crate::eth::{
 /// transaction will be signed & returned to the caller.
 pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting ETH block to enclave...");
-    parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
+    CoreType::check_is_initialized(db)
+        .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(validate_eth_block_in_state)

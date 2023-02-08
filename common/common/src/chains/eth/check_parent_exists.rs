@@ -1,9 +1,8 @@
 use serde_json::json;
 
 use crate::{
-    chains::eth::eth_database_utils::EthDbUtilsExt,
+    chains::eth::{eth_database_utils::EthDbUtilsExt, EthState},
     errors::AppError,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

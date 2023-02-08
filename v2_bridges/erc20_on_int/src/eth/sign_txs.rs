@@ -8,10 +8,10 @@ use common::{
             eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
         },
         eth_database_utils::EthDbUtilsExt,
+        EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     metadata::metadata_traits::ToMetadata,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

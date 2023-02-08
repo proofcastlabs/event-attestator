@@ -11,9 +11,9 @@ use common::{
             start_eth_db_transaction_and_return_state,
         },
         eth_utils::convert_hex_to_eth_address,
+        EthState,
     },
     core_type::CoreType,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

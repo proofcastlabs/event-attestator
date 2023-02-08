@@ -4,9 +4,9 @@ use common::{
         eth_database_utils::EthDbUtilsExt,
         eth_receipt::EthReceipt,
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -1,6 +1,9 @@
 use common::{
-    chains::eth::{eth_contracts::erc20_vault::ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2, eth_database_utils::EthDbUtilsExt},
-    state::EthState,
+    chains::eth::{
+        eth_contracts::erc20_vault::ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
+        eth_database_utils::EthDbUtilsExt,
+        EthState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };

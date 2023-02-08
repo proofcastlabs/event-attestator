@@ -18,10 +18,10 @@ use common::{
         update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
         validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
+        EthState,
     },
     core_type::CoreType,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -114,9 +114,9 @@ mod tests {
                 eth_chain_id::EthChainId,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 vault_using_cores::VaultUsingCores,
+                EthState as IntState,
             },
         },
-        state::EthState as IntState,
         test_utils::get_test_database,
     };
     use serde_json::json;

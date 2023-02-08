@@ -1,4 +1,4 @@
-use crate::{state::EthState, traits::DatabaseInterface, types::Result};
+use crate::{chains::eth::EthState, traits::DatabaseInterface, types::Result};
 
 pub fn start_eth_db_transaction_and_return_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     state.eth_db_utils.get_db().start_transaction().map(|_| {

@@ -1,15 +1,17 @@
 use common::{
-    chains::eos::{
-        eos_chain_id::EosChainId,
-        eos_crypto::{
-            eos_private_key::EosPrivateKey,
-            eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
+    chains::{
+        eos::{
+            eos_chain_id::EosChainId,
+            eos_crypto::{
+                eos_private_key::EosPrivateKey,
+                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
+            },
+            eos_utils::{get_eos_tx_expiration_timestamp_with_offset, get_symbol_from_eos_asset},
         },
-        eos_utils::{get_eos_tx_expiration_timestamp_with_offset, get_symbol_from_eos_asset},
+        eth::EthState,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::metadata_traits::{ToMetadata, ToMetadataChainId},
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

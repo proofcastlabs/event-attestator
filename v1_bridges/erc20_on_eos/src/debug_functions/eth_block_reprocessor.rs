@@ -6,11 +6,11 @@ use common::{
         increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
         validate_block_in_state::validate_eth_block_in_state,
         validate_receipts_in_state::validate_receipts_in_state,
+        EthState,
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::{get_eos_eth_token_dictionary_from_db_and_add_to_eth_state, EosEthTokenDictionary},
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -38,10 +38,10 @@ fn reprocess_eth_block<D: DatabaseInterface>(
 ) -> Result<String> {
     info!("✔ Debug reprocessing ETH block...");
     db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
-        .and_then(CoreType::check_core_is_initialized_and_return_eth_state)
         .and_then(validate_eth_block_in_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
         .and_then(validate_receipts_in_state)

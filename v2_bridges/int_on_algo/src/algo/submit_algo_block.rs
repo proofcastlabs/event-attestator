@@ -86,10 +86,10 @@ mod tests {
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_utils::convert_hex_to_eth_address,
             vault_using_cores::VaultUsingCores,
+            EthState,
         },
         constants::MIN_DATA_SENSITIVITY_LEVEL,
         dictionaries::evm_algo::EvmAlgoTokenDictionary,
-        state::EthState,
         test_utils::get_test_database,
         utils::get_prefixed_db_key,
     };

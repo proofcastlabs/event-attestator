@@ -7,8 +7,8 @@ use common::{
         eth_database_utils::EthDbUtilsExt,
         eth_traits::EthTxInfoCompatible,
         eth_utils::convert_eth_address_to_string,
+        EthState,
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

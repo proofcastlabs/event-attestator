@@ -1,6 +1,6 @@
 use common::{
+    chains::eth::EthState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

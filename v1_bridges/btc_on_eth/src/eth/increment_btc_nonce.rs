@@ -1,4 +1,4 @@
-use common::{state::EthState, traits::DatabaseInterface, types::Result};
+use common::{chains::eth::EthState, traits::DatabaseInterface, types::Result};
 
 pub fn maybe_increment_btc_nonce_in_db_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,

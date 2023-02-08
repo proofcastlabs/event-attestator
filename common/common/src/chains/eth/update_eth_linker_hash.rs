@@ -4,8 +4,8 @@ use crate::{
         eth_database_utils::EthDbUtilsExt,
         eth_submission_material::EthSubmissionMaterial,
         eth_types::EthHash,
+        EthState,
     },
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

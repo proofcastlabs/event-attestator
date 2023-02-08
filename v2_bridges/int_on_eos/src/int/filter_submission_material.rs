@@ -4,9 +4,9 @@ use common::{
         eth_database_utils::EthDbUtilsExt,
         eth_receipt::{EthReceipt, EthReceipts},
         eth_submission_material::EthSubmissionMaterial,
+        EthState,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };

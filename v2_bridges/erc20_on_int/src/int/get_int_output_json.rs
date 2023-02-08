@@ -7,9 +7,9 @@ use common::{
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
         eth_traits::EthTxInfoCompatible,
+        EthState,
     },
     metadata::metadata_traits::ToMetadataChainId,
-    state::EthState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

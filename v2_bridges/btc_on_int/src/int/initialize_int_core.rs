@@ -12,9 +12,9 @@ use common::{
         },
         eth_database_utils::EthDbUtilsExt,
         eth_utils::convert_hex_to_eth_address,
+        EthState,
     },
     core_type::CoreType,
-    state::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -81,7 +81,10 @@ pub fn maybe_initialize_int_core<D: DatabaseInterface>(
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eth::eth_utils::convert_hex_to_eth_address, state::EthState, test_utils::get_test_database};
+    use common::{
+        chains::eth::{eth_utils::convert_hex_to_eth_address, EthState},
+        test_utils::get_test_database,
+    };
 
     use super::*;
     use crate::test_utils::get_sample_int_submission_material_json_str_n;
