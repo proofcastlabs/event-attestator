@@ -20,7 +20,6 @@ use common::{
         EthState,
     },
     core_type::CoreType,
-    dictionaries::evm_algo::get_evm_algo_token_dictionary_and_add_to_eth_state,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -38,7 +37,7 @@ use crate::int::{
 fn submit_int_block<D: DatabaseInterface>(db: &D, json: &EthSubmissionMaterialJson) -> Result<IntOutput> {
     parse_eth_submission_material_json_and_put_in_state(json, EthState::init(db))
         .and_then(validate_eth_block_in_state)
-        .and_then(get_evm_algo_token_dictionary_and_add_to_eth_state)
+        .and_then(|state| state.get_evm_algo_token_dictionary_and_add_to_state())
         .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_submission_material_for_peg_in_events_in_state)

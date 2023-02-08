@@ -9,10 +9,6 @@ pub mod database_macros;
 #[macro_use]
 pub mod state_macros;
 #[macro_use]
-pub mod filter_tx_info_with_no_erc20_transfer_events_macros;
-#[macro_use]
-pub mod filter_tx_info_with_no_erc20_transfer_events_macros_v2;
-#[macro_use]
 pub mod tx_info_macros;
 #[macro_use]
 pub mod debug_command_hash_macros;

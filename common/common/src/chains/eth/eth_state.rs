@@ -75,6 +75,21 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
+    pub fn get_eos_eth_token_dictionary_from_db_and_add_to_state(self) -> Result<Self> {
+        info!("✔ Getting `EosErc20Dictionary` and adding to ETH state...");
+        EosEthTokenDictionary::get_from_db(self.db).and_then(|dictionary| self.add_eos_eth_token_dictionary(dictionary))
+    }
+
+    pub fn get_evm_algo_token_dictionary_and_add_to_state(self) -> Result<Self> {
+        info!("✔ Getting `EvmAlgoTokenDictionary` and adding to ETH state...");
+        EvmAlgoTokenDictionary::get_from_db(self.db).and_then(|dictionary| self.add_evm_algo_dictionary(dictionary))
+    }
+
+    pub fn get_eth_evm_token_dictionary_and_add_to_state(self) -> Result<Self> {
+        info!("✔ Getting `EthEvmTokenDictionary` and adding to ETH state...");
+        EthEvmTokenDictionary::get_from_db(self.db).and_then(|dictionary| self.add_eth_evm_token_dictionary(dictionary))
+    }
+
     pub fn add_algo_txs(mut self, txs: Vec<(String, AlgorandTxGroup)>) -> Self {
         self.algo_signed_txs = txs;
         self
@@ -213,7 +228,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<Self> {
+    fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<Self> {
         match self.eos_eth_token_dictionary {
             Some(_) => Err(get_no_overwrite_state_err("eos_eth_token_dictionary").into()),
             None => {
@@ -230,7 +245,7 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_eth_evm_token_dictionary(mut self, dictionary: EthEvmTokenDictionary) -> Result<Self> {
+    fn add_eth_evm_token_dictionary(mut self, dictionary: EthEvmTokenDictionary) -> Result<Self> {
         match self.eth_evm_token_dictionary {
             Some(_) => Err(get_no_overwrite_state_err("eth_evm_token_dictionary").into()),
             None => {

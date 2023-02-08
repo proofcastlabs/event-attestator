@@ -14,7 +14,7 @@ use common::{
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    dictionaries::eth_evm::{get_eth_evm_token_dictionary_from_db_and_add_to_eth_state, EthEvmTokenDictionary},
+    dictionaries::eth_evm::EthEvmTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -56,7 +56,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_eth_block_in_state)
         .and_then(validate_receipts_in_state)
-        .and_then(get_eth_evm_token_dictionary_from_db_and_add_to_eth_state)
+        .and_then(|state| state.get_eth_evm_token_dictionary_and_add_to_state())
         .and_then(filter_submission_material_for_peg_in_events_in_state)
         .and_then(|state| {
             state

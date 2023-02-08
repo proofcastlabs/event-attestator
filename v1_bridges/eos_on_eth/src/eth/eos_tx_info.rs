@@ -18,7 +18,7 @@ use common::{
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
                 ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
             },
-            eth_database_utils::EthDbUtilsExt,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_log::EthLog,
             eth_submission_material::EthSubmissionMaterial,
             EthState,
@@ -356,7 +356,8 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `eos-on-eth` tx infos...");
-    state.eth_db_utils.get_eth_canon_block_from_db().and_then(|material| {
+    let eth_db_utils = EthDbUtils::new(state.db);
+    eth_db_utils.get_eth_canon_block_from_db().and_then(|material| {
         if material.receipts.is_empty() {
             info!("✔ No receipts in canon block ∴ no info to parse!");
             Ok(state)
@@ -368,7 +369,7 @@ pub fn maybe_parse_eth_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
             EosOnEthEosTxInfos::from_eth_submission_material(
                 &material,
                 state.get_eos_eth_token_dictionary()?,
-                &state.eth_db_utils.get_eth_chain_id_from_db()?,
+                &eth_db_utils.get_eth_chain_id_from_db()?,
             )
             .and_then(|tx_infos| tx_infos.to_bytes())
             .map(|bytes| state.add_tx_infos(bytes))

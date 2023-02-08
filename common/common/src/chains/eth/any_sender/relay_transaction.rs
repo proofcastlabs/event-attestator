@@ -1,3 +1,4 @@
+use derive_more::Deref;
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};
 use rlp::RlpStream;
@@ -15,7 +16,7 @@ use crate::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
-    types::{Bytes, Result},
+    types::{Byte, Bytes, Result},
     EthChainId,
 };
 
@@ -25,6 +26,10 @@ pub const ANY_SENDER_MAX_GAS_LIMIT: u32 = 3_000_000;
 pub const ANY_SENDER_DEFAULT_DEADLINE: Option<u64> = None;
 pub const ANY_SENDER_MAX_COMPENSATION_WEI: u64 = 49_999_999_999_999_999;
 
+#[derive(Clone, Debug, Eq, PartialEq, Deref, Serialize, Deserialize)]
+pub struct RelayTransactions(pub Vec<RelayTransaction>);
+
+/// The standard eth chain id.
 /// An AnySender relay transaction. It is very similar
 /// to a normal transaction except for a few fields.
 /// The schema can be found [here](https://github.com/PISAresearch/docs.any.sender/blob/master/docs/relayTx.schema.json).
@@ -78,6 +83,16 @@ pub struct RelayTransaction {
     /// The address the transaction is directed to.
     /// Cannot be empty.
     pub to: EthAddress,
+}
+
+impl RelayTransactions {
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        Ok(serde_json::from_slice(bytes)?)
+    }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
+    }
 }
 
 impl RelayTransaction {

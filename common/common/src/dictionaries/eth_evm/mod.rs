@@ -5,7 +5,6 @@ use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::eth::EthState,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::{dictionary_constants::ETH_EVM_DICTIONARY_KEY, dictionary_traits::DictionaryDecimalConverter},
     errors::AppError,
@@ -495,13 +494,6 @@ impl FromStr for EthEvmTokenDictionaryEntryJson {
     fn from_str(s: &str) -> Result<Self> {
         Ok(serde_json::from_str(s)?)
     }
-}
-
-pub fn get_eth_evm_token_dictionary_from_db_and_add_to_eth_state<D: DatabaseInterface>(
-    state: EthState<D>,
-) -> Result<EthState<D>> {
-    info!("✔ Getting `EthEvmTokenDictionary` and adding to ETH state...");
-    EthEvmTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eth_evm_token_dictionary(dictionary))
 }
 
 #[cfg(test)]

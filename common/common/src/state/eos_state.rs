@@ -14,7 +14,6 @@ use crate::{
             eos_types::Checksum256s,
             protocol_features::EnabledFeatures,
         },
-        eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
@@ -33,14 +32,13 @@ make_state_setters_and_getters!(
 pub struct EosState<'a, D: DatabaseInterface> {
     pub db: &'a D,
     pub tx_infos: Bytes,
+    pub eth_signed_txs: Bytes,
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
     pub producer_signature: String,
     global_sequences: GlobalSequences,
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
-    pub eth_signed_txs: EthTransactions,
-    pub eth_db_utils: EthDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
     pub block_header: Option<EosBlockHeaderV2>,
@@ -60,18 +58,17 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             tx_infos: vec![],
             block_header: None,
             action_proofs: vec![],
+            eth_signed_txs: vec![],
             active_schedule: None,
             interim_block_ids: vec![],
             btc_utxos_and_values: None,
             btc_on_eos_signed_txs: vec![],
             eos_eth_token_dictionary: None,
             btc_db_utils: BtcDbUtils::new(db),
-            eth_db_utils: EthDbUtils::new(db),
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             eos_db_utils: EosDbUtils::new(db),
             global_sequences: GlobalSequences::default(),
-            eth_signed_txs: EthTransactions::new(vec![]),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
         }
@@ -93,9 +90,9 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         Ok(self)
     }
 
-    pub fn add_eth_signed_txs(mut self, txs: EthTransactions) -> Result<EosState<'a, D>> {
+    pub fn add_eth_signed_txs(mut self, txs: Bytes) -> Self {
         self.eth_signed_txs = txs;
-        Ok(self)
+        self
     }
 
     pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<'a, D> {

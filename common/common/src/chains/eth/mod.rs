@@ -37,4 +37,7 @@ pub mod validate_block_in_state;
 pub mod validate_receipts_in_state;
 pub mod vault_using_cores;
 
+#[macro_use]
+mod eth_macros;
+
 pub use self::{eth_crypto::EthTransactions, eth_state::EthState};

@@ -1,7 +1,7 @@
 use common::{
     chains::{
         eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
-        eth::eth_database_utils::EthDbUtilsExt,
+        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::{MetadataChainId, ToMetadataChainId},
@@ -242,7 +242,7 @@ pub fn maybe_parse_eos_on_int_int_tx_infos_and_put_in_state<D: DatabaseInterface
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_account_name_from_db()?,
-        &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+        &EthDbUtils::new(state.db).get_eth_router_smart_contract_address_from_db()?,
         &state.eos_db_utils.get_eos_chain_id_from_db()?,
     )
     .and_then(|tx_infos| {

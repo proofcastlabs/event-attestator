@@ -3,9 +3,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use common::{
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_traits::EthTxInfoCompatible,
         eth_utils::convert_eth_address_to_string,
+        EthTransactions,
     },
     state::EosState,
     traits::DatabaseInterface,
@@ -96,12 +97,16 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
         eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
         int_signed_transactions: match state.eth_signed_txs.len() {
             0 => vec![],
-            _ => get_int_signed_tx_info_from_txs(
-                &state.eth_signed_txs,
-                &EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                state.eth_db_utils.get_latest_eth_block_number()?,
-            )?,
+            _ => {
+                let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
+                let eth_db_utils = EthDbUtils::new(state.db);
+                get_int_signed_tx_info_from_txs(
+                    &txs,
+                    &EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
+                    eth_db_utils.get_eth_account_nonce_from_db()?,
+                    eth_db_utils.get_latest_eth_block_number()?,
+                )?
+            },
         },
     })?;
     info!("✔ EOS output: {}", output);

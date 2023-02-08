@@ -10,7 +10,7 @@ use common::{
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
-    dictionaries::eos_eth::{get_eos_eth_token_dictionary_from_db_and_add_to_eth_state, EosEthTokenDictionary},
+    dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -38,7 +38,7 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json, EthState::init(db)))
         .and_then(validate_eth_block_in_state)
-        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
+        .and_then(|state| state.get_eos_eth_token_dictionary_from_db_and_add_to_state())
         .and_then(validate_receipts_in_state)
         .and_then(filter_submission_material_for_relevant_receipts_in_state)
         .and_then(|state| {

@@ -3,8 +3,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use common::{
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_traits::EthTxInfoCompatible,
+        EthTransactions,
     },
     state::EosState,
     traits::DatabaseInterface,
@@ -96,11 +97,13 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
         int_signed_transactions: if int_signed_txs.is_empty() {
             vec![]
         } else {
+            let eth_db_utils = EthDbUtils::new(state.db);
+            let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
             get_tx_infos_from_signed_txs(
-                &int_signed_txs,
+                &txs,
                 &IntOnEosIntTxInfos::from_bytes(&state.tx_infos)?,
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                state.eth_db_utils.get_latest_eth_block_number()?,
+                eth_db_utils.get_eth_account_nonce_from_db()?,
+                eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
     })?;

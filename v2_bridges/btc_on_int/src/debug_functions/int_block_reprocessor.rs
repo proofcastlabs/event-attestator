@@ -1,13 +1,10 @@
 use common::{
-    chains::{
-        btc::increment_btc_account_nonce::maybe_increment_btc_account_nonce_and_return_eth_state,
-        eth::{
-            eth_database_transactions::end_eth_db_transaction_and_return_state,
-            eth_database_utils::EthDbUtilsExt,
-            eth_submission_material::parse_eth_submission_material_and_put_in_state,
-            validate_block_in_state::validate_eth_block_in_state,
-            EthState,
-        },
+    chains::eth::{
+        eth_database_transactions::end_eth_db_transaction_and_return_state,
+        eth_database_utils::EthDbUtilsExt,
+        eth_submission_material::parse_eth_submission_material_and_put_in_state,
+        validate_block_in_state::validate_eth_block_in_state,
+        EthState,
     },
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
@@ -23,6 +20,7 @@ use crate::{
         debug_filter_tx_info_with_no_erc20_transfer_event,
         filter_receipts_for_btc_on_int_redeem_events_in_state,
         get_btc_signed_tx_info_from_btc_txs,
+        maybe_increment_btc_account_nonce_and_return_eth_state,
         maybe_sign_btc_txs_and_add_to_state,
         BtcOnIntBtcTxInfos,
         IntOutput,

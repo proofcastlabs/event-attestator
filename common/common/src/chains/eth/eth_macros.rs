@@ -1,8 +1,18 @@
-// NOTE: These assume that tx infos stored in state are done as as _bytes_ rather than their
-// actual type! This is to make the state generic over the various tx infos it has to hold.
+#[macro_export]
+macro_rules! impl_to_erc20_token_event {
+    ($path:path, $value:ident, $to:ident, $from:ident, $token_address:ident) => {
+        use $crate::chains::eth::eth_contracts::erc20_token::{Erc20TokenTransferEvent, ToErc20TokenTransferEvent};
+
+        impl ToErc20TokenTransferEvent for $path {
+            fn to_erc20_token_transfer_event(&self) -> Erc20TokenTransferEvent {
+                Erc20TokenTransferEvent::new(self.$value, self.$to, self.$from, self.$token_address)
+            }
+        }
+    };
+}
 
 #[macro_export]
-macro_rules! make_erc20_token_event_filterer_v2 {
+macro_rules! make_erc20_token_event_filterer {
     ($state:ty, $db_utils:ident, $tx_infos_field:ident) => {
         use paste;
 

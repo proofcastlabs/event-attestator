@@ -19,7 +19,6 @@ use common::{
         EthState,
     },
     core_type::CoreType,
-    dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eth_state,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -48,7 +47,7 @@ pub fn submit_eth_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(|_| parse_eth_submission_material_and_put_in_state(block_json_string, EthState::init(db)))
         .and_then(start_eth_db_transaction_and_return_state)
         .and_then(validate_eth_block_in_state)
-        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eth_state)
+        .and_then(|state| state.get_eos_eth_token_dictionary_from_db_and_add_to_state())
         .and_then(check_for_parent_of_eth_block_in_state)
         .and_then(validate_receipts_in_state)
         .and_then(filter_submission_material_for_peg_in_events_in_state)

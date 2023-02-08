@@ -9,7 +9,6 @@ use crate::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
         eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_database_utils::EosDbUtils},
-        eth::eth_types::RelayTransactions,
     },
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
@@ -28,11 +27,11 @@ pub struct BtcState<'a, D: DatabaseInterface> {
     pub eos_db_utils: EosDbUtils<'a, D>,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
+    pub any_sender_signed_txs: Option<Bytes>,
     pub eos_signed_txs: EosSignedTransactions,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub p2pkh_deposit_txs: Option<BtcTransactions>,
-    pub any_sender_signed_txs: Option<RelayTransactions>,
     pub deposit_info_hash_map: Option<DepositInfoHashMap>,
     pub btc_block_in_db_format: Option<BtcBlockInDbFormat>,
     pub submission_json: Option<BtcSubmissionMaterialJson>,
@@ -271,7 +270,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         self.any_sender == Some(true)
     }
 
-    pub fn add_any_sender_signed_txs(mut self, any_sender_signed_txs: RelayTransactions) -> Result<BtcState<'a, D>> {
+    pub fn add_any_sender_signed_txs(mut self, any_sender_signed_txs: Bytes) -> Result<Self> {
         match self.any_sender_signed_txs {
             Some(_) => Err(get_no_overwrite_state_err("any_sender_signed_txs").into()),
             None => {

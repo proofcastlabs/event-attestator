@@ -7,7 +7,10 @@ use common::{
             eos_chain_id::EosChainId,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
         },
-        eth::{eth_constants::MAX_BYTES_FOR_ETH_USER_DATA, eth_database_utils::EthDbUtilsExt},
+        eth::{
+            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+        },
     },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{
@@ -258,7 +261,7 @@ pub fn maybe_parse_eth_tx_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_chain_id_from_db()?,
-        &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+        &EthDbUtils::new(state.db).get_erc20_on_eos_smart_contract_address_from_db()?,
     )
     .and_then(|eth_tx_infos| {
         info!("✔ Parsed {} redeem infos!", eth_tx_infos.len());

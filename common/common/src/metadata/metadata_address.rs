@@ -9,10 +9,7 @@ use rust_algorand::{AlgorandAddress, AlgorandAppId};
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
-use crate::{
-    chains::{eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, eth::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES},
-    types::Byte,
-};
+use crate::{chains::eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, types::Byte};
 use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     safe_addresses::{
@@ -139,7 +136,8 @@ impl MetadataAddress {
 
     fn from_bytes_for_eth(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataAddress` from bytes for ETH...");
-        if bytes.len() == ETH_ADDRESS_SIZE_IN_BYTES {
+        let eth_address_size_in_bytes = 20;
+        if bytes.len() == eth_address_size_in_bytes {
             Self::new_from_eth_address(&EthAddress::from_slice(bytes), metadata_chain_id)
         } else {
             Err("Incorrect number of bytes to convert to ETH address in `MetadataAddress`!".into())
@@ -190,7 +188,6 @@ impl MetadataAddress {
 mod tests {
     use super::*;
     use crate::{
-        chains::eth::eth_utils::convert_hex_to_eth_address,
         metadata::test_utils::{
             get_sample_algo_origin_address,
             get_sample_btc_address,
@@ -200,6 +197,7 @@ mod tests {
             get_sample_eth_address,
             get_sample_eth_origin_address,
         },
+        utils::convert_hex_to_eth_address,
     };
 
     #[test]

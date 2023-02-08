@@ -1,9 +1,4 @@
-use crate::{
-    chains::{btc::btc_database_utils::BtcDbUtils, eth::EthState},
-    state::EosState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use crate::{chains::btc::btc_database_utils::BtcDbUtils, state::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn increment_btc_account_nonce<D: DatabaseInterface>(
     db_utils: &BtcDbUtils<D>,
@@ -32,25 +27,5 @@ pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D: DatabaseInter
             num_txs as u64,
         )
         .and(Ok(state))
-    }
-}
-
-pub fn maybe_increment_btc_account_nonce_and_return_eth_state<D: DatabaseInterface>(
-    state: EthState<D>,
-) -> Result<EthState<D>> {
-    match &state.btc_transactions {
-        None => {
-            info!("✔ Not incrementing BTC account nonce - no signatures made!");
-            Ok(state)
-        },
-        Some(signed_txs) => {
-            info!("✔ Incrementing BTC account nonce by {}", signed_txs.len());
-            increment_btc_account_nonce(
-                &state.btc_db_utils,
-                state.btc_db_utils.get_btc_account_nonce_from_db()?,
-                signed_txs.len() as u64,
-            )
-            .and(Ok(state))
-        },
     }
 }

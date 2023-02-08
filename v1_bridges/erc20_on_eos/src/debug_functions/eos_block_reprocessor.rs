@@ -22,6 +22,7 @@ use common::{
         eth::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::check_custom_nonce,
+            EthTransactions,
         },
     },
     core_type::CoreType,
@@ -88,24 +89,26 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                 info!("✔ No redeem infos in state ∴ no ETH transactions to sign!");
                 Ok(state)
             } else {
+                let eth_db_utils = EthDbUtils::new(state.db);
                 get_eth_signed_txs(
                     &Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)?,
-                    &state.eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
+                    &eth_db_utils.get_erc20_on_eos_smart_contract_address_from_db()?,
                     match maybe_nonce {
                         Some(nonce) => {
                             info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
                             nonce
                         },
-                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        None => eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
-                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                    state.eth_db_utils.get_eth_gas_price_from_db()?,
-                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                    &eth_db_utils.get_eth_chain_id_from_db()?,
+                    eth_db_utils.get_eth_gas_price_from_db()?,
+                    &eth_db_utils.get_eth_private_key_from_db()?,
                 )
                 .and_then(|signed_txs| {
                     debug!("✔ Signed transactions: {:?}", signed_txs);
-                    state.add_eth_signed_txs(signed_txs)
+                    signed_txs.to_bytes()
                 })
+                .map(|bytes| state.add_eth_signed_txs(bytes))
             }
         })
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
@@ -120,24 +123,25 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting EOS output json...");
-            let txs = state.eth_signed_txs.clone();
+            let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
             let num_txs = txs.len();
             let output = serde_json::to_string(&EosOutput {
                 eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
                 eth_signed_transactions: if num_txs == 0 {
                     vec![]
                 } else {
+                    let eth_db_utils = EthDbUtils::new(state.db);
                     get_eth_signed_tx_info_from_eth_txs(
                         &txs,
                         &Erc20OnEosEthTxInfos::from_bytes(&state.tx_infos)?,
                         match maybe_nonce {
                             // NOTE: We inrement the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,
-                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                            None => eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
                         false,
-                        state.eth_db_utils.get_any_sender_nonce_from_db()?,
-                        state.eth_db_utils.get_latest_eth_block_number()?,
+                        eth_db_utils.get_any_sender_nonce_from_db()?,
+                        eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
             })?;

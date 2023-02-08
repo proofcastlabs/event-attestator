@@ -4,7 +4,6 @@ use crate::{
     chains::{
         btc::btc_database_utils::BtcDbUtils,
         eos::eos_database_utils::EosDbUtils,
-        eth::eth_database_utils::{EthDbUtils, EvmDbUtils},
     },
     constants::MAX_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
@@ -15,11 +14,11 @@ use crate::{
 };
 
 fn is_private_key_key<D: DatabaseInterface>(db: &D, key: &[Byte]) -> bool {
-    key == EthDbUtils::new(db).get_eth_private_key_db_key()
-        || key == EvmDbUtils::new(db).get_evm_private_key_db_key()
+    key == get_prefixed_db_key("eth-private-key-key").to_vec()
+        || key == get_prefixed_db_key("evm-private-key-key").to_vec()
+        || key == get_prefixed_db_key("algo_private_key_key").to_vec()
         || key == BtcDbUtils::new(db).get_btc_private_key_db_key()
         || key == EosDbUtils::new(db).get_eos_private_key_db_key()
-        || key == get_prefixed_db_key("algo_private_key_key").to_vec()
 }
 /// Debug Set Key In Db To Value
 ///

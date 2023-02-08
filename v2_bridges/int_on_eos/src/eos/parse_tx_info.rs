@@ -1,7 +1,7 @@
 use common::{
     chains::{
         eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
-        eth::eth_database_utils::EthDbUtilsExt,
+        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
@@ -119,12 +119,13 @@ impl IntOnEosIntTxInfo {
 
 pub fn maybe_parse_int_tx_infos_and_put_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Parsing `IntOnEosIntTxInfos` from actions data...");
+    let eth_db_utils = EthDbUtils::new(state.db);
     IntOnEosIntTxInfos::from_action_proofs(
         &state.action_proofs,
         state.get_eos_eth_token_dictionary()?,
         &state.eos_db_utils.get_eos_chain_id_from_db()?,
-        &state.eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
-        &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+        &eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
+        &eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
     )
     .and_then(|infos| {
         info!("✔ Parsed {} `IntOnEosIntTxInfos`!", infos.len());

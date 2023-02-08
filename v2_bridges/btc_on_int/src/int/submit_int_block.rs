@@ -1,26 +1,23 @@
 use std::str::FromStr;
 
 use common::{
-    chains::{
-        btc::increment_btc_account_nonce::maybe_increment_btc_account_nonce_and_return_eth_state,
-        eth::{
-            add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
-            check_parent_exists::check_for_parent_of_eth_block_in_state,
-            eth_submission_material::{
-                parse_eth_submission_material_json_and_put_in_state,
-                EthSubmissionMaterialJson,
-                EthSubmissionMaterialJsons,
-            },
-            remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
-            remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
-            update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
-            update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
-            update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
-            update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
-            validate_block_in_state::validate_eth_block_in_state,
-            validate_receipts_in_state::validate_receipts_in_state,
-            EthState,
+    chains::eth::{
+        add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
+        check_parent_exists::check_for_parent_of_eth_block_in_state,
+        eth_submission_material::{
+            parse_eth_submission_material_json_and_put_in_state,
+            EthSubmissionMaterialJson,
+            EthSubmissionMaterialJsons,
         },
+        remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
+        remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
+        update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
+        update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
+        update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
+        update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
+        validate_block_in_state::validate_eth_block_in_state,
+        validate_receipts_in_state::validate_receipts_in_state,
+        EthState,
     },
     core_type::CoreType,
     traits::DatabaseInterface,
@@ -31,6 +28,7 @@ use crate::int::{
     filter_receipts_in_state::filter_receipts_for_btc_on_int_redeem_events_in_state,
     filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
     get_int_output::{get_int_output_json, IntOutput, IntOutputs},
+    maybe_increment_btc_account_nonce_and_return_eth_state,
     parse_tx_infos::maybe_parse_btc_on_int_tx_infos_and_add_to_state,
     sign_txs::maybe_sign_btc_txs_and_add_to_state,
 };

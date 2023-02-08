@@ -6,7 +6,7 @@ use common::{
             eth_private_key::EthPrivateKey,
             eth_transaction::{EthTransaction, EthTransactions},
         },
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     metadata::metadata_traits::ToMetadata,
     state::EosState,
@@ -75,16 +75,18 @@ pub fn maybe_sign_int_txs_and_add_to_state<D: DatabaseInterface>(state: EosState
         info!("✔ Signing INT transactions...");
         IntOnEosIntTxInfos::from_bytes(&state.tx_infos)
             .and_then(|tx_infos| {
+                let eth_db_utils = EthDbUtils::new(state.db);
                 tx_infos.to_signed_txs(
-                    state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                    state.eth_db_utils.get_eth_gas_price_from_db()?,
-                    &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                    &state.eth_db_utils.get_eth_private_key_from_db()?,
+                    eth_db_utils.get_eth_account_nonce_from_db()?,
+                    eth_db_utils.get_eth_gas_price_from_db()?,
+                    &eth_db_utils.get_eth_chain_id_from_db()?,
+                    &eth_db_utils.get_eth_private_key_from_db()?,
                 )
             })
             .and_then(|signed_txs| {
                 debug!("✔ Signed transactions: {:?}", signed_txs);
-                state.add_eth_signed_txs(signed_txs)
+                signed_txs.to_bytes()
             })
+            .map(|bytes| state.add_eth_signed_txs(bytes))
     }
 }

@@ -1,5 +1,3 @@
-#![allow(dead_code)] // FIXME rm!
-
 use std::str::FromStr;
 
 use derive_more::{Constructor, Deref, DerefMut};
@@ -207,7 +205,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::{chains::eth::eth_utils::convert_hex_to_eth_address, test_utils::get_test_database};
+    use crate::{test_utils::get_test_database, utils::convert_hex_to_eth_address};
 
     fn get_sample_entry_1() -> EvmAlgoTokenDictionaryEntry {
         EvmAlgoTokenDictionaryEntry {

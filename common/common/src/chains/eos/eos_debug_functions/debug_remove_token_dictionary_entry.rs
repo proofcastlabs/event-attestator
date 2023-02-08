@@ -2,13 +2,12 @@ use function_name::named;
 use serde_json::json;
 
 use crate::{
-    chains::eth::eth_utils::get_eth_address_from_str,
     core_type::CoreType,
     debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
-    utils::prepend_debug_output_marker_to_string,
+    utils::{convert_hex_to_eth_address, prepend_debug_output_marker_to_string},
 };
 
 /// # Debug Remove ERC20 Token Dictionary Entry
@@ -28,7 +27,7 @@ pub fn debug_remove_token_dictionary_entry<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str, core_type)())
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
-        .and_then(|_| get_eth_address_from_str(eth_address_str))
+        .and_then(|_| convert_hex_to_eth_address(eth_address_str))
         .and_then(|eth_address| dictionary.remove_entry_via_eth_address_and_update_in_db(&eth_address, db))
         .and_then(|_| db.end_transaction())
         .and(Ok(json!({"removing_dictionary_entry_sucess":true}).to_string()))

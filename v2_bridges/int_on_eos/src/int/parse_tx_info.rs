@@ -1,7 +1,7 @@
 use common::{
     chains::eth::{
         eth_contracts::erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2},
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_log::{EthLog, EthLogExt, EthLogs},
         eth_receipt::EthReceipt,
         eth_submission_material::EthSubmissionMaterial,
@@ -114,8 +114,8 @@ pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe parsing `INT-on-EOS` EOS tx infos from canon block...");
-    state
-        .eth_db_utils
+    let eth_db_utils = EthDbUtils::new(state.db);
+    eth_db_utils
         .get_eth_canon_block_from_db()
         .and_then(|submission_material| {
             if submission_material.receipts.is_empty() {
@@ -131,9 +131,9 @@ pub fn maybe_parse_eos_tx_info_from_canon_block_and_add_to_state<D: DatabaseInte
                         IntOnEosEosTxInfos::from_submission_material(
                             &submission_material,
                             &dictionary,
-                            &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                            &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
-                            &state.eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
+                            &eth_db_utils.get_eth_chain_id_from_db()?,
+                            &eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+                            &eth_db_utils.get_int_on_eos_smart_contract_address_from_db()?,
                         )
                     })
                     .and_then(|infos| infos.to_bytes())

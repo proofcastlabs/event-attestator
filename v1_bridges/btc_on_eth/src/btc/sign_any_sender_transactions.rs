@@ -1,8 +1,8 @@
 use common::{
     chains::eth::{
-        any_sender::relay_transaction::RelayTransaction,
+        any_sender::relay_transaction::{RelayTransaction, RelayTransactions},
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_types::{AnySenderSigningParams, RelayTransactions},
+        eth_types::AnySenderSigningParams,
     },
     state::BtcState,
     traits::DatabaseInterface,
@@ -16,28 +16,30 @@ pub fn get_any_sender_signed_txs(
     eth_tx_infos: &[BtcOnEthEthTxInfo],
 ) -> Result<RelayTransactions> {
     trace!("✔ Getting AnySender signed transactions...");
-    eth_tx_infos
-        .iter()
-        .enumerate()
-        .map(|(i, eth_tx_info)| {
-            info!(
-                "✔ Signing AnySender tx for amount: {}, to address: {}",
-                eth_tx_info.amount, eth_tx_info.destination_address,
-            );
+    Ok(RelayTransactions(
+        eth_tx_infos
+            .iter()
+            .enumerate()
+            .map(|(i, eth_tx_info)| {
+                info!(
+                    "✔ Signing AnySender tx for amount: {}, to address: {}",
+                    eth_tx_info.amount, eth_tx_info.destination_address,
+                );
 
-            let any_sender_nonce = signing_params.any_sender_nonce + i as u64;
+                let any_sender_nonce = signing_params.any_sender_nonce + i as u64;
 
-            RelayTransaction::new_mint_by_proxy_tx(
-                &signing_params.chain_id,
-                signing_params.public_eth_address,
-                eth_tx_info.amount,
-                any_sender_nonce,
-                &signing_params.eth_private_key,
-                signing_params.erc777_proxy_address,
-                eth_tx_info.destination_address,
-            )
-        })
-        .collect::<Result<RelayTransactions>>()
+                RelayTransaction::new_mint_by_proxy_tx(
+                    &signing_params.chain_id,
+                    signing_params.public_eth_address,
+                    eth_tx_info.amount,
+                    any_sender_nonce,
+                    &signing_params.eth_private_key,
+                    signing_params.erc777_proxy_address,
+                    eth_tx_info.destination_address,
+                )
+            })
+            .collect::<Result<Vec<_>>>()?,
+    ))
 }
 
 pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
@@ -54,7 +56,7 @@ pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterfa
     )
     .and_then(|signed_txs| {
         debug!("✔ Signed AnySender transactions: {:?}", signed_txs);
-        state.add_any_sender_signed_txs(signed_txs)
+        state.add_any_sender_signed_txs(signed_txs.to_bytes()?)
     })
 }
 

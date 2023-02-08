@@ -22,6 +22,7 @@ use common::{
         eth::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::check_custom_nonce,
+            EthTransactions,
         },
     },
     core_type::CoreType,
@@ -57,6 +58,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     info!("✔ Debug reprocessing EOS block...");
+    let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
@@ -94,16 +96,17 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                                 info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
                                 nonce
                             },
-                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                            None => eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
-                        &state.eth_db_utils.get_eth_chain_id_from_db()?,
-                        state.eth_db_utils.get_eth_gas_price_from_db()?,
-                        &state.eth_db_utils.get_eth_private_key_from_db()?,
+                        &eth_db_utils.get_eth_chain_id_from_db()?,
+                        eth_db_utils.get_eth_gas_price_from_db()?,
+                        &eth_db_utils.get_eth_private_key_from_db()?,
                     )
                     .and_then(|signed_txs| {
                         debug!("✔ Signed transactions: {:?}", signed_txs);
-                        state.add_eth_signed_txs(signed_txs)
+                        signed_txs.to_bytes()
                     })
+                    .map(|bytes| state.add_eth_signed_txs(bytes))
             }
         })
         .and_then(|state| {
@@ -124,15 +127,16 @@ fn reprocess_eos_block<D: DatabaseInterface>(
                 int_signed_transactions: if num_txs == 0 {
                     vec![]
                 } else {
+                    let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
                     get_int_signed_tx_info_from_txs(
                         &txs,
                         &EosOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
                         match maybe_nonce {
                             // NOTE: We increment the passed in nonce ∵ of the way the report nonce is calculated.
                             Some(nonce) => nonce + num_txs as u64,
-                            None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                            None => eth_db_utils.get_eth_account_nonce_from_db()?,
                         },
-                        state.eth_db_utils.get_latest_eth_block_number()?,
+                        eth_db_utils.get_latest_eth_block_number()?,
                     )?
                 },
             })?;
