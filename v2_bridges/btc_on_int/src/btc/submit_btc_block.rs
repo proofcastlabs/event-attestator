@@ -11,7 +11,6 @@ use common::{
         filter_utxos::filter_out_value_too_low_utxos_from_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-        increment_eth_nonce::maybe_increment_eth_nonce_in_db,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
         remove_tx_infos_from_canon_block::remove_tx_infos_from_canon_block_and_return_state,
         save_utxos_to_db::maybe_save_utxos_to_db,
@@ -39,6 +38,7 @@ use crate::btc::{
     filter_deposit_info_hash_map::filter_out_wrong_version_deposit_address_infos,
     filter_int_tx_infos::maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
     get_btc_output::{get_btc_output_and_put_in_state, get_btc_output_as_string},
+    maybe_increment_nonce_in_db,
     parse_tx_infos::parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
     sign_txs::maybe_sign_canon_block_txs,
 };
@@ -80,7 +80,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(maybe_update_btc_tail_block_hash)
         .and_then(maybe_update_btc_linker_hash)
         .and_then(maybe_sign_canon_block_txs)
-        .and_then(maybe_increment_eth_nonce_in_db)
+        .and_then(maybe_increment_nonce_in_db)
         .and_then(maybe_remove_old_btc_tail_block)
         .and_then(get_btc_output_and_put_in_state)
         .and_then(remove_tx_infos_from_canon_block_and_return_state)

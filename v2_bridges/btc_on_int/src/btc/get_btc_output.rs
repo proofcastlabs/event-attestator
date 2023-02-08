@@ -6,9 +6,10 @@ use common::errors::AppError;
 use common::{
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_traits::EthTxInfoCompatible,
         eth_utils::convert_eth_address_to_string,
+        EthTransactions,
     },
     state::BtcState,
     traits::DatabaseInterface,
@@ -128,22 +129,23 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
 
 pub fn get_btc_output_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Getting BTC output json and putting in state...");
-    let signed_txs = state.eth_signed_txs.clone();
+    let signed_txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
+    let eth_db_utils = EthDbUtils::new(state.db);
     let output = BtcOutput {
         btc_latest_block_number: state.btc_db_utils.get_btc_latest_block_from_db()?.height,
-        int_signed_transactions: if signed_txs.len() == 0 {
+        int_signed_transactions: if signed_txs.is_empty() {
             vec![]
         } else {
             get_eth_signed_tx_info_from_eth_txs(
-                &state.eth_signed_txs,
+                &signed_txs,
                 &BtcOnIntIntTxInfos::from_bytes(
                     &state
                         .btc_db_utils
                         .get_btc_canon_block_from_db()?
                         .get_btc_on_int_int_tx_infos(),
                 )?,
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
-                state.eth_db_utils.get_latest_eth_block_number()?,
+                eth_db_utils.get_eth_account_nonce_from_db()?,
+                eth_db_utils.get_latest_eth_block_number()?,
             )?
         },
     };

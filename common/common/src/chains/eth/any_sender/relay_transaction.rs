@@ -11,11 +11,11 @@ use crate::{
             relay_contract::RelayContract,
             serde::{compensation, data},
         },
-        eth_chain_id::EthChainId,
         eth_contracts::erc777_proxy::encode_mint_by_proxy_tx_data,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
+    eth_chain_id::EthChainId,
     types::{Bytes, Result},
 };
 

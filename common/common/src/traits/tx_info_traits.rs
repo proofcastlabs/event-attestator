@@ -1,9 +1,6 @@
 use ethereum_types::Address as EthAddress;
 
-use crate::{
-    address::Address,
-    chains::eth::{eth_constants::ETH_ZERO_ADDRESS_STR, eth_utils::convert_eth_address_to_string},
-};
+use crate::{address::Address, constants::ETH_ZERO_ADDRESS_STR};
 
 pub trait TxInfo {
     fn get_vault_address(&self) -> Address;
@@ -15,10 +12,7 @@ pub trait TxInfo {
         Self: Sized;
 
     fn convert_eth_address_to_string(a: &EthAddress) -> String {
-        // NOTE: This wrapper means we can use this elsewhere in this trait without having to
-        // import the utils in the mod implementing the trait! (EG See import in the macro
-        // made to impl this!)
-        convert_eth_address_to_string(a)
+        format!("0x{}", hex::encode(a.as_bytes()))
     }
 
     fn divert_to_safe_address_if_destination_is_vault_address(self) -> Self

@@ -7,7 +7,6 @@ pub mod check_parent_exists;
 pub mod core_initialization;
 pub mod eip_1559;
 pub mod eth_block;
-pub mod eth_chain_id;
 pub mod eth_constants;
 pub mod eth_contracts;
 pub mod eth_crypto;
@@ -38,4 +37,4 @@ pub mod validate_block_in_state;
 pub mod validate_receipts_in_state;
 pub mod vault_using_cores;
 
-pub use self::eth_state::EthState;
+pub use self::{eth_crypto::EthTransactions, eth_state::EthState};

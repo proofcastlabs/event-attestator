@@ -3,12 +3,12 @@ mod divert_to_safe_address;
 mod eth_tx_info;
 mod filter_eth_tx_infos;
 mod get_btc_output_json;
+mod increment_nonce;
 mod parse_tx_infos;
 mod sign_any_sender_transactions;
 mod sign_normal_eth_transactions;
 mod submit_btc_block;
 
-// FIXME Currently used in chains::btc::btc_test_utils.
 #[cfg(test)]
 pub use self::eth_tx_info::BtcOnEthEthTxInfo;
 pub use self::submit_btc_block::submit_btc_block_to_enclave;
@@ -18,6 +18,7 @@ pub(super) use self::{
     eth_tx_info::BtcOnEthEthTxInfos,
     filter_eth_tx_infos::maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
     get_btc_output_json::get_eth_signed_tx_info_from_eth_txs,
+    increment_nonce::maybe_increment_nonce_in_db,
     parse_tx_infos::parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
     sign_normal_eth_transactions::get_eth_signed_txs,
 };

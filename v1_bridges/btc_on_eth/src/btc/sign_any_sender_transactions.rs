@@ -1,7 +1,7 @@
 use common::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
-        eth_database_utils::EthDbUtilsExt,
+        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_types::{AnySenderSigningParams, RelayTransactions},
     },
     state::BtcState,
@@ -49,7 +49,7 @@ pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterfa
     }
     info!("✔ Maybe signing AnySender txs...");
     get_any_sender_signed_txs(
-        &state.eth_db_utils.get_any_sender_signing_params_from_db()?,
+        &EthDbUtils::new(state.db).get_any_sender_signing_params_from_db()?,
         &BtcOnEthEthTxInfos::from_bytes(&state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes())?,
     )
     .and_then(|signed_txs| {

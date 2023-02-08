@@ -104,10 +104,10 @@ mod tests {
     use super::*;
     use crate::{
         chains::eth::{
-            eth_chain_id::EthChainId,
             eth_database_utils::{EthDbUtils, EvmDbUtils},
             eth_test_utils::get_sample_eth_submission_material_n,
         },
+        eth_chain_id::EthChainId,
         test_utils::get_test_database,
     };
 

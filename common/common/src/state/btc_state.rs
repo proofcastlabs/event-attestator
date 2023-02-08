@@ -9,11 +9,7 @@ use crate::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
         eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_database_utils::EosDbUtils},
-        eth::{
-            eth_crypto::eth_transaction::EthTransactions,
-            eth_database_utils::EthDbUtils,
-            eth_types::RelayTransactions,
-        },
+        eth::eth_types::RelayTransactions,
     },
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
@@ -23,14 +19,13 @@ use crate::{
 #[derive(Clone, PartialEq, Eq)]
 pub struct BtcState<'a, D: DatabaseInterface> {
     pub db: &'a D,
+    pub tx_infos: Bytes,
+    pub eth_signed_txs: Bytes,
     pub any_sender: Option<bool>,
     pub ref_block_num: Option<u16>,
     pub ref_block_prefix: Option<u32>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
-    pub eth_db_utils: EthDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
-    pub tx_infos: Bytes,
-    pub eth_signed_txs: EthTransactions,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
     pub eos_signed_txs: EosSignedTransactions,
@@ -51,19 +46,18 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             any_sender: None,
             ref_block_num: None,
             submission_json: None,
+            eth_signed_txs: vec![],
             btc_block_and_id: None,
             ref_block_prefix: None,
             p2sh_deposit_txs: None,
-            output_json_string: None,
             p2pkh_deposit_txs: None,
+            output_json_string: None,
             deposit_info_hash_map: None,
             any_sender_signed_txs: None,
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
             btc_db_utils: BtcDbUtils::new(db),
-            eth_db_utils: EthDbUtils::new(db),
             eos_db_utils: EosDbUtils::new(db),
-            eth_signed_txs: EthTransactions::new(vec![]),
             eos_signed_txs: EosSignedTransactions::new(vec![]),
         }
     }
@@ -111,20 +105,14 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
-    pub fn add_eth_signed_txs(mut self, eth_signed_txs: EthTransactions) -> Result<BtcState<'a, D>> {
-        match self.eth_signed_txs.len() {
-            0 => {
-                info!("✔ Adding ETH signed txs to BTC state...");
-                self.eth_signed_txs = eth_signed_txs;
-                Ok(self)
-            },
-            _ => Err(get_no_overwrite_state_err("eth_signed_txs").into()),
-        }
+    pub fn add_eth_signed_txs(mut self, eth_signed_txs: Bytes) -> Self {
+        self.eth_signed_txs = eth_signed_txs;
+        self
     }
 
-    pub fn get_eth_signed_txs(&self) -> Result<&EthTransactions> {
+    pub fn get_eth_signed_txs(&self) -> Bytes {
         info!("✔ Getting ETH signed txs from BTC state...");
-        Ok(&self.eth_signed_txs)
+        self.eth_signed_txs.clone()
     }
 
     pub fn add_btc_submission_material(

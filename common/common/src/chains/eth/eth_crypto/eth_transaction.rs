@@ -1,23 +1,38 @@
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, U256};
 use rlp::RlpStream;
+use serde::{Deserialize, Serialize};
 
 use crate::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
-        eth_chain_id::EthChainId,
         eth_constants::VALUE_FOR_MINTING_TX,
         eth_contracts::erc777_token::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::{eth_private_key::EthPrivateKey, eth_signature::EthSignature},
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
+    eth_chain_id::EthChainId,
     types::{Byte, Bytes, Result},
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
+#[derive(Debug, Clone, Eq, PartialEq, Default, Deref, Constructor, Serialize, Deserialize)]
 pub struct EthTransactions(pub Vec<EthTransaction>);
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+impl EthTransactions {
+    pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
+        if bytes.is_empty() {
+            Ok(Self::default())
+        } else {
+            Ok(serde_json::from_slice(bytes)?)
+        }
+    }
+
+    pub fn to_bytes(&self) -> Result<Bytes> {
+        Ok(serde_json::to_vec(self)?)
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Default, Serialize, Deserialize)]
 pub struct EthTransaction {
     pub v: u64,
     pub r: U256,
@@ -45,7 +60,7 @@ impl EthTransaction {
                 to: decoded_tx[3].clone(),
                 value: U256::from_big_endian(&decoded_tx[4]),
                 data: decoded_tx[5].clone(),
-                v: 0u64, // NOTE: Not calculated!
+                v: 0, // NOTE: Not calculated
                 r: U256::from_big_endian(&decoded_tx[7]),
                 s: U256::from_big_endian(&decoded_tx[8]),
                 chain_id: EthChainId::default(), // NOTE: This isn't calculated!
@@ -116,6 +131,10 @@ impl EthTransaction {
 
     pub fn serialize_hex(&self) -> String {
         hex::encode(self.serialize_bytes())
+    }
+
+    pub fn to_bytes(&self) -> Bytes {
+        self.serialize_bytes()
     }
 }
 
@@ -227,6 +246,17 @@ mod tests {
         let tx = get_sample_unsigned_eth_transaction();
         let result = tx.sign(&private_key).unwrap().serialize_hex();
         assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_serde_signed_txs() {
+        let private_key = get_sample_eth_private_key();
+        let tx = get_sample_unsigned_eth_transaction();
+        let signed_tx = tx.sign(&private_key).unwrap();
+        let signed_txs = EthTransactions::new(vec![signed_tx]);
+        let bytes = signed_txs.to_bytes().unwrap();
+        let result = EthTransactions::from_bytes(&bytes).unwrap();
+        assert_eq!(result, signed_txs);
     }
 
     #[test]

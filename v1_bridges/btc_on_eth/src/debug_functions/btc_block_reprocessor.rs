@@ -8,7 +8,6 @@ use common::{
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             save_utxos_to_db::maybe_save_utxos_to_db,
             set_flags::set_any_sender_flag_in_state,
             validate_btc_block_header::validate_btc_block_header_in_state,
@@ -19,6 +18,7 @@ use common::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::check_custom_nonce,
             eth_types::EthSigningParams,
+            EthTransactions,
         },
     },
     core_type::CoreType,
@@ -38,6 +38,7 @@ use crate::{
         maybe_account_for_minting_fees,
         maybe_divert_txs_to_safe_address_if_destination_is_token_address,
         maybe_filter_out_value_too_low_btc_on_eth_eth_tx_infos_in_state,
+        maybe_increment_nonce_in_db,
         parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state,
         subtract_fees_from_eth_tx_infos,
         BtcOnEthEthTxInfos,
@@ -85,36 +86,39 @@ fn reprocess_btc_block<D: DatabaseInterface>(
             }
         })
         .and_then(|state| {
+            let eth_db_utils = EthDbUtils::new(state.db);
             get_eth_signed_txs(
                 &EthSigningParams {
-                    gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
-                    chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
-                    eth_private_key: state.eth_db_utils.get_eth_private_key_from_db()?,
+                    gas_price: eth_db_utils.get_eth_gas_price_from_db()?,
+                    chain_id: eth_db_utils.get_eth_chain_id_from_db()?,
+                    eth_private_key: eth_db_utils.get_eth_private_key_from_db()?,
                     eth_account_nonce: match maybe_nonce {
                         Some(nonce) => {
                             info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
                             nonce
                         },
-                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        None => eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
-                    smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+                    smart_contract_address: eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 },
                 &BtcOnEthEthTxInfos::from_bytes(&state.tx_infos)?,
                 &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )
-            .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
+            .and_then(|signed_txs| signed_txs.to_bytes())
+            .map(|bytes| state.add_eth_signed_txs(bytes))
         })
         .and_then(|state| {
             if maybe_nonce.is_some() {
                 info!("✔ Not incrementing nonce since one was passed in!");
                 Ok(state)
             } else {
-                maybe_increment_eth_nonce_in_db(state)
+                maybe_increment_nonce_in_db(state)
             }
         })
         .and_then(|state| {
-            let txs = state.eth_signed_txs.clone();
+            let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
             let num_txs = txs.len();
+            let eth_db_utils = EthDbUtils::new(state.db);
             let signatures = serde_json::to_string(&if num_txs == 0 {
                 Ok(vec![])
             } else {
@@ -124,10 +128,10 @@ fn reprocess_btc_block<D: DatabaseInterface>(
                     match maybe_nonce {
                         // NOTE: We increment the passed in nonce ∵ of the way the report nonce is calculated.
                         Some(nonce) => nonce + num_txs as u64,
-                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        None => eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
                     state.use_any_sender_tx_type(),
-                    state.eth_db_utils.get_any_sender_nonce_from_db()?,
+                    eth_db_utils.get_any_sender_nonce_from_db()?,
                 )
             }?)?;
             info!("✔ ETH Signatures: {}", signatures);

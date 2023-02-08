@@ -6,7 +6,6 @@ use serde_json::{json, Value as JsonValue};
 use crate::{
     chains::eth::{
         eip_1559::Eip1559,
-        eth_chain_id::EthChainId,
         eth_utils::{
             convert_dec_str_to_u256,
             convert_hex_strings_to_h256s,
@@ -17,6 +16,7 @@ use crate::{
         },
     },
     crypto_utils::keccak_hash_bytes,
+    eth_chain_id::EthChainId,
     types::{Bytes, NoneError, Result},
     utils::strip_hex_prefix,
 };

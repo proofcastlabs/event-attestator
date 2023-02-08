@@ -5,13 +5,13 @@ use strum_macros::EnumIter;
 
 use crate::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_constants::{ARBITRUM_GAS_MULTIPLIER, ETH_ADDRESS_SIZE_IN_BYTES, ETH_WORD_SIZE_IN_BYTES},
         eth_contracts::{encode_fxn_call, SupportedTopics},
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_log::EthLogExt,
     },
+    eth_chain_id::EthChainId,
     metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},

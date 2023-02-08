@@ -4,8 +4,9 @@ use common::{
         eth::{
             any_sender::relay_transaction::RelayTransaction,
             eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::EthDbUtilsExt,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_traits::EthTxInfoCompatible,
+            EthTransactions,
         },
     },
     state::BtcState,
@@ -89,19 +90,22 @@ pub fn get_eth_signed_tx_info_from_eth_txs(
 
 pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Getting BTC output json and putting in state...");
+    let eth_db_utils = EthDbUtils::new(state.db);
+    let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
     Ok(serde_json::to_string(&BtcOutput {
         btc_latest_block_number: state.btc_db_utils.get_btc_latest_block_from_db()?.height,
-        eth_signed_transactions: match &state.eth_signed_txs.len() {
-            0 => vec![],
-            _ => get_eth_signed_tx_info_from_eth_txs(
-                &state.eth_signed_txs,
+        eth_signed_transactions: if txs.is_empty() {
+            vec![]
+        } else {
+            get_eth_signed_tx_info_from_eth_txs(
+                &txs,
                 &BtcOnEthEthTxInfos::from_bytes(
                     &state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes(),
                 )?,
-                state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                eth_db_utils.get_eth_account_nonce_from_db()?,
                 state.use_any_sender_tx_type(),
-                state.eth_db_utils.get_any_sender_nonce_from_db()?,
-            )?,
+                eth_db_utils.get_any_sender_nonce_from_db()?,
+            )?
         },
     })?)
     .and_then(|output| state.add_output_json_string(output))

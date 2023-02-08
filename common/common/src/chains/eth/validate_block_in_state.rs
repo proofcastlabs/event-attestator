@@ -1,6 +1,7 @@
 use crate::{
-    chains::eth::{eth_chain_id::EthChainId, eth_database_utils::EthDbUtilsExt, EthState},
+    chains::eth::{eth_database_utils::EthDbUtilsExt, EthState},
     constants::CORE_IS_VALIDATING,
+    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::Result,
 };

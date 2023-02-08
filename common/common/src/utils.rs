@@ -1,6 +1,7 @@
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use chrono::{prelude::DateTime, Utc};
+use ethereum_types::Address as EthAddress;
 use serde_json::Value as JsonValue;
 use tiny_keccak::{Hasher, Keccak};
 
@@ -8,6 +9,16 @@ use crate::{
     constants::{CORE_VERSION, DB_KEY_PREFIX, DEBUG_OUTPUT_MARKER},
     types::{Byte, Bytes, Result},
 };
+
+pub fn convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
+    let bytes = hex::decode(strip_hex_prefix(hex))?;
+    let eth_address_size_in_bytes = 20;
+    if bytes.len() != eth_address_size_in_bytes {
+        Err("Cannot convert `{}` into `EthAddress` - incorrect number of bytes!".into())
+    } else {
+        Ok(EthAddress::from_slice(&decode_prefixed_hex(hex)?))
+    }
+}
 
 pub fn add_key_and_value_to_json(key: &str, value: JsonValue, json: JsonValue) -> Result<JsonValue> {
     match json {
@@ -17,6 +28,10 @@ pub fn add_key_and_value_to_json(key: &str, value: JsonValue, json: JsonValue) -
         },
         _ => Err("Error adding field to json!".into()),
     }
+}
+
+pub fn decode_prefixed_hex(hex_to_decode: &str) -> Result<Vec<u8>> {
+    Ok(hex::decode(strip_hex_prefix(hex_to_decode))?)
 }
 
 pub fn get_unix_timestamp() -> Result<u64> {

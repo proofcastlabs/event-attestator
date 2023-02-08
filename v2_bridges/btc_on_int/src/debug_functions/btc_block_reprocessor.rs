@@ -8,7 +8,6 @@ use common::{
             filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
             filter_utxos::filter_out_value_too_low_utxos_from_state,
             get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            increment_eth_nonce::maybe_increment_eth_nonce_in_db,
             save_utxos_to_db::maybe_save_utxos_to_db,
             validate_btc_block_header::validate_btc_block_header_in_state,
             validate_btc_merkle_root::validate_btc_merkle_root,
@@ -18,6 +17,7 @@ use common::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::check_custom_nonce,
             eth_types::EthSigningParams,
+            EthTransactions,
         },
     },
     core_type::CoreType,
@@ -37,6 +37,7 @@ use crate::{
         filter_out_wrong_version_deposit_address_infos,
         get_eth_signed_tx_info_from_eth_txs,
         maybe_filter_out_value_too_low_btc_on_int_int_tx_infos_in_state,
+        maybe_increment_nonce_in_db,
         parse_int_tx_infos_from_p2sh_deposits_and_add_to_state,
         BtcOnIntIntTxInfos,
     },
@@ -50,6 +51,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
     maybe_nonce: Option<u64>,
     signature: &str,
 ) -> Result<String> {
+    let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
@@ -73,39 +75,41 @@ fn reprocess_btc_block<D: DatabaseInterface>(
         .and_then(|state| {
             BtcOnIntIntTxInfos::from_bytes(&state.tx_infos)?
                 .to_int_signed_txs(&EthSigningParams {
-                    gas_price: state.eth_db_utils.get_eth_gas_price_from_db()?,
-                    chain_id: state.eth_db_utils.get_eth_chain_id_from_db()?,
-                    eth_private_key: state.eth_db_utils.get_eth_private_key_from_db()?,
+                    gas_price: eth_db_utils.get_eth_gas_price_from_db()?,
+                    chain_id: eth_db_utils.get_eth_chain_id_from_db()?,
+                    eth_private_key: eth_db_utils.get_eth_private_key_from_db()?,
                     eth_account_nonce: match maybe_nonce {
                         Some(nonce) => {
                             info!("✔ Signing txs starting with passed in nonce of {}!", nonce);
                             nonce
                         },
-                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        None => eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
-                    smart_contract_address: state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+                    smart_contract_address: eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
                 })
-                .and_then(|signed_txs| state.add_eth_signed_txs(signed_txs))
+                .and_then(|signed_txs| signed_txs.to_bytes())
+                .map(|bytes| state.add_eth_signed_txs(bytes))
         })
         .and_then(|state| {
             if maybe_nonce.is_some() {
                 info!("✔ Not incrementing nonce since one was passed in!");
                 Ok(state)
             } else {
-                maybe_increment_eth_nonce_in_db(state)
+                maybe_increment_nonce_in_db(state)
             }
         })
         .and_then(|state| {
+            let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
             let signatures = serde_json::to_string(&match &state.eth_signed_txs.len() {
                 0 => Ok(vec![]),
                 _ => get_eth_signed_tx_info_from_eth_txs(
-                    &state.eth_signed_txs,
+                    &txs,
                     &BtcOnIntIntTxInfos::from_bytes(&state.tx_infos)?,
                     match maybe_nonce {
                         Some(nonce) => nonce,
-                        None => state.eth_db_utils.get_eth_account_nonce_from_db()?,
+                        None => eth_db_utils.get_eth_account_nonce_from_db()?,
                     },
-                    state.eth_db_utils.get_latest_eth_block_number()?,
+                    eth_db_utils.get_latest_eth_block_number()?,
                 ),
             }?)?;
             info!("✔ BTC signatures: {}", signatures);

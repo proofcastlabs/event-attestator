@@ -4,7 +4,10 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use common::{
-    chains::{btc::deposit_address_info::DepositInfoHashMap, eth::eth_database_utils::EthDbUtilsExt},
+    chains::{
+        btc::deposit_address_info::DepositInfoHashMap,
+        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
+    },
     state::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
@@ -94,7 +97,7 @@ pub fn parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
         state.btc_db_utils.get_btc_network_from_db()?,
-        &state.eth_db_utils.get_btc_on_eth_smart_contract_address_from_db()?,
+        &EthDbUtils::new(state.db).get_btc_on_eth_smart_contract_address_from_db()?,
     )
     .and_then(|params| params.to_bytes())
     .map(|bytes| state.add_tx_infos(bytes))

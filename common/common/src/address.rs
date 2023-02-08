@@ -2,14 +2,9 @@ use std::{fmt, str::FromStr};
 
 use bitcoin::util::address::Address as BtcAddress;
 use eos_chain::AccountName as EosAddress;
-use ethereum_types::Address as EthAddress;
 use rust_algorand::AlgorandAddress as AlgoAddress;
 
-use crate::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_hex_to_eth_address},
-    errors::AppError,
-    types::Result,
-};
+use crate::{errors::AppError, types::Result};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum Address {
@@ -51,7 +46,6 @@ impl Address {
 impl_conversion_fxns!("BTC", BtcAddress::from_str, Self::to_string);
 impl_conversion_fxns!("EOS", EosAddress::from_str, Self::to_string);
 impl_conversion_fxns!("ALGO", AlgoAddress::from_str, Self::to_string);
-impl_conversion_fxns!("ETH", convert_hex_to_eth_address, convert_eth_address_to_string);
 
 impl fmt::Display for Address {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {

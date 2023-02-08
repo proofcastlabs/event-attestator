@@ -6,7 +6,7 @@ use bitcoin::{
 use common::{
     chains::{
         btc::{btc_chain_id::BtcChainId, btc_utils::convert_satoshis_to_wei, deposit_address_info::DepositInfoHashMap},
-        eth::eth_database_utils::EthDbUtilsExt,
+        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     state::BtcState,
     traits::DatabaseInterface,
@@ -97,12 +97,13 @@ pub fn parse_int_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
     info!("✔ Parsing INT tx infos from `P2SH` deposit txs in state...");
+    let eth_db_utils = EthDbUtils::new(state.db);
     BtcOnIntIntTxInfos::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
         state.btc_db_utils.get_btc_network_from_db()?,
-        &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
-        &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
+        &eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
+        &eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
     )
     .and_then(|params| params.to_bytes())
     .map(|bytes| state.add_tx_infos(bytes))

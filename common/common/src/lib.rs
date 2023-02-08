@@ -35,6 +35,7 @@ pub mod debug_functions;
 pub mod dictionaries;
 pub mod enclave_info;
 pub mod errors;
+pub mod eth_chain_id; // FIXME Ideally factor these out
 pub mod fees;
 pub mod metadata;
 pub mod safe_addresses;

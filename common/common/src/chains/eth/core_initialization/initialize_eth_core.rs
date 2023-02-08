@@ -29,7 +29,6 @@ use crate::{
             generate_eth_address::{generate_and_store_eth_address, generate_and_store_evm_address},
             generate_eth_private_key::{generate_and_store_eth_private_key, generate_and_store_evm_private_key},
         },
-        eth_chain_id::EthChainId,
         eth_database_utils::EthDbUtilsExt,
         eth_submission_material::parse_eth_submission_material_and_put_in_state,
         validate_block_in_state::{validate_eth_block_in_state, validate_evm_block_in_state},
@@ -37,6 +36,7 @@ use crate::{
         EthState,
     },
     core_type::CoreType,
+    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::Result,
 };

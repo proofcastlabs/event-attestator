@@ -44,7 +44,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "serde_with",
- "simple_logger",
+ "simple_logger 2.3.0",
  "tiny-keccak 2.0.2",
 ]
 
@@ -275,7 +275,7 @@ dependencies = [
  "paste",
  "serde",
  "serde_json",
- "simple_logger",
+ "simple_logger 2.3.0",
  "tiny-keccak 2.0.2",
 ]
 
@@ -293,6 +293,7 @@ dependencies = [
  "paste",
  "serde",
  "serde_json",
+ "simple_logger 4.0.0",
  "tiny-keccak 2.0.2",
 ]
 
@@ -415,7 +416,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "serial_test",
- "simple_logger",
+ "simple_logger 2.3.0",
  "simplelog",
  "strum",
  "strum_macros",
@@ -2611,6 +2612,19 @@ dependencies = [
  "log",
  "time 0.3.21",
  "winapi",
+]
+
+[[package]]
+name = "simple_logger"
+version = "4.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e190a521c2044948158666916d9e872cbb9984f755e9bb3b5b75a836205affcd"
+dependencies = [
+ "atty",
+ "colored",
+ "log",
+ "time 0.3.17",
+ "windows-sys",
 ]
 
 [[package]]

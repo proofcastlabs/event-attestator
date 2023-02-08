@@ -4,7 +4,7 @@ use common::{
         eth::{
             eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
             eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
-            eth_database_utils::EthDbUtilsExt,
+            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_types::EthSigningParams,
         },
     },
@@ -60,14 +60,15 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
     }
     info!("✔ Maybe signing normal ETH txs...");
     get_eth_signed_txs(
-        &state.eth_db_utils.get_signing_params_from_db()?,
+        &EthDbUtils::new(state.db).get_signing_params_from_db()?,
         &BtcOnEthEthTxInfos::from_bytes(&state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes())?,
         &state.btc_db_utils.get_btc_chain_id_from_db()?,
     )
     .and_then(|signed_txs| {
         debug!("✔ Signed transactions: {:?}", signed_txs);
-        state.add_eth_signed_txs(signed_txs)
+        signed_txs.to_bytes()
     })
+    .map(|bytes| state.add_eth_signed_txs(bytes))
 }
 
 #[cfg(test)]
