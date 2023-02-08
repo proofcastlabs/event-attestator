@@ -105,8 +105,8 @@ mod tests {
                 eos_global_sequences::ProcessedGlobalSequences,
             },
             eth::{
+                super::EthChainId,
                 core_initialization::initialize_eth_core::initialize_eth_core_with_router_contract_and_return_state,
-                eth_chain_id::EthChainId,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 EthState as IntState,
             },

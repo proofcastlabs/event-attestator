@@ -1,6 +1,5 @@
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
         eth_contracts::{
             erc20_vault::{
@@ -29,6 +28,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+    EthChainId,
 };
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};

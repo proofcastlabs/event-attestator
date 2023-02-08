@@ -12,9 +12,9 @@ use crate::{
         eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
     },
     errors::AppError,
-    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+    EthChainId,
 };
 
 pub const HASH_HEX_CHARS: usize = 64;

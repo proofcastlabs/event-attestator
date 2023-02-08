@@ -1,6 +1,6 @@
 use ethereum_types::Address as EthAddress;
 
-use crate::{eth_chain_id::EthChainId, types::Result};
+use crate::{types::Result, EthChainId};
 
 /// An AnySender relay contract address.
 /// Should be kept up-to-date with [this](https://github.com/PISAresearch/docs.AnySender#addresses) table.

@@ -11,7 +11,6 @@ use common::{
             eos_utils::{get_eos_tx_expiration_timestamp_with_offset, remove_symbol_from_eos_asset},
         },
         eth::{
-            eth_chain_id::EthChainId,
             eth_contracts::erc20_vault::{
                 Erc20VaultPegInEventParams,
                 ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
@@ -34,6 +33,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+    EthChainId,
 };
 use derive_more::{Constructor, Deref};
 use eos_chain::AccountName as EosAccountName;

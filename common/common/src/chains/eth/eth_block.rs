@@ -16,9 +16,9 @@ use crate::{
         },
     },
     crypto_utils::keccak_hash_bytes,
-    eth_chain_id::EthChainId,
     types::{Bytes, NoneError, Result},
     utils::strip_hex_prefix,
+    EthChainId,
 };
 
 #[derive(Clone, Debug, PartialEq, Eq, Deserialize)]

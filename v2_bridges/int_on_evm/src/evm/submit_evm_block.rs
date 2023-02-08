@@ -119,7 +119,6 @@ mod tests {
                 initialize_eth_core_with_vault_and_router_contracts_and_return_state,
                 initialize_evm_core_with_no_contract_tx,
             },
-            eth_chain_id::EthChainId,
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_debug_functions::reset_eth_chain,
@@ -129,6 +128,7 @@ mod tests {
         },
         dictionaries::eth_evm::EthEvmTokenDictionary,
         test_utils::get_test_database,
+        EthChainId,
     };
     use serde_json::json;
 

@@ -111,13 +111,13 @@ mod tests {
             },
             eth::{
                 core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-                eth_chain_id::EthChainId,
                 eth_database_utils::{EthDbUtils, EthDbUtilsExt},
                 vault_using_cores::VaultUsingCores,
                 EthState as IntState,
             },
         },
         test_utils::get_test_database,
+        EthChainId,
     };
     use serde_json::json;
 

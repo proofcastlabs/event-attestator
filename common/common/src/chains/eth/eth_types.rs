@@ -2,7 +2,7 @@ use ethereum_types::{Address, H256};
 
 use crate::{
     chains::eth::{any_sender::relay_transaction::RelayTransaction, eth_crypto::eth_private_key::EthPrivateKey},
-    eth_chain_id::EthChainId,
+    EthChainId,
 };
 
 pub type EthHash = H256;

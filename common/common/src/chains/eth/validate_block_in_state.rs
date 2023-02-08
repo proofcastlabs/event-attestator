@@ -1,9 +1,9 @@
 use crate::{
     chains::eth::{eth_database_utils::EthDbUtilsExt, EthState},
     constants::CORE_IS_VALIDATING,
-    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 
 fn validate_block_in_state<D: DatabaseInterface>(state: EthState<D>, is_for_eth: bool) -> Result<EthState<D>> {

@@ -1,8 +1,8 @@
 use crate::{
     chains::eth::{eth_database_utils::EthDbUtilsExt, EthState},
-    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 
 fn put_tail_block_hash_in_db_and_return_state<D: DatabaseInterface>(

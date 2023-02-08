@@ -4,7 +4,6 @@ use common::{
             get_eth_core_init_output_json::EthInitializationOutput,
             initialize_eth_core::initialize_evm_core_with_no_contract_tx,
         },
-        eth_chain_id::EthChainId,
         eth_constants::EVM_CORE_IS_INITIALIZED_JSON,
         eth_database_transactions::{
             end_eth_db_transaction_and_return_state,
@@ -15,6 +14,7 @@ use common::{
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 
 /// # Maybe Initialize INT Core

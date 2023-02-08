@@ -3,7 +3,6 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use common::{
     chains::eth::{
         any_sender::relay_transaction::RelayTransaction,
-        eth_chain_id::EthChainId,
         eth_crypto::eth_transaction::EthTransaction,
         eth_database_utils::EthDbUtilsExt,
         eth_traits::EthTxInfoCompatible,
@@ -12,6 +11,7 @@ use common::{
     metadata::metadata_traits::ToMetadataChainId,
     traits::DatabaseInterface,
     types::{NoneError, Result},
+    EthChainId,
 };
 
 use crate::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos};

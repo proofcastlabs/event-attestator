@@ -4,15 +4,11 @@ use std::{fs::read_to_string, path::Path, str::FromStr};
 use common::{
     chains::{
         eos::eos_submission_material::EosSubmissionMaterial,
-        eth::{
-            eth_chain_id::EthChainId,
-            eth_log::EthLog,
-            eth_receipt::EthReceipt,
-            eth_submission_material::EthSubmissionMaterial,
-        },
+        eth::{eth_log::EthLog, eth_receipt::EthReceipt, eth_submission_material::EthSubmissionMaterial},
     },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     types::Result,
+    EthChainId,
 };
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde_json::json;

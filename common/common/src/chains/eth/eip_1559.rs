@@ -1,7 +1,7 @@
 use derive_more::Constructor;
 use ethereum_types::U256;
 
-use crate::{eth_chain_id::EthChainId, types::Result};
+use crate::{types::Result, EthChainId};
 
 #[derive(Clone, Constructor)]
 pub struct Eip1559 {}

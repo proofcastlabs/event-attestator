@@ -1,6 +1,5 @@
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_constants::ZERO_ETH_VALUE,
         eth_contracts::erc777_token::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::{
@@ -15,6 +14,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 use ethereum_types::U256;
 

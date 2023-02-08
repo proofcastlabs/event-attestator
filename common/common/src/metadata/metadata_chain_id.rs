@@ -8,10 +8,10 @@ use crate::{
     algo_chain_id::AlgoChainId,
     chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId},
     constants::THIRTY_TWO_ZERO_BYTES,
-    eth_chain_id::EthChainId,
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
+    EthChainId,
 };
 
 pub const METADATA_CHAIN_ID_NUMBER_OF_BYTES: usize = 4;

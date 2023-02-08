@@ -1,6 +1,5 @@
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_constants::ZERO_ETH_VALUE,
         eth_contracts::erc20_vault::{
             encode_erc20_vault_peg_out_fxn_data_with_user_data,
@@ -17,6 +16,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 use ethereum_types::Address as EthAddress;
 

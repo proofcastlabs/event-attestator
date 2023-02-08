@@ -13,7 +13,6 @@ use common::{
             eos_utils::get_eos_tx_expiration_timestamp_with_offset,
         },
         eth::{
-            eth_chain_id::EthChainId,
             eth_contracts::erc777_token::{
                 Erc777RedeemEvent,
                 ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
@@ -35,6 +34,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+    EthChainId,
 };
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};

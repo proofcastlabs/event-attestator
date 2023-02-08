@@ -7,7 +7,6 @@ use common::{
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
         },
         eth::{
-            eth_chain_id::EthChainId,
             eth_constants::ZERO_ETH_VALUE,
             eth_contracts::erc777_token::encode_erc777_mint_with_no_data_fxn,
             eth_crypto::{
@@ -23,6 +22,7 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
+    EthChainId,
 };
 use derive_more::{Constructor, Deref};
 use eos_chain::{

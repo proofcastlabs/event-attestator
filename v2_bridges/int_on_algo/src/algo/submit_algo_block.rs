@@ -81,7 +81,6 @@ mod tests {
     use common::{
         chains::eth::{
             core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-            eth_chain_id::EthChainId,
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
             eth_utils::convert_hex_to_eth_address,
@@ -92,6 +91,7 @@ mod tests {
         dictionaries::evm_algo::EvmAlgoTokenDictionary,
         test_utils::get_test_database,
         utils::get_prefixed_db_key,
+        EthChainId,
     };
     use rust_algorand::{AlgorandAddress, AlgorandGenesisId};
     use serde_json::json;

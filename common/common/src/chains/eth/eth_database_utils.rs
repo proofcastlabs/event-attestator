@@ -10,10 +10,10 @@ use crate::{
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
-    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
+    EthChainId,
 };
 
 create_db_utils_with_getters!(

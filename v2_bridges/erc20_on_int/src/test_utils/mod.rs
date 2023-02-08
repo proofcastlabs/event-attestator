@@ -3,7 +3,6 @@ use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_submission_material::EthSubmissionMaterial,
         eth_test_utils::get_random_eth_address,
@@ -11,6 +10,7 @@ use common::{
     },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     types::Result,
+    EthChainId,
 };
 use ethereum_types::Address as EthAddress;
 use serde_json::json;

@@ -36,9 +36,9 @@ use crate::{
         EthState,
     },
     core_type::CoreType,
-    eth_chain_id::EthChainId,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 
 fn initialize_eth_core_maybe_with_contract_tx_and_return_state<'a, D: DatabaseInterface>(

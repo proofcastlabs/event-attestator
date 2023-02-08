@@ -107,8 +107,8 @@ mod tests {
             eth_database_utils::{EthDbUtils, EvmDbUtils},
             eth_test_utils::get_sample_eth_submission_material_n,
         },
-        eth_chain_id::EthChainId,
         test_utils::get_test_database,
+        EthChainId,
     };
 
     fn test_enclave_state<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) {

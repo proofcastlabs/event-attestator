@@ -9,9 +9,9 @@ use crate::{
         eth_contracts::{encode_fxn_call, SupportedTopics},
         eth_log::EthLogExt,
     },
-    eth_chain_id::EthChainId,
     metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     types::{Bytes, Result},
+    EthChainId,
 };
 
 const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;

@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_crypto::eth_transaction::get_signed_minting_tx,
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
@@ -11,6 +10,7 @@ use common::{
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
+    EthChainId,
 };
 use ethereum_types::Address as EthAddress;
 use function_name::named;

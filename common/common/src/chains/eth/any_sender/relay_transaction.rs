@@ -15,8 +15,8 @@ use crate::{
         eth_crypto::eth_private_key::EthPrivateKey,
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
-    eth_chain_id::EthChainId,
     types::{Bytes, Result},
+    EthChainId,
 };
 
 pub const ANY_SENDER_GAS_LIMIT: u32 = 300_000;

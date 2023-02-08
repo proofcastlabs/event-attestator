@@ -80,13 +80,13 @@ mod tests {
         chains::{
             btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
             eth::{
-                eth_chain_id::EthChainId,
                 eth_database_utils::EthDbUtils,
                 eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
                 eth_types::EthAddress,
             },
         },
         test_utils::get_test_database,
+        EthChainId,
     };
 
     use super::*;

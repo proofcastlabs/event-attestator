@@ -1,6 +1,5 @@
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
         eth_database_utils::EthDbUtilsExt,
         eth_log::EthLog,
@@ -12,6 +11,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 

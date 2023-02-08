@@ -11,10 +11,10 @@ use crate::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
         eth_log::EthLogExt,
     },
-    eth_chain_id::EthChainId,
     metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
+    EthChainId,
 };
 
 const EMPTY_DATA: Bytes = vec![];

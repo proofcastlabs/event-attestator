@@ -1,6 +1,5 @@
 use common::{
     chains::eth::{
-        eth_chain_id::EthChainId,
         eth_constants::ZERO_ETH_VALUE,
         eth_contracts::erc777_token::encode_erc777_mint_fxn_maybe_with_data,
         eth_crypto::{
@@ -13,6 +12,7 @@ use common::{
     state::EosState,
     traits::DatabaseInterface,
     types::Result,
+    EthChainId,
 };
 
 use crate::eos::int_tx_info::EosOnIntIntTxInfos;

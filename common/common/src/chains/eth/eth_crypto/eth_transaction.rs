@@ -11,8 +11,8 @@ use crate::{
         eth_crypto::{eth_private_key::EthPrivateKey, eth_signature::EthSignature},
         eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     },
-    eth_chain_id::EthChainId,
     types::{Byte, Bytes, Result},
+    EthChainId,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Deref, Constructor, Serialize, Deserialize)]
