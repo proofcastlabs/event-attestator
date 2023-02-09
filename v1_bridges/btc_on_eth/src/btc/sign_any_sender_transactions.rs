@@ -1,13 +1,5 @@
-use common::{
-    chains::eth::{
-        any_sender::relay_transaction::{RelayTransaction, RelayTransactions},
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_types::AnySenderSigningParams,
-    },
-    state::BtcState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{state::BtcState, traits::DatabaseInterface, types::Result};
+use common_eth::{AnySenderSigningParams, EthDbUtils, EthDbUtilsExt, RelayTransaction, RelayTransactions};
 
 use crate::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos};
 
@@ -65,16 +57,9 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
-    use common::{
-        chains::{
-            btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-            eth::{
-                eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
-                eth_types::EthAddress,
-            },
-        },
-        EthChainId,
-    };
+    use common::{chains::btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS, EthChainId};
+    use common_eth::test_utils::{get_sample_eth_address, get_sample_eth_private_key};
+    use ethereum_types::Address as EthAddress;
 
     use super::*;
     use crate::{btc::eth_tx_info::BtcOnEthEthTxInfo, utils::convert_satoshis_to_wei};

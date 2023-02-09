@@ -1,12 +1,6 @@
-use common::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        EthTransactions,
-    },
-    state::BtcState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+
+use common::{state::BtcState, traits::DatabaseInterface, types::Result};
+use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransactions};
 
 pub fn maybe_increment_nonce_in_db<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     if state.eth_signed_txs.is_empty() {

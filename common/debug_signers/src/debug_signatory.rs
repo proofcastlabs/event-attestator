@@ -1,8 +1,8 @@
 use common::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_h256_to_string},
     core_type::CoreType,
     types::{Byte, Bytes, Result},
 };
+use common_eth::{convert_eth_address_to_string, convert_h256_to_string};
 use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};

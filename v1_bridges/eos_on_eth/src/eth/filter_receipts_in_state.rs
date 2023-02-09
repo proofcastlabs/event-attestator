@@ -1,14 +1,5 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc777_token::{
-            ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-            ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-        },
-        EthState,
-    },
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eth::{EthState, ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA};
 
 pub fn filter_receipts_for_eos_on_eth_eth_tx_info_in_state<D: DatabaseInterface>(
     state: EthState<D>,

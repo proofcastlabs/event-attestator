@@ -1,10 +1,11 @@
+
 use common::{
-    chains::eth::EthState,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     fees::fee_constants::DISABLE_FEES,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::EthState;
 
 use crate::{eth::Erc20OnEvmEvmTxInfos, fees_calculator::FeesCalculator};
 

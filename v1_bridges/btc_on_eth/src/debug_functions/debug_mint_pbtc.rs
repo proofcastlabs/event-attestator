@@ -1,10 +1,6 @@
 use std::str::FromStr;
 
 use common::{
-    chains::eth::{
-        eth_crypto::eth_transaction::get_signed_minting_tx,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
@@ -12,6 +8,7 @@ use common::{
     EthChainId,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::{get_signed_minting_tx, EthDbUtils, EthDbUtilsExt};
 use ethereum_types::Address as EthAddress;
 use function_name::named;
 use serde_json::json;

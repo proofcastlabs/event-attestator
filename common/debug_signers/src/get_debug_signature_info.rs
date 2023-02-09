@@ -1,9 +1,5 @@
-use common::{
-    chains::eth::eth_utils::convert_hex_to_h256,
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eth::convert_hex_to_h256;
 use serde_json::Value as JsonValue;
 
 use crate::{DebugSignatories, SAFE_DEBUG_SIGNATORIES};

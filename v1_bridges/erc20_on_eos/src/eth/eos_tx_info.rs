@@ -1,27 +1,13 @@
 use std::str::FromStr;
 
 use common::{
-    chains::{
-        eos::{
-            eos_chain_id::EosChainId,
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
-            },
-            eos_utils::{get_eos_tx_expiration_timestamp_with_offset, remove_symbol_from_eos_asset},
+    chains::eos::{
+        eos_chain_id::EosChainId,
+        eos_crypto::{
+            eos_private_key::EosPrivateKey,
+            eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
         },
-        eth::{
-            eth_contracts::erc20_vault::{
-                Erc20VaultPegInEventParams,
-                ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
-                ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
-            },
-            eth_database_utils::EthDbUtilsExt,
-            eth_log::{EthLog, EthLogExt, EthLogs},
-            eth_receipt::{EthReceipt, EthReceipts},
-            eth_submission_material::EthSubmissionMaterial,
-            EthState,
-        },
+        eos_utils::{get_eos_tx_expiration_timestamp_with_offset, remove_symbol_from_eos_asset},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::{
@@ -34,6 +20,19 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     EthChainId,
+};
+use common_eth::{
+    Erc20VaultPegInEventParams,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthLogs,
+    EthReceipt,
+    EthReceipts,
+    EthState,
+    EthSubmissionMaterial,
+    ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
+    ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
 };
 use derive_more::{Constructor, Deref};
 use eos_chain::AccountName as EosAccountName;

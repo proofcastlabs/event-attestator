@@ -1,23 +1,5 @@
+
 use common::{
-    chains::eth::{
-        eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
-        eth_contracts::{
-            erc20_vault::{
-                encode_erc20_vault_peg_out_fxn_data_with_user_data,
-                encode_erc20_vault_peg_out_fxn_data_without_user_data,
-            },
-            erc777_token::{Erc777RedeemEvent, ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA},
-        },
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-        },
-        eth_database_utils::EthDbUtilsExt,
-        eth_log::{EthLog, EthLogExt, EthLogs},
-        eth_receipt::{EthReceipt, EthReceipts},
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     metadata::{
         metadata_address::MetadataAddress,
@@ -29,6 +11,25 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     EthChainId,
+};
+use common_eth::{
+    encode_erc20_vault_peg_out_fxn_data_with_user_data,
+    encode_erc20_vault_peg_out_fxn_data_without_user_data,
+    Erc777RedeemEvent,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthLogs,
+    EthPrivateKey,
+    EthReceipt,
+    EthReceipts,
+    EthState,
+    EthSubmissionMaterial,
+    EthTransaction as EvmTransaction,
+    EthTransactions as EvmTransactions,
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+    MAX_BYTES_FOR_ETH_USER_DATA,
+    ZERO_ETH_VALUE,
 };
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};

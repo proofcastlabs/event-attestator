@@ -1,14 +1,10 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc777_token::{
-            ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-            ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-        },
-        eth_database_utils::EthDbUtilsExt,
-        EthState,
-    },
-    traits::DatabaseInterface,
-    types::Result,
+
+use common::{traits::DatabaseInterface, types::Result};
+use common_eth::{
+    EthDbUtilsExt,
+    EthState,
+    ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 
 pub fn filter_receipts_for_btc_on_eth_redeem_events_in_state<D: DatabaseInterface>(

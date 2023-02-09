@@ -1,24 +1,17 @@
 use common::{
-    chains::{
-        btc::{
-            btc_block::parse_btc_block_and_id_and_put_in_state,
-            btc_database_utils::end_btc_db_transaction,
-            btc_submission_material::parse_btc_submission_json_and_put_in_state,
-            extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-            filter_utxos::filter_out_value_too_low_utxos_from_state,
-            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            save_utxos_to_db::maybe_save_utxos_to_db,
-            set_flags::set_any_sender_flag_in_state,
-            validate_btc_block_header::validate_btc_block_header_in_state,
-            validate_btc_merkle_root::validate_btc_merkle_root,
-            validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-        },
-        eth::{
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_types::EthSigningParams,
-            EthTransactions,
-        },
+    chains::btc::{
+        btc_block::parse_btc_block_and_id_and_put_in_state,
+        btc_database_utils::end_btc_db_transaction,
+        btc_submission_material::parse_btc_submission_json_and_put_in_state,
+        extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+        filter_utxos::filter_out_value_too_low_utxos_from_state,
+        get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+        save_utxos_to_db::maybe_save_utxos_to_db,
+        set_flags::set_any_sender_flag_in_state,
+        validate_btc_block_header::validate_btc_block_header_in_state,
+        validate_btc_merkle_root::validate_btc_merkle_root,
+        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
     core_type::CoreType,
     fees::fee_database_utils::FeeDatabaseUtils,
@@ -28,7 +21,8 @@ use common::{
     utils::prepend_debug_output_marker_to_string,
 };
 use common_debug_signers::validate_debug_command_signature;
-use common_eth::check_custom_nonce;
+use common_eth::{EthDbUtils, EthDbUtilsExt, EthSigningParams, EthTransactions};
+use common_eth_debug::check_custom_nonce;
 use function_name::named;
 
 use crate::{

@@ -1,11 +1,8 @@
 #![cfg(test)]
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
-use common::{
-    chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_submission_material::EthSubmissionMaterial},
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    types::Result,
-};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
+use common_eth::{EthPrivateKey, EthSubmissionMaterial};
 use ethereum_types::Address as EthAddress;
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {

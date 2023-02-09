@@ -1,9 +1,10 @@
+
 use common::{
-    chains::eth::EthState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::EthState;
 
 use crate::eth::btc_tx_info::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos};
 

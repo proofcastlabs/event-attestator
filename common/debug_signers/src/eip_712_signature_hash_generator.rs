@@ -1,8 +1,5 @@
-use common::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_h256_to_string},
-    core_type::CoreType,
-    types::Result,
-};
+use common::{core_type::CoreType, types::Result};
+use common_eth::{convert_eth_address_to_string, convert_h256_to_string};
 use eip_712::{hash_structured_data, EIP712};
 use ethereum_types::{Address as EthAddress, H256};
 

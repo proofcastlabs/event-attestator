@@ -1,5 +1,6 @@
 #![cfg(test)]
-use common::chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_utils::convert_hex_to_eth_address};
+
+use common_eth::{convert_hex_to_eth_address, EthPrivateKey};
 use ethereum_types::{Address as EthAddress, H256};
 
 use crate::{DebugSignatories, DebugSignatory};

@@ -15,14 +15,7 @@ mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
 
-pub use common::chains::{
-    eos::get_processed_actions_list::get_processed_actions_list,
-    eth::eth_message_signer::{
-        sign_ascii_msg_with_eth_key_with_no_prefix,
-        sign_ascii_msg_with_eth_key_with_prefix,
-        sign_hex_msg_with_eth_key_with_prefix,
-    },
-};
+pub use common::chains::eos::get_processed_actions_list::get_processed_actions_list;
 pub use common_db::{debug_get_key_from_db, debug_set_key_in_db_to_value};
 pub use common_debug_signers::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer};
 pub use common_eos::{
@@ -37,6 +30,11 @@ pub use common_eos::{
     debug_update_incremerkle,
 };
 pub use common_eth::{
+    sign_ascii_msg_with_eth_key_with_no_prefix,
+    sign_ascii_msg_with_eth_key_with_prefix,
+    sign_hex_msg_with_eth_key_with_prefix,
+};
+pub use common_eth_debug::{
     debug_reset_eth_chain,
     debug_set_eth_account_nonce,
     debug_set_eth_any_sender_nonce,

@@ -1,12 +1,6 @@
-use common::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_utils::convert_hex_to_eth_address,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eth::{convert_hex_to_eth_address, EthDbUtils, EthDbUtilsExt};
 
 /// # Maybe Add Vault Contract Address
 ///

@@ -1,11 +1,12 @@
 use common::{
-    chains::{eos::eos_database_utils::EosDatabaseKeysJson, eth::eth_database_utils::EthDatabaseKeysJson},
+    chains::eos::eos_database_utils::EosDatabaseKeysJson,
     constants::DB_KEY_PREFIX,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     traits::DatabaseInterface,
     types::Result,
 };
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
+use common_eth::EthDatabaseKeysJson;
 use function_name::named;
 use serde_json::json;
 

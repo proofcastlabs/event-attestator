@@ -1,20 +1,9 @@
 use std::str::{from_utf8, FromStr};
 
 use common::{
-    chains::{
-        eos::{
-            eos_action_proofs::EosActionProof,
-            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-        },
-        eth::{
-            eth_constants::ZERO_ETH_VALUE,
-            eth_contracts::erc777_token::encode_erc777_mint_with_no_data_fxn,
-            eth_crypto::{
-                eth_private_key::EthPrivateKey,
-                eth_transaction::{EthTransaction, EthTransactions},
-            },
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        },
+    chains::eos::{
+        eos_action_proofs::EosActionProof,
+        eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     safe_addresses::SAFE_ETH_ADDRESS,
@@ -23,6 +12,15 @@ use common::{
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
     EthChainId,
+};
+use common_eth::{
+    encode_erc777_mint_with_no_data_fxn,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthPrivateKey,
+    EthTransaction,
+    EthTransactions,
+    ZERO_ETH_VALUE,
 };
 use derive_more::{Constructor, Deref};
 use eos_chain::{

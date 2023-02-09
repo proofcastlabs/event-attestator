@@ -1,15 +1,12 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc20_vault::encode_erc20_vault_migrate_single_fxn_data,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_utils::convert_hex_to_eth_address,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::{
+    convert_hex_to_eth_address,
+    encode_erc20_vault_migrate_single_fxn_data,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthTransaction,
+};
 use function_name::named;
 use serde_json::json;
 

@@ -1,5 +1,5 @@
+
 use common::{
-    chains::eth::eth_utils::convert_hex_to_eth_address,
     core_type::CoreType,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     fees::fee_utils::sanity_check_basis_points_value,
@@ -8,6 +8,7 @@ use common::{
     utils::prepend_debug_output_marker_to_string,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::convert_hex_to_eth_address;
 use function_name::named;
 use serde_json::json;
 

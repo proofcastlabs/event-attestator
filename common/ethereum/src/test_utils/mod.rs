@@ -1,21 +1,22 @@
-#![cfg(test)]
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use common::{
-    chains::eth::{
-        eth_block::{EthBlock, EthBlockJson},
-        eth_crypto::{eth_private_key::EthPrivateKey, eth_public_key::EthPublicKey, eth_transaction::EthTransaction},
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_log::{EthLog, EthLogs},
-        eth_receipt::EthReceipt,
-        eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
-    },
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     EthChainId,
 };
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+
+use crate::{
+    eth_block::{EthBlock, EthBlockJson},
+    eth_crypto::{EthPrivateKey, EthPublicKey, EthTransaction},
+    eth_log::{EthLog, EthLogs},
+    eth_receipt::EthReceipt,
+    eth_submission_material::{EthSubmissionMaterial, EthSubmissionMaterialJson},
+    EthDbUtils,
+    EthDbUtilsExt,
+};
 
 pub const HASH_HEX_CHARS: usize = 64;
 pub const HEX_PREFIX_LENGTH: usize = 2;
@@ -371,9 +372,8 @@ pub fn get_random_u256() -> U256 {
 }
 
 mod tests {
-    use common::chains::eth::{eth_log::EthLogExt, eth_utils::convert_hex_to_h256};
-
     use super::*;
+    use crate::{eth_log::EthLogExt, eth_utils::convert_hex_to_h256};
 
     #[test]
     fn should_convert_bytes_to_h256() {

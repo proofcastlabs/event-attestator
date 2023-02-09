@@ -1,17 +1,12 @@
-use common::{
-    chains::eth::{
-        eth_constants::ZERO_ETH_VALUE,
-        eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_without_user_data,
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::{EthTransaction, EthTransactions},
-        },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
-    state::EosState,
-    traits::DatabaseInterface,
-    types::Result,
-    EthChainId,
+use common::{state::EosState, traits::DatabaseInterface, types::Result, EthChainId};
+use common_eth::{
+    encode_erc20_vault_peg_out_fxn_data_without_user_data,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthPrivateKey,
+    EthTransaction,
+    EthTransactions,
+    ZERO_ETH_VALUE,
 };
 use ethereum_types::Address as EthAddress;
 

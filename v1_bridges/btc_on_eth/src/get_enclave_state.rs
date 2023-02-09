@@ -1,17 +1,12 @@
 use common::{
-    chains::{
-        btc::{btc_database_utils::BtcDbUtils, btc_enclave_state::BtcEnclaveState},
-        eth::{
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_enclave_state::EthEnclaveState,
-        },
-    },
+    chains::btc::{btc_database_utils::BtcDbUtils, btc_enclave_state::BtcEnclaveState},
     core_type::CoreType,
     fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
     types::Result,
 };
 use common_enclave_info::EnclaveInfo;
+use common_eth::{EthDbUtils, EthDbUtilsExt, EthEnclaveState};
 use serde::{Deserialize, Serialize};
 
 use crate::constants::CORE_TYPE;

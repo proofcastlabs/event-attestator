@@ -1,16 +1,10 @@
 use std::str::{from_utf8, FromStr};
 
 use common::{
-    chains::{
-        eos::{
-            eos_action_proofs::EosActionProof,
-            eos_chain_id::EosChainId,
-            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-        },
-        eth::{
-            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        },
+    chains::eos::{
+        eos_action_proofs::EosActionProof,
+        eos_chain_id::EosChainId,
+        eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
     },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{
@@ -25,6 +19,7 @@ use common::{
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
 };
+use common_eth::{EthDbUtils, EthDbUtilsExt, MAX_BYTES_FOR_ETH_USER_DATA};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};

@@ -1,12 +1,5 @@
-use common::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_utils::get_eth_address_from_str,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eth::{get_eth_address_from_str, EthDbUtils, EthDbUtilsExt};
 use serde_json::json;
 
 /// # Maybe Add ERC777 Contract Address

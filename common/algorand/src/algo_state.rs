@@ -1,9 +1,9 @@
 use common::{
-    chains::eth::{eth_crypto::eth_transaction::EthTransactions, eth_database_utils::EthDbUtils},
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
+use common_eth::{EthDbUtils, EthTransactions};
 
 use crate::{AlgoDbUtils, AlgoRelevantAssetTxs, AlgoSubmissionMaterial};
 

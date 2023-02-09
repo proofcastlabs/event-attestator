@@ -1,12 +1,10 @@
 use common::{
-    chains::{
-        eos::eos_database_utils::EosDbUtils,
-        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
+    chains::eos::eos_database_utils::EosDbUtils,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::{EthDbUtils, EthDbUtilsExt};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

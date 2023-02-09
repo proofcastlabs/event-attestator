@@ -1,5 +1,4 @@
 use common::{
-    chains::eth::eth_crypto::eth_signature::EthSignature,
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
     errors::AppError,
@@ -7,6 +6,7 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
+use common_eth::EthSignature;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};
@@ -265,7 +265,8 @@ impl DebugSignatories {
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eth::eth_utils::convert_hex_to_eth_address, errors::AppError, test_utils::get_test_database};
+    use common::{errors::AppError, test_utils::get_test_database};
+    use common_eth::convert_hex_to_eth_address;
 
     use super::*;
     use crate::test_utils::{

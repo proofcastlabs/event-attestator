@@ -2,32 +2,29 @@ use std::str::FromStr;
 
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use common::{
-    chains::{
-        btc::{
-            btc_constants::{MAX_NUM_OUTPUTS, MINIMUM_REQUIRED_SATOSHIS},
-            btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
-        },
-        eth::{
-            eth_contracts::erc777_token::{
-                Erc777RedeemEvent,
-                ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-                ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-            },
-            eth_database_utils::EthDbUtilsExt,
-            eth_log::{EthLog, EthLogExt},
-            eth_receipt::EthReceipt,
-            eth_submission_material::EthSubmissionMaterial,
-            EthState,
-        },
+    chains::btc::{
+        btc_constants::{MAX_NUM_OUTPUTS, MINIMUM_REQUIRED_SATOSHIS},
+        btc_crypto::btc_private_key::BtcPrivateKey,
+        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
+        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
     safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+};
+use common_eth::{
+    Erc777RedeemEvent,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthReceipt,
+    EthState,
+    EthSubmissionMaterial,
+    ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
@@ -237,7 +234,8 @@ pub fn maybe_parse_btc_tx_infos_and_add_to_state<D: DatabaseInterface>(state: Et
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eth::eth_submission_material::EthSubmissionMaterial, errors::AppError};
+    use common::errors::AppError;
+    use common_eth::EthSubmissionMaterial;
 
     use super::*;
     use crate::test_utils::{

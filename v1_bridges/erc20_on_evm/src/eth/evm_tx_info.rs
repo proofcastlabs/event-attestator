@@ -1,20 +1,4 @@
 use common::{
-    chains::eth::{
-        eth_constants::{MAX_BYTES_FOR_ETH_USER_DATA, ZERO_ETH_VALUE},
-        eth_contracts::{
-            erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC},
-            erc777_token::encode_erc777_mint_fxn_maybe_with_data,
-        },
-        eth_crypto::{
-            eth_private_key::EthPrivateKey as EvmPrivateKey,
-            eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-        },
-        eth_database_utils::EthDbUtilsExt,
-        eth_log::{EthLog, EthLogExt, EthLogs},
-        eth_receipt::{EthReceipt, EthReceipts},
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     metadata::{
         metadata_address::MetadataAddress,
@@ -26,6 +10,24 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     EthChainId,
+};
+use common_eth::{
+    encode_erc777_mint_fxn_maybe_with_data,
+    Erc20VaultPegInEventParams,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthLogs,
+    EthPrivateKey as EvmPrivateKey,
+    EthReceipt,
+    EthReceipts,
+    EthState,
+    EthSubmissionMaterial,
+    EthTransaction as EvmTransaction,
+    EthTransactions as EvmTransactions,
+    ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
+    MAX_BYTES_FOR_ETH_USER_DATA,
+    ZERO_ETH_VALUE,
 };
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -445,7 +447,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 
 #[cfg(test)]
 mod tests {
-    use common::chains::eth::eth_traits::EthTxInfoCompatible;
+    use common_eth::EthTxInfoCompatible;
 
     use super::*;
     use crate::test_utils::{

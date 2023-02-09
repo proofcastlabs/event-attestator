@@ -1,17 +1,18 @@
 use common::{
-    chains::{
-        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
-        eth::{
-            eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
-            eth_crypto::eth_transaction::{get_signed_minting_tx, EthTransaction, EthTransactions},
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_types::EthSigningParams,
-        },
-    },
+    chains::btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
     metadata::metadata_protocol_id::MetadataProtocolId,
     state::BtcState,
     traits::DatabaseInterface,
     types::Result,
+};
+use common_eth::{
+    get_signed_minting_tx,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthSigningParams,
+    EthTransaction,
+    EthTransactions,
+    MAX_BYTES_FOR_ETH_USER_DATA,
 };
 
 use crate::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos};
@@ -76,18 +77,12 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
-    use common::{
-        chains::{
-            btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS,
-            eth::{
-                eth_database_utils::EthDbUtils,
-                eth_test_utils::{get_sample_eth_address, get_sample_eth_private_key},
-                eth_types::EthAddress,
-            },
-        },
-        test_utils::get_test_database,
-        EthChainId,
+    use common::{chains::btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS, test_utils::get_test_database, EthChainId};
+    use common_eth::{
+        test_utils::{get_sample_eth_address, get_sample_eth_private_key},
+        EthDbUtils,
     };
+    use ethereum_types::Address as EthAddress;
 
     use super::*;
     use crate::utils::convert_satoshis_to_wei;

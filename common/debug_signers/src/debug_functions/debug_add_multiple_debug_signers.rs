@@ -1,15 +1,7 @@
 use std::str::FromStr;
 
-use common::{
-    chains::eth::{
-        eth_crypto::eth_signature::EthSignature,
-        eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256},
-    },
-    core_type::CoreType,
-    errors::AppError,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, errors::AppError, traits::DatabaseInterface, types::Result};
+use common_eth::{convert_hex_to_eth_address, convert_hex_to_h256, EthSignature};
 use derive_more::Deref;
 use function_name::named;
 use serde::Deserialize;

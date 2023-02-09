@@ -1,10 +1,10 @@
 use common::{
-    chains::eth::eth_crypto::eth_signature::EthSignature,
     core_type::CoreType,
     crypto_utils::keccak_hash_bytes,
     types::{Bytes, Result},
     utils::strip_hex_prefix,
 };
+use common_eth::EthSignature;
 use ethereum_types::{Address as EthAddress, H256};
 
 use crate::debug_signatory::DebugSignatory;
@@ -136,7 +136,7 @@ impl DebugSignatory {
 }
 
 #[cfg(test)]
-use common::chains::eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_traits::EthSigningCapabilities};
+use common_eth::{EthPrivateKey, EthSigningCapabilities};
 
 #[cfg(test)]
 impl DebugSignatory {
@@ -161,7 +161,8 @@ impl DebugSignatory {
 mod tests {
     use std::str::FromStr;
 
-    use common::{chains::eth::eth_utils::convert_hex_to_eth_address, errors::AppError};
+    use common::errors::AppError;
+    use common_eth::convert_hex_to_eth_address;
 
     use super::*;
     use crate::test_utils::{get_sample_debug_command_hash, get_sample_debug_signatory, get_sample_private_key};

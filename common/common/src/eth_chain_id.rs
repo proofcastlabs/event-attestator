@@ -87,7 +87,65 @@ impl FromStr for EthChainId {
     }
 }
 
+const ARBITRUM_GAS_MULTIPLIER: usize = 10;
+const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
+const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;
+const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
+const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
+const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 450_000;
+const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
+const ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT: usize = 250_000;
+
 impl EthChainId {
+    pub fn get_erc777_change_pnetwork_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+            _ => ERC777_CHANGE_PNETWORK_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc777_mint_with_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_MINT_WITH_DATA_GAS_LIMIT,
+            _ => ERC777_MINT_WITH_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc777_mint_with_no_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+            _ => ERC777_MINT_WITH_NO_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_migrate_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_MIGRATE_GAS_LIMIT,
+            _ => ERC20_VAULT_MIGRATE_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_pegout_without_user_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+            _ => ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_pegout_with_user_data_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+            _ => ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT,
+        }
+    }
+
+    pub fn get_erc20_vault_change_supported_token_gas_limit(&self) -> usize {
+        match self {
+            Self::ArbitrumMainnet => ARBITRUM_GAS_MULTIPLIER * ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+            _ => ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT,
+        }
+    }
+
     pub fn unknown() -> Self {
         Self::Unknown(0)
     }

@@ -1,13 +1,13 @@
 use std::str::FromStr;
 
 use common::{
-    chains::eth::eth_utils::convert_hex_to_eth_address,
     core_type::CoreType,
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     traits::DatabaseInterface,
     types::Result,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::convert_hex_to_eth_address;
 use function_name::named;
 use serde_json::json;
 

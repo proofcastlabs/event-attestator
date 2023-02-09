@@ -18,10 +18,12 @@ lazy_static = "1.4.0"
 function_name = "0.3.0"
 derive_more = "0.99.16"
 ethereum-types = "0.12.1"
-common = { path = "../common" }
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 eip-712 = { git = "https://github.com/paritytech/EIP-712", rev = "551dfd9" }
+
+common = { path = "../common" }
+common_eth = { package = "ethereum", path = "../ethereum" }
 
 [dev-dependencies]
 simple_logger = "2.0.0"

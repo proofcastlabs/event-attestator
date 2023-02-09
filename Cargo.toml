@@ -4,6 +4,7 @@ members = [
     "common/enclave_info",
     "common/algorand",
     "common/ethereum",
+    "common/ethereum_debug",
     "common/eos",
     "common/debug_signers",
     "common/db",

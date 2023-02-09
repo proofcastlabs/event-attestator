@@ -1,11 +1,11 @@
 use common::{
-    chains::eth::eth_database_utils::{EthDatabaseKeysJson, EvmDatabaseKeysJson},
     constants::DB_KEY_PREFIX,
     dictionaries::dictionary_constants::ETH_EVM_DICTIONARY_KEY,
     traits::DatabaseInterface,
     types::Result,
 };
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
+use common_eth::{EthDatabaseKeysJson, EvmDatabaseKeysJson};
 use function_name::named;
 use serde_json::json;
 

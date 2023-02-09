@@ -1,28 +1,15 @@
 use std::str::FromStr;
 
 use common::{
-    chains::{
-        eos::{
-            eos_actions::PTokenPegOutAction,
-            eos_chain_id::EosChainId,
-            eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_transaction::{EosSignedTransaction, EosSignedTransactions},
-            },
-            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
+    chains::eos::{
+        eos_actions::PTokenPegOutAction,
+        eos_chain_id::EosChainId,
+        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
+        eos_crypto::{
+            eos_private_key::EosPrivateKey,
+            eos_transaction::{EosSignedTransaction, EosSignedTransactions},
         },
-        eth::{
-            eth_contracts::erc777_token::{
-                Erc777RedeemEvent,
-                ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-                ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
-            },
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_log::EthLog,
-            eth_submission_material::EthSubmissionMaterial,
-            EthState,
-        },
+        eos_utils::get_eos_tx_expiration_timestamp_with_offset,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::{
@@ -35,6 +22,16 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     EthChainId,
+};
+use common_eth::{
+    Erc777RedeemEvent,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthLog,
+    EthState,
+    EthSubmissionMaterial,
+    ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Action as EosAction, PermissionLevel, Transaction as EosTransaction};

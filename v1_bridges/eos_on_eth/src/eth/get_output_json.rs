@@ -1,16 +1,14 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::{
-        eos::{
-            eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
-            eos_database_utils::EosDbUtils,
-        },
-        eth::{eth_database_utils::EthDbUtilsExt, EthState},
+    chains::eos::{
+        eos_crypto::eos_transaction::{EosSignedTransaction, EosSignedTransactions},
+        eos_database_utils::EosDbUtils,
     },
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::{EthDbUtilsExt, EthState};
 use serde::{Deserialize, Serialize};
 
 use crate::eth::{EosOnEthEosTxInfo, EosOnEthEosTxInfos};

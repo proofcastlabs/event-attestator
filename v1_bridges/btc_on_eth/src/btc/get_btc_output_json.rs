@@ -1,19 +1,12 @@
+
 use common::{
-    chains::{
-        btc::btc_constants::PLACEHOLDER_BTC_ADDRESS,
-        eth::{
-            any_sender::relay_transaction::RelayTransaction,
-            eth_crypto::eth_transaction::EthTransaction,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_traits::EthTxInfoCompatible,
-            EthTransactions,
-        },
-    },
+    chains::btc::btc_constants::PLACEHOLDER_BTC_ADDRESS,
     state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::get_unix_timestamp,
 };
+use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransaction, EthTransactions, EthTxInfoCompatible, RelayTransaction};
 use serde::{Deserialize, Serialize};
 
 use crate::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos};

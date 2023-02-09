@@ -4,14 +4,12 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use common::{
-    chains::{
-        btc::deposit_address_info::DepositInfoHashMap,
-        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
+    chains::btc::deposit_address_info::DepositInfoHashMap,
     state::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
+use common_eth::{EthDbUtils, EthDbUtilsExt};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
