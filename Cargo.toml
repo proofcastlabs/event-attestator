@@ -2,6 +2,8 @@
 members = [
     "common/common",
     "common/algorand",
+    "common/debug_signers",
+    "common/db",
     "v2_bridges/btc_on_int",
     "v1_bridges/btc_on_eos",
     "v1_bridges/btc_on_eth",
