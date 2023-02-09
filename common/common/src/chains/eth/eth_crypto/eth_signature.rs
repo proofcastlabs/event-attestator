@@ -4,7 +4,11 @@ use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, H256};
 use web3::signing::recover;
 
-use crate::{errors::AppError, types::Result, utils::strip_hex_prefix};
+use crate::{
+    errors::AppError,
+    types::{Bytes, Result},
+    utils::strip_hex_prefix,
+};
 
 const ETH_SIGNATURE_NUM_BYTES: usize = 65;
 
@@ -12,6 +16,13 @@ const ETH_SIGNATURE_NUM_BYTES: usize = 65;
 pub struct EthSignature(pub [u8; 65]);
 
 impl EthSignature {
+    pub fn random() -> Result<Self> {
+        let random_bytes = (0..ETH_SIGNATURE_NUM_BYTES)
+            .map(|_| rand::random::<u8>())
+            .collect::<Bytes>();
+        Self::from_str(&hex::encode(random_bytes))
+    }
+
     pub fn set_recovery_param(self) -> Self {
         // NOTE: Eth recovery params are different from ecdsa ones. See here for more info:
         // https://bitcoin.stackexchange.com/questions/38351/ecdsa-v-r-s-what-is-v
@@ -86,19 +97,6 @@ impl TryFrom<&str> for EthSignature {
 impl std::fmt::Display for EthSignature {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", hex::encode(self.0))
-    }
-}
-
-#[cfg(test)]
-use crate::types::Bytes;
-
-#[cfg(test)]
-impl EthSignature {
-    pub fn random() -> Result<Self> {
-        let random_bytes = (0..ETH_SIGNATURE_NUM_BYTES)
-            .map(|_| rand::random::<u8>())
-            .collect::<Bytes>();
-        Self::from_str(&hex::encode(random_bytes))
     }
 }
 

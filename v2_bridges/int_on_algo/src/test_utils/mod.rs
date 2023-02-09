@@ -1,13 +1,13 @@
 #![cfg(test)]
 use std::{fs::read_to_string, str::FromStr};
 
-use algorand::AlgoSubmissionMaterial;
 use common::{
     chains::eth::{eth_submission_material::EthSubmissionMaterial, eth_utils::convert_hex_to_eth_address},
     dictionaries::evm_algo::EvmAlgoTokenDictionaryEntry,
     errors::AppError,
     types::Result,
 };
+use common_algorand::AlgoSubmissionMaterial;
 use ethereum_types::Address as EthAddress;
 
 macro_rules! write_int_paths_and_getter_fxn {

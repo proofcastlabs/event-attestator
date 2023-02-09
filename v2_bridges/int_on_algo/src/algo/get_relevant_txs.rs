@@ -1,5 +1,5 @@
-use algorand::{AlgoRelevantAssetTxs, AlgoState};
 use common::{traits::DatabaseInterface, types::Result};
+use common_algorand::{AlgoRelevantAssetTxs, AlgoState};
 
 pub fn get_relevant_asset_txs_from_submission_material_and_add_to_state<D: DatabaseInterface>(
     state: AlgoState<D>,

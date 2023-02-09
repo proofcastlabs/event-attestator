@@ -1,5 +1,5 @@
-use algorand::AlgoDbUtils;
 use common::{chains::eth::EthState, traits::DatabaseInterface, types::Result};
+use common_algorand::AlgoDbUtils;
 
 fn increment_algo_account_nonce<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D>, num_signatures: u64) -> Result<()> {
     let current_nonce = db_utils.get_algo_account_nonce()?;

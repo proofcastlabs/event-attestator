@@ -6,11 +6,11 @@ use common::{
         eth_utils::convert_hex_to_eth_address,
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     dictionaries::eth_evm::EthEvmTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
@@ -37,7 +37,7 @@ pub fn debug_withdraw_fees_and_save_in_db<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| EthEvmTokenDictionary::get_from_db(db))
         .and_then(|dictionary| dictionary.withdraw_fees_and_save_in_db(db, &convert_hex_to_eth_address(token_address)?))
         .and_then(|(token_address, fee_amount)| {

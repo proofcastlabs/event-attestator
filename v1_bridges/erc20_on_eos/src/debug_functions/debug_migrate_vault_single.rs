@@ -6,10 +6,10 @@ use common::{
         eth_utils::convert_hex_to_eth_address,
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
@@ -45,7 +45,7 @@ pub fn debug_get_erc20_vault_migrate_single_tx<D: DatabaseInterface>(
     let migrate_to_address = convert_hex_to_eth_address(migrate_to_address_str)?;
 
     get_debug_command_hash!(function_name!(), migrate_to_address_str, token_address_str)()
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_migrate_single_fxn_data(&migrate_to_address, &token_address))
         .and_then(|tx_data| {

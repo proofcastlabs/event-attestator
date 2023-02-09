@@ -120,7 +120,6 @@ mod tests {
             },
             eth_crypto::eth_private_key::EthPrivateKey,
             eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
-            eth_debug_functions::reset_eth_chain,
             eth_submission_material::parse_eth_submission_material_and_put_in_state,
             eth_utils::convert_hex_to_eth_address,
             vault_using_cores::VaultUsingCores,
@@ -129,6 +128,7 @@ mod tests {
         test_utils::get_test_database,
         EthChainId,
     };
+    use common_eth::reset_eth_chain;
     use serde_json::json;
 
     use super::*;

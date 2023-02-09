@@ -6,12 +6,12 @@ use common::{
         eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
     EthChainId,
 };
+use common_debug_signers::validate_debug_command_signature;
 use ethereum_types::Address as EthAddress;
 use function_name::named;
 use serde_json::json;
@@ -45,7 +45,7 @@ pub fn debug_mint_pbtc<D: DatabaseInterface>(
 
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), &amount, &nonce, eth_network, &gas_price, recipient)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| CoreType::check_is_initialized(db))
         .map(|_| strip_hex_prefix(recipient))
         .and_then(|hex_no_prefix| {

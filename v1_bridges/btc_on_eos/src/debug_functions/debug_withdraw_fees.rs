@@ -5,12 +5,12 @@ use common::{
         extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
         utxo_manager::utxo_database_utils::save_utxos_to_db,
     },
-    debug_functions::validate_debug_command_signature,
     fees::fee_withdrawals::get_btc_on_eos_fee_withdrawal_tx,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
@@ -27,7 +27,7 @@ pub fn debug_get_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_address: &s
     let btc_db_utils = BtcDbUtils::new(db);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), btc_address)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| get_btc_on_eos_fee_withdrawal_tx(db, btc_address))
         .and_then(|btc_tx| {
             let change_utxos = get_pay_to_pub_key_hash_script(&btc_db_utils.get_btc_address_from_db()?)

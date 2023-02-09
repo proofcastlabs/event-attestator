@@ -1,5 +1,5 @@
-use algorand::AlgoState;
 use common::traits::TxInfo;
+use common_algorand::AlgoState;
 
 use crate::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos};
 

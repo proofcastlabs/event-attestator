@@ -1,13 +1,8 @@
 use std::str::FromStr;
 
-use algorand::AlgoDbUtils;
-use common::{
-    core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
-    traits::DatabaseInterface,
-    types::Result,
-    utils::strip_hex_prefix,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, utils::strip_hex_prefix};
+use common_algorand::AlgoDbUtils;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandTransaction, MicroAlgos};
 
@@ -47,7 +42,7 @@ pub fn debug_get_algo_pay_tx<D: DatabaseInterface>(
                 &amount
             )()
         })
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| {
             let pk = algo_db_utils.get_algo_private_key()?;
             let note_bytes = hex::decode(strip_hex_prefix(note))?;

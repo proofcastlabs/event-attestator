@@ -1,11 +1,11 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use algorand::AlgoDbUtils;
 use common::{
     chains::eth::{eth_database_utils::EthDbUtilsExt, eth_utils::convert_eth_address_to_string, EthState},
     traits::DatabaseInterface,
     types::Result,
 };
+use common_algorand::AlgoDbUtils;
 use rust_algorand::AlgorandTxGroup;
 
 use crate::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos};

@@ -21,18 +21,18 @@ use common::{
         },
         eth::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_debug_functions::check_custom_nonce,
             EthTransactions,
         },
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
     state::EosState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_debug_signers::validate_debug_command_signature;
+use common_eth::check_custom_nonce;
 use function_name::named;
 
 use crate::{
@@ -62,7 +62,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &accrue_fees, &maybe_nonce)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(CoreType::check_core_is_initialized_and_return_eos_state)
         .and_then(get_enabled_protocol_features_and_add_to_state)

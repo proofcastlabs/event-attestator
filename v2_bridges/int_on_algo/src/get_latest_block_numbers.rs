@@ -1,10 +1,10 @@
-use algorand::AlgoDbUtils;
 use common::{
     chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_algorand::AlgoDbUtils;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

@@ -16,12 +16,12 @@ use common::{
     },
     constants::SUCCESS_JSON,
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 
 use crate::constants::CORE_TYPE;
@@ -54,7 +54,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
                 warn!("✘ Debug signature check SKIPPED for fxn: {}", function_name!());
                 Ok(())
             } else {
-                validate_debug_command_signature(db, &CORE_TYPE, signature, &hash)
+                validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test))
             }
         })
         .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))

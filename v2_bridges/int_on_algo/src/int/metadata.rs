@@ -1,4 +1,3 @@
-use algorand::{AlgoUserData, MAX_BYTES_FOR_ALGO_USER_DATA};
 use common::{
     chains::eth::eth_utils::convert_eth_address_to_string,
     metadata::{
@@ -9,6 +8,7 @@ use common::{
     },
     types::{Bytes, Result},
 };
+use common_algorand::{AlgoUserData, MAX_BYTES_FOR_ALGO_USER_DATA};
 
 use crate::int::algo_tx_info::IntOnAlgoAlgoTxInfo;
 

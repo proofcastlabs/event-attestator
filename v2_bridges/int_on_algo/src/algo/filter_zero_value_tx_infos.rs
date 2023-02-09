@@ -1,5 +1,5 @@
-use algorand::AlgoState;
 use common::{traits::DatabaseInterface, types::Result};
+use common_algorand::AlgoState;
 use ethereum_types::U256;
 
 use crate::algo::int_tx_info::IntOnAlgoIntTxInfos;

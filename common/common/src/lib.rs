@@ -14,7 +14,6 @@
 
 pub use crate::{
     core_type::CoreType,
-    debug_functions::get_debug_signature_info,
     errors::AppError,
     eth_chain_id::EthChainId,
     traits::DatabaseInterface,
@@ -32,9 +31,7 @@ pub mod constants;
 pub mod core_type;
 pub mod crypto_utils;
 pub mod database_utils;
-pub mod debug_functions;
 pub mod dictionaries;
-pub mod enclave_info;
 pub mod errors;
 mod eth_chain_id; // FIXME Ideally factor these out
 pub mod fees;

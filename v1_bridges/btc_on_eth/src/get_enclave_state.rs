@@ -7,11 +7,11 @@ use common::{
         },
     },
     core_type::CoreType,
-    enclave_info::EnclaveInfo,
     fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_enclave_info::EnclaveInfo;
 use serde::{Deserialize, Serialize};
 
 use crate::constants::CORE_TYPE;

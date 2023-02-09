@@ -12,7 +12,6 @@ pub mod eth_contracts;
 pub mod eth_crypto;
 pub mod eth_database_transactions;
 pub mod eth_database_utils;
-pub mod eth_debug_functions;
 pub mod eth_enclave_state;
 pub mod eth_log;
 pub mod eth_receipt;

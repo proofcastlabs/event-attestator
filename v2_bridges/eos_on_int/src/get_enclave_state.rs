@@ -1,3 +1,4 @@
+
 use common::{
     chains::{
         eos::{eos_database_utils::EosDbUtils, eos_enclave_state::EosEnclaveState},
@@ -7,10 +8,10 @@ use common::{
         },
     },
     core_type::CoreType,
-    enclave_info::EnclaveInfo,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_enclave_info::EnclaveInfo;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 

@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use algorand::AlgoDbUtils;
 use common::{
     chains::eth::{
         eth_contracts::erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2},
@@ -15,6 +14,7 @@ use common::{
     traits::DatabaseInterface,
     types::Result,
 };
+use common_algorand::AlgoDbUtils;
 use ethereum_types::Address as EthAddress;
 use rust_algorand::{AlgorandAddress, AlgorandAppId};
 

@@ -1,9 +1,13 @@
 [workspace]
 members = [
     "common/common",
+    "common/enclave_info",
     "common/algorand",
+    "common/ethereum",
+    "common/eos",
     "common/debug_signers",
     "common/db",
+    "common/bitcoin",
     "v2_bridges/btc_on_int",
     "v1_bridges/btc_on_eos",
     "v1_bridges/btc_on_eth",

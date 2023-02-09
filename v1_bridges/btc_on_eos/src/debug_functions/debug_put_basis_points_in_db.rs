@@ -1,10 +1,10 @@
 use common::{
-    debug_functions::validate_debug_command_signature,
     fees::{fee_database_utils::FeeDatabaseUtils, fee_utils::sanity_check_basis_points_value},
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
@@ -26,7 +26,7 @@ fn debug_put_btc_on_eos_basis_points_in_db<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| sanity_check_basis_points_value(basis_points))
         .and_then(|_| get_debug_command_hash!(function_name!(), &basis_points, &is_peg_in)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| {
             if is_peg_in {
                 FeeDatabaseUtils::new_for_btc_on_eos().put_peg_in_basis_points_in_db(db, basis_points)

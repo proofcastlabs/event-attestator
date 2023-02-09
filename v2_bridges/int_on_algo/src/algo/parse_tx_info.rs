@@ -1,10 +1,10 @@
-use algorand::{AlgoChainId, AlgoNoteMetadata, AlgoState};
 use common::{
     chains::eth::eth_database_utils::EthDbUtilsExt,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_algorand::{AlgoChainId, AlgoNoteMetadata, AlgoState};
 use ethereum_types::Address as EthAddress;
 use rust_algorand::{AlgorandGenesisId, AlgorandHash, AlgorandTransaction, AlgorandTransactions};
 

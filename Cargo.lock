@@ -31,6 +31,7 @@ name = "algorand"
 version = "6.10.1"
 dependencies = [
  "common",
+ "debug_signers",
  "derive_more",
  "ethereum-types 0.12.1",
  "function_name",
@@ -159,6 +160,48 @@ dependencies = [
 ]
 
 [[package]]
+name = "bitcoin"
+version = "6.10.1"
+dependencies = [
+ "base64 0.13.1",
+ "bitcoin 0.29.2",
+ "bs58",
+ "byteorder",
+ "chrono",
+ "common",
+ "debug_signers",
+ "derive_more",
+ "eip-712",
+ "eos-chain",
+ "ethabi 15.0.0",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "keccak-hasher",
+ "lazy_static",
+ "log",
+ "paste",
+ "quick-error",
+ "rand 0.8.5",
+ "rlp",
+ "rmp-serde",
+ "rust-algorand",
+ "rustc-hex",
+ "secp256k1 0.15.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "simple_logger 2.3.0",
+ "simplelog",
+ "strum",
+ "strum_macros",
+ "tiny-keccak 2.0.2",
+ "triehash",
+ "web3",
+]
+
+[[package]]
 name = "bitcoin_hashes"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -247,9 +290,14 @@ checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 name = "btc_on_eos"
 version = "1.0.0"
 dependencies = [
- "bitcoin",
+ "bitcoin 0.29.2",
+ "bitcoin 6.10.1",
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "eos",
  "eos-chain",
  "ethereum-types 0.12.1",
  "function_name",
@@ -265,9 +313,14 @@ dependencies = [
 name = "btc_on_eth"
 version = "1.0.0"
 dependencies = [
- "bitcoin",
+ "bitcoin 0.29.2",
+ "bitcoin 6.10.1",
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -283,9 +336,14 @@ dependencies = [
 name = "btc_on_int"
 version = "1.0.0"
 dependencies = [
- "bitcoin",
+ "bitcoin 0.29.2",
+ "bitcoin 6.10.1",
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -293,7 +351,7 @@ dependencies = [
  "paste",
  "serde",
  "serde_json",
- "simple_logger 4.0.0",
+ "simple_logger 4.1.0",
  "tiny-keccak 2.0.2",
 ]
 
@@ -389,7 +447,7 @@ name = "common"
 version = "6.10.1"
 dependencies = [
  "base64 0.13.1",
- "bitcoin",
+ "bitcoin 0.29.2",
  "bs58",
  "byteorder",
  "chrono",
@@ -571,6 +629,39 @@ dependencies = [
 ]
 
 [[package]]
+name = "db"
+version = "6.10.1"
+dependencies = [
+ "common",
+ "debug_signers",
+ "function_name",
+ "hex",
+ "log",
+ "serde_json",
+ "simple_logger 2.3.0",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
+name = "debug_signers"
+version = "6.10.1"
+dependencies = [
+ "common",
+ "derive_more",
+ "eip-712",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "lazy_static",
+ "log",
+ "rand 0.8.5",
+ "serde",
+ "serde_json",
+ "simple_logger 2.3.0",
+ "tiny-keccak 2.0.2",
+]
+
+[[package]]
 name = "derive_more"
 version = "0.99.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -664,12 +755,96 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
+name = "enclave_info"
+version = "6.10.1"
+dependencies = [
+ "base64 0.13.1",
+ "bitcoin 0.29.2",
+ "bs58",
+ "byteorder",
+ "chrono",
+ "common",
+ "debug_signers",
+ "derive_more",
+ "eip-712",
+ "eos-chain",
+ "ethabi 15.0.0",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "keccak-hasher",
+ "lazy_static",
+ "log",
+ "paste",
+ "quick-error",
+ "rand 0.8.5",
+ "rlp",
+ "rmp-serde",
+ "rust-algorand",
+ "rustc-hex",
+ "secp256k1 0.15.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "simple_logger 2.3.0",
+ "simplelog",
+ "strum",
+ "strum_macros",
+ "tiny-keccak 2.0.2",
+ "triehash",
+ "web3",
+]
+
+[[package]]
 name = "encoding_rs"
 version = "0.8.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "071a31f4ee85403370b58aca746f01041ede6f0da2730960ad001edc2b71b394"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "eos"
+version = "6.10.1"
+dependencies = [
+ "base64 0.13.1",
+ "bitcoin 0.29.2",
+ "bs58",
+ "byteorder",
+ "chrono",
+ "common",
+ "debug_signers",
+ "derive_more",
+ "eip-712",
+ "eos-chain",
+ "ethabi 15.0.0",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "keccak-hasher",
+ "lazy_static",
+ "log",
+ "paste",
+ "quick-error",
+ "rand 0.8.5",
+ "rlp",
+ "rmp-serde",
+ "rust-algorand",
+ "rustc-hex",
+ "secp256k1 0.15.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "simple_logger 2.3.0",
+ "simplelog",
+ "strum",
+ "strum_macros",
+ "tiny-keccak 2.0.2",
+ "triehash",
+ "web3",
 ]
 
 [[package]]
@@ -704,8 +879,13 @@ name = "eos_on_eth"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "eos",
  "eos-chain",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -721,8 +901,13 @@ name = "eos_on_int"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "eos",
  "eos-chain",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -748,8 +933,13 @@ name = "erc20_on_eos"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "eos",
  "eos-chain",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -765,7 +955,11 @@ name = "erc20_on_evm"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -781,7 +975,11 @@ name = "erc20_on_int"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -872,6 +1070,48 @@ dependencies = [
  "impl-rlp",
  "impl-serde",
  "tiny-keccak 2.0.2",
+]
+
+[[package]]
+name = "ethereum"
+version = "6.10.1"
+dependencies = [
+ "base64 0.13.1",
+ "bitcoin 0.29.2",
+ "bs58",
+ "byteorder",
+ "chrono",
+ "common",
+ "debug_signers",
+ "derive_more",
+ "eip-712",
+ "eos-chain",
+ "ethabi 15.0.0",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "keccak-hasher",
+ "lazy_static",
+ "log",
+ "paste",
+ "quick-error",
+ "rand 0.8.5",
+ "rlp",
+ "rmp-serde",
+ "rust-algorand",
+ "rustc-hex",
+ "secp256k1 0.15.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "simple_logger 2.3.0",
+ "simplelog",
+ "strum",
+ "strum_macros",
+ "tiny-keccak 2.0.2",
+ "triehash",
+ "web3",
 ]
 
 [[package]]
@@ -1479,7 +1719,11 @@ version = "1.0.0"
 dependencies = [
  "algorand",
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -1497,8 +1741,13 @@ name = "int_on_eos"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "eos",
  "eos-chain",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -1514,7 +1763,11 @@ name = "int_on_evm"
 version = "1.0.0"
 dependencies = [
  "common",
+ "db",
+ "debug_signers",
  "derive_more",
+ "enclave_info",
+ "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
@@ -2616,15 +2869,15 @@ dependencies = [
 
 [[package]]
 name = "simple_logger"
-version = "4.0.0"
+version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e190a521c2044948158666916d9e872cbb9984f755e9bb3b5b75a836205affcd"
+checksum = "e78beb34673091ccf96a8816fce8bfd30d1292c7621ca2bcb5f2ba0fae4f558d"
 dependencies = [
  "atty",
  "colored",
  "log",
- "time 0.3.17",
- "windows-sys",
+ "time 0.3.21",
+ "windows-sys 0.42.0",
 ]
 
 [[package]]
@@ -3301,6 +3554,21 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e686886bc078bc1b0b600cac0147aadb815089b6e4da64016cbd754b6342700f"
 dependencies = [
  "windows-targets 0.48.0",
+]
+
+[[package]]
+name = "windows-sys"
+version = "0.42.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5a3e1820f08b8513f676f7ab6c1f99ff312fb97b553d30ff4dd86f9f15728aa7"
+dependencies = [
+ "windows_aarch64_gnullvm 0.42.2",
+ "windows_aarch64_msvc 0.42.2",
+ "windows_i686_gnu 0.42.2",
+ "windows_i686_msvc 0.42.2",
+ "windows_x86_64_gnu 0.42.2",
+ "windows_x86_64_gnullvm 0.42.2",
+ "windows_x86_64_msvc 0.42.2",
 ]
 
 [[package]]

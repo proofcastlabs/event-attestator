@@ -15,18 +15,18 @@ use common::{
         },
         eth::{
             eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_debug_functions::check_custom_nonce,
             eth_types::EthSigningParams,
             EthTransactions,
         },
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_debug_signers::validate_debug_command_signature;
+use common_eth::check_custom_nonce;
 use function_name::named;
 
 use crate::{
@@ -54,7 +54,7 @@ fn reprocess_btc_block<D: DatabaseInterface>(
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &maybe_nonce)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| parse_btc_submission_json_and_put_in_state(block_json, BtcState::init(db)))
         .and_then(parse_btc_block_and_id_and_put_in_state)
         .and_then(CoreType::check_core_is_initialized_and_return_btc_state)

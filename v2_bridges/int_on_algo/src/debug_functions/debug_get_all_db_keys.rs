@@ -1,12 +1,12 @@
-use algorand::AlgoDatabaseKeysJson;
 use common::{
     chains::eth::eth_database_utils::EthDatabaseKeysJson,
     constants::DB_KEY_PREFIX,
-    debug_functions::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY},
     dictionaries::dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_algorand::AlgoDatabaseKeysJson;
+use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
 use function_name::named;
 use serde_json::json;
 
@@ -19,7 +19,7 @@ use crate::constants::CORE_TYPE;
 pub fn debug_get_all_db_keys<D: DatabaseInterface>(db: &D, signature: &str) -> Result<String> {
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!())())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| {
             db.end_transaction()?;
             Ok(json!({

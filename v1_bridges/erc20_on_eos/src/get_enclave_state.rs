@@ -7,10 +7,10 @@ use common::{
         },
     },
     core_type::CoreType,
-    enclave_info::EnclaveInfo,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_enclave_info::EnclaveInfo;
 use serde::{Deserialize, Serialize};
 
 use super::constants::CORE_TYPE;

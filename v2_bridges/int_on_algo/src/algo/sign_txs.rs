@@ -1,4 +1,3 @@
-use algorand::AlgoState;
 use common::{
     chains::eth::{
         eth_constants::ZERO_ETH_VALUE,
@@ -14,6 +13,7 @@ use common::{
     types::Result,
     EthChainId,
 };
+use common_algorand::AlgoState;
 
 use crate::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos};
 

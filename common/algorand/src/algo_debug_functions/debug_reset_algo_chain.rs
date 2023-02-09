@@ -1,10 +1,5 @@
-use common::{
-    constants::ZERO_CONFS_WARNING,
-    core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{constants::ZERO_CONFS_WARNING, core_type::CoreType, traits::DatabaseInterface, types::Result};
+use debug_signers::validate_debug_command_signature;
 use function_name::named;
 use rust_algorand::AlgorandHash;
 use serde_json::json;
@@ -110,7 +105,7 @@ pub fn debug_reset_algo_chain<D: DatabaseInterface>(
     info!("Debug resetting ALGO chain...");
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &canon_to_tip_length, core_type)())
-        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash, cfg!(test)))
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(|state| reset_algo_chain_and_return_state(state, canon_to_tip_length))
         .and_then(end_algo_db_transaction_and_return_state)

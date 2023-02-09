@@ -18,9 +18,10 @@ pub fn validate_debug_command_signature<D: DatabaseInterface>(
     core_type: &CoreType,
     signature: &str,
     debug_command_hash: &str,
+    is_test: bool,
 ) -> Result<()> {
-    if cfg!(test) {
-        warn!("✘ Skipping debug command validation!");
+    if is_test {
+        warn!("✘ Skipping debug signature check!");
         Ok(())
     } else {
         DebugSignatories::get_from_db(db).and_then(|debug_signatories| {

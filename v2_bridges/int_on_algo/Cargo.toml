@@ -17,15 +17,20 @@ serde_json = "1.0.68"
 function_name = "0.3.0"
 derive_more = "0.99.17"
 ethereum-types = "0.12.1"
-common = { path = "../../common/common" }
-algorand = { path = "../../common/algorand" }
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
+
+common = { path = "../../common/common" }
+common_algorand = { package = "algorand", path = "../../common/algorand" }
+common_db = { package = "db", path = "../../common/db" }
+common_eth = { package = "ethereum", path = "../../common/ethereum" }
+common_enclave_info = { package = "enclave_info", path = "../../common/enclave_info" }
+common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }
 
 [dev-dependencies]
 serial_test = "0.6.0"
 
 [features]
 # NOTE: Turns off block header & chain validation.
-non-validating = ["common/non-validating", "algorand/non-validating"]
+non-validating = ["common/non-validating", "common_algorand/non-validating"]

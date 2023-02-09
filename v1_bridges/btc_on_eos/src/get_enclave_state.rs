@@ -4,11 +4,11 @@ use common::{
         eos::{eos_database_utils::EosDbUtils, eos_enclave_state::EosEnclaveState},
     },
     core_type::CoreType,
-    enclave_info::EnclaveInfo,
     fees::fee_enclave_state::FeesEnclaveState,
     traits::DatabaseInterface,
     types::Result,
 };
+use enclave_info::EnclaveInfo;
 use serde::{Deserialize, Serialize};
 
 use crate::constants::CORE_TYPE;

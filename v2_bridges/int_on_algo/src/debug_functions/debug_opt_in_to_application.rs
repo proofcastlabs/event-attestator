@@ -1,10 +1,6 @@
-use algorand::AlgoDbUtils;
-use common::{
-    core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_algorand::AlgoDbUtils;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use rust_algorand::{AlgorandAddress, AlgorandHash, AlgorandKeys, AlgorandTransaction, MicroAlgos};
 use serde_json::json;
@@ -44,7 +40,7 @@ pub fn debug_opt_in_to_application<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), &app_id, &first_valid_round)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| {
             get_application_opt_in_tx_hex(
                 app_id,

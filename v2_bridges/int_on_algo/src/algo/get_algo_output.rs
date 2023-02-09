@@ -3,7 +3,6 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use algorand::AlgoState;
 use common::{
     chains::eth::{
         eth_crypto::eth_transaction::EthTransaction as IntTransaction,
@@ -13,6 +12,7 @@ use common::{
     traits::DatabaseInterface,
     types::Result,
 };
+use common_algorand::AlgoState;
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 

@@ -6,10 +6,10 @@ use common::{
         eth_utils::convert_hex_to_eth_address,
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
@@ -41,7 +41,7 @@ pub fn debug_get_add_supported_token_tx<D: DatabaseInterface>(
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
     CoreType::check_is_initialized(db)
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_address_str)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| eth_db_utils.increment_eth_account_nonce_in_db(1))
         .and_then(|_| encode_erc20_vault_add_supported_token_fx_data(eth_address))
         .and_then(|tx_data| {

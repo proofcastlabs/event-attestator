@@ -9,7 +9,6 @@ pub mod btc_block;
 pub mod btc_chain_id;
 pub mod btc_crypto;
 pub mod btc_database_utils;
-pub mod btc_debug_functions;
 pub mod btc_enclave_state;
 pub mod btc_metadata;
 pub mod btc_recipients_and_amounts;

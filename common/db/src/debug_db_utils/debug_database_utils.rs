@@ -30,7 +30,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
     info!("✔ Setting key: {} in DB to value: {}", key, value);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), key, value, core_type)())
-        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash, cfg!(test)))
         .and_then(|_| {
             let key_bytes = hex::decode(key)?;
             let data_sensitivity = if is_private_key_key(db, &key_bytes) {
@@ -57,7 +57,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(
     info!("✔ Maybe getting key: {} from DB...", key);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), key, core_type)())
-        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash, cfg!(test)))
         .and_then(|_| {
             let key_bytes = hex::decode(key)?;
             let data_sensitivity = if is_private_key_key(db, &key_bytes) {

@@ -1,10 +1,10 @@
 use common::{
     chains::eth::eth_utils::convert_hex_to_eth_address,
-    debug_functions::validate_debug_command_signature,
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_debug_signers::validate_debug_command_signature;
 use ethereum_types::U256;
 use function_name::named;
 use serde_json::json;
@@ -25,7 +25,7 @@ pub fn debug_set_accrued_fees_in_dictionary<D: DatabaseInterface>(
     info!("✔ Debug setting accrued fees in dictionary...");
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), token_address, &fee_amount)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| {
             let dictionary = EosEthTokenDictionary::get_from_db(db)?;
             dictionary.set_accrued_fees_and_save_in_db(

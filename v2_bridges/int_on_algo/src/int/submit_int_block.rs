@@ -100,7 +100,6 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 mod tests {
     use std::str::FromStr;
 
-    use algorand::AlgoDbUtils;
     use common::{
         chains::eth::{
             core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
@@ -115,6 +114,7 @@ mod tests {
         utils::get_prefixed_db_key,
         EthChainId,
     };
+    use common_algorand::AlgoDbUtils;
     use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandKeys};
     use serde_json::json;
     use serial_test::serial;

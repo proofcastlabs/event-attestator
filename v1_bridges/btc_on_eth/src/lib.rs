@@ -14,44 +14,35 @@ mod get_latest_block_numbers;
 mod test_utils;
 mod utils;
 
-pub use common::{
-    chains::{
-        btc::{
-            btc_debug_functions::{debug_set_btc_account_nonce, debug_set_btc_fee, debug_set_btc_utxo_nonce},
-            core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
-            utxo_manager::{
-                debug_utxo_utils::{
-                    debug_add_multiple_utxos,
-                    debug_clear_all_utxos,
-                    debug_consolidate_utxos,
-                    debug_consolidate_utxos_to_address,
-                    debug_get_child_pays_for_parent_btc_tx,
-                    debug_remove_utxo,
-                },
-                utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
-            },
-        },
-        eth::{
-            eth_debug_functions::{
-                debug_reset_eth_chain,
-                debug_set_eth_account_nonce,
-                debug_set_eth_any_sender_nonce,
-                debug_set_eth_gas_price,
-            },
-            eth_message_signer::{
-                sign_ascii_msg_with_eth_key_with_no_prefix,
-                sign_ascii_msg_with_eth_key_with_prefix,
-                sign_hex_msg_with_eth_key_with_prefix,
-            },
-        },
+pub use common::chains::{
+    btc::{
+        core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
+        utxo_manager::utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
     },
-    debug_functions::{
-        debug_add_debug_signer,
-        debug_add_multiple_debug_signers,
-        debug_get_key_from_db,
-        debug_remove_debug_signer,
-        debug_set_key_in_db_to_value,
+    eth::eth_message_signer::{
+        sign_ascii_msg_with_eth_key_with_no_prefix,
+        sign_ascii_msg_with_eth_key_with_prefix,
+        sign_hex_msg_with_eth_key_with_prefix,
     },
+};
+pub use common_btc::{
+    debug_add_multiple_utxos,
+    debug_clear_all_utxos,
+    debug_consolidate_utxos,
+    debug_consolidate_utxos_to_address,
+    debug_get_child_pays_for_parent_btc_tx,
+    debug_remove_utxo,
+    debug_set_btc_account_nonce,
+    debug_set_btc_fee,
+    debug_set_btc_utxo_nonce,
+};
+pub use common_db::{debug_get_key_from_db, debug_set_key_in_db_to_value};
+pub use common_debug_signers::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer};
+pub use common_eth::{
+    debug_reset_eth_chain,
+    debug_set_eth_account_nonce,
+    debug_set_eth_any_sender_nonce,
+    debug_set_eth_gas_price,
 };
 
 pub use self::{

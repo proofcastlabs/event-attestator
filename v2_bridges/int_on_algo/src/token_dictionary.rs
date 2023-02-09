@@ -1,5 +1,5 @@
-use algorand::AlgoState;
 use common::{dictionaries::evm_algo::dictionary::EvmAlgoTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_algorand::AlgoState;
 
 pub fn get_evm_algo_token_dictionary_and_add_to_algo_state<D: DatabaseInterface>(
     state: AlgoState<D>,

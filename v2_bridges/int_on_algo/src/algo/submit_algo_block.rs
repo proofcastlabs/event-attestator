@@ -1,4 +1,5 @@
-use algorand::{
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_algorand::{
     add_latest_algo_submission_material_to_db_and_return_state,
     check_parent_of_algo_block_in_state_exists,
     check_submitted_block_is_subsequent_and_return_state,
@@ -13,7 +14,6 @@ use algorand::{
     remove_all_txs_from_submission_material_in_state,
     AlgoState,
 };
-use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 
 use crate::{
     algo::{
@@ -77,7 +77,6 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
 mod tests {
     use std::str::FromStr;
 
-    use algorand::AlgoDbUtils;
     use common::{
         chains::eth::{
             core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
@@ -93,6 +92,7 @@ mod tests {
         utils::get_prefixed_db_key,
         EthChainId,
     };
+    use common_algorand::AlgoDbUtils;
     use rust_algorand::{AlgorandAddress, AlgorandGenesisId};
     use serde_json::json;
     use serial_test::serial;

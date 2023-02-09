@@ -13,7 +13,6 @@ pub mod eos_chain_id;
 pub mod eos_crypto;
 pub mod eos_database_transactions;
 pub mod eos_database_utils;
-pub mod eos_debug_functions;
 pub mod eos_enclave_state;
 pub mod eos_extension;
 pub mod eos_global_sequences;

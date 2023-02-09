@@ -7,12 +7,12 @@ use common::{
         EthState,
     },
     core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 
 use crate::{
@@ -39,7 +39,7 @@ fn reprocess_eth_block<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), eth_block_json, &accrue_fees)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| parse_eth_submission_material_and_put_in_state(eth_block_json, EthState::init(db)))
         .and_then(validate_eth_block_in_state)
         .and_then(filter_receipts_for_btc_on_eth_redeem_events_in_state)

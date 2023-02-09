@@ -1,17 +1,17 @@
-use algorand::{
+use common::{
+    chains::eth::eth_database_utils::EthDbUtilsExt,
+    core_type::CoreType,
+    traits::DatabaseInterface,
+    types::Result,
+};
+use common_algorand::{
     end_algo_db_transaction_and_return_state,
     maybe_update_latest_block_with_expired_participants_and_return_state,
     parse_algo_submission_material_and_put_in_state,
     remove_all_txs_from_submission_material_in_state,
     AlgoState,
 };
-use common::{
-    chains::eth::eth_database_utils::EthDbUtilsExt,
-    core_type::CoreType,
-    debug_functions::validate_debug_command_signature,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 
 use crate::{
@@ -44,7 +44,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
     db.start_transaction()
         .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_string, &maybe_nonce)())
-        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash))
+        .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
