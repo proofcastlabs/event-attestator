@@ -21,7 +21,6 @@ mod eth_submission_material;
 mod eth_traits;
 mod eth_types;
 mod eth_utils;
-mod increment_eos_account_nonce;
 mod increment_eth_account_nonce;
 mod increment_evm_account_nonce;
 mod increment_int_account_nonce;
@@ -136,7 +135,6 @@ pub use self::{
         get_eth_address_from_str,
         get_random_eth_address,
     },
-    increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
     increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_state,
     increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
     increment_int_account_nonce::maybe_increment_int_account_nonce_and_return_eth_state,

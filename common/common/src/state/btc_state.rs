@@ -1,14 +1,11 @@
 use crate::{
-    chains::{
-        btc::{
-            btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
-            btc_database_utils::BtcDbUtils,
-            btc_submission_material::{BtcSubmissionMaterial, BtcSubmissionMaterialJson},
-            btc_types::{BtcTransaction, BtcTransactions},
-            deposit_address_info::{DepositInfoHashMap, DepositInfoList},
-            utxo_manager::utxo_types::BtcUtxosAndValues,
-        },
-        eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_database_utils::EosDbUtils},
+    chains::btc::{
+        btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
+        btc_database_utils::BtcDbUtils,
+        btc_submission_material::{BtcSubmissionMaterial, BtcSubmissionMaterialJson},
+        btc_types::{BtcTransaction, BtcTransactions},
+        deposit_address_info::{DepositInfoHashMap, DepositInfoList},
+        utxo_manager::utxo_types::BtcUtxosAndValues,
     },
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
@@ -20,15 +17,14 @@ pub struct BtcState<'a, D: DatabaseInterface> {
     pub db: &'a D,
     pub tx_infos: Bytes,
     pub eth_signed_txs: Bytes,
+    pub eos_signed_txs: Bytes,
     pub any_sender: Option<bool>,
     pub ref_block_num: Option<u16>,
     pub ref_block_prefix: Option<u32>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
-    pub eos_db_utils: EosDbUtils<'a, D>,
     pub output_json_string: Option<String>,
     pub utxos_and_values: BtcUtxosAndValues,
     pub any_sender_signed_txs: Option<Bytes>,
-    pub eos_signed_txs: EosSignedTransactions,
     pub btc_block_and_id: Option<BtcBlockAndId>,
     pub p2sh_deposit_txs: Option<BtcTransactions>,
     pub p2pkh_deposit_txs: Option<BtcTransactions>,
@@ -46,6 +42,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             ref_block_num: None,
             submission_json: None,
             eth_signed_txs: vec![],
+            eos_signed_txs: vec![],
             btc_block_and_id: None,
             ref_block_prefix: None,
             p2sh_deposit_txs: None,
@@ -56,8 +53,6 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
             btc_block_in_db_format: None,
             utxos_and_values: vec![].into(),
             btc_db_utils: BtcDbUtils::new(db),
-            eos_db_utils: EosDbUtils::new(db),
-            eos_signed_txs: EosSignedTransactions::new(vec![]),
         }
     }
 
@@ -186,17 +181,6 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         info!("✔ Replacing UTXOs in state...");
         self.utxos_and_values = replacement_utxos;
         Ok(self)
-    }
-
-    pub fn add_eos_signed_txs(mut self, eos_signed_txs: EosSignedTransactions) -> Result<BtcState<'a, D>> {
-        match self.eos_signed_txs.len() {
-            0 => {
-                info!("✔ Adding signed txs to state...");
-                self.eos_signed_txs = eos_signed_txs;
-                Ok(self)
-            },
-            _ => Err(get_no_overwrite_state_err("eos_signed_txs").into()),
-        }
     }
 
     pub fn add_utxos_and_values(mut self, utxos_and_values: BtcUtxosAndValues) -> Result<BtcState<'a, D>> {

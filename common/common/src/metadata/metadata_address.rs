@@ -9,7 +9,7 @@ use rust_algorand::{AlgorandAddress, AlgorandAppId};
 use serde::{Deserialize, Serialize};
 
 #[cfg(test)]
-use crate::{chains::eos::eos_constants::EOS_ADDRESS_LENGTH_IN_BYTES, types::Byte};
+use crate::types::Byte;
 use crate::{
     metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
     safe_addresses::{
@@ -144,7 +144,6 @@ impl MetadataAddress {
         }
     }
 
-    // FIXME Test!
     fn from_bytes_for_algo(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataAddress` from bytes for ALGO...");
         let algo_address_length_in_bytes: usize = 32;
@@ -168,11 +167,12 @@ impl MetadataAddress {
 
     fn from_bytes_for_eos(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         info!("✔ Attempting to create `MetadataAddress` from bytes for EOS...");
+        let eos_address_length_in_bytes = 8;
         let num_bytes = bytes.len();
-        if num_bytes != EOS_ADDRESS_LENGTH_IN_BYTES {
+        if num_bytes != eos_address_length_in_bytes {
             Err(format!(
                 "Incorrect number of bytes for EOS address. Expected {}, got {}!",
-                EOS_ADDRESS_LENGTH_IN_BYTES, num_bytes
+                eos_address_length_in_bytes, num_bytes
             )
             .into())
         } else {

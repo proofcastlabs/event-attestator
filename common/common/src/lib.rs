@@ -14,6 +14,8 @@
 
 pub use crate::{
     core_type::CoreType,
+    eos_chain_id::EosChainId,
+    eos_metadata::EosMetadata,
     errors::AppError,
     eth_chain_id::EthChainId,
     traits::DatabaseInterface,
@@ -32,6 +34,8 @@ pub mod core_type;
 pub mod crypto_utils;
 pub mod database_utils;
 pub mod dictionaries;
+mod eos_chain_id;
+mod eos_metadata; // FIXME Move to EOS once cylic deps are sorted
 pub mod errors;
 mod eth_chain_id; // FIXME Ideally factor these out
 pub mod fees;

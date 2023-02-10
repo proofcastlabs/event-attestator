@@ -6,11 +6,12 @@ use strum_macros::EnumIter;
 
 use crate::{
     algo_chain_id::AlgoChainId,
-    chains::{btc::btc_chain_id::BtcChainId, eos::eos_chain_id::EosChainId},
+    chains::btc::btc_chain_id::BtcChainId,
     constants::THIRTY_TWO_ZERO_BYTES,
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
+    EosChainId,
     EthChainId,
 };
 

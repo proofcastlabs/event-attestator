@@ -1,16 +1,13 @@
-use common::{
-    chains::eos::{
-        enable_protocol_feature::enable_feature_and_return_state,
-        eos_database_transactions::end_eos_db_transaction_and_return_state,
-        get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-        EosState,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
-use debug_signers::validate_debug_command_signature;
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
+
+use crate::{
+    enable_protocol_feature::enable_feature_and_return_state,
+    eos_database_transactions::end_eos_db_transaction_and_return_state,
+    get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
+    EosState,
+};
 
 /// Debug Enable Eos Protocol Feature
 ///

@@ -8,7 +8,6 @@ use serde::{Deserialize, Serialize};
 pub mod test_utils;
 
 use crate::{
-    chains::eos::{eos_utils::remove_symbol_from_eos_asset, EosState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     errors::AppError,
@@ -24,6 +23,10 @@ use crate::{
         truncate_str,
     },
 };
+
+pub fn remove_symbol_from_eos_asset(eos_asset: &str) -> &str {
+    eos_asset.split_whitespace().collect::<Vec<&str>>()[0]
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Constructor, Deref, DerefMut)]
 pub struct EosEthTokenDictionary(pub Vec<EosEthTokenDictionaryEntry>);
@@ -617,13 +620,6 @@ impl FromStr for EosEthTokenDictionaryEntryJson {
             Err(err) => Err(err.into()),
         }
     }
-}
-
-pub fn get_eos_eth_token_dictionary_from_db_and_add_to_eos_state<D: DatabaseInterface>(
-    state: EosState<D>,
-) -> Result<EosState<D>> {
-    info!("✔ Getting `EosERc20Dictionary` and adding to EOS state...");
-    EosEthTokenDictionary::get_from_db(state.db).and_then(|dictionary| state.add_eos_eth_token_dictionary(dictionary))
 }
 
 #[cfg(test)]

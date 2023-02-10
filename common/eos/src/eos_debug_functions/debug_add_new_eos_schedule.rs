@@ -1,12 +1,13 @@
 use common::{
-    chains::eos::{eos_database_utils::EosDbUtils, eos_producer_schedule::EosProducerScheduleV2},
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
+
+use crate::{eos_database_utils::EosDbUtils, eos_producer_schedule::EosProducerScheduleV2};
 
 /// # Debug Add New Eos Schedule
 ///

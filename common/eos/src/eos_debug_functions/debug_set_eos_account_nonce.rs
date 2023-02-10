@@ -1,13 +1,14 @@
 use common::{
-    chains::eos::eos_database_utils::EosDbUtils,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
+
+use crate::eos_database_utils::EosDbUtils;
 
 /// # Debug Set EOS Account Nonce
 ///
@@ -31,9 +32,10 @@ pub fn debug_set_eos_account_nonce<D: DatabaseInterface>(
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eos::eos_database_utils::EosDbUtils, test_utils::get_test_database};
+    use common::test_utils::get_test_database;
 
     use super::*;
+    use crate::eos_database_utils::EosDbUtils;
 
     #[test]
     fn should_set_eos_account_nonce() {

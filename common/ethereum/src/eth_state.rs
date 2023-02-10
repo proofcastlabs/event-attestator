@@ -5,7 +5,6 @@ use common::{
             btc_types::BtcTransactions,
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
-        eos::{eos_crypto::eos_transaction::EosSignedTransactions, eos_database_utils::EosDbUtils},
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     traits::DatabaseInterface,
@@ -23,10 +22,10 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub tx_infos: Bytes,
     pub signed_txs: Bytes,
     pub misc: Option<String>,
+    pub eos_transactions: Bytes,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub evm_db_utils: EvmDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
-    pub eos_db_utils: EosDbUtils<'a, D>,
     pub btc_transactions: Option<BtcTransactions>,
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
@@ -35,7 +34,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_int_int_signed_txs: EthTransactions,
     pub erc20_on_int_eth_signed_txs: EthTransactions,
     pub algo_signed_txs: Vec<(String, AlgorandTxGroup)>,
-    pub eos_transactions: Option<EosSignedTransactions>,
     pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
@@ -51,8 +49,8 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             tx_infos: vec![],
             signed_txs: vec![],
             btc_transactions: None,
-            eos_transactions: None,
             algo_signed_txs: vec![],
+            eos_transactions: vec![],
             btc_utxos_and_values: None,
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
@@ -60,7 +58,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             evm_algo_token_dictionary: None,
             eth_db_utils: EthDbUtils::new(db),
             evm_db_utils: EvmDbUtils::new(db),
-            eos_db_utils: EosDbUtils::new(db),
             btc_db_utils: BtcDbUtils::new(db),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
@@ -175,16 +172,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
         }
     }
 
-    pub fn add_eos_transactions(mut self, eos_transactions: EosSignedTransactions) -> Result<Self> {
-        match self.eos_transactions {
-            Some(_) => Err(get_no_overwrite_state_err("eos_transaction").into()),
-            None => {
-                self.eos_transactions = Some(eos_transactions);
-                Ok(self)
-            },
-        }
-    }
-
     pub fn add_erc20_on_evm_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {
         if self.erc20_on_evm_evm_signed_txs.is_empty() {
             self.erc20_on_evm_evm_signed_txs = txs;
@@ -215,13 +202,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
 
     pub fn get_block_num(&self) -> Result<U256> {
         self.get_eth_submission_material()?.get_block_number()
-    }
-
-    pub fn get_num_eos_txs(&self) -> usize {
-        match self.eos_transactions {
-            None => 0,
-            Some(ref txs) => txs.len(),
-        }
     }
 
     fn add_eos_eth_token_dictionary(mut self, dictionary: EosEthTokenDictionary) -> Result<Self> {

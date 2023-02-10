@@ -1,5 +1,5 @@
 use common::{
-    chains::{btc::btc_database_utils::BtcDbUtils, eos::eos_database_utils::EosDbUtils},
+    chains::btc::btc_database_utils::BtcDbUtils,
     constants::MAX_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
     traits::DatabaseInterface,
@@ -8,6 +8,7 @@ use common::{
 };
 use debug_signers::validate_debug_command_signature;
 use function_name::named;
+use common_eos::EosDbUtils;
 
 fn is_private_key_key<D: DatabaseInterface>(db: &D, key: &[Byte]) -> bool {
     key == get_prefixed_db_key("eth-private-key-key").to_vec()

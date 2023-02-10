@@ -5,7 +5,7 @@ use common::{
     types::Result,
     utils::{convert_hex_to_eth_address, prepend_debug_output_marker_to_string},
 };
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 

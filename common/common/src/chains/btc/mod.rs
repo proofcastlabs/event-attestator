@@ -26,7 +26,6 @@ pub mod filter_p2pkh_deposit_txs;
 pub mod filter_p2sh_deposit_txs;
 pub mod get_btc_block_in_db_format;
 pub mod get_deposit_info_hash_map;
-pub mod increment_eos_nonce;
 pub mod remove_old_btc_tail_block;
 pub mod remove_tx_infos_from_canon_block;
 pub mod save_utxos_to_db;

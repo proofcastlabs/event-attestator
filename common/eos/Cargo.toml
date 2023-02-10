@@ -44,8 +44,12 @@ eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e5784
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
+
 common = { path = "../common" }
-debug_signers = { path = "../debug_signers" }
+common_debug_signers = { package = "debug_signers", path = "../debug_signers" }
 
 [dev-dependencies]
 simple_logger = "2.0.0"
+
+[lib]
+doctest = false

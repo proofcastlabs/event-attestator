@@ -1,19 +1,20 @@
 use common::{
-    chains::eos::{
-        core_initialization::eos_init_utils::{
-            generate_and_put_incremerkle_in_db,
-            put_eos_latest_block_info_in_db,
-            EosInitJson,
-        },
-        eos_database_utils::EosDbUtils,
-    },
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
+
+use crate::{
+    core_initialization::eos_init_utils::{
+        generate_and_put_incremerkle_in_db,
+        put_eos_latest_block_info_in_db,
+        EosInitJson,
+    },
+    eos_database_utils::EosDbUtils,
+};
 
 /// # Debug Update Incremerkle
 ///

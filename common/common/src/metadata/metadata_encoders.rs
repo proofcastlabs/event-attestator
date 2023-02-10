@@ -4,7 +4,6 @@ use ethereum_types::Address as EthAddress;
 use serde::Serialize;
 
 use crate::{
-    chains::eos::eos_metadata::EosMetadata,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_chain_id::MetadataChainId,
@@ -13,6 +12,7 @@ use crate::{
         Metadata,
     },
     types::{Byte, Bytes, Result},
+    EosMetadata,
 };
 
 impl Metadata {

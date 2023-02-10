@@ -1,15 +1,16 @@
 use std::str::FromStr;
 
 use common::{
-    chains::eos::eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
+
+use crate::eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences};
 
 /// Debug Add Global Sequence to Processed List
 ///
