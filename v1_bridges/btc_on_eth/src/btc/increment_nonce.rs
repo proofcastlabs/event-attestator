@@ -1,4 +1,3 @@
-
 use common::{state::BtcState, traits::DatabaseInterface, types::Result};
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransactions};
 

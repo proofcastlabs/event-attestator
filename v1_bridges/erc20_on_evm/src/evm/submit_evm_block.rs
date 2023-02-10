@@ -1,4 +1,3 @@
-
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_eth::{
     check_for_parent_of_evm_block_in_state,

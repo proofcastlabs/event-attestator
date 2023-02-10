@@ -1,4 +1,3 @@
-
 use common::{
     chains::eos::{
         add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,

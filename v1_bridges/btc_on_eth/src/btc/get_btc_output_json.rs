@@ -1,4 +1,3 @@
-
 use common::{
     chains::btc::btc_constants::PLACEHOLDER_BTC_ADDRESS,
     state::BtcState,

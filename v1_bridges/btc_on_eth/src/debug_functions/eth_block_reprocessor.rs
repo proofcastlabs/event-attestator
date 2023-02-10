@@ -1,4 +1,3 @@
-
 use common::{
     core_type::CoreType,
     fees::fee_database_utils::FeeDatabaseUtils,

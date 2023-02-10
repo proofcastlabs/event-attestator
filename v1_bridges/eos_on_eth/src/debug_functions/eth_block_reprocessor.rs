@@ -1,4 +1,3 @@
-
 use common::{
     core_type::CoreType,
     traits::DatabaseInterface,

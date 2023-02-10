@@ -1,4 +1,3 @@
-
 use common::{
     chains::btc::btc_database_utils::BtcDbUtils,
     core_type::CoreType,

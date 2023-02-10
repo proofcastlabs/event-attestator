@@ -1,4 +1,3 @@
-
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, EthChainId};
 use common_eth::{
     convert_hex_to_eth_address,

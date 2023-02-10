@@ -1,4 +1,3 @@
-
 use common::{
     chains::eos::{eos_database_utils::EosDbUtils, eos_enclave_state::EosEnclaveState},
     core_type::CoreType,

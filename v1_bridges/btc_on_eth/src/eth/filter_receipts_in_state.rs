@@ -1,4 +1,3 @@
-
 use common::{traits::DatabaseInterface, types::Result};
 use common_eth::{
     EthDbUtilsExt,

@@ -1,4 +1,3 @@
-
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{

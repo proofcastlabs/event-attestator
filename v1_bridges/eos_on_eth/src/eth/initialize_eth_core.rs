@@ -1,4 +1,3 @@
-
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, EthChainId};
 use common_eth::{
     end_eth_db_transaction_and_return_state,

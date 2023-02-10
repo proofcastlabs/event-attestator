@@ -1,4 +1,3 @@
-
 use common::{state::EosState, traits::DatabaseInterface, types::Result};
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 

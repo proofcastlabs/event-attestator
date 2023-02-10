@@ -1,4 +1,3 @@
-
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
     fees::fee_constants::DISABLE_FEES,

@@ -1,4 +1,3 @@
-
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_eth::{EthDbUtils, EthDbUtilsExt, EvmDbUtils};
 use serde::{Deserialize, Serialize};
