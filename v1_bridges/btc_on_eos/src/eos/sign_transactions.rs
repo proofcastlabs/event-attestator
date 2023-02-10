@@ -1,13 +1,15 @@
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, network::constants::Network as BtcNetwork};
 use common::{
-    chains::btc::{
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_database_utils::BtcDbUtils,
-        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
+    chains::{
+        btc::{
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_database_utils::BtcDbUtils,
+            btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
+            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+            utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
+        },
+        eos::EosState,
     },
-    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

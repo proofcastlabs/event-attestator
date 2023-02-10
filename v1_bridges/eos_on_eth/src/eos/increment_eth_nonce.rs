@@ -1,4 +1,4 @@
-use common::{state::EosState, traits::DatabaseInterface, types::Result};
+use common::{chains::eos::EosState, traits::DatabaseInterface, types::Result};
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 
 pub fn maybe_increment_eth_nonce_in_db_and_return_eos_state<D: DatabaseInterface>(

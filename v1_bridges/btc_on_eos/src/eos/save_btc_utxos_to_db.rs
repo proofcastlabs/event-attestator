@@ -1,6 +1,5 @@
 use common::{
-    chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
-    state::EosState,
+    chains::{btc::utxo_manager::utxo_database_utils::save_utxos_to_db, eos::EosState},
     traits::DatabaseInterface,
     types::Result,
 };

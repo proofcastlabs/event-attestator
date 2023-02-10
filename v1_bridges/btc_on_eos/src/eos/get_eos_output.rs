@@ -2,8 +2,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx,
-    state::EosState,
+    chains::{btc::btc_utils::get_hex_tx_from_signed_btc_tx, eos::EosState},
     traits::DatabaseInterface,
     types::Result,
 };

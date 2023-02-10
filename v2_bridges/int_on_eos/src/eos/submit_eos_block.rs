@@ -1,10 +1,10 @@
 use common::{
+    CoreType,
     chains::eos::{
         add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
         append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
         eos_database_transactions::{
             end_eos_db_transaction_and_return_state,
-            start_eos_db_transaction_and_return_state,
         },
         eos_global_sequences::{
             get_processed_global_sequences_and_add_to_state,
@@ -28,9 +28,8 @@ use common::{
         validate_producer_slot::validate_producer_slot_of_block_in_state,
         validate_signature::validate_block_header_signature,
     },
-    core_type::CoreType,
     dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -58,15 +57,15 @@ use crate::eos::{
 /// will be signed and returned to the caller.
 pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) -> Result<String> {
     info!("✔ Submitting EOS block to core...");
-    parse_submission_material_and_add_to_state(block_json, EosState::init(db))
-        .and_then(CoreType::check_core_is_initialized_and_return_eos_state)
+    db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
+        .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(get_incremerkle_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(validate_producer_slot_of_block_in_state)
         .and_then(validate_block_header_signature)
-        .and_then(start_eos_db_transaction_and_return_state)
         .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(get_processed_global_sequences_and_add_to_state)

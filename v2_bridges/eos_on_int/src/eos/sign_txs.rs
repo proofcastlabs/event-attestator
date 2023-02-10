@@ -1,4 +1,4 @@
-use common::{metadata::ToMetadata, state::EosState, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{metadata::ToMetadata, chains::eos::EosState, traits::DatabaseInterface, types::Result, EthChainId};
 use common_eth::{
     encode_erc777_mint_fxn_maybe_with_data,
     EthDbUtils,

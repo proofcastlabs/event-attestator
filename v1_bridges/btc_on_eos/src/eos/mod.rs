@@ -3,6 +3,7 @@ mod btc_tx_info;
 mod extract_utxos_from_btc_txs;
 mod filter_btc_txs_in_state;
 mod get_eos_output;
+mod increment_btc_nonce;
 mod initialize_eos_core;
 mod save_btc_utxos_to_db;
 mod sign_transactions;
@@ -16,6 +17,7 @@ pub(super) use self::{
     extract_utxos_from_btc_txs::maybe_extract_btc_utxo_from_btc_tx_in_state,
     filter_btc_txs_in_state::maybe_filter_btc_txs_in_state,
     get_eos_output::get_eos_output,
+    increment_btc_nonce::maybe_increment_btc_signature_nonce_and_return_eos_state,
     save_btc_utxos_to_db::maybe_save_btc_utxos_to_db,
     sign_transactions::maybe_sign_txs_and_add_to_state,
 };

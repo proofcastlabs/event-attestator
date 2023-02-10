@@ -1,4 +1,4 @@
-use common::{state::EosState, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{chains::eos::EosState, traits::DatabaseInterface, types::Result, EthChainId};
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_without_user_data,
     EthDbUtils,

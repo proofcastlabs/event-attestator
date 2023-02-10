@@ -2,7 +2,7 @@ use common::{
     chains::eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,

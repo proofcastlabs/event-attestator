@@ -14,7 +14,7 @@ use common::{
         Metadata,
     },
     safe_addresses::SAFE_ETH_ADDRESS,
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},

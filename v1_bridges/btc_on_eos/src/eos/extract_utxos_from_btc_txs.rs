@@ -1,6 +1,5 @@
 use common::{
-    chains::eos::extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx,
-    state::EosState,
+    chains::eos::{extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx, EosState},
     traits::DatabaseInterface,
     types::Result,
 };

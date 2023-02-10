@@ -6,11 +6,11 @@ use common::{
         eos::{
             eos_action_proofs::EosActionProof,
             eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
+            EosState,
         },
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
-    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_u64,

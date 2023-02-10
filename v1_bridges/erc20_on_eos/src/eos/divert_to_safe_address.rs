@@ -1,4 +1,4 @@
-use common::{safe_addresses::SAFE_ETH_ADDRESS, state::EosState, traits::DatabaseInterface, types::Result};
+use common::{safe_addresses::SAFE_ETH_ADDRESS, chains::eos::EosState, traits::DatabaseInterface, types::Result};
 use ethereum_types::Address as EthAddress;
 
 use crate::eos::eth_tx_info::{Erc20OnEosEthTxInfo, Erc20OnEosEthTxInfos};

@@ -4,10 +4,10 @@ use common::{
     chains::eos::{
         eos_action_proofs::EosActionProof,
         eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
+        EosState,
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     safe_addresses::SAFE_ETH_ADDRESS,
-    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},

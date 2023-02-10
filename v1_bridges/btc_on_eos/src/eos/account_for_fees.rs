@@ -1,6 +1,6 @@
 use common::{
+    chains::eos::EosState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
-    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

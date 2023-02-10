@@ -3,9 +3,9 @@ use common::{
         enable_protocol_feature::enable_feature_and_return_state,
         eos_database_transactions::end_eos_db_transaction_and_return_state,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
+        EosState,
     },
     core_type::CoreType,
-    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

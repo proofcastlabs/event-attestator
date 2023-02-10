@@ -1,6 +1,6 @@
 use common::{
     chains::eos::eos_global_sequences::ProcessedGlobalSequences,
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

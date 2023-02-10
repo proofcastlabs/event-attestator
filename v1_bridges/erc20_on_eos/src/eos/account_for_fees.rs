@@ -1,7 +1,7 @@
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
     fees::fee_constants::DISABLE_FEES,
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -1,7 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

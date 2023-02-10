@@ -1,6 +1,6 @@
 use common::{
     metadata::metadata_traits::ToMetadata,
-    state::EosState,
+    chains::eos::EosState,
     traits::DatabaseInterface,
     types::Result,
     EthChainId,
