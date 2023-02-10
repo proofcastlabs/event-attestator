@@ -1,4 +1,5 @@
-use common::{chains::eth::EthState, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eth::EthState;
 use ethereum_types::U256;
 
 use crate::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos};

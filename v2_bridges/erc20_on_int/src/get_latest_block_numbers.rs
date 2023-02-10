@@ -1,9 +1,5 @@
-use common::{
-    chains::eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt, EvmDbUtils},
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eth::{EthDbUtils, EthDbUtilsExt, EvmDbUtils};
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

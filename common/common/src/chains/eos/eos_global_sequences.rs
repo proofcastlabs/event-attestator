@@ -5,10 +5,9 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
-    chains::eos::eos_database_utils::EosDbUtils,
+    chains::eos::{eos_database_utils::EosDbUtils, EosState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     errors::AppError,
-    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };

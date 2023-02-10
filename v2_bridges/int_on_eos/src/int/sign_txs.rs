@@ -1,20 +1,18 @@
 use common::{
-    chains::{
-        eos::{
-            eos_chain_id::EosChainId,
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
-            },
-            eos_utils::{get_eos_tx_expiration_timestamp_with_offset, get_symbol_from_eos_asset},
+    chains::eos::{
+        eos_chain_id::EosChainId,
+        eos_crypto::{
+            eos_private_key::EosPrivateKey,
+            eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
         },
-        eth::EthState,
+        eos_utils::{get_eos_tx_expiration_timestamp_with_offset, get_symbol_from_eos_asset},
     },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::metadata_traits::{ToMetadata, ToMetadataChainId},
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::EthState;
 
 use crate::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos};
 

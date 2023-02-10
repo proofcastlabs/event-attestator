@@ -1,20 +1,23 @@
 use std::str::FromStr;
 
 use common::{
-    chains::eth::{
-        eth_contracts::erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2},
-        eth_database_utils::EthDbUtilsExt,
-        eth_log::{EthLog, EthLogExt, EthLogs},
-        eth_receipt::EthReceipt,
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     safe_addresses::SAFE_ALGO_ADDRESS,
     traits::DatabaseInterface,
     types::Result,
 };
 use common_algorand::AlgoDbUtils;
+use common_eth::{
+    Erc20VaultPegInEventParams,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthLogs,
+    EthReceipt,
+    EthState,
+    EthSubmissionMaterial,
+    ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
+};
 use ethereum_types::Address as EthAddress;
 use rust_algorand::{AlgorandAddress, AlgorandAppId};
 

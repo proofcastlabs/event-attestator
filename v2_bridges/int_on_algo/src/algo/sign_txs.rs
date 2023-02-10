@@ -1,19 +1,13 @@
-use common::{
-    chains::eth::{
-        eth_constants::ZERO_ETH_VALUE,
-        eth_contracts::erc20_vault::encode_erc20_vault_peg_out_fxn_data_with_user_data,
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::{EthTransaction as IntTransaction, EthTransactions as IntTransactions},
-        },
-        eth_database_utils::EthDbUtilsExt,
-    },
-    metadata::metadata_traits::ToMetadata,
-    traits::DatabaseInterface,
-    types::Result,
-    EthChainId,
-};
+use common::{metadata::metadata_traits::ToMetadata, traits::DatabaseInterface, types::Result, EthChainId};
 use common_algorand::AlgoState;
+use common_eth::{
+    encode_erc20_vault_peg_out_fxn_data_with_user_data,
+    EthDbUtilsExt,
+    EthPrivateKey,
+    EthTransaction as IntTransaction,
+    EthTransactions as IntTransactions,
+    ZERO_ETH_VALUE,
+};
 
 use crate::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos};
 

@@ -1,27 +1,21 @@
 use std::str::FromStr;
 
-use common::{
-    chains::eth::{
-        add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
-        check_parent_exists::check_for_parent_of_eth_block_in_state,
-        eth_submission_material::{
-            parse_eth_submission_material_json_and_put_in_state,
-            EthSubmissionMaterialJson,
-            EthSubmissionMaterialJsons,
-        },
-        remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
-        remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
-        update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
-        update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
-        update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
-        update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
-        validate_block_in_state::validate_eth_block_in_state,
-        validate_receipts_in_state::validate_receipts_in_state,
-        EthState,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eth::{
+    check_for_parent_of_eth_block_in_state,
+    maybe_add_eth_block_and_receipts_to_db_and_return_state,
+    maybe_remove_old_eth_tail_block_and_return_state,
+    maybe_remove_receipts_from_eth_canon_block_and_return_state,
+    maybe_update_eth_canon_block_hash_and_return_state,
+    maybe_update_eth_linker_hash_and_return_state,
+    maybe_update_eth_tail_block_hash_and_return_state,
+    maybe_update_latest_eth_block_hash_and_return_state,
+    parse_eth_submission_material_json_and_put_in_state,
+    validate_eth_block_in_state,
+    validate_receipts_in_state,
+    EthState,
+    EthSubmissionMaterialJson,
+    EthSubmissionMaterialJsons,
 };
 
 use crate::int::{
@@ -98,24 +92,23 @@ mod tests {
     use std::str::FromStr;
 
     use common::{
-        chains::{
-            btc::{
-                btc_crypto::btc_private_key::BtcPrivateKey,
-                btc_database_utils::BtcDbUtils,
-                btc_utils::convert_hex_tx_to_btc_transaction,
-                core_initialization::initialize_btc_core::init_btc_core,
-                utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
-            },
-            eth::{
-                eth_crypto::eth_private_key::EthPrivateKey,
-                eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-                eth_submission_material::EthSubmissionMaterial,
-                eth_utils::convert_hex_to_eth_address,
-                EthState,
-            },
+        chains::btc::{
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_database_utils::BtcDbUtils,
+            btc_utils::convert_hex_tx_to_btc_transaction,
+            core_initialization::initialize_btc_core::init_btc_core,
+            utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
         },
         state::BtcState,
         test_utils::get_test_database,
+    };
+    use common_eth::{
+        convert_hex_to_eth_address,
+        EthDbUtils,
+        EthDbUtilsExt,
+        EthPrivateKey,
+        EthState,
+        EthSubmissionMaterial,
     };
     use serde_json::json;
 

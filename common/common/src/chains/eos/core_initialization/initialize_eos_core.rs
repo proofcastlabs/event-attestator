@@ -22,9 +22,9 @@ use crate::{
             end_eos_db_transaction_and_return_state,
             start_eos_db_transaction_and_return_state,
         },
+        EosState,
     },
     core_type::CoreType,
-    state::EosState,
     traits::DatabaseInterface,
     types::Result,
 };

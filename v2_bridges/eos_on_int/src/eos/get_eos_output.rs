@@ -1,16 +1,17 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eth::{
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_traits::EthTxInfoCompatible,
-        eth_utils::convert_eth_address_to_string,
-        EthTransactions,
-    },
     state::EosState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
+};
+use common_eth::{
+    convert_eth_address_to_string,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthTransaction,
+    EthTransactions,
+    EthTxInfoCompatible,
 };
 use serde::{Deserialize, Serialize};
 

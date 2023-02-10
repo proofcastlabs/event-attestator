@@ -1,9 +1,5 @@
-use common::{
-    chains::eth::EthState,
-    dictionaries::eos_eth::EosEthTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eos_eth::EosEthTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eth::EthState;
 use ethereum_types::U256;
 
 use crate::{

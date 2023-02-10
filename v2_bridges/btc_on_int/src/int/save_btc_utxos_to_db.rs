@@ -1,5 +1,5 @@
+use common_eth::EthState;
 use common::{
-    chains::eth::EthState,
     chains::{btc::utxo_manager::utxo_database_utils::save_utxos_to_db},
     traits::DatabaseInterface,
     types::Result,

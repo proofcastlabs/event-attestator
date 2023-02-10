@@ -1,5 +1,4 @@
 use common::{
-    chains::eth::eth_utils::convert_eth_address_to_string,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -9,6 +8,7 @@ use common::{
     types::{Bytes, Result},
 };
 use common_algorand::{AlgoUserData, MAX_BYTES_FOR_ALGO_USER_DATA};
+use common_eth::convert_eth_address_to_string;
 
 use crate::int::algo_tx_info::IntOnAlgoAlgoTxInfo;
 

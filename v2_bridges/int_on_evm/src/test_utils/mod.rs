@@ -2,14 +2,10 @@
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use common::{
-    chains::eth::{
-        eth_crypto::eth_private_key::EthPrivateKey,
-        eth_submission_material::EthSubmissionMaterial,
-        eth_utils::convert_hex_to_eth_address,
-    },
     dictionaries::eth_evm::{EthEvmTokenDictionary, EthEvmTokenDictionaryEntry},
     types::Result,
 };
+use common_eth::{convert_hex_to_eth_address, EthPrivateKey, EthSubmissionMaterial};
 use ethereum_types::Address as EthAddress;
 use serde_json::json;
 

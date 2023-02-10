@@ -4,6 +4,7 @@ mod erc777_proxy;
 mod erc777_token;
 
 pub use self::{
+    erc20_token::{Erc20TokenTransferEvent, Erc20TokenTransferEvents, ToErc20TokenTransferEvent},
     erc20_vault::{
         encode_erc20_vault_add_supported_token_fx_data,
         encode_erc20_vault_migrate_fxn_data,
@@ -11,7 +12,9 @@ pub use self::{
         encode_erc20_vault_peg_out_fxn_data_with_user_data,
         encode_erc20_vault_peg_out_fxn_data_without_user_data,
         encode_erc20_vault_remove_supported_token_fx_data,
+        encode_erc20_vault_set_weth_unwrapper_address_fxn_data,
         Erc20VaultPegInEventParams,
+        ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
         ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
         ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
     },
@@ -25,6 +28,7 @@ pub use self::{
         encode_erc777_mint_with_no_data_fxn,
         get_signed_erc777_change_pnetwork_tx,
         Erc777RedeemEvent,
+        ERC777_REDEEM_EVENT_TOPIC_V2,
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,

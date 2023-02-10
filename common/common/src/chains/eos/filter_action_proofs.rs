@@ -8,8 +8,8 @@ use crate::{
         eos_constants::{PEGIN_ACTION_NAME, REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
         eos_merkle_utils::verify_merkle_proof,
         get_action_digest::get_action_digest,
+        EosState,
     },
-    state::EosState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };

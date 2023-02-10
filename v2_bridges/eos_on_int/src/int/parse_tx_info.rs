@@ -1,17 +1,18 @@
 use common::{
-    chains::eth::{
-        eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
-        eth_database_utils::EthDbUtilsExt,
-        eth_log::EthLog,
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::ToMetadataChainId,
     safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::Result,
     EthChainId,
+};
+use common_eth::{
+    Erc777RedeemEvent,
+    EthDbUtilsExt,
+    EthLog,
+    EthState,
+    EthSubmissionMaterial,
+    ERC777_REDEEM_EVENT_TOPIC_V2,
 };
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 

@@ -1,9 +1,4 @@
-use common::{
-    chains::eth::eth_database_utils::EthDbUtilsExt,
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_algorand::{
     end_algo_db_transaction_and_return_state,
     maybe_update_latest_block_with_expired_participants_and_return_state,
@@ -12,6 +7,7 @@ use common_algorand::{
     AlgoState,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::EthDbUtilsExt;
 use function_name::named;
 
 use crate::{

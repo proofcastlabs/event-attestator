@@ -21,6 +21,7 @@ pub mod eos_merkle_utils;
 pub mod eos_metadata;
 pub mod eos_producer_key;
 pub mod eos_producer_schedule;
+mod eos_state;
 pub mod eos_submission_material;
 pub mod eos_test_utils;
 pub mod eos_types;
@@ -40,3 +41,5 @@ pub mod save_latest_block_id;
 pub mod save_latest_block_num;
 pub mod validate_producer_slot;
 pub mod validate_signature;
+
+pub use eos_state::EosState;

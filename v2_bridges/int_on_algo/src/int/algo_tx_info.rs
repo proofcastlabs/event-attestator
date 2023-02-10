@@ -1,11 +1,11 @@
 use std::{fmt, str::FromStr};
 
 use common::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
     metadata::metadata_chain_id::MetadataChainId,
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_string,
 };
+use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string};
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use rust_algorand::{AlgorandAddress, AlgorandAppId};
@@ -198,7 +198,7 @@ IntOnAlgoAlgoTxInfo: {{
 
 #[cfg(test)]
 mod tests {
-    use common::chains::eth::eth_utils::convert_hex_to_eth_address;
+    use common_eth::convert_hex_to_eth_address;
 
     use super::*;
 

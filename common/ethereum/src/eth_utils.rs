@@ -6,7 +6,11 @@ use common::{
 use ethereum_types::{Address as EthAddress, H256, U256};
 use serde_json::Value as JsonValue;
 
-use crate::eth_constants::ETH_ADDRESS_SIZE_IN_BYTES;
+use crate::{EthPrivateKey, ETH_ADDRESS_SIZE_IN_BYTES};
+
+pub fn get_random_eth_address() -> EthAddress {
+    EthPrivateKey::generate_random().unwrap().to_public_key().to_address()
+}
 
 pub fn get_eth_address_from_str(eth_address_str: &str) -> Result<EthAddress> {
     info!("✔ Getting ETH address from str...");

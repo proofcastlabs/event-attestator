@@ -12,6 +12,7 @@ mod eth_database_transactions;
 mod eth_database_utils;
 mod eth_enclave_state;
 mod eth_log;
+mod eth_macros;
 mod eth_message_signer;
 mod eth_receipt;
 mod eth_receipt_type;
@@ -48,6 +49,8 @@ pub use self::{
         add_evm_block_to_db_and_return_state,
         generate_and_store_eos_on_eth_contract_address,
         initialize_eth_core_with_no_contract_tx,
+        initialize_eth_core_with_router_contract_and_return_state,
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state,
         initialize_evm_core_with_no_contract_tx,
         put_eth_canon_to_tip_length_in_db_and_return_state,
         put_eth_tail_block_hash_in_db_and_return_state,
@@ -64,6 +67,7 @@ pub use self::{
     },
     eth_block::{EthBlock, EthBlockJson},
     eth_constants::{
+        ETH_ADDRESS_SIZE_IN_BYTES,
         ETH_CORE_IS_INITIALIZED_JSON,
         EVM_CORE_IS_INITIALIZED_JSON,
         MAX_BYTES_FOR_ETH_USER_DATA,
@@ -77,17 +81,23 @@ pub use self::{
         encode_erc20_vault_peg_out_fxn_data_with_user_data,
         encode_erc20_vault_peg_out_fxn_data_without_user_data,
         encode_erc20_vault_remove_supported_token_fx_data,
+        encode_erc20_vault_set_weth_unwrapper_address_fxn_data,
         encode_erc777_mint_fxn_maybe_with_data,
         encode_erc777_mint_with_no_data_fxn,
         encode_mint_by_proxy_tx_data,
         get_signed_erc777_change_pnetwork_tx,
         get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
         get_signed_erc777_proxy_change_pnetwork_tx,
+        Erc20TokenTransferEvent,
+        Erc20TokenTransferEvents,
         Erc20VaultPegInEventParams,
         Erc777RedeemEvent,
         SupportedTopics,
+        ToErc20TokenTransferEvent,
+        ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
         ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
         ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
+        ERC777_REDEEM_EVENT_TOPIC_V2,
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
@@ -109,22 +119,27 @@ pub use self::{
     eth_state::EthState,
     eth_submission_material::{
         parse_eth_submission_material_and_put_in_state,
+        parse_eth_submission_material_json_and_put_in_state,
         EthSubmissionMaterial,
         EthSubmissionMaterialJson,
+        EthSubmissionMaterialJsons,
     },
     eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     eth_types::{AnySenderSigningParams, EthSigningParams},
     eth_utils::{
         convert_eth_address_to_string,
+        convert_eth_hash_to_string,
         convert_h256_to_bytes,
         convert_h256_to_string,
         convert_hex_to_eth_address,
         convert_hex_to_h256,
         get_eth_address_from_str,
+        get_random_eth_address,
     },
     increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
     increment_eth_account_nonce::maybe_increment_eth_account_nonce_and_return_state,
     increment_evm_account_nonce::maybe_increment_evm_account_nonce_and_return_eth_state,
+    increment_int_account_nonce::maybe_increment_int_account_nonce_and_return_eth_state,
     remove_old_eth_tail_block::{
         maybe_remove_old_eth_tail_block_and_return_state,
         maybe_remove_old_evm_tail_block_and_return_state,
@@ -151,6 +166,7 @@ pub use self::{
     },
     validate_block_in_state::{validate_eth_block_in_state, validate_evm_block_in_state},
     validate_receipts_in_state::validate_receipts_in_state,
+    vault_using_cores::VaultUsingCores,
 };
 
 #[macro_use]

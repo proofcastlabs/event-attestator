@@ -1,7 +1,6 @@
 use common::{
     metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     types::{Bytes, Result},
-    EthChainId,
 };
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
@@ -9,7 +8,6 @@ use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use strum_macros::EnumIter;
 
 use crate::{
-    eth_constants::ARBITRUM_GAS_MULTIPLIER,
     eth_contracts::{encode_fxn_call, SupportedTopics},
     eth_log::EthLogExt,
 };
@@ -460,15 +458,6 @@ mod tests {
             Err(AppError::Custom(error)) => assert_eq!(error, expected_error),
             Err(_) => panic!("Wrong error received!"),
         }
-    }
-
-    #[test]
-    fn arbitrum_gas_limits_should_be_multiplies_of_normal_gas_limits() {
-        let eth_chain_id = EthChainId::Mainnet;
-        let arbitrum_chain_id = EthChainId::ArbitrumMainnet;
-        let eth_gas_limit = eth_chain_id.get_erc20_vault_pegout_with_user_data_gas_limit();
-        let arbitrum_gas_limit = arbitrum_chain_id.get_erc20_vault_pegout_with_user_data_gas_limit();
-        assert_eq!(arbitrum_gas_limit, eth_gas_limit * ARBITRUM_GAS_MULTIPLIER);
     }
 
     #[test]

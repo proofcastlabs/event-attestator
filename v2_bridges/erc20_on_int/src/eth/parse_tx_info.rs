@@ -1,15 +1,14 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc20_vault::{Erc20VaultPegInEventParams, ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2},
-        eth_database_utils::EthDbUtilsExt,
-        eth_log::{EthLog, EthLogExt, EthLogs},
-        eth_receipt::EthReceipt,
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eth::{
+    Erc20VaultPegInEventParams,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthLogs,
+    EthReceipt,
+    EthState,
+    EthSubmissionMaterial,
+    ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
 };
 use ethereum_types::Address as EthAddress;
 
@@ -116,7 +115,8 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eth::eth_utils::convert_hex_to_eth_address, metadata::metadata_chain_id::MetadataChainId};
+    use common::metadata::metadata_chain_id::MetadataChainId;
+    use common_eth::convert_hex_to_eth_address;
     use ethereum_types::{H256 as EthHash, U256};
 
     use super::*;

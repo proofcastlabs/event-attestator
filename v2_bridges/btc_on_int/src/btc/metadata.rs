@@ -1,5 +1,4 @@
 use common::{
-    chains::eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_chain_id::MetadataChainId,
@@ -9,6 +8,7 @@ use common::{
     },
     types::{Bytes, Result},
 };
+use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
 
 use crate::btc::BtcOnIntIntTxInfo;
 

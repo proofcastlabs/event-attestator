@@ -371,6 +371,7 @@ pub fn get_random_u256() -> U256 {
     U256::from(EthHash::random().as_bytes())
 }
 
+#[cfg(test)]
 mod tests {
     use super::*;
     use crate::{eth_log::EthLogExt, eth_utils::convert_hex_to_h256};

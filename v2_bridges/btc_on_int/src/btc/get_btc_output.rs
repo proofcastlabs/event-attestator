@@ -4,17 +4,18 @@ use std::str::FromStr;
 #[cfg(test)]
 use common::errors::AppError;
 use common::{
-    chains::eth::{
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_traits::EthTxInfoCompatible,
-        eth_utils::convert_eth_address_to_string,
-        EthTransactions,
-    },
     state::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
     utils::get_unix_timestamp,
+};
+use common_eth::{
+    convert_eth_address_to_string,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthTransaction,
+    EthTransactions,
+    EthTxInfoCompatible,
 };
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};

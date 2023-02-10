@@ -1,20 +1,19 @@
 use common::{
-    chains::eth::{
-        eth_constants::ZERO_ETH_VALUE,
-        eth_contracts::erc777_token::encode_erc777_mint_fxn_maybe_with_data,
-        eth_crypto::{
-            eth_private_key::EthPrivateKey as EvmPrivateKey,
-            eth_transaction::{EthTransaction as EvmTransaction, EthTransactions as EvmTransactions},
-        },
-        eth_database_utils::EthDbUtilsExt,
-        EthState,
-    },
     dictionaries::eth_evm::EthEvmTokenDictionary,
     metadata::metadata_traits::ToMetadata,
     safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
     EthChainId,
+};
+use common_eth::{
+    encode_erc777_mint_fxn_maybe_with_data,
+    EthDbUtilsExt,
+    EthPrivateKey as EvmPrivateKey,
+    EthState,
+    EthTransaction as EvmTransaction,
+    EthTransactions as EvmTransactions,
+    ZERO_ETH_VALUE,
 };
 use ethereum_types::U256;
 
@@ -132,7 +131,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
 
 #[cfg(test)]
 mod tests {
-    use common::chains::eth::eth_traits::EthTxInfoCompatible;
+    use common_eth::EthTxInfoCompatible;
 
     use super::*;
     use crate::test_utils::{get_sample_evm_private_key, get_sample_evm_tx_infos, get_sample_token_dictionary};

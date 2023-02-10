@@ -13,9 +13,9 @@ use crate::{
         eos_producer_schedule::EosProducerScheduleV2,
         eos_types::{Checksum256s, EosBlockHeaderJson},
         eos_utils::convert_hex_to_checksum256,
+        EosState,
     },
     errors::AppError,
-    state::EosState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

@@ -1,5 +1,4 @@
 use common::{
-    chains::eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -8,6 +7,7 @@ use common::{
     },
     types::{Bytes, Result},
 };
+use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
 
 use crate::int::eth_tx_info::Erc20OnIntEthTxInfo;
 

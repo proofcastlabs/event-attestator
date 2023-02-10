@@ -1,5 +1,4 @@
 use common::{
-    chains::eth::eth_database_utils::EthDatabaseKeysJson,
     constants::DB_KEY_PREFIX,
     dictionaries::dictionary_constants::EVM_ALGO_DICTIONARY_KEY,
     traits::DatabaseInterface,
@@ -7,6 +6,7 @@ use common::{
 };
 use common_algorand::AlgoDatabaseKeysJson;
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
+use common_eth::EthDatabaseKeysJson;
 use function_name::named;
 use serde_json::json;
 

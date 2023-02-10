@@ -1,9 +1,5 @@
-use common::{
-    chains::eth::EthState,
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eth::EthState;
 use ethereum_types::U256;
 
 use crate::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos};

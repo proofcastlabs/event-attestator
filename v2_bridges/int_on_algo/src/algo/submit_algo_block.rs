@@ -78,14 +78,6 @@ mod tests {
     use std::str::FromStr;
 
     use common::{
-        chains::eth::{
-            core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-            eth_crypto::eth_private_key::EthPrivateKey,
-            eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-            eth_utils::convert_hex_to_eth_address,
-            vault_using_cores::VaultUsingCores,
-            EthState,
-        },
         constants::MIN_DATA_SENSITIVITY_LEVEL,
         dictionaries::evm_algo::EvmAlgoTokenDictionary,
         test_utils::get_test_database,
@@ -93,6 +85,15 @@ mod tests {
         EthChainId,
     };
     use common_algorand::AlgoDbUtils;
+    use common_eth::{
+        convert_hex_to_eth_address,
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+        EthDbUtils,
+        EthDbUtilsExt,
+        EthPrivateKey,
+        EthState,
+        VaultUsingCores,
+    };
     use rust_algorand::{AlgorandAddress, AlgorandGenesisId};
     use serde_json::json;
     use serial_test::serial;

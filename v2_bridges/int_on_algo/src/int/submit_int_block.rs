@@ -1,27 +1,21 @@
 use std::str::FromStr;
 
-use common::{
-    chains::eth::{
-        add_block_and_receipts_to_db::maybe_add_eth_block_and_receipts_to_db_and_return_state,
-        check_parent_exists::check_for_parent_of_eth_block_in_state,
-        eth_submission_material::{
-            parse_eth_submission_material_json_and_put_in_state,
-            EthSubmissionMaterialJson,
-            EthSubmissionMaterialJsons,
-        },
-        remove_old_eth_tail_block::maybe_remove_old_eth_tail_block_and_return_state,
-        remove_receipts_from_canon_block::maybe_remove_receipts_from_eth_canon_block_and_return_state,
-        update_eth_canon_block_hash::maybe_update_eth_canon_block_hash_and_return_state,
-        update_eth_linker_hash::maybe_update_eth_linker_hash_and_return_state,
-        update_eth_tail_block_hash::maybe_update_eth_tail_block_hash_and_return_state,
-        update_latest_block_hash::maybe_update_latest_eth_block_hash_and_return_state,
-        validate_block_in_state::validate_eth_block_in_state,
-        validate_receipts_in_state::validate_receipts_in_state,
-        EthState,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eth::{
+    check_for_parent_of_eth_block_in_state,
+    maybe_add_eth_block_and_receipts_to_db_and_return_state,
+    maybe_remove_old_eth_tail_block_and_return_state,
+    maybe_remove_receipts_from_eth_canon_block_and_return_state,
+    maybe_update_eth_canon_block_hash_and_return_state,
+    maybe_update_eth_linker_hash_and_return_state,
+    maybe_update_eth_tail_block_hash_and_return_state,
+    maybe_update_latest_eth_block_hash_and_return_state,
+    parse_eth_submission_material_json_and_put_in_state,
+    validate_eth_block_in_state,
+    validate_receipts_in_state,
+    EthState,
+    EthSubmissionMaterialJson,
+    EthSubmissionMaterialJsons,
 };
 
 use crate::int::{
@@ -101,13 +95,6 @@ mod tests {
     use std::str::FromStr;
 
     use common::{
-        chains::eth::{
-            core_initialization::initialize_eth_core::initialize_eth_core_with_vault_and_router_contracts_and_return_state,
-            eth_crypto::eth_private_key::EthPrivateKey,
-            eth_database_utils::{EthDbUtilsExt, EvmDbUtils},
-            eth_utils::convert_hex_to_eth_address,
-            vault_using_cores::VaultUsingCores,
-        },
         constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
         dictionaries::evm_algo::EvmAlgoTokenDictionary,
         test_utils::get_test_database,
@@ -115,6 +102,14 @@ mod tests {
         EthChainId,
     };
     use common_algorand::AlgoDbUtils;
+    use common_eth::{
+        convert_hex_to_eth_address,
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+        EthDbUtilsExt,
+        EthPrivateKey,
+        EvmDbUtils,
+        VaultUsingCores,
+    };
     use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandKeys};
     use serde_json::json;
     use serial_test::serial;

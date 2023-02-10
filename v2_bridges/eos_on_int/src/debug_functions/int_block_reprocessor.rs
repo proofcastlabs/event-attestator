@@ -1,18 +1,14 @@
-use common::{
-    chains::eth::{
-        eth_database_transactions::end_eth_db_transaction_and_return_state,
-        eth_database_utils::EthDbUtilsExt,
-        eth_submission_material::parse_eth_submission_material_and_put_in_state,
-        increment_eos_account_nonce::maybe_increment_eos_account_nonce_and_return_state,
-        validate_block_in_state::validate_eth_block_in_state,
-        validate_receipts_in_state::validate_receipts_in_state,
-        EthState,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::{
+    end_eth_db_transaction_and_return_state,
+    maybe_increment_eos_account_nonce_and_return_state,
+    parse_eth_submission_material_and_put_in_state,
+    validate_eth_block_in_state,
+    validate_receipts_in_state,
+    EthDbUtilsExt,
+    EthState,
+};
 use function_name::named;
 
 use crate::{

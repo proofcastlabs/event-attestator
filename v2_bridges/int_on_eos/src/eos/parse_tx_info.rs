@@ -1,8 +1,5 @@
 use common::{
-    chains::{
-        eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
-        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
+    chains::eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     state::EosState,
@@ -10,6 +7,7 @@ use common::{
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
 };
+use common_eth::{EthDbUtils, EthDbUtilsExt};
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos};
@@ -128,8 +126,9 @@ pub fn maybe_parse_int_tx_infos_and_put_in_state<D: DatabaseInterface>(state: Eo
         &eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
     )
     .and_then(|infos| {
+        let global_sequences = infos.get_global_sequences();
         info!("✔ Parsed {} `IntOnEosIntTxInfos`!", infos.len());
-        infos.to_bytes()
+        let bytes = infos.to_bytes()?;
+        Ok(state.add_tx_infos(bytes).add_global_sequences(global_sequences))
     })
-    .map(|bytes| state.add_tx_infos(bytes))
 }

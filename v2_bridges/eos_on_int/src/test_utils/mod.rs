@@ -2,14 +2,12 @@
 use std::fs::read_to_string;
 
 use common::{
-    chains::{
-        eos::eos_crypto::eos_private_key::EosPrivateKey,
-        eth::{eth_crypto::eth_private_key::EthPrivateKey, eth_utils::convert_hex_to_eth_address},
-    },
+    chains::eos::eos_crypto::eos_private_key::EosPrivateKey,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryEntryJson},
     errors::AppError,
     types::Result,
 };
+use common_eth::{convert_hex_to_eth_address, EthPrivateKey};
 use ethereum_types::Address as EthAddress;
 
 macro_rules! write_int_paths_and_getter_fxn {

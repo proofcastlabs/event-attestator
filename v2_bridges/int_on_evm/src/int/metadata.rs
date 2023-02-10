@@ -1,5 +1,4 @@
 use common::{
-    chains::eth::eth_constants::MAX_BYTES_FOR_ETH_USER_DATA,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -9,6 +8,7 @@ use common::{
     safe_addresses::safely_convert_str_to_eth_address,
     types::{Bytes, Result},
 };
+use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
 
 use crate::int::evm_tx_info::IntOnEvmEvmTxInfo;
 

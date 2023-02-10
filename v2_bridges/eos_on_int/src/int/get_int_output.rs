@@ -1,14 +1,12 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::{
-        eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
-        eth::{eth_database_utils::EthDbUtilsExt, EthState},
-    },
+    chains::eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
     metadata::ToMetadataChainId,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::{EthDbUtilsExt, EthState};
 
 use crate::int::{EosOnIntEosTxInfo, EosOnIntEosTxInfos};
 

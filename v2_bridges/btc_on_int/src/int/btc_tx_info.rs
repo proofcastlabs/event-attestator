@@ -1,9 +1,7 @@
 use std::fmt;
 
-use common::{
-    chains::eth::eth_utils::{convert_eth_address_to_string, convert_eth_hash_to_string},
-    types::{Byte, Bytes, Result},
-};
+use common::types::{Byte, Bytes, Result};
+use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string};
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};

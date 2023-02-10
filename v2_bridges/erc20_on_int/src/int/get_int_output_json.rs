@@ -1,18 +1,12 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eth::{
-        any_sender::relay_transaction::RelayTransaction,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDbUtilsExt,
-        eth_traits::EthTxInfoCompatible,
-        EthState,
-    },
     metadata::metadata_traits::ToMetadataChainId,
     traits::DatabaseInterface,
     types::{NoneError, Result},
     EthChainId,
 };
+use common_eth::{EthDbUtilsExt, EthState, EthTransaction, EthTxInfoCompatible, RelayTransaction};
 
 use crate::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos};
 

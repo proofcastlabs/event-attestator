@@ -8,12 +8,11 @@ use serde::{Deserialize, Serialize};
 pub mod test_utils;
 
 use crate::{
-    chains::eos::eos_utils::remove_symbol_from_eos_asset,
+    chains::eos::{eos_utils::remove_symbol_from_eos_asset, EosState},
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
     errors::AppError,
     fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
-    state::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{

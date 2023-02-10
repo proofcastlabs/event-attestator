@@ -1,7 +1,7 @@
 #[macro_export]
 macro_rules! impl_to_erc20_token_event {
     ($path:path, $value:ident, $to:ident, $from:ident, $token_address:ident) => {
-        use $crate::eth_contracts::erc20_token::{Erc20TokenTransferEvent, ToErc20TokenTransferEvent};
+        use $crate::{Erc20TokenTransferEvent, ToErc20TokenTransferEvent};
 
         impl ToErc20TokenTransferEvent for $path {
             fn to_erc20_token_transfer_event(&self) -> Erc20TokenTransferEvent {
@@ -19,10 +19,10 @@ macro_rules! make_erc20_token_event_filterer {
         paste! {
             use $crate::{
                 EthState,
-                {
-                    eth_contracts::erc20_token::Erc20TokenTransferEvents,
-                    eth_database_utils::EthDbUtilsExt,
-                },
+                Erc20TokenTransferEvents,
+                EthDbUtilsExt,
+            };
+            use common::{
                 traits::DatabaseInterface,
                 types::Result,
             };

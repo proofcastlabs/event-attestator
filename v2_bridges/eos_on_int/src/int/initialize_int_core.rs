@@ -1,21 +1,12 @@
-use common::{
-    chains::eth::{
-        core_initialization::{
-            get_eth_core_init_output_json::EthInitializationOutput,
-            initialize_eth_core::initialize_eth_core_with_router_contract_and_return_state,
-        },
-        eth_constants::ETH_CORE_IS_INITIALIZED_JSON,
-        eth_database_transactions::{
-            end_eth_db_transaction_and_return_state,
-            start_eth_db_transaction_and_return_state,
-        },
-        eth_utils::convert_hex_to_eth_address,
-        EthState,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-    EthChainId,
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, EthChainId};
+use common_eth::{
+    convert_hex_to_eth_address,
+    end_eth_db_transaction_and_return_state,
+    initialize_eth_core_with_router_contract_and_return_state,
+    start_eth_db_transaction_and_return_state,
+    EthInitializationOutput,
+    EthState,
+    ETH_CORE_IS_INITIALIZED_JSON,
 };
 
 /// # Maybe Initialize INT Core

@@ -3,16 +3,9 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use common::{
-    chains::eth::{
-        eth_crypto::eth_transaction::EthTransaction as IntTransaction,
-        eth_database_utils::EthDbUtilsExt,
-        eth_traits::EthTxInfoCompatible,
-    },
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
 use common_algorand::AlgoState;
+use common_eth::{EthDbUtilsExt, EthTransaction as IntTransaction, EthTxInfoCompatible};
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 

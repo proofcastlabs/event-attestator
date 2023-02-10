@@ -1,26 +1,26 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::{
-        btc::{
-            btc_constants::MAX_NUM_OUTPUTS,
-            btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            btc_utils::convert_wei_to_satoshis,
-            utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
-        },
-        eth::{
-            eth_contracts::erc777_token::{Erc777RedeemEvent, ERC777_REDEEM_EVENT_TOPIC_V2},
-            eth_database_utils::EthDbUtilsExt,
-            eth_log::{EthLog, EthLogExt},
-            eth_receipt::EthReceipt,
-            eth_submission_material::EthSubmissionMaterial,
-            EthState,
-        },
+    chains::btc::{
+        btc_constants::MAX_NUM_OUTPUTS,
+        btc_crypto::btc_private_key::BtcPrivateKey,
+        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
+        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+        btc_utils::convert_wei_to_satoshis,
+        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     safe_addresses::safely_convert_str_to_btc_address,
     traits::DatabaseInterface,
     types::Result,
+};
+use common_eth::{
+    Erc777RedeemEvent,
+    EthDbUtilsExt,
+    EthLog,
+    EthLogExt,
+    EthReceipt,
+    EthState,
+    EthSubmissionMaterial,
+    ERC777_REDEEM_EVENT_TOPIC_V2,
 };
 use ethereum_types::Address as EthAddress;
 

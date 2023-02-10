@@ -8,10 +8,10 @@ use common::{
             utxo_manager::utxo_types::BtcUtxosAndValues,
         },
     },
-            chains::eth::EthState,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eth::eth::EthState;
 
 pub fn extract_btc_utxos_from_btc_txs(enclave_address: &str, btc_txs: &[BtcTransaction]) -> Result<BtcUtxosAndValues> {
     get_pay_to_pub_key_hash_script(enclave_address).map(|target_script| extract_utxos_from_txs(&target_script, btc_txs))

@@ -93,24 +93,17 @@ mod tests {
     use std::str::FromStr;
 
     use common::{
-        chains::{
-            btc::{
-                btc_crypto::btc_private_key::BtcPrivateKey,
-                btc_database_utils::BtcDbUtils,
-                btc_submission_material::BtcSubmissionMaterial,
-                core_initialization::initialize_btc_core::init_btc_core,
-                utxo_manager::utxo_database_utils::{get_first_utxo_and_value, get_utxo_nonce_from_db},
-            },
-            eth::{
-                eth_crypto::{eth_private_key::EthPrivateKey, eth_transaction::EthTransaction},
-                eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-                eth_utils::convert_hex_to_eth_address,
-                EthState,
-            },
+        chains::btc::{
+            btc_crypto::btc_private_key::BtcPrivateKey,
+            btc_database_utils::BtcDbUtils,
+            btc_submission_material::BtcSubmissionMaterial,
+            core_initialization::initialize_btc_core::init_btc_core,
+            utxo_manager::utxo_database_utils::{get_first_utxo_and_value, get_utxo_nonce_from_db},
         },
         metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId, Metadata},
         test_utils::get_test_database,
     };
+    use common_eth::{convert_hex_to_eth_address, EthDbUtils, EthDbUtilsExt, EthPrivateKey, EthState, EthTransaction};
     use ethereum_types::{Address as EthAddress, U256};
     use serde_json::json;
 

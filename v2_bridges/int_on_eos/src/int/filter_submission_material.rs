@@ -1,14 +1,11 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc20_vault::ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
-        eth_database_utils::EthDbUtilsExt,
-        eth_receipt::{EthReceipt, EthReceipts},
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
-    dictionaries::eos_eth::EosEthTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{dictionaries::eos_eth::EosEthTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eth::{
+    EthDbUtilsExt,
+    EthReceipt,
+    EthReceipts,
+    EthState,
+    EthSubmissionMaterial,
+    ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
 };
 
 use crate::int::eos_tx_info::IntOnEosEosTxInfos;

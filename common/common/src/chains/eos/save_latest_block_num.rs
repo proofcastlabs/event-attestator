@@ -1,4 +1,4 @@
-use crate::{state::EosState, traits::DatabaseInterface, types::Result};
+use crate::{chains::eos::EosState, traits::DatabaseInterface, types::Result};
 
 pub fn save_latest_block_num_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Saving latest EOS block num in db...");

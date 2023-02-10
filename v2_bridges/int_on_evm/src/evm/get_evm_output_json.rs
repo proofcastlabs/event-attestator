@@ -1,16 +1,16 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eth::{
-        any_sender::relay_transaction::RelayTransaction,
-        eth_crypto::eth_transaction::EthTransaction,
-        eth_database_utils::EthDbUtilsExt,
-        eth_traits::EthTxInfoCompatible,
-        eth_utils::convert_eth_address_to_string,
-        EthState,
-    },
     traits::DatabaseInterface,
     types::{NoneError, Result},
+};
+use common_eth::{
+    convert_eth_address_to_string,
+    EthDbUtilsExt,
+    EthState,
+    EthTransaction,
+    EthTxInfoCompatible,
+    RelayTransaction,
 };
 
 use crate::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos};

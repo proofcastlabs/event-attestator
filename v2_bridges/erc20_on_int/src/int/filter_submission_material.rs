@@ -1,14 +1,5 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc777_token::ERC777_REDEEM_EVENT_TOPIC_V2,
-        eth_receipt::{EthReceipt, EthReceipts},
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eth::{EthReceipt, EthReceipts, EthState, EthSubmissionMaterial, ERC777_REDEEM_EVENT_TOPIC_V2};
 
 use crate::int::eth_tx_info::Erc20OnIntEthTxInfos;
 

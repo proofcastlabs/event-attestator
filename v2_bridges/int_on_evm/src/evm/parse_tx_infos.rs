@@ -1,15 +1,5 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc777_token::Erc777RedeemEvent,
-        eth_database_utils::EthDbUtilsExt,
-        eth_receipt::EthReceipt,
-        eth_submission_material::EthSubmissionMaterial,
-        EthState,
-    },
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eth::{Erc777RedeemEvent, EthDbUtilsExt, EthReceipt, EthState, EthSubmissionMaterial};
 use ethereum_types::Address as EthAddress;
 
 use crate::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos};
@@ -102,7 +92,8 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eth::eth_utils::convert_hex_to_eth_address, metadata::metadata_chain_id::MetadataChainId};
+    use common::metadata::metadata_chain_id::MetadataChainId;
+    use common_eth::convert_hex_to_eth_address;
     use ethereum_types::{H256 as EthHash, U256};
 
     use super::*;

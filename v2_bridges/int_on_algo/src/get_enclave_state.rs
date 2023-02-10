@@ -1,8 +1,4 @@
 use common::{
-    chains::eth::{
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_enclave_state::EthEnclaveState,
-    },
     core_type::CoreType,
     dictionaries::evm_algo::EvmAlgoTokenDictionary,
     traits::DatabaseInterface,
@@ -10,6 +6,7 @@ use common::{
 };
 use common_algorand::{AlgoDbUtils, AlgoEnclaveState};
 use common_enclave_info::EnclaveInfo;
+use common_eth::{EthDbUtils, EthDbUtilsExt, EthEnclaveState};
 use serde::{Deserialize, Serialize};
 
 use super::constants::CORE_TYPE;

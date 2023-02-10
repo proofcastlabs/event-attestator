@@ -1,19 +1,19 @@
 use common::{
-    chains::eth::{
-        eth_constants::ZERO_ETH_VALUE,
-        eth_contracts::erc777_token::encode_erc777_mint_fxn_maybe_with_data,
-        eth_crypto::{
-            eth_private_key::EthPrivateKey,
-            eth_transaction::{EthTransaction, EthTransactions},
-        },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-        eth_types::EthSigningParams,
-    },
     metadata::metadata_traits::ToMetadata,
     state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     EthChainId,
+};
+use common_eth::{
+    encode_erc777_mint_fxn_maybe_with_data,
+    EthDbUtils,
+    EthDbUtilsExt,
+    EthPrivateKey,
+    EthSigningParams,
+    EthTransaction,
+    EthTransactions,
+    ZERO_ETH_VALUE,
 };
 
 use crate::btc::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos};

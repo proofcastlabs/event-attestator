@@ -1,20 +1,17 @@
 use common::{
-    chains::eth::{
-        eth_contracts::{
-            erc777_proxy::{
-                get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
-                get_signed_erc777_proxy_change_pnetwork_tx,
-            },
-            erc777_token::get_signed_erc777_change_pnetwork_tx,
-        },
-        eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eth::{
+    get_signed_erc777_change_pnetwork_tx,
+    get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
+    get_signed_erc777_proxy_change_pnetwork_tx,
+    EthDbUtils,
+    EthDbUtilsExt,
+};
 use ethereum_types::Address as EthAddress;
 use function_name::named;
 

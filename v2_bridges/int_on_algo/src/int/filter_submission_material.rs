@@ -1,12 +1,5 @@
-use common::{
-    chains::eth::{
-        eth_contracts::erc20_vault::ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
-        eth_database_utils::EthDbUtilsExt,
-        EthState,
-    },
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eth::{EthDbUtilsExt, EthState, ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2};
 
 pub fn filter_submission_material_for_peg_in_events_in_state<D: DatabaseInterface>(
     state: EthState<D>,

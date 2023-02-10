@@ -1,8 +1,5 @@
 use common::{
-    chains::{
-        eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
-        eth::eth_database_utils::{EthDbUtils, EthDbUtilsExt},
-    },
+    chains::eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::{MetadataChainId, ToMetadataChainId},
     state::EosState,
@@ -10,6 +7,7 @@ use common::{
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
 };
+use common_eth::{EthDbUtils, EthDbUtilsExt};
 use eos_chain::{
     symbol::symbol_to_string as eos_symbol_to_string,
     AccountName as EosAccountName,

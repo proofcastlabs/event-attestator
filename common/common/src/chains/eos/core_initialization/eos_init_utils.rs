@@ -17,10 +17,10 @@ use crate::{
         eos_utils::convert_hex_to_checksum256,
         protocol_features::{EnabledFeatures, WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH},
         validate_signature::check_block_signature_is_valid,
+        EosState,
     },
     constants::CORE_IS_VALIDATING,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
-    state::EosState,
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
 };

@@ -1,11 +1,10 @@
 use common::EthChainId;
 use ethereum_types::{Address, H256};
 
-use crate::{EthPrivateKey, RelayTransaction};
+use crate::EthPrivateKey;
 
 pub type EthHash = H256;
 pub type EthAddress = Address;
-pub type RelayTransactions = Vec<RelayTransaction>;
 
 #[derive(Debug)]
 pub struct EthSigningParams {
