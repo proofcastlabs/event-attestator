@@ -1,6 +1,7 @@
 use std::str::FromStr;
 
 use common::{
+    traits::Serdable,
     types::{Byte, Bytes, Result},
     EosChainId,
 };
@@ -21,16 +22,18 @@ use crate::{
     eos_crypto::eos_private_key::EosPrivateKey,
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Deref, Constructor)]
+#[derive(Debug, Clone, Eq, PartialEq, Default, Deref, Constructor, Serialize, Deserialize)]
 pub struct EosSignedTransactions(pub Vec<EosSignedTransaction>);
 
-#[derive(Clone, Debug, Eq, PartialEq, Constructor, Deserialize, Serialize)]
+#[derive(Clone, Debug, Eq, PartialEq, Default, Constructor, Deserialize, Serialize)]
 pub struct EosSignedTransaction {
     pub amount: String,
     pub recipient: String,
     pub signature: String,
     pub transaction: String,
 }
+
+impl Serdable for EosSignedTransactions {}
 
 impl EosSignedTransaction {
     fn get_signing_data_from_unsigned_tx(unsigned_tx: &EosTransaction, chain_id: &EosChainId) -> Result<Bytes> {
