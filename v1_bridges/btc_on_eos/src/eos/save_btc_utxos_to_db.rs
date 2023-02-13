@@ -1,8 +1,9 @@
 use common::{
-    chains::{btc::utxo_manager::utxo_database_utils::save_utxos_to_db, eos::EosState},
+    chains::btc::utxo_manager::utxo_database_utils::save_utxos_to_db,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eos::EosState;
 
 pub fn maybe_save_btc_utxos_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!("✔ Maybe saving BTC UTXOs...");

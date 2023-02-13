@@ -1,8 +1,5 @@
-use common::{
-    chains::eos::core_initialization::initialize_eos_core::maybe_initialize_eos_core_with_eos_account_and_symbol,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eos::maybe_initialize_eos_core_with_eos_account_and_symbol;
 
 pub fn maybe_initialize_eos_core<D: DatabaseInterface>(
     db: &D,

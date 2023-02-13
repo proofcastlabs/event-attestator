@@ -1,5 +1,4 @@
 use common::{
-    chains::eos::eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
     metadata::{
         metadata_address::MetadataAddress,
         metadata_protocol_id::MetadataProtocolId,
@@ -8,6 +7,7 @@ use common::{
     },
     types::{Bytes, Result},
 };
+use common_eos::MAX_BYTES_FOR_EOS_USER_DATA;
 
 use crate::int::eos_tx_info::EosOnIntEosTxInfo;
 

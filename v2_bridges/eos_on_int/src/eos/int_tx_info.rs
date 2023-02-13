@@ -1,10 +1,10 @@
 use common::{
     address::Address,
-    chains::eos::eos_global_sequences::{GlobalSequence, GlobalSequences},
     metadata::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
 };
+use common_eos::{GlobalSequence, GlobalSequences};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};

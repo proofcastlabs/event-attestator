@@ -56,6 +56,11 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
         }
     }
 
+    pub fn add_eos_signed_txs(mut self, bytes: Bytes) -> Self {
+        self.eos_signed_txs = bytes;
+        self
+    }
+
     pub fn add_btc_submission_json(mut self, submission_json: BtcSubmissionMaterialJson) -> Result<BtcState<'a, D>> {
         match self.submission_json {
             Some(_) => Err(get_no_overwrite_state_err("submission_json").into()),

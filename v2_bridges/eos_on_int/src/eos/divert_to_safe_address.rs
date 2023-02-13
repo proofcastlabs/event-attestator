@@ -1,4 +1,5 @@
-use common::{chains::eos::EosState, traits::TxInfo};
+use common::traits::TxInfo;
+use common_eos::EosState;
 
 use crate::eos::int_tx_info::{EosOnIntIntTxInfo, EosOnIntIntTxInfos};
 

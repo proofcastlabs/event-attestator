@@ -1,11 +1,7 @@
 use std::str::FromStr;
 
-use common::{
-    chains::eos::eos_utils::remove_symbol_from_eos_asset,
-    dictionaries::eos_eth::EosEthTokenDictionary,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eos_eth::EosEthTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_eos::remove_symbol_from_eos_asset;
 use common_eth::EthState;
 use eos_chain::AccountName as EosAccountName;
 

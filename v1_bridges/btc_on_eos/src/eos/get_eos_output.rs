@@ -1,11 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use common::{
-    chains::{btc::btc_utils::get_hex_tx_from_signed_btc_tx, eos::EosState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx, traits::DatabaseInterface, types::Result};
+use common_eos::EosState;
 use serde::{Deserialize, Serialize};
 
 use crate::eos::btc_tx_info::{BtcOnEosBtcTxInfo, BtcOnEosBtcTxInfos};

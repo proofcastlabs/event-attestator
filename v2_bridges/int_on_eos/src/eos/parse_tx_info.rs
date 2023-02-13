@@ -1,12 +1,12 @@
 use common::{
-    chains::eos::{eos_action_proofs::EosActionProof, eos_chain_id::EosChainId},
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
-    chains::eos::EosState,
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
+    EosChainId,
 };
+use common_eos::{EosActionProof, EosState};
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 use ethereum_types::{Address as EthAddress, U256};
 

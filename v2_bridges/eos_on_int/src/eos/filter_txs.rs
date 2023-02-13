@@ -1,9 +1,5 @@
-use common::{
-    chains::eos::eos_global_sequences::ProcessedGlobalSequences,
-    chains::eos::EosState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eos::{EosState, ProcessedGlobalSequences};
 use ethereum_types::U256;
 
 use crate::{

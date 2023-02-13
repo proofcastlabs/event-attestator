@@ -1,11 +1,12 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eos::{eos_chain_id::EosChainId, eos_crypto::eos_transaction::EosSignedTransaction},
     metadata::ToMetadataChainId,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
+    EosChainId,
 };
+use common_eos::{EosDbUtils, EosSignedTransaction, EosSignedTransactions};
 use common_eth::{EthDbUtilsExt, EthState};
 
 use crate::int::{EosOnIntEosTxInfo, EosOnIntEosTxInfos};
@@ -72,31 +73,32 @@ pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOut
             .get_eth_latest_block_from_db()?
             .get_block_number()?
             .as_usize(),
-        eos_signed_transactions: match state.eos_transactions {
-            None => vec![],
-            Some(ref eos_txs) => {
-                let number_of_txs = eos_txs.len() as u64;
-                let eos_account_nonce = state.eos_db_utils.get_eos_account_nonce_from_db()?;
-                let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
-                let start_nonce = if number_of_txs > eos_account_nonce {
-                    return Err("EOS account nonce has not been incremented correctly!".into());
-                } else {
-                    eos_account_nonce - number_of_txs
-                };
-                eos_txs
-                    .iter()
-                    .enumerate()
-                    .map(|(i, eos_tx)| {
-                        EosTxInfo::new(
-                            eos_tx,
-                            &tx_infos[i],
-                            start_nonce + i as u64,
-                            state.eos_db_utils.get_latest_eos_block_number()?,
-                            &state.eos_db_utils.get_eos_chain_id_from_db()?,
-                        )
-                    })
-                    .collect::<Result<Vec<EosTxInfo>>>()?
-            },
+        eos_signed_transactions: if state.signed_txs.is_empty() {
+            vec![]
+        } else {
+            let eos_db_utils = EosDbUtils::new(state.db);
+            let eos_txs = EosSignedTransactions::from_bytes(&state.signed_txs)?;
+            let number_of_txs = eos_txs.len() as u64;
+            let eos_account_nonce = eos_db_utils.get_eos_account_nonce_from_db()?;
+            let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
+            let start_nonce = if number_of_txs > eos_account_nonce {
+                return Err("EOS account nonce has not been incremented correctly!".into());
+            } else {
+                eos_account_nonce - number_of_txs
+            };
+            eos_txs
+                .iter()
+                .enumerate()
+                .map(|(i, eos_tx)| {
+                    EosTxInfo::new(
+                        eos_tx,
+                        &tx_infos[i],
+                        start_nonce + i as u64,
+                        eos_db_utils.get_latest_eos_block_number()?,
+                        &eos_db_utils.get_eos_chain_id_from_db()?,
+                    )
+                })
+                .collect::<Result<Vec<EosTxInfo>>>()?
         },
     })
 }

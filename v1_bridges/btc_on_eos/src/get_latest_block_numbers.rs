@@ -1,9 +1,10 @@
 use common::{
-    chains::{btc::btc_database_utils::BtcDbUtils, eos::eos_database_utils::EosDbUtils},
+    chains::btc::btc_database_utils::BtcDbUtils,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eos::EosDbUtils;
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]

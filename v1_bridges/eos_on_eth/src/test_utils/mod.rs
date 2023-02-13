@@ -2,11 +2,11 @@
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use common::{
-    chains::eos::eos_submission_material::EosSubmissionMaterial,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     errors::AppError,
     types::Result,
 };
+use common_eos::EosSubmissionMaterial;
 use common_eth::EthSubmissionMaterial;
 use serde_json::json;
 

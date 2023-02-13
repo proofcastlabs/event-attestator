@@ -1,11 +1,6 @@
 use std::str::{from_utf8, FromStr};
 
 use common::{
-    chains::eos::{
-        eos_action_proofs::EosActionProof,
-        eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-        EosState,
-    },
     dictionaries::eos_eth::EosEthTokenDictionary,
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
@@ -13,6 +8,7 @@ use common::{
     utils::{convert_bytes_to_u64, strip_hex_prefix},
     EthChainId,
 };
+use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use common_eth::{
     encode_erc777_mint_with_no_data_fxn,
     EthDbUtils,
@@ -471,7 +467,7 @@ pub fn maybe_sign_normal_eth_txs_and_add_to_state<D: DatabaseInterface>(state: E
 mod tests {
     use std::str::FromStr;
 
-    use common::chains::eos::eos_utils::convert_hex_to_checksum256;
+    use common_eos::convert_hex_to_checksum256;
 
     use super::*;
     use crate::test_utils::{

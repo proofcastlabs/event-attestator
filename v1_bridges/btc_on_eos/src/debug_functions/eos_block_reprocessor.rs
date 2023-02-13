@@ -1,23 +1,4 @@
 use common::{
-    chains::eos::{
-        eos_database_transactions::end_eos_db_transaction_and_return_state,
-        eos_global_sequences::{
-            get_processed_global_sequences_and_add_to_state,
-            maybe_add_global_sequences_to_processed_list_and_return_state,
-        },
-        eos_submission_material::parse_submission_material_and_add_to_state,
-        filter_action_proofs::{
-            maybe_filter_duplicate_proofs_from_state,
-            maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
-            maybe_filter_out_invalid_action_receipt_digests,
-            maybe_filter_out_proofs_for_wrong_eos_account_name,
-            maybe_filter_out_proofs_with_invalid_merkle_proofs,
-            maybe_filter_out_proofs_with_wrong_action_mroot,
-            maybe_filter_proofs_for_v1_redeem_actions,
-        },
-        get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-        EosState,
-    },
     fees::fee_database_utils::FeeDatabaseUtils,
     traits::DatabaseInterface,
     types::Result,
@@ -25,6 +6,21 @@ use common::{
     CoreType,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eos::{
+    end_eos_db_transaction_and_return_state,
+    get_enabled_protocol_features_and_add_to_state,
+    get_processed_global_sequences_and_add_to_state,
+    maybe_add_global_sequences_to_processed_list_and_return_state,
+    maybe_filter_duplicate_proofs_from_state,
+    maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
+    maybe_filter_out_invalid_action_receipt_digests,
+    maybe_filter_out_proofs_for_wrong_eos_account_name,
+    maybe_filter_out_proofs_with_invalid_merkle_proofs,
+    maybe_filter_out_proofs_with_wrong_action_mroot,
+    maybe_filter_proofs_for_v1_redeem_actions,
+    parse_submission_material_and_add_to_state,
+    EosState,
+};
 use function_name::named;
 pub use serde_json::json;
 

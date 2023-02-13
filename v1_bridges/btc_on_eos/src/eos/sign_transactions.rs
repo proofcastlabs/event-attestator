@@ -1,18 +1,16 @@
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, network::constants::Network as BtcNetwork};
 use common::{
-    chains::{
-        btc::{
-            btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_database_utils::BtcDbUtils,
-            btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-            btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-            utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
-        },
-        eos::EosState,
+    chains::btc::{
+        btc_crypto::btc_private_key::BtcPrivateKey,
+        btc_database_utils::BtcDbUtils,
+        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
+        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
     },
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eos::EosState;
 
 use crate::eos::btc_tx_info::BtcOnEosBtcTxInfos;
 
@@ -90,19 +88,17 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
 mod tests {
     use bitcoin::network::constants::Network as BtcNetwork;
     use common::{
-        chains::{
-            btc::{
-                btc_database_utils::BtcDbUtils,
-                btc_utils::get_hex_tx_from_signed_btc_tx,
-                utxo_manager::{
-                    utxo_database_utils::{save_utxos_to_db, set_utxo_balance_to_zero},
-                    utxo_types::BtcUtxosAndValues,
-                },
+        chains::btc::{
+            btc_database_utils::BtcDbUtils,
+            btc_utils::get_hex_tx_from_signed_btc_tx,
+            utxo_manager::{
+                utxo_database_utils::{save_utxos_to_db, set_utxo_balance_to_zero},
+                utxo_types::BtcUtxosAndValues,
             },
-            eos::eos_action_proofs::EosActionProof,
         },
         test_utils::get_test_database,
     };
+    use common_eos::EosActionProof;
 
     use super::*;
     use crate::test_utils::{

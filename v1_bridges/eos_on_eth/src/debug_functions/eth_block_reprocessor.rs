@@ -7,7 +7,6 @@ use common::{
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{
     end_eth_db_transaction_and_return_state,
-    maybe_increment_eos_account_nonce_and_return_state,
     parse_eth_submission_material_and_put_in_state,
     validate_eth_block_in_state,
     validate_receipts_in_state,
@@ -25,6 +24,7 @@ use crate::{
         maybe_divert_eos_txs_to_safe_address_if_destination_is_token_address,
         maybe_filter_out_eth_tx_info_with_value_too_low_in_state,
         maybe_filter_out_zero_eos_asset_amounts_in_state,
+        maybe_increment_eos_account_nonce_and_return_state,
         maybe_sign_eos_txs_and_add_to_eth_state,
         update_accrued_fees_in_dictionary_and_return_eth_state,
         EosOnEthEosTxInfos,

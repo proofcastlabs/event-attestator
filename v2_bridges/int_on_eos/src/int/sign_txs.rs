@@ -1,16 +1,18 @@
 use common::{
-    chains::eos::{
-        eos_chain_id::EosChainId,
-        eos_crypto::{
-            eos_private_key::EosPrivateKey,
-            eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
-        },
-        eos_utils::{get_eos_tx_expiration_timestamp_with_offset, get_symbol_from_eos_asset},
-    },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::metadata_traits::{ToMetadata, ToMetadataChainId},
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
+    EosChainId,
+};
+use common_eos::{
+    get_eos_tx_expiration_timestamp_with_offset,
+    get_signed_eos_ptoken_issue_tx,
+    get_symbol_from_eos_asset,
+    EosDbUtils,
+    EosPrivateKey,
+    EosSignedTransaction,
+    EosSignedTransactions,
 };
 use common_eth::EthState;
 
@@ -94,11 +96,12 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 tx_infos.to_eos_signed_txs(
                     submission_material.get_eos_ref_block_num()?,
                     submission_material.get_eos_ref_block_prefix()?,
-                    &state.eos_db_utils.get_eos_chain_id_from_db()?,
+                    &EosDbUtils::new(state.db).get_eos_chain_id_from_db()?,
                     &EosPrivateKey::get_from_db(state.db)?,
                     &EosEthTokenDictionary::get_from_db(state.db)?,
                 )
             })
-            .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+            .and_then(|signed_txs| signed_txs.to_bytes())
+            .and_then(|bytes| state.add_signed_txs(bytes))
     }
 }

@@ -1,51 +1,40 @@
-use common::{
-    CoreType,
-    chains::eos::{
-        add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
-        append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
-        eos_database_transactions::{
-            end_eos_db_transaction_and_return_state,
-        },
-        eos_global_sequences::{
-            get_processed_global_sequences_and_add_to_state,
-            maybe_add_global_sequences_to_processed_list_and_return_state,
-        },
-        eos_submission_material::parse_submission_material_and_add_to_state,
-        filter_action_proofs::{
-            maybe_filter_duplicate_proofs_from_state,
-            maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
-            maybe_filter_out_invalid_action_receipt_digests,
-            maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
-            maybe_filter_out_proofs_with_invalid_merkle_proofs,
-            maybe_filter_out_proofs_with_wrong_action_mroot,
-        },
-        get_active_schedule::get_active_schedule_from_db_and_add_to_state,
-        get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-        get_eos_incremerkle::get_incremerkle_and_add_to_state,
-        save_incremerkle::save_incremerkle_from_state_to_db,
-        save_latest_block_id::save_latest_block_id_to_db,
-        save_latest_block_num::save_latest_block_num_to_db,
-        validate_producer_slot::validate_producer_slot_of_block_in_state,
-        validate_signature::validate_block_header_signature,
-    },
-    dictionaries::eos_eth::get_eos_eth_token_dictionary_from_db_and_add_to_eos_state,
-    chains::eos::EosState,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{traits::DatabaseInterface, types::Result, CoreType};
+use common_eos::{
+    append_interim_block_ids_to_incremerkle_in_state,
+    end_eos_db_transaction_and_return_state,
+    get_active_schedule_from_db_and_add_to_state,
+    get_enabled_protocol_features_and_add_to_state,
+    get_incremerkle_and_add_to_state,
+    get_processed_global_sequences_and_add_to_state,
+    maybe_add_global_sequences_to_processed_list_and_return_state,
+    maybe_add_new_eos_schedule_to_db_and_return_state,
+    maybe_filter_duplicate_proofs_from_state,
+    maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
+    maybe_filter_out_invalid_action_receipt_digests,
+    maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
+    maybe_filter_out_proofs_with_invalid_merkle_proofs,
+    maybe_filter_out_proofs_with_wrong_action_mroot,
+    maybe_filter_proofs_for_v2_redeem_actions,
+    parse_submission_material_and_add_to_state,
+    save_incremerkle_from_state_to_db,
+    save_latest_block_id_to_db,
+    save_latest_block_num_to_db,
+    validate_block_header_signature,
+    validate_producer_slot_of_block_in_state,
+    EosState,
 };
 
 use crate::eos::{
-    divert_to_safe_address::{
-        divert_tx_infos_to_safe_address_if_destination_is_router_address,
-        divert_tx_infos_to_safe_address_if_destination_is_token_address,
-        divert_tx_infos_to_safe_address_if_destination_is_vault_address,
-        divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-    },
-    filter_tx_infos::maybe_filter_out_already_processed_tx_infos_from_state,
-    get_eos_output::get_eos_output,
-    increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
-    parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,
-    sign_int_txs::maybe_sign_int_txs_and_add_to_state,
+    maybe_filter_for_relevant_redeem_actions,
+    divert_tx_infos_to_safe_address_if_destination_is_router_address,
+    divert_tx_infos_to_safe_address_if_destination_is_token_address,
+    divert_tx_infos_to_safe_address_if_destination_is_vault_address,
+    divert_tx_infos_to_safe_address_if_destination_is_zero_address,
+    maybe_filter_out_already_processed_tx_infos_from_state,
+    get_eos_output,
+    maybe_increment_int_nonce_in_db_and_return_eos_state,
+    maybe_parse_int_tx_infos_and_put_in_state,
+    maybe_sign_int_txs_and_add_to_state,
 };
 
 /// # Submit EOS Block to Core
@@ -66,7 +55,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(validate_producer_slot_of_block_in_state)
         .and_then(validate_block_header_signature)
-        .and_then(get_eos_eth_token_dictionary_from_db_and_add_to_eos_state)
+        .and_then(|state| state.get_eos_eth_token_dictionary_and_add_to_state())
         .and_then(maybe_add_new_eos_schedule_to_db_and_return_state)
         .and_then(get_processed_global_sequences_and_add_to_state)
         .and_then(maybe_filter_duplicate_proofs_from_state)
@@ -96,15 +85,8 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
 mod tests {
     use std::str::FromStr;
 
-    use common::{
-        chains::eos::{
-            core_initialization::initialize_eos_core::initialize_eos_core_inner,
-            eos_crypto::eos_private_key::EosPrivateKey,
-            eos_global_sequences::ProcessedGlobalSequences,
-        },
-        test_utils::get_test_database,
-        EthChainId,
-    };
+    use common::{test_utils::get_test_database, EthChainId};
+    use common_eos::{initialize_eos_core_inner, EosPrivateKey, ProcessedGlobalSequences};
     use common_eth::{
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,
         EthDbUtils,

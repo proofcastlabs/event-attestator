@@ -10,7 +10,6 @@ use common::{
         filter_utxos::filter_out_value_too_low_utxos_from_state,
         get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
         get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-        increment_eos_nonce::maybe_increment_eos_nonce,
         remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
         remove_tx_infos_from_canon_block::remove_tx_infos_from_canon_block_and_return_state,
         save_utxos_to_db::maybe_save_utxos_to_db,
@@ -34,6 +33,7 @@ use crate::btc::{
     divert_to_safe_address::maybe_divert_txs_to_safe_address_if_destination_is_token_address,
     eos_tx_info::parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
     get_btc_output_json::{create_btc_output_json_and_put_in_state, get_btc_output_as_string},
+    increment_eos_nonce::maybe_increment_eos_nonce,
     sign_transactions::maybe_sign_canon_block_txs_and_add_to_state,
 };
 

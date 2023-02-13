@@ -3,6 +3,7 @@ mod divert_to_safe_address;
 mod eos_tx_info;
 mod filter_receipts_in_state;
 mod get_output_json;
+mod increment_eos_nonce;
 mod initialize_eth_core;
 mod submit_eth_block;
 
@@ -21,5 +22,6 @@ pub(super) use self::{
     },
     filter_receipts_in_state::filter_receipts_for_eos_on_eth_eth_tx_info_in_state,
     get_output_json::get_output_json,
+    increment_eos_nonce::maybe_increment_eos_account_nonce_and_return_state,
 };
 pub use self::{initialize_eth_core::maybe_initialize_eth_core, submit_eth_block::submit_eth_block_to_core};

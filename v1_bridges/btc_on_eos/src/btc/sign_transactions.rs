@@ -1,20 +1,19 @@
 use common::{
-    chains::{
-        btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
-        eos::{
-            eos_chain_id::EosChainId,
-            eos_constants::MAX_BYTES_FOR_EOS_USER_DATA,
-            eos_crypto::{
-                eos_private_key::EosPrivateKey,
-                eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
-            },
-            eos_utils::get_eos_tx_expiration_timestamp_with_offset,
-        },
-    },
+    chains::btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
     metadata::metadata_protocol_id::MetadataProtocolId,
     state::BtcState,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
+    EosChainId,
+};
+use common_eos::{
+    get_eos_tx_expiration_timestamp_with_offset,
+    get_signed_eos_ptoken_issue_tx,
+    EosDbUtils,
+    EosPrivateKey,
+    EosSignedTransaction,
+    EosSignedTransactions,
+    MAX_BYTES_FOR_EOS_USER_DATA,
 };
 
 use crate::btc::eos_tx_info::BtcOnEosEosTxInfos;
@@ -56,14 +55,16 @@ pub fn get_signed_eos_ptoken_issue_txs(
 
 pub fn maybe_sign_canon_block_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Maybe signing EOS txs...");
+    let eos_db_utils = EosDbUtils::new(state.db);
     get_signed_eos_ptoken_issue_txs(
         state.get_eos_ref_block_num()?,
         state.get_eos_ref_block_prefix()?,
-        &state.eos_db_utils.get_eos_chain_id_from_db()?,
+        &eos_db_utils.get_eos_chain_id_from_db()?,
         &EosPrivateKey::get_from_db(state.db)?,
-        &state.eos_db_utils.get_eos_account_name_string_from_db()?,
+        &eos_db_utils.get_eos_account_name_string_from_db()?,
         &BtcOnEosEosTxInfos::from_bytes(&state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes())?,
         &state.btc_db_utils.get_btc_chain_id_from_db()?,
     )
-    .and_then(|eos_signed_txs| state.add_eos_signed_txs(eos_signed_txs))
+    .and_then(|eos_signed_txs| eos_signed_txs.to_bytes())
+    .map(|bytes| state.add_eos_signed_txs(bytes))
 }

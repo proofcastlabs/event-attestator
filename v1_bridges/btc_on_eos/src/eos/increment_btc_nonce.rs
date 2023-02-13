@@ -1,8 +1,5 @@
-use common::{
-    chains::{btc::btc_database_utils::BtcDbUtils, eos::EosState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{chains::btc::btc_database_utils::BtcDbUtils, traits::DatabaseInterface, types::Result};
+use common_eos::EosState;
 
 pub fn increment_btc_account_nonce<D: DatabaseInterface>(
     db_utils: &BtcDbUtils<D>,

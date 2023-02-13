@@ -1,27 +1,24 @@
 use common::{
-    chains::{
-        btc::{
-            btc_database_utils::end_btc_db_transaction,
-            btc_submission_material::parse_submission_material_and_put_in_state,
-            filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-            get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
-            get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-            increment_eos_nonce::maybe_increment_eos_nonce,
-            validate_btc_block_header::validate_btc_block_header_in_state,
-            validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-            validate_btc_merkle_root::validate_btc_merkle_root,
-            validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-        },
-        eos::eos_crypto::eos_private_key::EosPrivateKey,
+    chains::btc::{
+        btc_database_utils::end_btc_db_transaction,
+        btc_submission_material::parse_submission_material_and_put_in_state,
+        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
+        get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
+        get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
+        validate_btc_block_header::validate_btc_block_header_in_state,
+        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
+        validate_btc_merkle_root::validate_btc_merkle_root,
+        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
     },
     core_type::CoreType,
     fees::fee_database_utils::FeeDatabaseUtils,
     state::BtcState,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eos::{EosDbUtils, EosPrivateKey, EosSignedTransactions};
 use function_name::named;
 pub use serde_json::json;
 
@@ -32,6 +29,7 @@ use crate::{
         get_signed_eos_ptoken_issue_txs,
         maybe_account_for_peg_in_fees,
         maybe_divert_txs_to_safe_address_if_destination_is_token_address,
+        maybe_increment_eos_nonce,
         parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state,
         BtcOnEosEosTxInfos,
         BtcOutput,
@@ -50,6 +48,7 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
         "✔ Reprocessing BTC block to core {} fees accruing",
         if accrue_fees { "WITH" } else { "WITHOUT" }
     );
+    let eos_db_utils = EosDbUtils::new(db);
     db.start_transaction()
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json_str, &accrue_fees)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
@@ -81,27 +80,28 @@ fn debug_reprocess_btc_block_for_stale_eos_tx_maybe_accruing_fees<D: DatabaseInt
             let eos_signed_txs = get_signed_eos_ptoken_issue_txs(
                 state.get_eos_ref_block_num()?,
                 state.get_eos_ref_block_prefix()?,
-                &state.eos_db_utils.get_eos_chain_id_from_db()?,
+                &eos_db_utils.get_eos_chain_id_from_db()?,
                 &EosPrivateKey::get_from_db(state.db)?,
-                &state.eos_db_utils.get_eos_account_name_string_from_db()?,
+                &eos_db_utils.get_eos_account_name_string_from_db()?,
                 &BtcOnEosEosTxInfos::from_bytes(&state.tx_infos)?,
                 &state.btc_db_utils.get_btc_chain_id_from_db()?,
             )?;
             info!("✔ EOS signed txs: {:?}", eos_signed_txs);
-            state.add_eos_signed_txs(eos_signed_txs)
+            Ok(state.add_eos_signed_txs(eos_signed_txs.to_bytes()?))
         })
         .and_then(maybe_increment_eos_nonce)
         .and_then(|state| {
             info!("✔ Getting BTC output json and putting in state...");
             let output = serde_json::to_string(&BtcOutput {
                 btc_latest_block_number: state.btc_db_utils.get_btc_latest_block_from_db()?.height,
-                eos_signed_transactions: match &state.eos_signed_txs.len() {
-                    0 => vec![],
-                    _ => get_eos_signed_tx_info(
-                        &state.eos_signed_txs,
+                eos_signed_transactions: if state.eos_signed_txs.is_empty() {
+                    vec![]
+                } else {
+                    get_eos_signed_tx_info(
+                        &EosSignedTransactions::from_bytes(&state.eos_signed_txs)?,
                         &BtcOnEosEosTxInfos::from_bytes(&state.tx_infos)?,
-                        state.eos_db_utils.get_eos_account_nonce_from_db()?,
-                    )?,
+                        eos_db_utils.get_eos_account_nonce_from_db()?,
+                    )?
                 },
             })?;
             state.add_output_json_string(output)

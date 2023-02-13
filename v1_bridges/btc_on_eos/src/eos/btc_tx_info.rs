@@ -1,20 +1,14 @@
 use std::str::from_utf8;
 
 use common::{
-    chains::{
-        btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-        eos::{
-            eos_action_proofs::EosActionProof,
-            eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-            EosState,
-        },
-    },
+    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_u64,
 };
+use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use serde::{Deserialize, Serialize};
@@ -225,7 +219,8 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
 mod tests {
     use std::str::FromStr;
 
-    use common::{chains::eos::eos_utils::convert_hex_to_checksum256, errors::AppError};
+    use common::errors::AppError;
+    use common_eos::convert_hex_to_checksum256;
 
     use super::*;
     use crate::test_utils::{get_sample_btc_tx_info, get_sample_btc_tx_infos, get_sample_eos_submission_material_n};

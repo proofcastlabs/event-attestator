@@ -56,7 +56,8 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
 
 #[cfg(test)]
 mod tests {
-    use common::{chains::eos::eos_unit_conversions::convert_eos_asset_to_u64, test_utils::get_test_database};
+    use common::test_utils::get_test_database;
+    use common_eos::convert_eos_asset_to_u64;
 
     use super::*;
     use crate::test_utils::get_sample_btc_on_eos_eos_tx_infos;

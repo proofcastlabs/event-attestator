@@ -1,11 +1,6 @@
 use std::str::{from_utf8, FromStr};
 
 use common::{
-    chains::eos::{
-        eos_action_proofs::EosActionProof,
-        eos_chain_id::EosChainId,
-        eos_global_sequences::{GlobalSequence, GlobalSequences, ProcessedGlobalSequences},
-    },
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     metadata::{
         metadata_address::MetadataAddress,
@@ -14,11 +9,12 @@ use common::{
         Metadata,
     },
     safe_addresses::SAFE_ETH_ADDRESS,
-    chains::eos::EosState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
+    EosChainId,
 };
+use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use common_eth::{EthDbUtils, EthDbUtilsExt, MAX_BYTES_FOR_ETH_USER_DATA};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
@@ -286,11 +282,8 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
 mod tests {
     use std::str::FromStr;
 
-    use common::{
-        chains::eos::eos_utils::convert_hex_to_checksum256,
-        dictionaries::eos_eth::test_utils::get_sample_eos_eth_token_dictionary,
-        errors::AppError,
-    };
+    use common::{dictionaries::eos_eth::test_utils::get_sample_eos_eth_token_dictionary, errors::AppError};
+    use common_eos::convert_hex_to_checksum256;
 
     use super::*;
     use crate::test_utils::get_sample_eos_submission_material_n;

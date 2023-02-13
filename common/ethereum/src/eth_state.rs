@@ -1,10 +1,8 @@
 use common::{
-    chains::{
-        btc::{
-            btc_database_utils::BtcDbUtils,
-            btc_types::BtcTransactions,
-            utxo_manager::utxo_types::BtcUtxosAndValues,
-        },
+    chains::btc::{
+        btc_database_utils::BtcDbUtils,
+        btc_types::BtcTransactions,
+        utxo_manager::utxo_types::BtcUtxosAndValues,
     },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     traits::DatabaseInterface,
@@ -22,7 +20,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub tx_infos: Bytes,
     pub signed_txs: Bytes,
     pub misc: Option<String>,
-    pub eos_transactions: Bytes,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub evm_db_utils: EvmDbUtils<'a, D>,
     pub btc_db_utils: BtcDbUtils<'a, D>,
@@ -50,7 +47,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             signed_txs: vec![],
             btc_transactions: None,
             algo_signed_txs: vec![],
-            eos_transactions: vec![],
             btc_utxos_and_values: None,
             eth_submission_material: None,
             eth_evm_token_dictionary: None,

@@ -1,17 +1,19 @@
 use common::{
-    chains::eos::{
-        eos_actions::PTokenPegOutAction,
-        eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, PEGOUT_ACTION_NAME},
-        eos_crypto::{eos_private_key::EosPrivateKey, eos_transaction::EosSignedTransaction},
-        eos_database_utils::EosDbUtils,
-        eos_utils::get_eos_tx_expiration_timestamp_with_offset,
-    },
     core_type::CoreType,
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::Result,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_eos::{
+    get_eos_tx_expiration_timestamp_with_offset,
+    EosDbUtils,
+    EosPrivateKey,
+    EosSignedTransaction,
+    PTokenPegOutAction,
+    EOS_ACCOUNT_PERMISSION_LEVEL,
+    PEGOUT_ACTION_NAME,
+};
 use common_eth::convert_hex_to_eth_address;
 use eos_chain::{Action as EosAction, PermissionLevel, Transaction as EosTransaction};
 use function_name::named;

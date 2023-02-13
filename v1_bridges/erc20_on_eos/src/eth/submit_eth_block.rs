@@ -3,7 +3,6 @@ use common_eth::{
     check_for_parent_of_eth_block_in_state,
     end_eth_db_transaction_and_return_state,
     maybe_add_eth_block_and_receipts_to_db_and_return_state,
-    maybe_increment_eos_account_nonce_and_return_state,
     maybe_remove_old_eth_tail_block_and_return_state,
     maybe_remove_receipts_from_eth_canon_block_and_return_state,
     maybe_update_eth_canon_block_hash_and_return_state,
@@ -27,6 +26,7 @@ use crate::eth::{
         maybe_sign_eos_txs_and_add_to_eth_state,
     },
     get_output_json::get_output_json,
+    maybe_increment_eos_account_nonce_and_return_state,
 };
 /// # Submit ETH Block to Core
 ///

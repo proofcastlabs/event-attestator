@@ -14,12 +14,9 @@ mod get_latest_block_numbers;
 mod test_utils;
 mod utils;
 
-pub use common::chains::{
-    btc::{
-        core_initialization::initialize_btc_core::maybe_initialize_btc_core,
-        utxo_manager::utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
-    },
-    eos::get_processed_actions_list::get_processed_actions_list,
+pub use common::chains::btc::{
+    core_initialization::initialize_btc_core::maybe_initialize_btc_core,
+    utxo_manager::utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
 };
 pub use common_bitcoin::{
     debug_add_multiple_utxos,
@@ -42,6 +39,7 @@ pub use common_eos::{
     debug_remove_global_sequences_from_processed_list,
     debug_set_eos_account_nonce,
     debug_update_incremerkle,
+    get_processed_actions_list,
 };
 
 pub use self::{

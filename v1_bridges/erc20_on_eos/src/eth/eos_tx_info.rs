@@ -1,14 +1,6 @@
 use std::str::FromStr;
 
 use common::{
-    chains::eos::{
-        eos_chain_id::EosChainId,
-        eos_crypto::{
-            eos_private_key::EosPrivateKey,
-            eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
-        },
-        eos_utils::{get_eos_tx_expiration_timestamp_with_offset, remove_symbol_from_eos_asset},
-    },
     dictionaries::eos_eth::EosEthTokenDictionary,
     metadata::{
         metadata_address::MetadataAddress,
@@ -17,9 +9,19 @@ use common::{
         Metadata,
     },
     safe_addresses::safely_convert_str_to_eos_address,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::{Byte, Bytes, Result},
+    EosChainId,
     EthChainId,
+};
+use common_eos::{
+    get_eos_tx_expiration_timestamp_with_offset,
+    get_signed_eos_ptoken_issue_tx,
+    remove_symbol_from_eos_asset,
+    EosDbUtils,
+    EosPrivateKey,
+    EosSignedTransaction,
+    EosSignedTransactions,
 };
 use common_eth::{
     Erc20VaultPegInEventParams,
@@ -440,21 +442,20 @@ pub fn maybe_sign_eos_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
                 infos.to_eos_signed_txs(
                     submission_material.get_eos_ref_block_num()?,
                     submission_material.get_eos_ref_block_prefix()?,
-                    &state.eos_db_utils.get_eos_chain_id_from_db()?,
+                    &EosDbUtils::new(state.db).get_eos_chain_id_from_db()?,
                     &EosPrivateKey::get_from_db(state.db)?,
                     &EosEthTokenDictionary::get_from_db(state.db)?,
                 )
             })
-            .and_then(|signed_txs| state.add_eos_transactions(signed_txs))
+            .and_then(|signed_txs| signed_txs.to_bytes())
+            .and_then(|bytes| state.add_signed_txs(bytes))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use common::{
-        chains::eos::eos_test_utils::get_sample_eos_private_key,
-        dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry},
-    };
+    use common::dictionaries::eos_eth::{test_utils::get_sample_eos_eth_token_dictionary, EosEthTokenDictionaryEntry};
+    use common_eos::eos_test_utils::get_sample_eos_private_key;
     use serde_json::json;
 
     use super::*;

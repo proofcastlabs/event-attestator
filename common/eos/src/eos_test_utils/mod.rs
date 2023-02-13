@@ -12,7 +12,7 @@ use secp256k1::Message as Secp256k1Message;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    core_initialization::eos_init_utils::EosInitJson,
+    core_initialization::EosInitJson,
     eos_action_proofs::{EosActionProof, EosActionProofs},
     eos_action_receipt::{AuthSequence, EosActionReceipt},
     eos_block_header::EosBlockHeaderV2,

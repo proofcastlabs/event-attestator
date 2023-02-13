@@ -1,10 +1,10 @@
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
     fees::fee_constants::DISABLE_FEES,
-    chains::eos::EosState,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eos::EosState;
 
 use crate::{eos::Erc20OnEosEthTxInfos, fees_calculator::FeesCalculator};
 

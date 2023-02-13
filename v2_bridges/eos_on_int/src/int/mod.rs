@@ -3,6 +3,7 @@ mod eos_tx_info;
 mod filter_receipts_in_state;
 mod filter_tx_info;
 mod get_int_output;
+mod increment_eos_nonce;
 mod initialize_int_core;
 mod metadata;
 mod parse_tx_info;
@@ -18,6 +19,7 @@ pub(super) use self::{
         maybe_filter_out_zero_eos_asset_amounts_in_state,
     },
     get_int_output::get_int_output,
+    increment_eos_nonce::maybe_increment_eos_account_nonce_and_return_state,
     sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
 };
 pub use self::{

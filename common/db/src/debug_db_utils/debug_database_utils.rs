@@ -6,9 +6,9 @@ use common::{
     types::{Byte, Result},
     utils::get_prefixed_db_key,
 };
+use common_eos::EosDbUtils;
 use debug_signers::validate_debug_command_signature;
 use function_name::named;
-use common_eos::EosDbUtils;
 
 fn is_private_key_key<D: DatabaseInterface>(db: &D, key: &[Byte]) -> bool {
     key == get_prefixed_db_key("eth-private-key-key").to_vec()

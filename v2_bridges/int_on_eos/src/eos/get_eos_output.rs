@@ -1,6 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use common::{chains::eos::EosState, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eos::EosState;
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransaction, EthTransactions, EthTxInfoCompatible};
 use serde::{Deserialize, Serialize};
 

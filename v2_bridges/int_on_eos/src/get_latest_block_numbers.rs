@@ -1,9 +1,5 @@
-use common::{
-    chains::eos::eos_database_utils::EosDbUtils,
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_eos::EosDbUtils;
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 use serde::{Deserialize, Serialize};
 

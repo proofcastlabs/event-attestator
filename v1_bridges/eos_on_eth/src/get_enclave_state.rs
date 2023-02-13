@@ -1,10 +1,6 @@
-use common::{
-    chains::eos::{eos_database_utils::EosDbUtils, eos_enclave_state::EosEnclaveState},
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_enclave_info::EnclaveInfo;
+use common_eos::{EosDbUtils, EosEnclaveState};
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthEnclaveState};
 use serde::{Deserialize, Serialize};
 

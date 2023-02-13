@@ -15,7 +15,6 @@ mod get_enclave_state;
 mod get_latest_block_numbers;
 mod test_utils;
 
-pub use common::chains::eos::get_processed_actions_list::get_processed_actions_list;
 pub use common_db::{debug_get_key_from_db, debug_set_key_in_db_to_value};
 pub use common_debug_signers::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer};
 pub use common_eos::{
@@ -28,6 +27,7 @@ pub use common_eos::{
     debug_remove_token_dictionary_entry,
     debug_set_eos_account_nonce,
     debug_update_incremerkle,
+    get_processed_actions_list,
 };
 pub use common_eth::{
     sign_ascii_msg_with_eth_key_with_no_prefix,

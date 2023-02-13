@@ -4,7 +4,6 @@ use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_eth::{
     check_for_parent_of_eth_block_in_state,
     maybe_add_eth_block_and_receipts_to_db_and_return_state,
-    maybe_increment_eos_account_nonce_and_return_state,
     maybe_remove_old_eth_tail_block_and_return_state,
     maybe_remove_receipts_from_eth_canon_block_and_return_state,
     maybe_update_eth_canon_block_hash_and_return_state,
@@ -27,6 +26,7 @@ use crate::int::{
         maybe_filter_out_zero_eos_asset_amounts_in_state,
     },
     get_int_output::{get_int_output, IntOutput, IntOutputs},
+    maybe_increment_eos_account_nonce_and_return_state,
     parse_tx_info::maybe_parse_eth_tx_info_from_canon_block_and_add_to_state,
     sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
 };
@@ -98,14 +98,8 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 #[cfg(all(test, feature = "non-validating"))] // NOTE: The test uses TELOS blocks, whose headers fail validation.
 #[cfg(test)]
 mod tests {
-    use common::{
-        chains::eos::{
-            core_initialization::initialize_eos_core::initialize_eos_core_inner,
-            eos_crypto::eos_private_key::EosPrivateKey,
-        },
-        test_utils::get_test_database,
-        EthChainId,
-    };
+    use common::{test_utils::get_test_database, EthChainId};
+    use common_eos::{initialize_eos_core_inner, EosPrivateKey};
     use common_eth::{
         initialize_eth_core_with_router_contract_and_return_state,
         EthDbUtils,

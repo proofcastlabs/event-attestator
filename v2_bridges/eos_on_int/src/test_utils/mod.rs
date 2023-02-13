@@ -2,11 +2,11 @@
 use std::fs::read_to_string;
 
 use common::{
-    chains::eos::eos_crypto::eos_private_key::EosPrivateKey,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry, EosEthTokenDictionaryEntryJson},
     errors::AppError,
     types::Result,
 };
+use common_eos::EosPrivateKey;
 use common_eth::{convert_hex_to_eth_address, EthPrivateKey};
 use ethereum_types::Address as EthAddress;
 

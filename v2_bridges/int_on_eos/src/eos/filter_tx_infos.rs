@@ -1,9 +1,5 @@
-use common::{
-    chains::eos::eos_global_sequences::ProcessedGlobalSequences,
-    chains::eos::EosState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_eos::{EosState, ProcessedGlobalSequences};
 
 use crate::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos};
 

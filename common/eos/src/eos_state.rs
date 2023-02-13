@@ -72,6 +72,14 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         }
     }
 
+    pub fn get_eos_eth_token_dictionary_and_add_to_state(mut self) -> Result<Self> {
+        info!("✔ Getting `EosERc20Dictionary` and adding to EOS state...");
+        EosEthTokenDictionary::get_from_db(self.db).map(|dictionary| {
+            self.eos_eth_token_dictionary = Some(dictionary);
+            self
+        })
+    }
+
     pub fn add_global_sequences(mut self, global_sequences: GlobalSequences) -> Self {
         self.global_sequences = global_sequences;
         self

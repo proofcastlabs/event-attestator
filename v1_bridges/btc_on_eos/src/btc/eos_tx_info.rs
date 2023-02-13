@@ -7,13 +7,10 @@ use bitcoin::{
     Txid,
 };
 use common::{
-    chains::{
-        btc::{
-            btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
-            btc_metadata::ToMetadata,
-            deposit_address_info::DepositInfoHashMap,
-        },
-        eos::{eos_unit_conversions::convert_eos_asset_to_u64, eos_utils::get_symbol_from_eos_asset},
+    chains::btc::{
+        btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
+        btc_metadata::ToMetadata,
+        deposit_address_info::DepositInfoHashMap,
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
@@ -22,6 +19,7 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
+use common_eos::{convert_eos_asset_to_u64, get_symbol_from_eos_asset, EosDbUtils};
 use derive_more::{Constructor, Deref, DerefMut};
 use eos_chain::AccountName as EosAccountName;
 use serde::{Deserialize, Serialize};
@@ -45,12 +43,13 @@ pub fn parse_eos_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
     state: BtcState<D>,
 ) -> Result<BtcState<D>> {
     info!("✔ Parsing `BtcOnEosEosTxInfos` from `p2sh` deposit txs in state...");
+    let eos_db_utils = EosDbUtils::new(state.db);
     BtcOnEosEosTxInfos::from_btc_txs(
         state.get_p2sh_deposit_txs()?,
         state.get_deposit_info_hash_map()?,
         state.btc_db_utils.get_btc_network_from_db()?,
-        &state.eos_db_utils.get_eos_token_symbol_from_db()?,
-        &state.eos_db_utils.get_eos_account_name_string_from_db()?,
+        &eos_db_utils.get_eos_token_symbol_from_db()?,
+        &eos_db_utils.get_eos_account_name_string_from_db()?,
     )
     .and_then(|eos_tx_infos| eos_tx_infos.filter_params())
     .and_then(|filtered_params| filtered_params.to_bytes())
@@ -303,10 +302,11 @@ impl ToMetadata for BtcOnEosEosTxInfo {
 #[cfg(test)]
 mod tests {
     use common::{
-        chains::{btc::btc_chain_id::BtcChainId, eos::eos_constants::MAX_BYTES_FOR_EOS_USER_DATA},
+        chains::btc::btc_chain_id::BtcChainId,
         errors::AppError,
         metadata::metadata_protocol_id::MetadataProtocolId,
     };
+    use common_eos::MAX_BYTES_FOR_EOS_USER_DATA;
 
     use super::*;
     use crate::test_utils::get_sample_btc_on_eos_eos_tx_infos;

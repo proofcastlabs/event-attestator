@@ -7,7 +7,6 @@ use common::{
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{
     end_eth_db_transaction_and_return_state,
-    maybe_increment_eos_account_nonce_and_return_state,
     parse_eth_submission_material_and_put_in_state,
     validate_eth_block_in_state,
     validate_receipts_in_state,
@@ -24,6 +23,7 @@ use crate::{
         filter_out_zero_value_eos_tx_infos_from_state,
         filter_submission_material_for_peg_in_events_in_state,
         get_output_json,
+        maybe_increment_eos_account_nonce_and_return_state,
         maybe_sign_eos_txs_and_add_to_eth_state,
         update_accrued_fees_in_dictionary_and_return_eth_state,
         Erc20OnEosEosTxInfos,

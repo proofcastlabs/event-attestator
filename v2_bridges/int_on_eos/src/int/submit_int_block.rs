@@ -4,7 +4,6 @@ use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_eth::{
     check_for_parent_of_eth_block_in_state,
     maybe_add_eth_block_and_receipts_to_db_and_return_state,
-    maybe_increment_eos_account_nonce_and_return_state,
     maybe_remove_old_eth_tail_block_and_return_state,
     maybe_remove_receipts_from_eth_canon_block_and_return_state,
     maybe_update_eth_canon_block_hash_and_return_state,
@@ -25,6 +24,7 @@ use crate::int::{
     filter_submission_material::filter_submission_material_for_relevant_receipts_in_state,
     filter_tx_info_with_no_erc20_transfer_event::filter_tx_info_with_no_erc20_transfer_event,
     get_output_json::{get_output_json, IntOutput, IntOutputs},
+    maybe_increment_eos_account_nonce_and_return_state,
     parse_tx_info::maybe_parse_eos_tx_info_from_canon_block_and_add_to_state,
     sign_txs::maybe_sign_eos_txs_and_add_to_eth_state,
 };
@@ -96,14 +96,8 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 mod tests {
     use std::str::FromStr;
 
-    use common::{
-        chains::eos::{
-            core_initialization::initialize_eos_core::initialize_eos_core_inner,
-            eos_crypto::eos_private_key::EosPrivateKey,
-        },
-        test_utils::get_test_database,
-        EthChainId,
-    };
+    use common::{test_utils::get_test_database, EthChainId};
+    use common_eos::{initialize_eos_core_inner, EosPrivateKey};
     use common_eth::{
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,
         EthDbUtils,

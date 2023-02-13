@@ -1,9 +1,9 @@
 use common::{
-    chains::eos::EosState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
     traits::DatabaseInterface,
     types::Result,
 };
+use common_eos::EosState;
 
 use crate::eos::btc_tx_info::BtcOnEosBtcTxInfos;
 

@@ -1,10 +1,5 @@
-use common::{
-    metadata::metadata_traits::ToMetadata,
-    chains::eos::EosState,
-    traits::DatabaseInterface,
-    types::Result,
-    EthChainId,
-};
+use common::{metadata::metadata_traits::ToMetadata, traits::DatabaseInterface, types::Result, EthChainId};
+use common_eos::EosState;
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_with_user_data,
     EthDbUtils,

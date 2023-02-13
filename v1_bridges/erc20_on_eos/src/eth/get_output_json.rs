@@ -1,10 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eos::eos_crypto::eos_transaction::EosSignedTransaction,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
 };
+use common_eos::{EosDbUtils, EosSignedTransaction, EosSignedTransactions};
 use common_eth::{EthDbUtilsExt, EthState};
 use serde::{Deserialize, Serialize};
 
@@ -72,24 +72,25 @@ pub fn get_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<Strin
             .get_eth_latest_block_from_db()?
             .get_block_number()?
             .as_u64(),
-        eos_signed_transactions: match state.eos_transactions {
-            None => vec![],
-            Some(ref eos_txs) => {
-                let start_nonce = state.eos_db_utils.get_eos_account_nonce_from_db()? - eos_txs.len() as u64;
-                let infos = Erc20OnEosEosTxInfos::from_bytes(&state.tx_infos)?;
-                eos_txs
-                    .iter()
-                    .enumerate()
-                    .map(|(i, eos_tx)| {
-                        EosTxInfo::new(
-                            eos_tx,
-                            &infos[i],
-                            start_nonce + i as u64,
-                            state.eos_db_utils.get_latest_eos_block_number()?,
-                        )
-                    })
-                    .collect::<Result<Vec<EosTxInfo>>>()?
-            },
+        eos_signed_transactions: if state.tx_infos.is_empty() {
+            vec![]
+        } else {
+            let eos_db_utils = EosDbUtils::new(state.db);
+            let infos = Erc20OnEosEosTxInfos::from_bytes(&state.tx_infos)?;
+            let eos_txs = EosSignedTransactions::from_bytes(&state.signed_txs)?;
+            let start_nonce = eos_db_utils.get_eos_account_nonce_from_db()? - eos_txs.len() as u64;
+            eos_txs
+                .iter()
+                .enumerate()
+                .map(|(i, eos_tx)| {
+                    EosTxInfo::new(
+                        eos_tx,
+                        &infos[i],
+                        start_nonce + i as u64,
+                        eos_db_utils.get_latest_eos_block_number()?,
+                    )
+                })
+                .collect::<Result<Vec<EosTxInfo>>>()?
         },
     })?)
 }

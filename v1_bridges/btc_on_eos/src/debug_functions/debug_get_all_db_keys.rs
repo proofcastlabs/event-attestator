@@ -1,13 +1,11 @@
 use common::{
-    chains::{
-        btc::{btc_database_utils::BtcDatabaseKeysJson, utxo_manager::utxo_constants::get_utxo_constants_db_keys},
-        eos::eos_database_utils::EosDatabaseKeysJson,
-    },
+    chains::btc::{btc_database_utils::BtcDatabaseKeysJson, utxo_manager::utxo_constants::get_utxo_constants_db_keys},
     constants::DB_KEY_PREFIX,
     traits::DatabaseInterface,
     types::Result,
 };
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
+use common_eos::EosDatabaseKeysJson;
 use function_name::named;
 pub use serde_json::json;
 

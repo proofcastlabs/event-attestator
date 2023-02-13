@@ -1,10 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eos::EosState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
+use common_eos::EosState;
 use common_eth::{
     convert_eth_address_to_string,
     EthDbUtils,

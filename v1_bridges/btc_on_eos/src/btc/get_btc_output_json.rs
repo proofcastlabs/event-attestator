@@ -1,11 +1,11 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::eos::{eos_crypto::eos_transaction::EosSignedTransaction, eos_unit_conversions::convert_eos_asset_to_u64},
     state::BtcState,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
 };
+use common_eos::{convert_eos_asset_to_u64, EosDbUtils, EosSignedTransaction, EosSignedTransactions};
 use serde::{Deserialize, Serialize};
 
 use crate::btc::eos_tx_info::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos};
@@ -60,15 +60,17 @@ pub fn create_btc_output_json_and_put_in_state<D: DatabaseInterface>(state: BtcS
     info!("✔ Getting BTC output json and putting in state...");
     Ok(serde_json::to_string(&BtcOutput {
         btc_latest_block_number: state.btc_db_utils.get_btc_latest_block_from_db()?.height,
-        eos_signed_transactions: match &state.eos_signed_txs.len() {
-            0 => vec![],
-            _ => get_eos_signed_tx_info(
-                &state.eos_signed_txs,
+        eos_signed_transactions: if state.eos_signed_txs.is_empty() {
+            vec![]
+        } else {
+            let eos_txs = EosSignedTransactions::from_bytes(&state.eos_signed_txs)?;
+            get_eos_signed_tx_info(
+                &eos_txs,
                 &BtcOnEosEosTxInfos::from_bytes(
                     &state.btc_db_utils.get_btc_canon_block_from_db()?.get_tx_info_bytes(),
                 )?,
-                state.eos_db_utils.get_eos_account_nonce_from_db()?,
-            )?,
+                EosDbUtils::new(state.db).get_eos_account_nonce_from_db()?,
+            )?
         },
     })?)
     .and_then(|output| state.add_output_json_string(output))
