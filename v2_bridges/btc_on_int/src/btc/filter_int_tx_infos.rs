@@ -1,8 +1,5 @@
-use common::{
-    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, btc_utils::convert_satoshis_to_wei, BtcState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::{convert_satoshis_to_wei, BtcState, MINIMUM_REQUIRED_SATOSHIS};
 
 use crate::btc::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos};
 

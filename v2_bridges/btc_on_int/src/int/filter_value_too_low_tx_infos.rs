@@ -1,5 +1,5 @@
 #[cfg(not(test))]
-use common::chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS;
+use common_btc::MINIMUM_REQUIRED_SATOSHIS;
 
 use crate::int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
 

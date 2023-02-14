@@ -15,6 +15,7 @@ pub use self::{
     },
     utxo_constants::get_utxo_constants_db_keys,
     utxo_database_utils::{
+        get_first_utxo_and_value,
         get_total_number_of_utxos_from_db,
         get_total_utxo_balance_from_db,
         get_utxo_nonce_from_db,

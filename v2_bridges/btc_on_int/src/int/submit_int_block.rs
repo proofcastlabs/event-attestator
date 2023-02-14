@@ -91,16 +91,14 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 mod tests {
     use std::str::FromStr;
 
-    use common::{
-        chains::btc::{
-            btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_database_utils::BtcDbUtils,
-            btc_utils::convert_hex_tx_to_btc_transaction,
-            core_initialization::initialize_btc_core::init_btc_core,
-            utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
-            BtcState,
-        },
-        test_utils::get_test_database,
+    use common::test_utils::get_test_database;
+    use common_btc::{
+        convert_hex_tx_to_btc_transaction,
+        get_utxo_nonce_from_db,
+        init_btc_core,
+        BtcDbUtils,
+        BtcPrivateKey,
+        BtcState,
     };
     use common_eth::{
         convert_hex_to_eth_address,

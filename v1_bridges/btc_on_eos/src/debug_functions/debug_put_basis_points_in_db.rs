@@ -1,6 +1,6 @@
 use common::{traits::DatabaseInterface, types::Result, utils::prepend_debug_output_marker_to_string};
-use common_btc::{sanity_check_basis_points_value, FeeDatabaseUtils};
 use common_debug_signers::validate_debug_command_signature;
+use common_fees::{sanity_check_basis_points_value, FeeDatabaseUtils};
 use function_name::named;
 use serde_json::json;
 

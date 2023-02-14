@@ -1,9 +1,5 @@
-use common::{
-    constants::FEE_BASIS_POINTS_DIVISOR,
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    fees::fee_utils::sanity_check_basis_points_value,
-    types::Result,
-};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
+use common_fees::{sanity_check_basis_points_value, FEE_BASIS_POINTS_DIVISOR};
 use ethereum_types::{Address as EthAddress, U256};
 
 pub trait FeeCalculator {

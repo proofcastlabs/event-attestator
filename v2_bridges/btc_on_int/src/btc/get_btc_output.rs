@@ -4,11 +4,11 @@ use std::str::FromStr;
 #[cfg(test)]
 use common::errors::AppError;
 use common::{
-    chains::btc::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
     utils::get_unix_timestamp,
 };
+use common_btc::BtcState;
 use common_eth::{
     convert_eth_address_to_string,
     EthDbUtils,

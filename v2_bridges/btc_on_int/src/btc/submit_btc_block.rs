@@ -1,32 +1,28 @@
-use common::{
-    chains::btc::{
-        add_btc_block_to_db::maybe_add_btc_block_to_db,
-        btc_block::parse_btc_block_and_id_and_put_in_state,
-        btc_database_utils::end_btc_db_transaction,
-        btc_submission_material::parse_btc_submission_json_and_put_in_state,
-        check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
-        deposit_address_info::validate_deposit_address_list_in_state,
-        extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-        filter_utxos::filter_out_value_too_low_utxos_from_state,
-        get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
-        get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-        remove_old_btc_tail_block::maybe_remove_old_btc_tail_block,
-        remove_tx_infos_from_canon_block::remove_tx_infos_from_canon_block_and_return_state,
-        save_utxos_to_db::maybe_save_utxos_to_db,
-        update_btc_canon_block_hash::maybe_update_btc_canon_block_hash,
-        update_btc_latest_block_hash::maybe_update_btc_latest_block_hash,
-        update_btc_linker_hash::maybe_update_btc_linker_hash,
-        update_btc_tail_block_hash::maybe_update_btc_tail_block_hash,
-        validate_btc_block_header::validate_btc_block_header_in_state,
-        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-        validate_btc_merkle_root::validate_btc_merkle_root,
-        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-        BtcState,
-    },
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_btc::{
+    check_for_parent_of_btc_block_in_state,
+    create_btc_block_in_db_format_and_put_in_state,
+    end_btc_db_transaction,
+    filter_out_value_too_low_utxos_from_state,
+    filter_p2sh_deposit_txs_and_add_to_state,
+    get_deposit_info_hash_map_and_put_in_state,
+    maybe_add_btc_block_to_db,
+    maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+    maybe_remove_old_btc_tail_block,
+    maybe_save_utxos_to_db,
+    maybe_update_btc_canon_block_hash,
+    maybe_update_btc_latest_block_hash,
+    maybe_update_btc_linker_hash,
+    maybe_update_btc_tail_block_hash,
+    parse_btc_block_and_id_and_put_in_state,
+    parse_btc_submission_json_and_put_in_state,
+    remove_tx_infos_from_canon_block_and_return_state,
+    validate_btc_block_header_in_state,
+    validate_btc_merkle_root,
+    validate_deposit_address_list_in_state,
+    validate_difficulty_of_btc_block_in_state,
+    validate_proof_of_work_of_btc_block_in_state,
+    BtcState,
 };
 
 use crate::btc::{
@@ -93,15 +89,16 @@ mod tests {
     use std::str::FromStr;
 
     use common::{
-        chains::btc::{
-            btc_crypto::btc_private_key::BtcPrivateKey,
-            btc_database_utils::BtcDbUtils,
-            btc_submission_material::BtcSubmissionMaterial,
-            core_initialization::initialize_btc_core::init_btc_core,
-            utxo_manager::utxo_database_utils::{get_first_utxo_and_value, get_utxo_nonce_from_db},
-        },
         metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId, Metadata},
         test_utils::get_test_database,
+    };
+    use common_btc::{
+        get_first_utxo_and_value,
+        get_utxo_nonce_from_db,
+        init_btc_core,
+        BtcDbUtils,
+        BtcPrivateKey,
+        BtcSubmissionMaterial,
     };
     use common_eth::{convert_hex_to_eth_address, EthDbUtils, EthDbUtilsExt, EthPrivateKey, EthState, EthTransaction};
     use ethereum_types::{Address as EthAddress, U256};

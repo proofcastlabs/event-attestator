@@ -13,7 +13,6 @@ use common::{
 };
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
-use serde_json;
 
 use crate::{
     btc_types::BtcPubKeySlice,

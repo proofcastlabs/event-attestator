@@ -18,11 +18,11 @@ use common_btc::{
     validate_btc_merkle_root,
     validate_proof_of_work_of_btc_block_in_state,
     BtcState,
-    FeeDatabaseUtils,
 };
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthSigningParams, EthTransactions};
 use common_eth_debug::check_custom_nonce;
+use common_fees::FeeDatabaseUtils;
 use function_name::named;
 
 use crate::{

@@ -1,16 +1,13 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use common::{
-    chains::btc::{
-        btc_constants::MAX_NUM_OUTPUTS,
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_utils::convert_wei_to_satoshis,
-        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
-    },
-    safe_addresses::safely_convert_str_to_btc_address,
-    traits::DatabaseInterface,
-    types::Result,
+use common::{safe_addresses::safely_convert_str_to_btc_address, traits::DatabaseInterface, types::Result};
+use common_btc::{
+    convert_wei_to_satoshis,
+    create_signed_raw_btc_tx_for_n_input_n_outputs,
+    get_enough_utxos_to_cover_total,
+    BtcPrivateKey,
+    BtcRecipientAndAmount,
+    BtcRecipientsAndAmounts,
+    MAX_NUM_OUTPUTS,
 };
 use common_eth::{
     Erc777RedeemEvent,

@@ -1,3 +1,4 @@
+#![cfg(test)]
 use std::{fs::read_to_string, str::FromStr};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;

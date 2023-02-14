@@ -1,6 +1,6 @@
 use common::{traits::DatabaseInterface, types::Result};
-use common_btc::{FeeDatabaseUtils, DISABLE_FEES};
 use common_eth::EthState;
+use common_fees::{FeeDatabaseUtils, DISABLE_FEES};
 
 use crate::eth::btc_tx_info::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos};
 

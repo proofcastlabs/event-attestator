@@ -1,7 +1,8 @@
 use common::{constants::DB_KEY_PREFIX, traits::DatabaseInterface, types::Result};
-use common_btc::{get_utxo_constants_db_keys, BtcDatabaseKeysJson, BTC_ON_ETH_FEE_DB_KEYS};
+use common_btc::{get_utxo_constants_db_keys, BtcDatabaseKeysJson};
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
 use common_eth::EthDatabaseKeysJson;
+use common_fees::BTC_ON_ETH_FEE_DB_KEYS;
 use function_name::named;
 use serde_json::json;
 

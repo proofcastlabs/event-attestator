@@ -15,10 +15,10 @@ use common_btc::{
     validate_difficulty_of_btc_block_in_state,
     validate_proof_of_work_of_btc_block_in_state,
     BtcState,
-    FeeDatabaseUtils,
 };
 use common_debug_signers::validate_debug_command_signature;
 use common_eos::{EosDbUtils, EosPrivateKey, EosSignedTransactions};
+use common_fees::FeeDatabaseUtils;
 use function_name::named;
 pub use serde_json::json;
 

@@ -1,6 +1,6 @@
 use common::{traits::DatabaseInterface, types::Result};
-use common_btc::{FeeDatabaseUtils, DISABLE_FEES};
 use common_eos::EosState;
+use common_fees::{FeeDatabaseUtils, DISABLE_FEES};
 
 use crate::eos::btc_tx_info::BtcOnEosBtcTxInfos;
 

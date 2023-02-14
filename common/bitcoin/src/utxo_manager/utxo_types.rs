@@ -20,15 +20,9 @@ use crate::{
 };
 
 #[derive(
-    Clone, Debug, Deserialize, Serialize, PartialEq, Eq, Constructor, Deref, DerefMut, From, Into, IntoIterator,
+    Clone, Default, Debug, Deserialize, Serialize, PartialEq, Eq, Constructor, Deref, DerefMut, From, Into, IntoIterator,
 )]
 pub struct BtcUtxosAndValues(pub Vec<BtcUtxoAndValue>);
-
-impl Default for BtcUtxosAndValues {
-    fn default() -> Self {
-        Self(vec![])
-    }
-}
 
 impl Serdable for BtcUtxosAndValues {}
 

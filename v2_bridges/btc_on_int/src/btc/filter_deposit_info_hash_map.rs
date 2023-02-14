@@ -1,12 +1,5 @@
-use common::{
-    chains::btc::{
-        deposit_address_info::DepositAddressInfoVersion,
-        filter_deposit_address_info_hash_map::filter_deposit_infos_for_allowed_versions,
-        BtcState,
-    },
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::{filter_deposit_infos_for_allowed_versions, BtcState, DepositAddressInfoVersion};
 
 pub fn filter_out_wrong_version_deposit_address_infos<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
     info!("✔ Checking deposit infos are sufficient version...");

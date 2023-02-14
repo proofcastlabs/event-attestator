@@ -1,13 +1,13 @@
 use common::{traits::DatabaseInterface, types::Result, utils::prepend_debug_output_marker_to_string};
 use common_btc::{
     extract_utxos_from_p2pkh_txs,
-    get_btc_on_eos_fee_withdrawal_tx,
     get_hex_tx_from_signed_btc_tx,
     get_pay_to_pub_key_hash_script,
     save_utxos_to_db,
     BtcDbUtils,
 };
 use common_debug_signers::validate_debug_command_signature;
+use common_fees::get_btc_on_eos_fee_withdrawal_tx;
 use function_name::named;
 use serde_json::json;
 

@@ -6,7 +6,7 @@ mod fee_withdrawals;
 mod test_utils;
 
 pub use self::{
-    fee_constants::{BTC_ON_ETH_FEE_DB_KEYS, DISABLE_FEES},
+    fee_constants::{BTC_ON_ETH_FEE_DB_KEYS, DISABLE_FEES, FEE_BASIS_POINTS_DIVISOR},
     fee_database_utils::FeeDatabaseUtils,
     fee_enclave_state::FeesEnclaveState,
     fee_utils::sanity_check_basis_points_value,

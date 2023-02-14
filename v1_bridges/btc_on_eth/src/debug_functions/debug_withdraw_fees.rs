@@ -1,6 +1,7 @@
 use common::{traits::DatabaseInterface, types::Result, utils::prepend_debug_output_marker_to_string};
-use common_btc::{get_btc_on_eth_fee_withdrawal_tx, get_hex_tx_from_signed_btc_tx, BtcDbUtils};
+use common_btc::{get_hex_tx_from_signed_btc_tx, BtcDbUtils};
 use common_debug_signers::validate_debug_command_signature;
+use common_fees::get_btc_on_eth_fee_withdrawal_tx;
 use function_name::named;
 use serde_json::json;
 

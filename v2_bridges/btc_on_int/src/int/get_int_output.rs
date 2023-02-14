@@ -2,11 +2,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
     BtcChainId,
 };
+use common_btc::{get_hex_tx_from_signed_btc_tx, BtcDbUtils, BtcTransactions};
 use common_eth::{EthDbUtilsExt, EthState};
 use ethereum_types::Address as EthAddress;
 
@@ -65,7 +65,7 @@ impl BtcTxInfo {
 
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
-    btc_txs: Vec<BtcTransaction>,
+    btc_txs: BtcTransactions,
     redeem_infos: &BtcOnIntBtcTxInfos,
     btc_latest_block_number: u64,
     host_token_address: &EthAddress,
@@ -107,16 +107,19 @@ pub fn get_int_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<I
             .get_eth_latest_block_from_db()?
             .get_block_number()?
             .as_usize(),
-        btc_signed_transactions: match state.btc_transactions {
-            Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                state.btc_db_utils.get_btc_account_nonce_from_db()?,
+        btc_signed_transactions: if state.signed_txs.is_empty() {
+            vec![]
+        } else {
+            let btc_db_utils = BtcDbUtils::new(state.db);
+            let txs = BtcTransactions::from_bytes(&state.signed_txs)?;
+            get_btc_signed_tx_info_from_btc_txs(
+                btc_db_utils.get_btc_account_nonce_from_db()?,
                 txs,
                 &BtcOnIntBtcTxInfos::from_bytes(&state.tx_infos)?,
-                state.btc_db_utils.get_latest_btc_block_number()?,
+                btc_db_utils.get_latest_btc_block_number()?,
                 &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
-                &state.btc_db_utils.get_btc_chain_id_from_db()?,
-            )?,
-            None => vec![],
+                &btc_db_utils.get_btc_chain_id_from_db()?,
+            )?
         },
     };
     info!("✔ INT Output: {}", output);

@@ -12,7 +12,7 @@ fn is_private_key_key(key: &[Byte]) -> bool {
     ["eth", "evm", "int", "algo", "btc", "eos"]
         .iter()
         .map(|s| get_prefixed_db_key(&format!("{s}-private-key-key")).to_vec())
-        .fold(false, |acc, v| acc || key == v)
+        .any(|v| key == v)
 }
 /// Debug Set Key In Db To Value
 ///

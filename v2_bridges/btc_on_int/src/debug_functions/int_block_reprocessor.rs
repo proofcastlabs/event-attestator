@@ -1,9 +1,10 @@
 use common::{
     core_type::CoreType,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_btc::{BtcDbUtils, BtcTransactions};
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{
     end_eth_db_transaction_and_return_state,
@@ -56,16 +57,19 @@ fn reprocess_int_block<D: DatabaseInterface>(db: &D, block_json: &str, signature
             info!("✔ Getting INT output json...");
             let output = serde_json::to_string(&IntOutput {
                 int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-                btc_signed_transactions: match state.btc_transactions {
-                    Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                        state.btc_db_utils.get_btc_account_nonce_from_db()?,
+                btc_signed_transactions: if state.signed_txs.is_empty() {
+                    vec![]
+                } else {
+                    let txs = BtcTransactions::from_bytes(&state.signed_txs)?;
+                    let btc_db_utils = BtcDbUtils::new(state.db);
+                    get_btc_signed_tx_info_from_btc_txs(
+                        btc_db_utils.get_btc_account_nonce_from_db()?,
                         txs,
                         &BtcOnIntBtcTxInfos::from_bytes(&state.tx_infos)?,
-                        state.btc_db_utils.get_latest_btc_block_number()?,
+                        btc_db_utils.get_latest_btc_block_number()?,
                         &state.eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
-                        &state.btc_db_utils.get_btc_chain_id_from_db()?,
-                    )?,
-                    None => vec![],
+                        &btc_db_utils.get_btc_chain_id_from_db()?,
+                    )?
                 },
             })?;
             info!("✔ INT Output: {}", output);

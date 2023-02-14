@@ -2,6 +2,7 @@ use common::{core_type::CoreType, types::Bytes, utils::get_prefixed_db_key};
 pub use serde_json::{json, Value as JsonValue};
 
 pub const DISABLE_FEES: bool = cfg!(feature = "disable-fees");
+pub const FEE_BASIS_POINTS_DIVISOR: u64 = 10_000;
 
 lazy_static! {
     pub static ref BTC_ON_ETH_FEE_DB_KEYS: FeeConstantDbKeys = FeeConstantDbKeys::new_for_btc_on_eth();

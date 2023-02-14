@@ -1,9 +1,5 @@
-use common::{
-    constants::FEE_BASIS_POINTS_DIVISOR,
-    dictionaries::eos_eth::EosEthTokenDictionary,
-    fees::fee_utils::sanity_check_basis_points_value,
-    types::Result,
-};
+use common::{dictionaries::eos_eth::EosEthTokenDictionary, types::Result};
+use common_fees::{sanity_check_basis_points_value, FEE_BASIS_POINTS_DIVISOR};
 use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, U256};
 

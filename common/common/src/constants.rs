@@ -4,7 +4,6 @@ pub const MAX_FEE_BASIS_POINTS: u64 = 100;
 pub const PTOKEN_ERC777_NUM_DECIMALS: u32 = 18;
 pub const FIELD_NOT_SET_MSG: &str = "Not set!";
 pub const SUCCESS_JSON: &str = "{success:true}";
-pub const FEE_BASIS_POINTS_DIVISOR: u64 = 10_000;
 pub const MIN_DATA_SENSITIVITY_LEVEL: Option<u8> = None;
 pub const DEBUG_OUTPUT_MARKER: &str = "DEBUG_OUTPUT_MARKER";
 pub const MAX_DATA_SENSITIVITY_LEVEL: Option<u8> = Some(255);

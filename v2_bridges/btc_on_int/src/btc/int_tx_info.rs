@@ -1,10 +1,10 @@
 use bitcoin::Txid;
 use common::{
     address::Address,
-    chains::btc::btc_constants::ZERO_HASH,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
 };
+use common_btc::ZERO_HASH;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};

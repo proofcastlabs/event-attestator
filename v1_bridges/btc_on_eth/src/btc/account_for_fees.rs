@@ -1,5 +1,6 @@
-use common::{constants::FEE_BASIS_POINTS_DIVISOR, traits::DatabaseInterface, types::Result};
-use common_btc::{sanity_check_basis_points_value, BtcState, FeeDatabaseUtils, DISABLE_FEES};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::BtcState;
+use common_fees::{sanity_check_basis_points_value, FeeDatabaseUtils, DISABLE_FEES, FEE_BASIS_POINTS_DIVISOR};
 use ethereum_types::U256;
 
 use crate::{
@@ -126,7 +127,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: BtcState<D>) -> Resul
 #[cfg(test)]
 mod tests {
     use common::{errors::AppError, test_utils::get_test_database};
-    use common_btc::FeeDatabaseUtils;
+    use common_fees::FeeDatabaseUtils;
 
     use super::*;
     use crate::{test_utils::get_sample_eth_tx_infos, utils::convert_satoshis_to_wei};

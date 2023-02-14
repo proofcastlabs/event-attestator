@@ -4,7 +4,7 @@ use common::{
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
-use common_btc::{BtcDbUtils, BtcTransactions, FeeDatabaseUtils};
+use common_btc::{BtcDbUtils, BtcTransactions};
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{
     end_eth_db_transaction_and_return_state,
@@ -13,6 +13,7 @@ use common_eth::{
     EthDbUtilsExt,
     EthState,
 };
+use common_fees::FeeDatabaseUtils;
 use function_name::named;
 
 use crate::{

@@ -22,6 +22,7 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 
 common = { path = "../../common/common" }
 common_db = { package = "db", path = "../../common/db" }
+common_fees = { package = "fees", path = "../../common/fees" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
 common_enclave_info = { package = "enclave_info", path = "../../common/enclave_info" }
 common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_debug" }
