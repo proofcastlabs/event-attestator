@@ -1,7 +1,11 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use common::{chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx, traits::DatabaseInterface, types::Result};
+use common::{
+    traits::{DatabaseInterface, Serdable},
+    types::Result,
+};
+use common_btc::{get_hex_tx_from_signed_btc_tx, BtcDbUtils, BtcTransactions};
 use common_eth::{EthDbUtilsExt, EthState};
 use serde::{Deserialize, Serialize};
 
@@ -42,7 +46,7 @@ pub struct EthOutput {
 
 pub fn get_btc_signed_tx_info_from_btc_txs(
     btc_account_nonce: u64,
-    btc_txs: Vec<BtcTransaction>,
+    btc_txs: BtcTransactions,
     btc_tx_infos: &BtcOnEthBtcTxInfos,
 ) -> Result<Vec<BtcTxInfo>> {
     info!("✔ Getting BTC tx info from {} BTC tx(s)...", btc_txs.len());
@@ -72,13 +76,14 @@ pub fn get_eth_output_json<D: DatabaseInterface>(state: EthState<D>) -> Result<S
             .get_eth_latest_block_from_db()?
             .get_block_number()?
             .as_usize(),
-        btc_signed_transactions: match state.btc_transactions {
-            Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                state.btc_db_utils.get_btc_account_nonce_from_db()?,
-                txs,
+        btc_signed_transactions: if state.signed_txs.is_empty() {
+            vec![]
+        } else {
+            get_btc_signed_tx_info_from_btc_txs(
+                BtcDbUtils::new(state.db).get_btc_account_nonce_from_db()?,
+                BtcTransactions::from_bytes(&state.signed_txs)?,
                 &BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)?,
-            )?,
-            None => vec![],
+            )?
         },
     })?;
     info!("✔ ETH Output: {}", output);

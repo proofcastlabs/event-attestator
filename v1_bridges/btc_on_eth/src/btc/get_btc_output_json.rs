@@ -1,9 +1,5 @@
-use common::{
-    chains::btc::{btc_constants::PLACEHOLDER_BTC_ADDRESS, BtcState},
-    traits::DatabaseInterface,
-    types::Result,
-    utils::get_unix_timestamp,
-};
+use common::{traits::DatabaseInterface, types::Result, utils::get_unix_timestamp};
+use common_btc::{BtcState, PLACEHOLDER_BTC_ADDRESS};
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransaction, EthTransactions, EthTxInfoCompatible, RelayTransaction};
 use serde::{Deserialize, Serialize};
 

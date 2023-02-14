@@ -1,10 +1,5 @@
-use common::{
-    fees::fee_database_utils::FeeDatabaseUtils,
-    traits::DatabaseInterface,
-    types::Result,
-    utils::prepend_debug_output_marker_to_string,
-    CoreType,
-};
+use common::{traits::DatabaseInterface, types::Result, utils::prepend_debug_output_marker_to_string, CoreType};
+use common_btc::FeeDatabaseUtils;
 use common_debug_signers::validate_debug_command_signature;
 use common_eos::{
     end_eos_db_transaction_and_return_state,

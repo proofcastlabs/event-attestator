@@ -10,20 +10,21 @@ use bitcoin::{
     Witness,
 };
 use common::{
-    chains::btc::{
-        btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
-        btc_constants::DEFAULT_BTC_SEQUENCE,
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_database_utils::BtcDbUtils,
-        btc_submission_material::BtcSubmissionMaterialJson,
-        btc_types::BtcPubKeySlice,
-        btc_utils::{create_unsigned_utxo_from_tx, get_p2sh_redeem_script_sig, get_pay_to_pub_key_hash_script},
-        deposit_address_info::DepositAddressInfoJson,
-        utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
-    },
     errors::AppError,
     traits::DatabaseInterface,
     types::{Bytes, Result},
+};
+
+use crate::{
+    btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
+    btc_constants::DEFAULT_BTC_SEQUENCE,
+    btc_database_utils::BtcDbUtils,
+    btc_submission_material::BtcSubmissionMaterialJson,
+    btc_types::BtcPubKeySlice,
+    btc_utils::{create_unsigned_utxo_from_tx, get_p2sh_redeem_script_sig, get_pay_to_pub_key_hash_script},
+    deposit_address_info::DepositAddressInfoJson,
+    utxo_manager::{BtcUtxoAndValue, BtcUtxosAndValues},
+    BtcPrivateKey,
 };
 
 pub const SAMPLE_TRANSACTION_INDEX: usize = 1;

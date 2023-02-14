@@ -1,10 +1,5 @@
-use common::{
-    chains::btc::{btc_database_utils::BtcDatabaseKeysJson, utxo_manager::utxo_constants::get_utxo_constants_db_keys},
-    constants::DB_KEY_PREFIX,
-    fees::fee_constants::BTC_ON_ETH_FEE_DB_KEYS,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{constants::DB_KEY_PREFIX, traits::DatabaseInterface, types::Result};
+use common_btc::{get_utxo_constants_db_keys, BtcDatabaseKeysJson, BTC_ON_ETH_FEE_DB_KEYS};
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
 use common_eth::EthDatabaseKeysJson;
 use function_name::named;

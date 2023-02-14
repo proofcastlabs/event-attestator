@@ -1,5 +1,4 @@
 use common::{
-    chains::btc::btc_database_utils::BtcDbUtils,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
@@ -8,6 +7,8 @@ use common::{
 use debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
+
+use crate::btc_database_utils::BtcDbUtils;
 
 /// # Debug Set BTC Account Nonce
 ///

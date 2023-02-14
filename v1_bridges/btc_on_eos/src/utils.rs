@@ -24,7 +24,7 @@ pub(super) fn convert_u64_to_x_decimal_eos_asset(value: u64, num_decimals: usize
 
 #[cfg(test)]
 mod tests {
-    use common::chains::btc::btc_constants::BTC_NUM_DECIMALS;
+    use common_btc::BTC_NUM_DECIMALS;
 
     use super::*;
 

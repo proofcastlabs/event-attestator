@@ -1,25 +1,25 @@
 use common::{
-    chains::btc::{
-        btc_database_utils::end_btc_db_transaction,
-        btc_submission_material::parse_submission_material_and_put_in_state,
-        extract_utxos_from_p2pkh_txs::maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
-        extract_utxos_from_p2sh_txs::maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
-        filter_p2pkh_deposit_txs::filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-        filter_utxos::filter_out_utxos_extant_in_db_from_state,
-        get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-        save_utxos_to_db::maybe_save_utxos_to_db,
-        validate_btc_block_header::validate_btc_block_header_in_state,
-        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-        validate_btc_merkle_root::validate_btc_merkle_root,
-        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-        BtcState,
-    },
     constants::SUCCESS_JSON,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
+};
+use common_btc::{
+    end_btc_db_transaction,
+    filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state,
+    filter_out_utxos_extant_in_db_from_state,
+    filter_p2sh_deposit_txs_and_add_to_state,
+    get_deposit_info_hash_map_and_put_in_state,
+    maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state,
+    maybe_extract_utxos_from_p2sh_txs_and_put_in_state,
+    maybe_save_utxos_to_db,
+    parse_submission_material_and_put_in_state,
+    validate_btc_block_header_in_state,
+    validate_btc_merkle_root,
+    validate_difficulty_of_btc_block_in_state,
+    validate_proof_of_work_of_btc_block_in_state,
+    BtcState,
 };
 use common_debug_signers::validate_debug_command_signature;
 use function_name::named;

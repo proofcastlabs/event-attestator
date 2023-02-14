@@ -1,21 +1,21 @@
 use common::{
-    chains::btc::{
-        btc_database_utils::end_btc_db_transaction,
-        btc_submission_material::parse_submission_material_and_put_in_state,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs_and_add_to_state,
-        get_btc_block_in_db_format::create_btc_block_in_db_format_and_put_in_state,
-        get_deposit_info_hash_map::get_deposit_info_hash_map_and_put_in_state,
-        validate_btc_block_header::validate_btc_block_header_in_state,
-        validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
-        validate_btc_merkle_root::validate_btc_merkle_root,
-        validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
-        BtcState,
-    },
     core_type::CoreType,
-    fees::fee_database_utils::FeeDatabaseUtils,
     traits::{DatabaseInterface, Serdable},
     types::Result,
     utils::prepend_debug_output_marker_to_string,
+};
+use common_btc::{
+    create_btc_block_in_db_format_and_put_in_state,
+    end_btc_db_transaction,
+    filter_p2sh_deposit_txs_and_add_to_state,
+    get_deposit_info_hash_map_and_put_in_state,
+    parse_submission_material_and_put_in_state,
+    validate_btc_block_header_in_state,
+    validate_btc_merkle_root,
+    validate_difficulty_of_btc_block_in_state,
+    validate_proof_of_work_of_btc_block_in_state,
+    BtcState,
+    FeeDatabaseUtils,
 };
 use common_debug_signers::validate_debug_command_signature;
 use common_eos::{EosDbUtils, EosPrivateKey, EosSignedTransactions};

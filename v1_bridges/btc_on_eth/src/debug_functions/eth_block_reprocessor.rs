@@ -1,10 +1,10 @@
 use common::{
     core_type::CoreType,
-    fees::fee_database_utils::FeeDatabaseUtils,
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
     utils::prepend_debug_output_marker_to_string,
 };
+use common_btc::{BtcDbUtils, BtcTransactions, FeeDatabaseUtils};
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{
     end_eth_db_transaction_and_return_state,
@@ -78,13 +78,14 @@ fn reprocess_eth_block<D: DatabaseInterface>(
             info!("✔ Getting ETH output json...");
             let output = serde_json::to_string(&EthOutput {
                 eth_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
-                btc_signed_transactions: match state.btc_transactions {
-                    Some(txs) => get_btc_signed_tx_info_from_btc_txs(
-                        state.btc_db_utils.get_btc_account_nonce_from_db()?,
-                        txs,
+                btc_signed_transactions: if state.signed_txs.is_empty() {
+                    vec![]
+                } else {
+                    get_btc_signed_tx_info_from_btc_txs(
+                        BtcDbUtils::new(state.db).get_btc_account_nonce_from_db()?,
+                        BtcTransactions::from_bytes(&state.signed_txs)?,
                         &BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)?,
-                    )?,
-                    None => vec![],
+                    )?
                 },
             })?;
             info!("✔ ETH Output: {}", output);

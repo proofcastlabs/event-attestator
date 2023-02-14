@@ -1,4 +1,5 @@
-use common::{chains::btc::btc_constants::BTC_NUM_DECIMALS, constants::PTOKEN_ERC777_NUM_DECIMALS};
+use common::constants::PTOKEN_ERC777_NUM_DECIMALS;
+use common_btc::BTC_NUM_DECIMALS;
 use ethereum_types::U256;
 
 pub fn convert_satoshis_to_wei(satoshis: u64) -> U256 {

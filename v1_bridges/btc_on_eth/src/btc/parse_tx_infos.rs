@@ -4,10 +4,10 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use common::{
-    chains::btc::{deposit_address_info::DepositInfoHashMap, BtcState},
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
+use common_btc::{BtcState, DepositInfoHashMap};
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 use ethereum_types::Address as EthAddress;
 
@@ -105,11 +105,11 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{util::address::Address as BtcAddress, Txid};
-    use common::chains::btc::{
-        btc_test_utils::get_sample_btc_pub_key_slice,
-        btc_utils::convert_bytes_to_btc_pub_key_slice,
-        filter_p2sh_deposit_txs::filter_p2sh_deposit_txs,
-        get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
+    use common_btc::{
+        convert_bytes_to_btc_pub_key_slice,
+        create_hash_map_from_deposit_info_list,
+        filter_p2sh_deposit_txs,
+        test_utils::get_sample_btc_pub_key_slice,
     };
     use ethereum_types::H160 as EthAddress;
 

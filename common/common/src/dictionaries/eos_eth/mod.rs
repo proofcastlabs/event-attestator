@@ -9,9 +9,11 @@ pub mod test_utils;
 
 use crate::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    dictionaries::dictionary_constants::EOS_ETH_DICTIONARY_KEY,
+    dictionaries::{
+        dictionary_constants::EOS_ETH_DICTIONARY_KEY,
+        dictionary_utils::get_last_withdrawal_date_as_human_readable_string,
+    },
     errors::AppError,
-    fees::fee_utils::get_last_withdrawal_date_as_human_readable_string,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{

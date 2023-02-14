@@ -9,12 +9,14 @@ rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
 
+# FIXME Rm now unused feaures
 [features]
 # NOTE: Turns off fee-taking capabilities.
 disable-fees = []
 # NOTE: Turns off block header & chain validation.
 non-validating = []
 
+# FIXME Rm now unused deps
 [dependencies]
 hex = "0.4.3"
 log = "0.4.14"

@@ -1,13 +1,12 @@
 use std::str::from_utf8;
 
 use common::{
-    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
     constants::FEE_BASIS_POINTS_DIVISOR,
-    fees::fee_utils::sanity_check_basis_points_value,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_u64,
 };
+use common_btc::{sanity_check_basis_points_value, MINIMUM_REQUIRED_SATOSHIS};
 use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};

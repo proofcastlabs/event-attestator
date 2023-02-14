@@ -1,9 +1,4 @@
 use common::{
-    chains::btc::{
-        btc_database_utils::BtcDbUtils,
-        btc_types::BtcTransactions,
-        utxo_manager::utxo_types::BtcUtxosAndValues,
-    },
     dictionaries::{eos_eth::EosEthTokenDictionary, eth_evm::EthEvmTokenDictionary, evm_algo::EvmAlgoTokenDictionary},
     traits::DatabaseInterface,
     types::{Bytes, Result},
@@ -20,10 +15,9 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub tx_infos: Bytes,
     pub signed_txs: Bytes,
     pub misc: Option<String>,
+    pub btc_utxos_and_values: Bytes,
     pub eth_db_utils: EthDbUtils<'a, D>,
     pub evm_db_utils: EvmDbUtils<'a, D>,
-    pub btc_db_utils: BtcDbUtils<'a, D>,
-    pub btc_transactions: Option<BtcTransactions>,
     pub int_on_evm_int_signed_txs: EthTransactions,
     pub int_on_evm_evm_signed_txs: EthTransactions,
     pub erc20_on_evm_evm_signed_txs: EthTransactions,
@@ -31,7 +25,6 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub erc20_on_int_int_signed_txs: EthTransactions,
     pub erc20_on_int_eth_signed_txs: EthTransactions,
     pub algo_signed_txs: Vec<(String, AlgorandTxGroup)>,
-    pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     pub eth_submission_material: Option<EthSubmissionMaterial>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
@@ -45,16 +38,14 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             misc: None,
             tx_infos: vec![],
             signed_txs: vec![],
-            btc_transactions: None,
             algo_signed_txs: vec![],
-            btc_utxos_and_values: None,
+            btc_utxos_and_values: vec![],
             eth_submission_material: None,
             eth_evm_token_dictionary: None,
             eos_eth_token_dictionary: None,
             evm_algo_token_dictionary: None,
             eth_db_utils: EthDbUtils::new(db),
             evm_db_utils: EvmDbUtils::new(db),
-            btc_db_utils: BtcDbUtils::new(db),
             int_on_evm_int_signed_txs: EthTransactions::new(vec![]),
             int_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
             erc20_on_evm_evm_signed_txs: EthTransactions::new(vec![]),
@@ -156,16 +147,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
     pub fn add_tx_infos(mut self, infos: Bytes) -> Self {
         self.tx_infos = infos;
         self
-    }
-
-    pub fn add_btc_transactions(mut self, btc_transactions: BtcTransactions) -> Result<Self> {
-        match self.btc_transactions {
-            Some(_) => Err(get_no_overwrite_state_err("btc_transaction").into()),
-            None => {
-                self.btc_transactions = Some(btc_transactions);
-                Ok(self)
-            },
-        }
     }
 
     pub fn add_erc20_on_evm_evm_signed_txs(mut self, txs: EthTransactions) -> Result<Self> {

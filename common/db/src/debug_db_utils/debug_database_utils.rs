@@ -1,21 +1,18 @@
 use common::{
-    chains::btc::btc_database_utils::BtcDbUtils,
     constants::MAX_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::{Byte, Result},
     utils::get_prefixed_db_key,
 };
-use common_eos::EosDbUtils;
 use debug_signers::validate_debug_command_signature;
 use function_name::named;
 
-fn is_private_key_key<D: DatabaseInterface>(db: &D, key: &[Byte]) -> bool {
-    key == get_prefixed_db_key("eth-private-key-key").to_vec()
-        || key == get_prefixed_db_key("evm-private-key-key").to_vec()
-        || key == get_prefixed_db_key("algo_private_key_key").to_vec()
-        || key == BtcDbUtils::new(db).get_btc_private_key_db_key()
-        || key == EosDbUtils::new(db).get_eos_private_key_db_key()
+fn is_private_key_key(key: &[Byte]) -> bool {
+    ["eth", "evm", "int", "algo", "btc", "eos"]
+        .iter()
+        .map(|s| get_prefixed_db_key(&format!("{s}-private-key-key")).to_vec())
+        .fold(false, |acc, v| acc || key == v)
 }
 /// Debug Set Key In Db To Value
 ///
@@ -34,7 +31,7 @@ pub fn debug_set_key_in_db_to_value<D: DatabaseInterface>(
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash, cfg!(test)))
         .and_then(|_| {
             let key_bytes = hex::decode(key)?;
-            let data_sensitivity = if is_private_key_key(db, &key_bytes) {
+            let data_sensitivity = if is_private_key_key(&key_bytes) {
                 MAX_DATA_SENSITIVITY_LEVEL
             } else {
                 None
@@ -61,7 +58,7 @@ pub fn debug_get_key_from_db<D: DatabaseInterface>(
         .and_then(|hash| validate_debug_command_signature(db, core_type, signature, &hash, cfg!(test)))
         .and_then(|_| {
             let key_bytes = hex::decode(key)?;
-            let data_sensitivity = if is_private_key_key(db, &key_bytes) {
+            let data_sensitivity = if is_private_key_key(&key_bytes) {
                 MAX_DATA_SENSITIVITY_LEVEL
             } else {
                 None

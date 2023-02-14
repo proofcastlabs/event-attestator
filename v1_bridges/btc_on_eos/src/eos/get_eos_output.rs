@@ -1,7 +1,8 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use common::{chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::{get_hex_tx_from_signed_btc_tx, BtcDbUtils};
 use common_eos::EosState;
 use serde::{Deserialize, Serialize};
 
@@ -68,7 +69,7 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
         btc_signed_transactions: match &state.btc_on_eos_signed_txs.len() {
             0 => vec![],
             _ => get_btc_signed_tx_info_from_btc_txs(
-                state.btc_db_utils.get_btc_account_nonce_from_db()?,
+                BtcDbUtils::new(state.db).get_btc_account_nonce_from_db()?,
                 &state.btc_on_eos_signed_txs,
                 &BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)?,
             )?,

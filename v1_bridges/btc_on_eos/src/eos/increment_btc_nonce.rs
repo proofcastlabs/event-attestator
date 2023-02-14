@@ -1,4 +1,5 @@
-use common::{chains::btc::btc_database_utils::BtcDbUtils, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::BtcDbUtils;
 use common_eos::EosState;
 
 pub fn increment_btc_account_nonce<D: DatabaseInterface>(
@@ -22,9 +23,10 @@ pub fn maybe_increment_btc_signature_nonce_and_return_eos_state<D: DatabaseInter
         info!("✔ No signatures in state ∴ not incrementing nonce");
         Ok(state)
     } else {
+        let btc_db_utils = BtcDbUtils::new(state.db);
         increment_btc_account_nonce(
-            &state.btc_db_utils,
-            state.btc_db_utils.get_btc_account_nonce_from_db()?,
+            &btc_db_utils,
+            btc_db_utils.get_btc_account_nonce_from_db()?,
             num_txs as u64,
         )
         .and(Ok(state))

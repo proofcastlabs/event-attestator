@@ -1,5 +1,4 @@
 use common::{
-    chains::btc::utxo_manager::utxo_database_utils::put_utxo_nonce_in_db,
     core_type::CoreType,
     traits::DatabaseInterface,
     types::Result,
@@ -8,6 +7,8 @@ use common::{
 use debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
+
+use crate::utxo_manager::put_utxo_nonce_in_db;
 
 /// # Debug Set BTC UTXO Nonce
 ///
@@ -31,12 +32,10 @@ pub fn debug_set_btc_utxo_nonce<D: DatabaseInterface>(
 
 #[cfg(test)]
 mod tests {
-    use common::{
-        chains::btc::utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
-    };
+    use common::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 
     use super::*;
+    use crate::utxo_manager::get_utxo_nonce_from_db;
 
     #[test]
     fn should_set_btc_utxo_nonce() {

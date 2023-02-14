@@ -1,5 +1,6 @@
 pub const ETH_HASH_LENGTH: usize = 32;
 pub const ALGO_TAIL_LENGTH: u64 = 30;
+pub const MAX_FEE_BASIS_POINTS: u64 = 100;
 pub const PTOKEN_ERC777_NUM_DECIMALS: u32 = 18;
 pub const FIELD_NOT_SET_MSG: &str = "Not set!";
 pub const SUCCESS_JSON: &str = "{success:true}";

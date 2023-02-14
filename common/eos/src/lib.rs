@@ -25,7 +25,6 @@ pub mod eos_test_utils;
 mod eos_types;
 mod eos_unit_conversions;
 mod eos_utils;
-mod extract_utxos_from_btc_txs;
 mod filter_action_proofs;
 mod get_action_digest;
 mod get_active_schedule;
@@ -90,7 +89,6 @@ pub use self::{
         get_symbol_from_eos_asset,
         remove_symbol_from_eos_asset,
     },
-    extract_utxos_from_btc_txs::extract_btc_utxo_from_btc_tx,
     filter_action_proofs::{
         maybe_filter_duplicate_proofs_from_state,
         maybe_filter_out_action_proof_receipt_mismatches_and_return_state,

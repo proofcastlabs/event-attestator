@@ -1,9 +1,9 @@
 use bitcoin::{util::address::Address as BtcAddress, Txid};
 use common::{
-    chains::btc::{btc_constants::ZERO_HASH, btc_metadata::ToMetadata},
     safe_addresses::safely_convert_str_to_eth_address,
     types::{Byte, Bytes, Result},
 };
+use common_btc::{ToMetadata, ZERO_HASH};
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};

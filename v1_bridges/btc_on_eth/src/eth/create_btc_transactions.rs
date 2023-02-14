@@ -1,13 +1,15 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::btc::{
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_utils::get_pay_to_pub_key_hash_script,
-        extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_tx,
-        utxo_manager::utxo_database_utils::save_utxos_to_db,
-    },
-    traits::DatabaseInterface,
+    traits::{DatabaseInterface, Serdable},
     types::Result,
+};
+use common_btc::{
+    extract_utxos_from_p2pkh_tx,
+    get_pay_to_pub_key_hash_script,
+    save_utxos_to_db,
+    BtcDbUtils,
+    BtcPrivateKey,
+    BtcTransactions,
 };
 use common_eth::EthState;
 
@@ -30,20 +32,22 @@ fn to_btc_txs_whilst_extracting_change_outputs<D: DatabaseInterface>(
     btc_address: &str,
     btc_private_key: &BtcPrivateKey,
     btc_tx_infos: &BtcOnEthBtcTxInfos,
-) -> Result<Vec<BtcTransaction>> {
-    btc_tx_infos
-        .filter_out_any_whose_value_is_too_low()
-        .iter()
-        .map(|btc_tx_info| {
-            debug!("Signing BTC tx...");
-            debug!("    To: {}", btc_tx_info.recipient);
-            debug!("  From: {}", btc_tx_info.from);
-            debug!("Amount: {} satoshis", btc_tx_info.amount_in_satoshis);
-            debug!("   Fee: {} sats/byte", fee);
-            btc_tx_info.to_btc_tx(db, fee, btc_address, btc_private_key)
-        })
-        .map(|tx| extract_change_utxo_from_btc_tx_and_save_in_db(db, btc_address, tx?))
-        .collect::<Result<Vec<_>>>()
+) -> Result<BtcTransactions> {
+    Ok(BtcTransactions::new(
+        btc_tx_infos
+            .filter_out_any_whose_value_is_too_low()
+            .iter()
+            .map(|btc_tx_info| {
+                debug!("Signing BTC tx...");
+                debug!("    To: {}", btc_tx_info.recipient);
+                debug!("  From: {}", btc_tx_info.from);
+                debug!("Amount: {} satoshis", btc_tx_info.amount_in_satoshis);
+                debug!("   Fee: {} sats/byte", fee);
+                btc_tx_info.to_btc_tx(db, fee, btc_address, btc_private_key)
+            })
+            .map(|tx| extract_change_utxo_from_btc_tx_and_save_in_db(db, btc_address, tx?))
+            .collect::<Result<Vec<_>>>()?,
+    ))
 }
 
 pub fn maybe_create_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
@@ -52,16 +56,18 @@ pub fn maybe_create_btc_txs_and_add_to_state<D: DatabaseInterface>(state: EthSta
         Ok(state)
     } else {
         info!("✔ `BtcOnEthBtcTxInfos` in state ∴ creating BTC txs & extracting change outputs...");
+        let btc_db_utils = BtcDbUtils::new(state.db);
         to_btc_txs_whilst_extracting_change_outputs(
             state.db,
-            state.btc_db_utils.get_btc_fee_from_db()?,
-            &state.btc_db_utils.get_btc_address_from_db()?,
-            &state.btc_db_utils.get_btc_private_key_from_db()?,
+            btc_db_utils.get_btc_fee_from_db()?,
+            &btc_db_utils.get_btc_address_from_db()?,
+            &btc_db_utils.get_btc_private_key_from_db()?,
             &BtcOnEthBtcTxInfos::from_bytes(&state.tx_infos)?,
         )
         .and_then(|signed_txs| {
             debug!("✔ Signed transactions: {:?}", signed_txs);
-            state.add_btc_transactions(signed_txs)
+            signed_txs.to_bytes()
         })
+        .and_then(|bytes| state.add_signed_txs(bytes))
     }
 }

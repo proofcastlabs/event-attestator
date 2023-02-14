@@ -1,8 +1,5 @@
-use common::{
-    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, BtcState},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::{BtcState, MINIMUM_REQUIRED_SATOSHIS};
 
 use crate::{
     btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},

@@ -1,14 +1,12 @@
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, network::constants::Network as BtcNetwork};
-use common::{
-    chains::btc::{
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_database_utils::BtcDbUtils,
-        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
-    },
-    traits::DatabaseInterface,
-    types::Result,
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::{
+    create_signed_raw_btc_tx_for_n_input_n_outputs,
+    get_enough_utxos_to_cover_total,
+    BtcDbUtils,
+    BtcPrivateKey,
+    BtcRecipientAndAmount,
+    BtcRecipientsAndAmounts,
 };
 use common_eos::EosState;
 
@@ -68,14 +66,15 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
         info!("✔ No redeem params in state ∴ not signing txs!");
         Ok(state)
     } else {
+        let btc_db_utils = BtcDbUtils::new(state.db);
         info!("✔ Redeem params in state ∴ signing txs...");
         sign_txs_from_btc_tx_infos(
-            &state.btc_db_utils,
-            state.btc_db_utils.get_btc_fee_from_db()?,
-            state.btc_db_utils.get_btc_network_from_db()?,
+            &btc_db_utils,
+            btc_db_utils.get_btc_fee_from_db()?,
+            btc_db_utils.get_btc_network_from_db()?,
             &BtcOnEosBtcTxInfos::from_bytes(&state.tx_infos)?,
-            &state.btc_db_utils.get_btc_address_from_db()?[..],
-            &state.btc_db_utils.get_btc_private_key_from_db()?,
+            &btc_db_utils.get_btc_address_from_db()?[..],
+            &btc_db_utils.get_btc_private_key_from_db()?,
         )
         .and_then(|signed_tx| {
             debug!("✔ Signed transaction: {:?}", signed_tx);
@@ -87,16 +86,13 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
 #[cfg(test)]
 mod tests {
     use bitcoin::network::constants::Network as BtcNetwork;
-    use common::{
-        chains::btc::{
-            btc_database_utils::BtcDbUtils,
-            btc_utils::get_hex_tx_from_signed_btc_tx,
-            utxo_manager::{
-                utxo_database_utils::{save_utxos_to_db, set_utxo_balance_to_zero},
-                utxo_types::BtcUtxosAndValues,
-            },
-        },
-        test_utils::get_test_database,
+    use common::test_utils::get_test_database;
+    use common_btc::{
+        get_hex_tx_from_signed_btc_tx,
+        save_utxos_to_db,
+        set_utxo_balance_to_zero,
+        BtcDbUtils,
+        BtcUtxosAndValues,
     };
     use common_eos::EosActionProof;
 

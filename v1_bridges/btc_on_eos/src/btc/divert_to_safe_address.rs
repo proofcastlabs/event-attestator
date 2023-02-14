@@ -1,4 +1,5 @@
-use common::{chains::btc::BtcState, safe_addresses::SAFE_EOS_ADDRESS_STR, traits::DatabaseInterface, types::Result};
+use common::{safe_addresses::SAFE_EOS_ADDRESS_STR, traits::DatabaseInterface, types::Result};
+use common_btc::BtcState;
 
 use crate::btc::eos_tx_info::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos};
 

@@ -14,10 +14,6 @@ mod get_latest_block_numbers;
 mod test_utils;
 mod utils;
 
-pub use common::chains::btc::{
-    core_initialization::initialize_btc_core::maybe_initialize_btc_core as maybe_initialize_btc_enclave,
-    utxo_manager::utxo_utils::get_all_utxos_as_json_string as get_all_utxos,
-};
 pub use common_btc::{
     debug_add_multiple_utxos,
     debug_clear_all_utxos,
@@ -28,6 +24,8 @@ pub use common_btc::{
     debug_set_btc_account_nonce,
     debug_set_btc_fee,
     debug_set_btc_utxo_nonce,
+    get_all_utxos_as_json_string as get_all_utxos,
+    maybe_initialize_btc_core as maybe_initialize_btc_enclave,
 };
 pub use common_db::{debug_get_key_from_db, debug_set_key_in_db_to_value};
 pub use common_debug_signers::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer};

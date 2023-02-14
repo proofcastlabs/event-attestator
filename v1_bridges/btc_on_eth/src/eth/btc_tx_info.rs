@@ -2,18 +2,20 @@ use std::str::FromStr;
 
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use common::{
-    chains::btc::{
-        btc_constants::{MAX_NUM_OUTPUTS, MINIMUM_REQUIRED_SATOSHIS},
-        btc_crypto::btc_private_key::BtcPrivateKey,
-        btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        utxo_manager::utxo_utils::get_enough_utxos_to_cover_total,
-    },
     constants::FEE_BASIS_POINTS_DIVISOR,
-    fees::fee_utils::sanity_check_basis_points_value,
     safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
+};
+use common_btc::{
+    create_signed_raw_btc_tx_for_n_input_n_outputs,
+    get_enough_utxos_to_cover_total,
+    sanity_check_basis_points_value,
+    BtcPrivateKey,
+    BtcRecipientAndAmount,
+    BtcRecipientsAndAmounts,
+    MAX_NUM_OUTPUTS,
+    MINIMUM_REQUIRED_SATOSHIS,
 };
 use common_eth::{
     Erc777RedeemEvent,

@@ -1,6 +1,5 @@
 pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::btc::{btc_database_utils::BtcDbUtils, utxo_manager::utxo_types::BtcUtxosAndValues},
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
     types::{Bytes, Result},
@@ -22,7 +21,6 @@ use crate::{
 make_state_setters_and_getters!(
     EosState;
     "active_schedule" => EosProducerScheduleV2,
-    "btc_utxos_and_values" => BtcUtxosAndValues,
     "eos_eth_token_dictionary" => EosEthTokenDictionary
 );
 
@@ -34,17 +32,16 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub block_num: Option<u64>,
     pub incremerkle: Incremerkle,
     pub producer_signature: String,
+    pub btc_utxos_and_values: Bytes,
     global_sequences: GlobalSequences,
     pub action_proofs: EosActionProofs,
     pub interim_block_ids: Checksum256s,
-    pub btc_db_utils: BtcDbUtils<'a, D>,
     pub eos_db_utils: EosDbUtils<'a, D>,
     pub block_header: Option<EosBlockHeaderV2>,
     pub btc_on_eos_signed_txs: Vec<BtcTransaction>,
     pub processed_tx_ids: ProcessedGlobalSequences,
     pub enabled_protocol_features: EnabledFeatures,
     pub active_schedule: Option<EosProducerScheduleV2>,
-    pub btc_utxos_and_values: Option<BtcUtxosAndValues>,
     eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
 }
 
@@ -59,10 +56,9 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             eth_signed_txs: vec![],
             active_schedule: None,
             interim_block_ids: vec![],
-            btc_utxos_and_values: None,
+            btc_utxos_and_values: vec![],
             btc_on_eos_signed_txs: vec![],
             eos_eth_token_dictionary: None,
-            btc_db_utils: BtcDbUtils::new(db),
             producer_signature: String::new(),
             incremerkle: Incremerkle::default(),
             eos_db_utils: EosDbUtils::new(db),
@@ -70,6 +66,11 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
         }
+    }
+
+    pub fn add_btc_utxos_and_values(mut self, bytes: Bytes) -> Self {
+        self.btc_utxos_and_values = bytes;
+        self
     }
 
     pub fn get_eos_eth_token_dictionary_and_add_to_state(mut self) -> Result<Self> {

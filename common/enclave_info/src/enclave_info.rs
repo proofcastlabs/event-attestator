@@ -1,6 +1,5 @@
 use common::{
-    constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX},
-    fees::fee_constants::MAX_FEE_BASIS_POINTS,
+    constants::{CORE_IS_VALIDATING, DB_KEY_PREFIX, MAX_FEE_BASIS_POINTS},
     traits::DatabaseInterface,
     types::Result,
     utils::get_core_version,

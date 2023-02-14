@@ -1,11 +1,11 @@
 use common::{
-    chains::btc::{btc_metadata::ToMetadata, BtcState},
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::{DatabaseInterface, Serdable},
     types::Result,
     BtcChainId,
     EosChainId,
 };
+use common_btc::{BtcState, ToMetadata};
 use common_eos::{
     get_eos_tx_expiration_timestamp_with_offset,
     get_signed_eos_ptoken_issue_tx,

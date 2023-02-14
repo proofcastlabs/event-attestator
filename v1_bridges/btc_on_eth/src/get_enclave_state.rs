@@ -1,10 +1,5 @@
-use common::{
-    chains::btc::{btc_database_utils::BtcDbUtils, btc_enclave_state::BtcEnclaveState},
-    core_type::CoreType,
-    fees::fee_enclave_state::FeesEnclaveState,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_btc::{BtcDbUtils, BtcEnclaveState, FeesEnclaveState};
 use common_enclave_info::EnclaveInfo;
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthEnclaveState};
 use serde::{Deserialize, Serialize};

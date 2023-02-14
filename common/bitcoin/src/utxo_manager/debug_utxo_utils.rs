@@ -1,36 +1,32 @@
 use std::str::FromStr;
 
 use bitcoin::Address as BtcAddress;
-use common::{
-    chains::btc::{
-        btc_database_utils::BtcDbUtils,
-        btc_recipients_and_amounts::BtcRecipientsAndAmounts,
-        btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-        btc_utils::{get_btc_tx_id_from_str, get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
-        extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
-        utxo_manager::{
-            utxo_database_utils::{
-                delete_first_utxo_key,
-                delete_last_utxo_key,
-                get_all_utxo_db_keys,
-                get_total_number_of_utxos_from_db,
-                get_utxo_with_tx_id_and_v_out,
-                get_x_utxos,
-                save_new_utxo_and_value,
-                save_utxos_to_db,
-                set_utxo_balance_to_zero,
-            },
-            utxo_types::BtcUtxosAndValues,
-        },
-    },
-    constants::SUCCESS_JSON,
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{constants::SUCCESS_JSON, core_type::CoreType, traits::DatabaseInterface, types::Result};
 use debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
+
+use crate::{
+    btc_database_utils::BtcDbUtils,
+    btc_recipients_and_amounts::BtcRecipientsAndAmounts,
+    btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
+    btc_utils::{get_btc_tx_id_from_str, get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
+    extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
+    utxo_manager::{
+        utxo_database_utils::{
+            delete_first_utxo_key,
+            delete_last_utxo_key,
+            get_all_utxo_db_keys,
+            get_total_number_of_utxos_from_db,
+            get_utxo_with_tx_id_and_v_out,
+            get_x_utxos,
+            save_new_utxo_and_value,
+            save_utxos_to_db,
+            set_utxo_balance_to_zero,
+        },
+        utxo_types::BtcUtxosAndValues,
+    },
+};
 
 // NOTE: Some functions in here have their debug signature requirement temporarily removed, to
 // allow for the automated `ptokens-utxo-recovery` tool to work. Once that tool has been updated to
@@ -311,16 +307,16 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
 
 #[cfg(test)]
 mod tests {
-    use common::{
-        chains::btc::utxo_manager::{
+    use common::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
+
+    use super::*;
+    use crate::{
+        test_utils::get_sample_utxo_and_values,
+        utxo_manager::{
             utxo_database_utils::{get_total_utxo_balance_from_db, save_utxos_to_db},
             utxo_utils::get_all_utxos_as_json_string,
         },
-        test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE},
     };
-
-    use super::*;
-    use crate::test_utils::get_sample_utxo_and_values;
 
     #[test]
     fn should_clear_all_utxos() {

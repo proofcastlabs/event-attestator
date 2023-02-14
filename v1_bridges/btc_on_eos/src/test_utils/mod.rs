@@ -2,13 +2,14 @@
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use bitcoin::hashes::{sha256d, Hash};
-use common::chains::btc::{
-    btc_block::BtcBlockAndId,
-    btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
-    btc_submission_material::BtcSubmissionMaterialJson,
-    btc_utils::create_unsigned_utxo_from_tx,
-    deposit_address_info::DepositAddressInfoJson,
-    utxo_manager::utxo_types::BtcUtxoAndValue,
+use common_btc::{
+    create_unsigned_utxo_from_tx,
+    BtcBlockAndId,
+    BtcSubmissionMaterialJson,
+    BtcUtxoAndValue,
+    DepositAddressInfoJson,
+    BTC_NUM_DECIMALS,
+    MINIMUM_REQUIRED_SATOSHIS,
 };
 use common_eos::{EosSubmissionMaterial, EosSubmissionMaterialJson};
 

@@ -1,10 +1,10 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{
-    chains::btc::BtcState,
     traits::{DatabaseInterface, Serdable},
     types::Result,
 };
+use common_btc::BtcState;
 use common_eos::{convert_eos_asset_to_u64, EosDbUtils, EosSignedTransaction, EosSignedTransactions};
 use serde::{Deserialize, Serialize};
 

@@ -1,10 +1,10 @@
 use common::{
-    chains::btc::{btc_metadata::ToMetadata, BtcState},
     metadata::metadata_protocol_id::MetadataProtocolId,
     traits::DatabaseInterface,
     types::Result,
     BtcChainId,
 };
+use common_btc::{BtcState, ToMetadata};
 use common_eth::{
     get_signed_minting_tx,
     EthDbUtils,
@@ -77,7 +77,8 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
-    use common::{chains::btc::btc_test_utils::SAMPLE_TARGET_BTC_ADDRESS, test_utils::get_test_database, EthChainId};
+    use common::{test_utils::get_test_database, EthChainId};
+    use common_btc::test_utils::SAMPLE_TARGET_BTC_ADDRESS;
     use common_eth::{
         test_utils::{get_sample_eth_address, get_sample_eth_private_key},
         EthDbUtils,

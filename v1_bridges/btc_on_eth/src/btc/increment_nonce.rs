@@ -1,4 +1,5 @@
-use common::{chains::btc::BtcState, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::BtcState;
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransactions};
 
 pub fn maybe_increment_nonce_in_db<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {

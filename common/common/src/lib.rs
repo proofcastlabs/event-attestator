@@ -31,7 +31,6 @@ pub mod macros;
 pub mod address;
 pub mod algo_chain_id; // FIXME Ideally factor these out
 mod btc_chain_id; // FIXME Ideally factor these out
-pub mod chains;
 pub mod constants;
 pub mod core_type;
 pub mod crypto_utils;
@@ -41,7 +40,6 @@ mod eos_chain_id;
 mod eos_metadata; // FIXME Move to EOS once cylic deps are sorted
 pub mod errors;
 mod eth_chain_id; // FIXME Ideally factor these out
-pub mod fees;
 pub mod metadata;
 pub mod safe_addresses;
 pub mod test_utils;

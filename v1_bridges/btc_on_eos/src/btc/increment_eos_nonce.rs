@@ -1,8 +1,8 @@
 use common::{
-    chains::btc::BtcState,
     traits::{DatabaseInterface, Serdable},
     types::Result,
 };
+use common_btc::BtcState;
 use common_eos::{EosDbUtils, EosSignedTransactions};
 
 fn increment_eos_nonce<D: DatabaseInterface>(

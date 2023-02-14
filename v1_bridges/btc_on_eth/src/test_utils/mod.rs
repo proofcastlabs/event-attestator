@@ -2,10 +2,8 @@
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use bitcoin::{hashes::Hash, Txid};
-use common::{
-    chains::btc::{btc_block::BtcBlockAndId, btc_constants::MINIMUM_REQUIRED_SATOSHIS},
-    types::Result,
-};
+use common::types::Result;
+use common_btc::{BtcBlockAndId, MINIMUM_REQUIRED_SATOSHIS};
 use common_eth::{EthLog, EthReceipt, EthSubmissionMaterial};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 

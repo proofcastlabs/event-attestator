@@ -1,14 +1,11 @@
-use common::{
-    chains::btc::{
-        btc_database_utils::BtcDbUtils,
-        btc_utils::{get_hex_tx_from_signed_btc_tx, get_pay_to_pub_key_hash_script},
-        extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,
-        utxo_manager::utxo_database_utils::save_utxos_to_db,
-    },
-    fees::fee_withdrawals::get_btc_on_eos_fee_withdrawal_tx,
-    traits::DatabaseInterface,
-    types::Result,
-    utils::prepend_debug_output_marker_to_string,
+use common::{traits::DatabaseInterface, types::Result, utils::prepend_debug_output_marker_to_string};
+use common_btc::{
+    extract_utxos_from_p2pkh_txs,
+    get_btc_on_eos_fee_withdrawal_tx,
+    get_hex_tx_from_signed_btc_tx,
+    get_pay_to_pub_key_hash_script,
+    save_utxos_to_db,
+    BtcDbUtils,
 };
 use common_debug_signers::validate_debug_command_signature;
 use function_name::named;

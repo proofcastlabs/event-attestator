@@ -1,4 +1,5 @@
-use common::{fees::fee_database_utils::FeeDatabaseUtils, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_btc::FeeDatabaseUtils;
 use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;

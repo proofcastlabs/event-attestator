@@ -1,9 +1,5 @@
-use common::{
-    chains::btc::btc_database_utils::BtcDbUtils,
-    core_type::CoreType,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_btc::BtcDbUtils;
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 use serde::{Deserialize, Serialize};
 
