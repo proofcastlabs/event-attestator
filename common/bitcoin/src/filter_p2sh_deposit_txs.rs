@@ -83,28 +83,30 @@ pub fn filter_p2sh_deposit_txs(
     transactions: &[BtcTransaction],
     btc_network: BtcNetwork,
 ) -> Result<BtcTransactions> {
-    Ok(transactions
-        .iter()
-        .filter(|txdata| {
-            txdata
-                .output
-                .iter()
-                .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
-                .filter(|tx_out| is_output_address_in_hash_map(tx_out, deposit_info, btc_network))
-                .any(|tx_out| {
-                    matches!(
-                        is_output_address_locked_to_pub_key(
-                            tx_out,
-                            btc_network,
-                            enclave_public_key_slice,
-                            deposit_info
-                        ),
-                        Ok(true)
-                    )
-                })
-        })
-        .cloned()
-        .collect::<BtcTransactions>())
+    Ok(BtcTransactions::new(
+        transactions
+            .iter()
+            .filter(|txdata| {
+                txdata
+                    .output
+                    .iter()
+                    .filter(|tx_out| tx_out.script_pubkey.is_p2sh())
+                    .filter(|tx_out| is_output_address_in_hash_map(tx_out, deposit_info, btc_network))
+                    .any(|tx_out| {
+                        matches!(
+                            is_output_address_locked_to_pub_key(
+                                tx_out,
+                                btc_network,
+                                enclave_public_key_slice,
+                                deposit_info
+                            ),
+                            Ok(true)
+                        )
+                    })
+            })
+            .cloned()
+            .collect::<Vec<_>>(),
+    ))
 }
 
 pub fn filter_p2sh_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {

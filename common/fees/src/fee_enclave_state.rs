@@ -2,7 +2,7 @@ use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
 
-use crate::fees::{
+use crate::{
     fee_constants::DISABLE_FEES,
     fee_database_utils::FeeDatabaseUtils,
     fee_utils::get_last_withdrawal_date_as_human_readable_string,

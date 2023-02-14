@@ -1,4 +1,3 @@
-#![cfg(test)] // TODO Clear out unused ones!
 use std::{fs::read_to_string, str::FromStr};
 
 use bitcoin::{

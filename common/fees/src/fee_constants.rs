@@ -1,4 +1,4 @@
-use common::{constants::MAX_FEE_BASIS_POINTS, core_type::CoreType, types::Bytes, utils::get_prefixed_db_key};
+use common::{core_type::CoreType, types::Bytes, utils::get_prefixed_db_key};
 pub use serde_json::{json, Value as JsonValue};
 
 pub const DISABLE_FEES: bool = cfg!(feature = "disable-fees");

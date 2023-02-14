@@ -12,7 +12,21 @@ use serde::{Deserialize, Serialize};
 
 use crate::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson};
 
-pub type BtcTransactions = Vec<BtcTransaction>;
+#[derive(
+    Debug,
+    Default,
+    Clone,
+    Eq,
+    PartialEq,
+    derive_more::Constructor,
+    derive_more::Deref,
+    serde::Serialize,
+    serde::Deserialize,
+)]
+pub struct BtcTransactions(Vec<BtcTransaction>);
+
+impl common::traits::Serdable for BtcTransactions {}
+
 pub type BtcPubKeySlice = [Byte; BTC_PUB_KEY_SLICE_LENGTH];
 
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Eq)]

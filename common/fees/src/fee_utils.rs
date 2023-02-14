@@ -33,7 +33,6 @@ mod tests {
     fn should_fail_basis_points_sanity_check() {
         let expected_err = format!("Error! Basis points exceeds maximum of {}!", MAX_FEE_BASIS_POINTS);
         let basis_points = MAX_FEE_BASIS_POINTS + 1;
-        let result = sanity_check_basis_points_value(basis_points);
         match sanity_check_basis_points_value(basis_points) {
             Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
             Ok(_) => panic!("Should not have succeeded!"),

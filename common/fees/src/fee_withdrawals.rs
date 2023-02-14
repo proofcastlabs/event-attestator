@@ -2,14 +2,15 @@ use std::str::FromStr;
 
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, utils::get_unix_timestamp};
-
-use crate::{
-    btc_database_utils::BtcDbUtils,
-    btc_recipients_and_amounts::{BtcRecipientAndAmount, BtcRecipientsAndAmounts},
-    btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
-    fees::fee_database_utils::FeeDatabaseUtils,
-    utxo_manager::get_enough_utxos_to_cover_total,
+use common_btc::{
+    create_signed_raw_btc_tx_for_n_input_n_outputs,
+    get_enough_utxos_to_cover_total,
+    BtcDbUtils,
+    BtcRecipientAndAmount,
+    BtcRecipientsAndAmounts,
 };
+
+use crate::fee_database_utils::FeeDatabaseUtils;
 
 pub fn get_fee_withdrawal_btc_tx_for_core_type<D: DatabaseInterface>(
     core_type: &CoreType,
@@ -69,12 +70,10 @@ pub fn get_btc_on_eos_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_addres
 mod tests {
     use bitcoin::network::constants::Network as BtcNetwork;
     use common::{errors::AppError, test_utils::get_test_database};
+    use common_btc::{save_utxos_to_db, set_utxo_balance_to_zero};
 
     use super::*;
-    use crate::{
-        test_utils::{get_sample_btc_private_key, get_sample_utxo_and_values},
-        utxo_manager::{save_utxos_to_db, set_utxo_balance_to_zero},
-    };
+    use crate::test_utils::{get_sample_btc_private_key, get_sample_utxo_and_values};
 
     #[test]
     fn should_get_btc_on_eth_accrued_fees_from_db() {

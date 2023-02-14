@@ -1210,6 +1210,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 
 [[package]]
+name = "fees"
+version = "6.10.1"
+dependencies = [
+ "bitcoin 0.29.2",
+ "bitcoin 6.10.1",
+ "common",
+ "derive_more",
+ "hex",
+ "lazy_static",
+ "log",
+ "serde",
+ "serde_json",
+ "simple_logger 2.3.0",
+]
+
+[[package]]
 name = "fixed-hash"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"

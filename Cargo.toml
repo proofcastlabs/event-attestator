@@ -2,6 +2,7 @@
 members = [
     "common/db",
     "common/eos",
+    "common/fees",
     "common/common",
     "common/bitcoin",
     "common/algorand",

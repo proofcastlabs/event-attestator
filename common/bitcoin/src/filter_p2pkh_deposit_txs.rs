@@ -36,19 +36,21 @@ pub fn filter_txs_for_p2pkh_deposits(
     );
     let target_script = get_pay_to_pub_key_hash_script(btc_address)?;
     info!("✔ Num `p2pkh` deposits before: {}", transactions.len());
-    let filtered = transactions
-        .iter()
-        .filter(|tx| {
-            if include_change_outputs {
-                true
-            } else {
-                // NOTE: True here == an enclave change output.
-                !tx_has_input_locked_to_pub_key(tx, btc_pub_key_slice)
-            }
-        })
-        .filter(|tx| tx_has_output_with_target_script(tx, &target_script))
-        .cloned()
-        .collect::<BtcTransactions>();
+    let filtered = BtcTransactions::new(
+        transactions
+            .iter()
+            .filter(|tx| {
+                if include_change_outputs {
+                    true
+                } else {
+                    // NOTE: True here == an enclave change output.
+                    !tx_has_input_locked_to_pub_key(tx, btc_pub_key_slice)
+                }
+            })
+            .filter(|tx| tx_has_output_with_target_script(tx, &target_script))
+            .cloned()
+            .collect::<Vec<_>>(),
+    );
     info!("✔ Num `p2pkh` deposits after: {}", filtered.len());
     Ok(filtered)
 }

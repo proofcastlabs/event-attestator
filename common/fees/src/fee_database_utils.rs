@@ -5,7 +5,7 @@ use common::{
     types::{Byte, Result},
 };
 
-use crate::fees::fee_constants::FeeConstantDbKeys;
+use crate::fee_constants::FeeConstantDbKeys;
 
 pub struct FeeDatabaseUtils {
     pub core_type: CoreType,
