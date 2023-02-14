@@ -1,4 +1,4 @@
-use common::{state::BtcState, traits::DatabaseInterface, types::Result};
+use common::{chains::btc::BtcState, traits::DatabaseInterface, types::Result};
 use common_eth::{AnySenderSigningParams, EthDbUtils, EthDbUtilsExt, RelayTransaction, RelayTransactions};
 
 use crate::btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos};

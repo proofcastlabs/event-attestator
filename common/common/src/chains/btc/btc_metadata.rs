@@ -1,7 +1,8 @@
 use crate::{
-    chains::btc::{btc_chain_id::BtcChainId, btc_utils::convert_str_to_btc_address_or_safe_address},
+    chains::btc::btc_utils::convert_str_to_btc_address_or_safe_address,
     metadata::{metadata_address::MetadataAddress, metadata_protocol_id::MetadataProtocolId, Metadata},
     types::{Byte, Bytes, Result},
+    BtcChainId,
 };
 
 pub trait ToMetadata {

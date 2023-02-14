@@ -13,9 +13,9 @@ use crate::{
     chains::btc::{
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
+        BtcState,
     },
     metadata::metadata_chain_id::MetadataChainId,
-    state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{decode_hex_with_err_msg, strip_hex_prefix},

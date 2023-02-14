@@ -121,26 +121,6 @@ impl fmt::Display for CoreType {
     }
 }
 
-macro_rules! make_stateful_initialization_checkers {
-    ($($chain:ident),*) => {
-        paste! {
-            $(
-                use $crate::state::[< $chain:camel State>];
-
-                impl CoreType {
-                    pub fn [< check_core_is_initialized_and_return_ $chain:lower _state > ]<D: DatabaseInterface>(
-                        state: [< $chain:camel State >]<D>,
-                    ) -> Result<[< $chain:camel State >]<D>> {
-                        Self::check_is_initialized(state.[< $chain:lower _db_utils >].get_db()).and(Ok(state))
-                    }
-                }
-            )*
-        }
-    }
-}
-
-make_stateful_initialization_checkers!(Btc);
-
 #[cfg(test)]
 mod tests {
     use strum::IntoEnumIterator;

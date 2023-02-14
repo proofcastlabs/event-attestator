@@ -3,8 +3,8 @@ use crate::{
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_database_utils::BtcDbUtils,
         core_initialization::btc_init_utils::get_btc_network_from_arg,
+        BtcState,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

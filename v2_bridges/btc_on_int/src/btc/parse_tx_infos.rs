@@ -4,14 +4,10 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use common::{
-    chains::btc::{
-        btc_chain_id::BtcChainId,
-        btc_utils::convert_satoshis_to_wei,
-        deposit_address_info::DepositInfoHashMap,
-    },
-    state::BtcState,
+    chains::btc::{btc_utils::convert_satoshis_to_wei, deposit_address_info::DepositInfoHashMap, BtcState},
     traits::DatabaseInterface,
     types::{NoneError, Result},
+    BtcChainId,
 };
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 use ethereum_types::Address as EthAddress;

@@ -14,9 +14,12 @@ use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    chains::btc::{btc_submission_material::BtcSubmissionMaterialJson, deposit_address_info::DepositInfoList},
+    chains::btc::{
+        btc_submission_material::BtcSubmissionMaterialJson,
+        deposit_address_info::DepositInfoList,
+        BtcState,
+    },
     errors::AppError,
-    state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},

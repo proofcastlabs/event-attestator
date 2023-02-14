@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
 use crate::{
-    chains::btc::deposit_address_info::{DepositAddressInfo, DepositInfoHashMap},
-    state::BtcState,
+    chains::btc::{
+        deposit_address_info::{DepositAddressInfo, DepositInfoHashMap},
+        BtcState,
+    },
     traits::DatabaseInterface,
     types::Result,
 };

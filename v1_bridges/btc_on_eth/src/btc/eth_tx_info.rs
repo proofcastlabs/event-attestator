@@ -85,7 +85,7 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{hashes::Hash, util::address::Address as BtcAddress};
-    use common::{chains::btc::btc_chain_id::BtcChainId, metadata::metadata_protocol_id::MetadataProtocolId};
+    use common::{metadata::metadata_protocol_id::MetadataProtocolId, BtcChainId};
     use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
     use ethereum_types::H160 as EthAddress;
 

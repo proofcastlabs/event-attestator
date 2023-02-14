@@ -98,8 +98,8 @@ mod tests {
             btc_utils::convert_hex_tx_to_btc_transaction,
             core_initialization::initialize_btc_core::init_btc_core,
             utxo_manager::utxo_database_utils::get_utxo_nonce_from_db,
+            BtcState,
         },
-        state::BtcState,
         test_utils::get_test_database,
     };
     use common_eth::{

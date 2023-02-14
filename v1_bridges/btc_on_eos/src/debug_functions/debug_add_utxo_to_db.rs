@@ -13,10 +13,10 @@ use common::{
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+        BtcState,
     },
     constants::SUCCESS_JSON,
     core_type::CoreType,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -48,6 +48,7 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
     signature: &str,
 ) -> Result<String> {
     db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), &btc_submission_material_json)())
         .and_then(|hash| {
             if SKIP_DEBUG_SIGNATURE_CHECK {
@@ -58,7 +59,6 @@ pub fn debug_maybe_add_utxo_to_db<D: DatabaseInterface>(
             }
         })
         .and_then(|_| parse_submission_material_and_put_in_state(btc_submission_material_json, BtcState::init(db)))
-        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)

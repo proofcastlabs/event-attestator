@@ -1,4 +1,4 @@
-use crate::{state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{chains::btc::BtcState, traits::DatabaseInterface, types::Result};
 
 fn is_block_subsequent(block_in_question_height: u64, latest_block_from_database_height: u64) -> bool {
     latest_block_from_database_height == block_in_question_height + 1

@@ -1,4 +1,4 @@
-use crate::{state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{chains::btc::BtcState, traits::DatabaseInterface, types::Result};
 
 pub fn check_for_parent_of_btc_block_in_state<D>(state: BtcState<D>) -> Result<BtcState<D>>
 where

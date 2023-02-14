@@ -13,6 +13,8 @@
 //! if running multiple instances on one machine.
 
 pub use crate::{
+    algo_chain_id::AlgoChainId,
+    btc_chain_id::BtcChainId,
     core_type::CoreType,
     eos_chain_id::EosChainId,
     eos_metadata::EosMetadata,
@@ -28,6 +30,7 @@ pub use crate::{
 pub mod macros;
 pub mod address;
 pub mod algo_chain_id; // FIXME Ideally factor these out
+mod btc_chain_id; // FIXME Ideally factor these out
 pub mod chains;
 pub mod constants;
 pub mod core_type;
@@ -41,7 +44,6 @@ mod eth_chain_id; // FIXME Ideally factor these out
 pub mod fees;
 pub mod metadata;
 pub mod safe_addresses;
-pub mod state;
 pub mod test_utils;
 pub mod traits;
 pub mod types;

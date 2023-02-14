@@ -1,4 +1,4 @@
-use common::{state::BtcState, traits::TxInfo};
+use common::{chains::btc::BtcState, traits::TxInfo};
 
 use crate::btc::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos};
 

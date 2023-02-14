@@ -4,7 +4,7 @@ use std::str::FromStr;
 #[cfg(test)]
 use common::errors::AppError;
 use common::{
-    state::BtcState,
+    chains::btc::BtcState,
     traits::DatabaseInterface,
     types::{NoneError, Result},
     utils::get_unix_timestamp,

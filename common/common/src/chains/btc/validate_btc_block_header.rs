@@ -1,7 +1,6 @@
 use crate::{
-    chains::btc::btc_block::BtcBlockAndId,
+    chains::btc::{btc_block::BtcBlockAndId, BtcState},
     constants::CORE_IS_VALIDATING,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

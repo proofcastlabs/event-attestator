@@ -2,8 +2,8 @@ use common::{
     chains::btc::{
         deposit_address_info::DepositAddressInfoVersion,
         filter_deposit_address_info_hash_map::filter_deposit_infos_for_allowed_versions,
+        BtcState,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

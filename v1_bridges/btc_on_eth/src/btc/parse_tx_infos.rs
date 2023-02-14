@@ -4,8 +4,7 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use common::{
-    chains::btc::deposit_address_info::DepositInfoHashMap,
-    state::BtcState,
+    chains::btc::{deposit_address_info::DepositInfoHashMap, BtcState},
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };

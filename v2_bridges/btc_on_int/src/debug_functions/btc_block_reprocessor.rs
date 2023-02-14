@@ -11,9 +11,9 @@ use common::{
         validate_btc_block_header::validate_btc_block_header_in_state,
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+        BtcState,
     },
     core_type::CoreType,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     utils::prepend_debug_output_marker_to_string,
@@ -47,11 +47,11 @@ fn reprocess_btc_block<D: DatabaseInterface>(
 ) -> Result<String> {
     let eth_db_utils = EthDbUtils::new(db);
     db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| get_debug_command_hash!(function_name!(), block_json, &maybe_nonce)())
         .and_then(|hash| validate_debug_command_signature(db, &CORE_TYPE, signature, &hash, cfg!(test)))
         .and_then(|_| parse_btc_submission_json_and_put_in_state(block_json, BtcState::init(db)))
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_proof_of_work_of_btc_block_in_state)
         .and_then(validate_btc_merkle_root)

@@ -1,4 +1,8 @@
-use crate::{chains::btc::btc_database_utils::BtcDbUtils, state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::btc::{btc_database_utils::BtcDbUtils, BtcState},
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 pub fn is_btc_anchor_block_hash_set<D: DatabaseInterface>(db_utils: &BtcDbUtils<D>) -> bool {
     db_utils.key_exists_in_db(&db_utils.get_btc_anchor_block_hash_key(), None)

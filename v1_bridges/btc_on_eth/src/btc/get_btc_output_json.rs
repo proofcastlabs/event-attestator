@@ -1,6 +1,5 @@
 use common::{
-    chains::btc::btc_constants::PLACEHOLDER_BTC_ADDRESS,
-    state::BtcState,
+    chains::btc::{btc_constants::PLACEHOLDER_BTC_ADDRESS, BtcState},
     traits::DatabaseInterface,
     types::Result,
     utils::get_unix_timestamp,

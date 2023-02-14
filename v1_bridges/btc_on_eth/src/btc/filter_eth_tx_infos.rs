@@ -1,6 +1,5 @@
 use common::{
-    chains::btc::btc_constants::MINIMUM_REQUIRED_SATOSHIS,
-    state::BtcState,
+    chains::btc::{btc_constants::MINIMUM_REQUIRED_SATOSHIS, BtcState},
     traits::DatabaseInterface,
     types::Result,
 };

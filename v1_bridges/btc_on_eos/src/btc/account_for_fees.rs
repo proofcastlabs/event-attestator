@@ -1,6 +1,6 @@
 use common::{
+    chains::btc::BtcState,
     fees::{fee_constants::DISABLE_FEES, fee_database_utils::FeeDatabaseUtils},
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

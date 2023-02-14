@@ -1,11 +1,11 @@
 use common::{
+    chains::btc::BtcState,
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::{
         fee_constants::DISABLE_FEES,
         fee_database_utils::FeeDatabaseUtils,
         fee_utils::sanity_check_basis_points_value,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

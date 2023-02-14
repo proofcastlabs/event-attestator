@@ -3,18 +3,18 @@ use bitcoin::{hashes::Hash, network::constants::Network as BtcNetwork, BlockHash
 use crate::{
     chains::btc::{
         btc_block::BtcBlockInDbFormat,
-        btc_chain_id::BtcChainId,
         btc_crypto::btc_private_key::BtcPrivateKey,
         btc_types::BtcPubKeySlice,
         btc_utils::{convert_btc_address_to_bytes, convert_bytes_to_btc_address, convert_bytes_to_btc_pub_key_slice},
+        BtcState,
     },
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
-    state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
+    BtcChainId,
 };
 
 create_db_utils_with_getters!(

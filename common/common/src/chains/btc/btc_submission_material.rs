@@ -16,9 +16,9 @@ use crate::{
         btc_block::{BtcBlockAndId, BtcBlockJson},
         btc_utils::convert_hex_tx_to_btc_transaction,
         deposit_address_info::DepositAddressInfoJsonList,
+        BtcState,
     },
     errors::AppError,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

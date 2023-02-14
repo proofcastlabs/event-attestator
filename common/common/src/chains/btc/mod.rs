@@ -6,12 +6,12 @@ pub mod utxo_manager;
 
 pub mod add_btc_block_to_db;
 pub mod btc_block;
-pub mod btc_chain_id;
 pub mod btc_crypto;
 pub mod btc_database_utils;
 pub mod btc_enclave_state;
 pub mod btc_metadata;
 pub mod btc_recipients_and_amounts;
+pub mod btc_state;
 pub mod btc_submission_material;
 pub mod btc_test_utils;
 pub mod btc_transaction;
@@ -41,3 +41,5 @@ pub mod validate_btc_block_header;
 pub mod validate_btc_difficulty;
 pub mod validate_btc_merkle_root;
 pub mod validate_btc_proof_of_work;
+
+pub use self::btc_state::BtcState;

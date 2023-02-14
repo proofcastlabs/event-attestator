@@ -5,8 +5,8 @@ use crate::{
         btc_types::BtcTransaction,
         btc_utils::{create_unsigned_utxo_from_tx, get_pay_to_pub_key_hash_script},
         utxo_manager::utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
+        BtcState,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

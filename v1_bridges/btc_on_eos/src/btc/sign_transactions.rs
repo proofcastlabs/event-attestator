@@ -1,9 +1,9 @@
 use common::{
-    chains::btc::{btc_chain_id::BtcChainId, btc_metadata::ToMetadata},
+    chains::btc::{btc_metadata::ToMetadata, BtcState},
     metadata::metadata_protocol_id::MetadataProtocolId,
-    state::BtcState,
     traits::{DatabaseInterface, Serdable},
     types::Result,
+    BtcChainId,
     EosChainId,
 };
 use common_eos::{

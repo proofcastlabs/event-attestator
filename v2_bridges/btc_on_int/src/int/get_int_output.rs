@@ -2,9 +2,10 @@ use std::time::{SystemTime, UNIX_EPOCH};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
-    chains::btc::{btc_chain_id::BtcChainId, btc_utils::get_hex_tx_from_signed_btc_tx},
+    chains::btc::btc_utils::get_hex_tx_from_signed_btc_tx,
     traits::DatabaseInterface,
     types::Result,
+    BtcChainId,
 };
 use common_eth::{EthDbUtilsExt, EthState};
 use ethereum_types::Address as EthAddress;

@@ -11,11 +11,11 @@ use common::{
         btc_constants::{BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS},
         btc_metadata::ToMetadata,
         deposit_address_info::DepositInfoHashMap,
+        BtcState,
     },
     constants::FEE_BASIS_POINTS_DIVISOR,
     fees::fee_utils::sanity_check_basis_points_value,
     safe_addresses::SAFE_EOS_ADDRESS_STR,
-    state::BtcState,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
@@ -301,11 +301,7 @@ impl ToMetadata for BtcOnEosEosTxInfo {
 
 #[cfg(test)]
 mod tests {
-    use common::{
-        chains::btc::btc_chain_id::BtcChainId,
-        errors::AppError,
-        metadata::metadata_protocol_id::MetadataProtocolId,
-    };
+    use common::{errors::AppError, metadata::metadata_protocol_id::MetadataProtocolId, BtcChainId};
     use common_eos::MAX_BYTES_FOR_EOS_USER_DATA;
 
     use super::*;

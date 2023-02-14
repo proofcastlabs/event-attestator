@@ -5,8 +5,8 @@ use crate::{
             utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
             utxo_utils::utxos_exist_in_db,
         },
+        BtcState,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

@@ -2,7 +2,7 @@ use common::{
     chains::btc::{
         add_btc_block_to_db::maybe_add_btc_block_to_db,
         btc_block::parse_btc_block_and_id_and_put_in_state,
-        btc_database_utils::{end_btc_db_transaction, start_btc_db_transaction},
+        btc_database_utils::end_btc_db_transaction,
         btc_submission_material::parse_btc_submission_json_and_put_in_state,
         check_btc_parent_exists::check_for_parent_of_btc_block_in_state,
         deposit_address_info::validate_deposit_address_list_in_state,
@@ -22,9 +22,9 @@ use common::{
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+        BtcState,
     },
     core_type::CoreType,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };
@@ -52,10 +52,10 @@ use crate::btc::{
 /// transaction will be signed & returned to the caller.
 pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
     info!("✔ Submitting BTC block to enclave...");
-    parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db))
+    db.start_transaction()
+        .and_then(|_| CoreType::check_is_initialized(db))
+        .and_then(|_| parse_btc_submission_json_and_put_in_state(block_json_string, BtcState::init(db)))
         .and_then(parse_btc_block_and_id_and_put_in_state)
-        .and_then(CoreType::check_core_is_initialized_and_return_btc_state)
-        .and_then(start_btc_db_transaction)
         .and_then(check_for_parent_of_btc_block_in_state)
         .and_then(validate_btc_block_header_in_state)
         .and_then(validate_difficulty_of_btc_block_in_state)

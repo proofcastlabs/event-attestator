@@ -25,9 +25,9 @@ use crate::{
         validate_btc_difficulty::validate_difficulty_of_btc_block_in_state,
         validate_btc_merkle_root::validate_btc_merkle_root,
         validate_btc_proof_of_work::validate_proof_of_work_of_btc_block_in_state,
+        BtcState,
     },
     core_type::CoreType,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

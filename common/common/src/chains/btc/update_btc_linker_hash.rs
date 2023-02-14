@@ -3,7 +3,11 @@ use bitcoin::{
     BlockHash,
 };
 
-use crate::{chains::btc::btc_database_utils::BtcDbUtils, state::BtcState, traits::DatabaseInterface, types::Result};
+use crate::{
+    chains::btc::{btc_database_utils::BtcDbUtils, BtcState},
+    traits::DatabaseInterface,
+    types::Result,
+};
 
 fn calculate_linker_hash(
     hash_to_link_to: &BlockHash,

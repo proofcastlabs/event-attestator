@@ -1,6 +1,6 @@
 use common::{
+    chains::btc::BtcState,
     metadata::metadata_traits::ToMetadata,
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
     EthChainId,

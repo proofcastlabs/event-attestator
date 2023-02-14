@@ -1,5 +1,5 @@
 use common::{
-    state::BtcState,
+    chains::btc::BtcState,
     traits::{DatabaseInterface, Serdable},
     types::Result,
 };

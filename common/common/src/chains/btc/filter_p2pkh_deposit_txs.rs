@@ -7,8 +7,8 @@ use crate::{
     chains::btc::{
         btc_types::{BtcPubKeySlice, BtcTransactions},
         btc_utils::get_pay_to_pub_key_hash_script,
+        BtcState,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };

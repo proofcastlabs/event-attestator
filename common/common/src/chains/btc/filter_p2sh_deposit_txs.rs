@@ -9,8 +9,8 @@ use crate::{
         btc_types::{BtcPubKeySlice, BtcTransaction, BtcTransactions},
         btc_utils::get_p2sh_redeem_script_sig,
         deposit_address_info::DepositInfoHashMap,
+        BtcState,
     },
-    state::BtcState,
     traits::DatabaseInterface,
     types::Result,
 };
