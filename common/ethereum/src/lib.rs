@@ -16,6 +16,7 @@ mod eth_log;
 mod eth_macros;
 mod eth_message_signer;
 mod eth_receipt;
+mod eth_receipt_from_json_rpc;
 mod eth_receipt_type;
 mod eth_state;
 mod eth_submission_material;
@@ -117,6 +118,7 @@ pub use self::{
         sign_hex_msg_with_evm_key_with_prefix,
     },
     eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
+    eth_receipt_from_json_rpc::EthReceiptFromJsonRpc,
     eth_state::EthState,
     eth_submission_material::{
         parse_eth_submission_material_and_put_in_state,

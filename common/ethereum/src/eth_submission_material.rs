@@ -64,6 +64,14 @@ pub struct EthSubmissionMaterial {
 }
 
 impl EthSubmissionMaterial {
+    pub fn get_tx_hashes(&self) -> Result<Vec<EthHash>> {
+        info!("[+] Getting tx hashes from ETH submission material...");
+        match self.block {
+            None => Err("[-] No block in submission material!".into()),
+            Some(ref block) => Ok(block.transactions.clone()),
+        }
+    }
+
     fn init(
         block: EthBlock,
         receipts: EthReceipts,
