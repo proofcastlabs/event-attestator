@@ -166,6 +166,7 @@ impl EthBlock {
     }
 }
 
+// NOTE: This is the sort of json returned by a web3 call.
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EthBlockJson {

@@ -4,6 +4,7 @@ use common::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
+    EthChainId,
 };
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -269,6 +270,13 @@ impl EthSubmissionMaterial {
         let mut mutable_self = self.clone();
         mutable_self.block = None;
         mutable_self
+    }
+
+    pub fn block_is_valid(&self, chain_id: &EthChainId) -> Result<bool> {
+        match self.block {
+            None => Err("No block in submission material!".into()),
+            Some(ref b) => b.is_valid(chain_id),
+        }
     }
 }
 

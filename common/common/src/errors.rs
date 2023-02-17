@@ -6,6 +6,10 @@ quick_error! {
             from()
             display("{}", err)
         }
+        FromStrRadix(err: ethereum_types::FromStrRadixErr) {
+            from()
+            display("ethereum-types from_str_radix err: {}", err)
+        }
         Custom(err: String) {
             from()
             from(err: &str) -> (err.into())

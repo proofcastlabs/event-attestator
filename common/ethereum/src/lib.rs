@@ -5,6 +5,7 @@ mod check_parent_exists;
 mod core_initialization;
 mod eip_1559;
 mod eth_block;
+mod eth_block_from_json_rpc;
 mod eth_constants;
 mod eth_contracts;
 mod eth_crypto;
@@ -65,6 +66,7 @@ pub use self::{
         EthInitializationOutput,
     },
     eth_block::{EthBlock, EthBlockJson},
+    eth_block_from_json_rpc::EthBlockJsonFromRpc,
     eth_constants::{
         ETH_ADDRESS_SIZE_IN_BYTES,
         ETH_CORE_IS_INITIALIZED_JSON,
