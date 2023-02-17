@@ -58,10 +58,7 @@ impl EthReceipt {
                 Some(ref hex) => Some(EthReceiptType::from_byte(&hex::decode(strip_hex_prefix(hex))?[0])),
                 None => None,
             },
-            status: match json.status.as_ref() {
-                "0x1" | "0x01" => true,
-                _ => false,
-            },
+            status: matches!(json.status.as_ref(), "0x1" | "0x01"),
             logs,
         })
     }

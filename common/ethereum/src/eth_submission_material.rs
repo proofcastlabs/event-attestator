@@ -64,6 +64,16 @@ pub struct EthSubmissionMaterial {
 }
 
 impl EthSubmissionMaterial {
+    pub fn add_receipts(mut self, receipts: EthReceipts) -> Result<Self> {
+        if self.receipts.is_empty() {
+            info!("[+] Adding receipts to ETH submission material!");
+            self.receipts = receipts;
+            Ok(self)
+        } else {
+            Err("Cannot add receipts to ETH block - some already exist!".into())
+        }
+    }
+
     pub fn get_tx_hashes(&self) -> Result<Vec<EthHash>> {
         info!("[+] Getting tx hashes from ETH submission material...");
         match self.block {

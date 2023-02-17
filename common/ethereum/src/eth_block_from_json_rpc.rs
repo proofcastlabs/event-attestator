@@ -43,19 +43,16 @@ pub struct EthBlockJsonFromRpc {
 
 impl EthSubmissionMaterial {
     pub fn from_rpc(rpc_block: EthBlockJsonFromRpc) -> Result<Self> {
-        EthBlock::from_json_rpc(&rpc_block).map(|block| {
-            Self {
-                hash: Some(block.hash),
-                eos_ref_block_num: None,
-                eos_ref_block_prefix: None,
-                algo_first_valid_round: None,
-                block_number: Some(block.number),
-                parent_hash: Some(block.parent_hash),
-                receipts_root: Some(block.receipts_root),
-                block: Some(block),
-                // FIXME
-                receipts: EthReceipts(vec![]), // HOW TO GET THESE??
-            }
+        EthBlock::from_json_rpc(&rpc_block).map(|block| Self {
+            hash: Some(block.hash),
+            eos_ref_block_num: None,
+            eos_ref_block_prefix: None,
+            algo_first_valid_round: None,
+            receipts: EthReceipts(vec![]),
+            block_number: Some(block.number),
+            parent_hash: Some(block.parent_hash),
+            receipts_root: Some(block.receipts_root),
+            block: Some(block),
         })
     }
 }
