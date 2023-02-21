@@ -2,7 +2,7 @@ use common::types::{Bytes, Result};
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, Bloom, BloomInput, H256 as EthHash};
 use rlp::{Encodable, RlpStream};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
@@ -10,7 +10,7 @@ use crate::{
     eth_utils::{convert_hex_strings_to_h256s, convert_hex_to_bytes, convert_hex_to_eth_address},
 };
 
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct EthLogJson {
     pub data: String,
     pub address: String,
@@ -24,7 +24,7 @@ impl EthLogJson {
     }
 }
 
-#[derive(Clone, Default, Debug, PartialEq, Eq, Deserialize, Constructor)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor)]
 pub struct EthLog {
     pub address: EthAddress,
     pub topics: Vec<EthHash>,
@@ -101,7 +101,7 @@ impl Encodable for EthLog {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Deref, Constructor)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
 pub struct EthLogs(pub Vec<EthLog>);
 
 impl EthLogs {

@@ -6,7 +6,7 @@ use common::{
 };
 use ethereum_types::{Address as EthAddress, Bloom, H256 as EthHash, U256};
 use rlp::RlpStream;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
@@ -21,7 +21,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EthBlock {
     pub difficulty: U256,
     pub extra_data: Bytes,

@@ -1,10 +1,10 @@
 use std::fmt;
 
 use common::types::{Byte, Bytes};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
-#[derive(Clone, Debug, EnumIter, Eq, PartialEq, Deserialize)]
+#[derive(Clone, Debug, EnumIter, Eq, PartialEq, Serialize, Deserialize)]
 pub enum EthReceiptType {
     Legacy,
     EIP2718,

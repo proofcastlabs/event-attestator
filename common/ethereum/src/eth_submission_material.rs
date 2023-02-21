@@ -7,12 +7,12 @@ use common::{
 };
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{EthBlock, EthBlockJson, EthReceipt, EthReceiptJson, EthReceipts, EthState};
 
-#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor)]
+#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor, Deserialize, Serialize)]
 pub struct EthSubmissionMaterials(Vec<EthSubmissionMaterial>);
 
 impl FromStr for EthSubmissionMaterials {
@@ -37,16 +37,19 @@ impl FromStr for EthSubmissionMaterial {
 
     fn from_str(json_str: &str) -> Result<Self> {
         info!("✔ Parsing ETH submission material...");
-        let submission_material = Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?)?;
-        info!(
-            "✔ ETH submission material parsed! Block number: {}",
-            submission_material.get_block_number()?
-        );
-        Ok(submission_material)
+        let sub_mat = match serde_json::from_str::<Self>(json_str) {
+            // NOTE: First attempt to deserailize via serde_json itself.
+            Ok(r) => Ok(r),
+            // Otherwise, we try from json structs (used if a JS syncer has serialized the block to json).
+            Err(_) => Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?),
+        }?;
+        let block_num = sub_mat.get_block_number()?;
+        info!("✔ ETH submission material parsed! Block number: {block_num}");
+        Ok(sub_mat)
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EthSubmissionMaterial {
     pub block: Option<EthBlock>,
     pub receipts: EthReceipts,
@@ -483,5 +486,15 @@ mod tests {
             let calculated_root = receipts.get_merkle_root().unwrap();
             assert_eq!(expected_root, calculated_root);
         }
+    }
+
+    #[test]
+    fn should_serde_to_and_from_json_correctly() {
+        let sub_mat = get_sample_eth_submission_material_n(1).unwrap();
+        let s = serde_json::to_string(&sub_mat).unwrap();
+        let result_1 = serde_json::from_str::<EthSubmissionMaterial>(&s).unwrap();
+        let result_2 = EthSubmissionMaterial::from_str(&s).unwrap();
+        assert_eq!(result_1, result_2);
+        assert_eq!(result_1, sub_mat);
     }
 }

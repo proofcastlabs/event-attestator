@@ -9,7 +9,7 @@ use derive_more::{Constructor, Deref, From, Into};
 use ethereum_types::{Address as EthAddress, Bloom, H160, H256 as EthHash, U256};
 use keccak_hasher::KeccakHasher;
 use rlp::RlpStream;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 use triehash::trie_root;
 
@@ -19,7 +19,7 @@ use crate::{
     eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Deserialize, Constructor, Deref, From, Into)]
+#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Constructor, Deref, From, Into)]
 pub struct EthReceipts(pub Vec<EthReceipt>);
 
 impl EthReceipts {
@@ -149,7 +149,7 @@ impl FromStr for EthReceiptJson {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EthReceipt {
     pub to: EthAddress,
     pub from: EthAddress,
