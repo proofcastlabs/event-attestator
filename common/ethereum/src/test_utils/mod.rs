@@ -75,6 +75,8 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_17: &str = "src/test_utils/eth-core-init
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_18: &str = "src/test_utils/rpc-block-0xfd9f2b.json";
 
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_19: &str = "src/test_utils/host-sub-mat-num-16640614.json";
+
 pub fn get_sample_block_from_rpc() -> String {
     get_sample_eth_submission_material_string(18).unwrap()
 }
@@ -146,6 +148,7 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
         16 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_16),
         17 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_17),
         18 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_18),
+        19 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_19),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {

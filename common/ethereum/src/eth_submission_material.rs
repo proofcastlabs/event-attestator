@@ -523,4 +523,11 @@ mod tests {
         assert_eq!(result_1, result_2);
         assert_eq!(result_1, sub_mat);
     }
+
+    #[test]
+    fn submission_material_receipts_should_be_valid() {
+        let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
+        let result = sub_mat.receipts_are_valid().unwrap();
+        assert!(result);
+    }
 }
