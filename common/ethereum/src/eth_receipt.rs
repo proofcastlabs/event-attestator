@@ -263,25 +263,25 @@ impl EthReceipt {
     }
 
     pub fn rlp_encode(&self) -> Result<Bytes> {
-        match self.get_receipt_type() {
-            Ok(EthReceiptType::EIP2718) => {
-                debug!("RLP encoding EIP2718 receipt...");
-                self.encode_eip_2718_receipt()
-            },
-            Ok(EthReceiptType::Legacy) | Err(_) => {
+        match self.get_receipt_type().unwrap_or(EthReceiptType::Legacy) {
+            EthReceiptType::Legacy => {
                 debug!("RLP encoding LEGACY receipt...");
                 self.rlp_encode_legacy()
+            },
+            receipt_type => {
+                debug!("RLP encoding NON LEGACY receipt type: {}", receipt_type);
+                self.encode_non_legacy(&receipt_type)
             },
         }
     }
 
-    fn encode_eip_2718_receipt(&self) -> Result<Bytes> {
+    fn encode_non_legacy(&self, receipt_type: &EthReceiptType) -> Result<Bytes> {
         // NOTE: Per EIP-2718: https://github.com/ethereum/EIPs/blob/master/EIPS/eip-2718.md
         // the encoding for these transactions are `TransactionType concatenated w/ ReceiptPayload`
         // The `ReceiptPayload` for this transaction type is rlp([
         //   status, cumulative_transaction_gas_used, logs_bloom, logs
         // ]), which is the same as the RLP encoding for legacy receipts.
-        Ok([EthReceiptType::EIP2718.to_bytes(), self.rlp_encode_legacy()?].concat())
+        Ok([receipt_type.to_bytes(), self.rlp_encode_legacy()?].concat())
     }
 
     fn rlp_encode_legacy(&self) -> Result<Bytes> {
