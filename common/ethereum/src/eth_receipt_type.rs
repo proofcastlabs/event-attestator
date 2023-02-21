@@ -8,12 +8,14 @@ use strum_macros::EnumIter;
 pub enum EthReceiptType {
     Legacy,
     EIP2718,
+    EIP2930,
 }
 
 impl EthReceiptType {
     pub fn from_byte(byte: &Byte) -> Self {
         match byte {
             0x00 => Self::Legacy,
+            0x01 => Self::EIP2930,
             0x02 => Self::EIP2718,
             _ => Self::Legacy,
         }
@@ -22,6 +24,7 @@ impl EthReceiptType {
     pub fn to_byte(&self) -> Byte {
         match self {
             Self::Legacy => 0x00,
+            Self::EIP2930 => 0x01,
             Self::EIP2718 => 0x02,
         }
     }
@@ -35,6 +38,7 @@ impl fmt::Display for EthReceiptType {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let s = match self {
             Self::Legacy => "0x0",
+            Self::EIP2930 => "0x1",
             Self::EIP2718 => "0x2",
         };
         write!(f, "{}", s)
