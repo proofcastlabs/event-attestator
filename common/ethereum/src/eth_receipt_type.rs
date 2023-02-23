@@ -1,6 +1,9 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
-use common::types::{Byte, Bytes};
+use common::{
+    errors::AppError,
+    types::{Byte, Bytes, Result},
+};
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
@@ -42,6 +45,19 @@ impl fmt::Display for EthReceiptType {
             Self::EIP2718 => "0x2",
         };
         write!(f, "{}", s)
+    }
+}
+
+impl FromStr for EthReceiptType {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            "0x0" | "0" => Ok(Self::Legacy),
+            "EIP2930" | "0x1" | "1" => Ok(Self::EIP2930),
+            "EIP2718" | "0x2" | "2" => Ok(Self::EIP2718),
+            _ => Err(format!("Unrecognized ETH receipt type: {s}").into()),
+        }
     }
 }
 

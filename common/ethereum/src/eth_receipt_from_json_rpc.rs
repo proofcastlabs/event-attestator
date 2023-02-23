@@ -1,4 +1,6 @@
-use common::{types::Result, utils::strip_hex_prefix};
+use std::str::FromStr;
+
+use common::types::Result;
 use ethereum_types::{Address as EthAddress, H160, U256};
 use serde::Deserialize;
 
@@ -55,8 +57,8 @@ impl EthReceipt {
                 Some(ref s) => convert_hex_to_eth_address(s)?,
             },
             receipt_type: match json.receipt_type {
-                Some(ref hex) => Some(EthReceiptType::from_byte(&hex::decode(strip_hex_prefix(hex))?[0])),
-                None => None,
+                Some(ref s) => Some(EthReceiptType::from_str(s)?),
+                None => Some(EthReceiptType::Legacy),
             },
             status: matches!(json.status.as_ref(), "0x1" | "0x01"),
             logs,
