@@ -50,7 +50,7 @@ impl FromStr for EthSubmissionMaterial {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
 pub struct EthSubmissionMaterial {
     pub block: Option<EthBlock>,
     pub receipts: EthReceipts,
@@ -64,6 +64,20 @@ pub struct EthSubmissionMaterial {
 }
 
 impl EthSubmissionMaterial {
+    pub fn add_block(mut self, block: EthBlock) -> Result<Self> {
+        if self.block.is_none() {
+            info!("Adding bloc to ETH submission material...");
+            self.hash = Some(block.hash.clone());
+            self.block_number = Some(block.number.clone());
+            self.parent_hash = Some(block.parent_hash.clone());
+            self.receipts_root = Some(block.receipts_root.clone());
+            self.block = Some(block);
+            Ok(self)
+        } else {
+            Err("Cannot add block to ETH sub mat - one already exist!".into())
+        }
+    }
+
     pub fn add_receipts(mut self, receipts: EthReceipts) -> Result<Self> {
         if self.receipts.is_empty() {
             info!("[+] Adding receipts to ETH submission material!");

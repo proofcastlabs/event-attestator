@@ -19,7 +19,7 @@ use crate::{
     eth_utils::{convert_hex_to_eth_address, convert_hex_to_h256, convert_json_value_to_string},
 };
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Constructor, Deref, From, Into)]
+#[derive(Debug, Default, Clone, Eq, PartialEq, Serialize, Deserialize, Constructor, Deref, From, Into)]
 pub struct EthReceipts(pub Vec<EthReceipt>);
 
 impl EthReceipts {
