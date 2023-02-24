@@ -2,8 +2,8 @@
 use common::utils::strip_hex_prefix;
 use common::{
     types::{Byte, Bytes, Result},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use derive_more::Deref;
 use ethabi::{encode, Token};
 use ethereum_types::{Address as EthAddress, Signature as EthSignature, U256};

@@ -1,7 +1,6 @@
-use crate::{
-    metadata::{metadata_chain_id::MetadataChainId, Metadata},
-    types::{Bytes, Result},
-};
+use common::types::{Bytes, Result};
+
+use crate::{Metadata, MetadataChainId};
 
 pub trait ToMetadata {
     fn to_metadata(&self) -> Result<Metadata>;

@@ -5,8 +5,8 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{convert_h256_to_bytes, AnySenderSigningParams, EthPrivateKey, EthSigningParams, EthSubmissionMaterial};

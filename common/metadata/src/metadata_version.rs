@@ -1,13 +1,12 @@
 use std::fmt;
 
+#[cfg(test)]
+use common::types::Result;
+use common::types::{Byte, Bytes};
 use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-
-#[cfg(test)]
-use crate::types::Result;
-use crate::types::{Byte, Bytes};
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize, EnumIter)]
 pub enum MetadataVersion {

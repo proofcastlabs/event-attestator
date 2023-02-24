@@ -1,4 +1,5 @@
-use common::{types::Result, EthChainId};
+use common::types::Result;
+use common_chain_ids::EthChainId;
 use ethereum_types::Address as EthAddress;
 
 /// An AnySender relay contract address.

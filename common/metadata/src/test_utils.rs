@@ -2,19 +2,12 @@
 use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;
+use common::types::Bytes;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 use rust_algorand::AlgorandAddress;
 
-use crate::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_chain_id::MetadataChainId,
-        metadata_version::MetadataVersion,
-        Metadata,
-    },
-    types::Bytes,
-};
+use crate::{Metadata, MetadataAddress, MetadataChainId, MetadataVersion};
 
 pub fn get_sample_eos_address() -> EosAddress {
     EosAddress::from_str("aneosaddress").unwrap()

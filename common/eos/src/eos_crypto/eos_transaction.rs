@@ -3,8 +3,8 @@ use std::str::FromStr;
 use common::{
     traits::Serdable,
     types::{Byte, Bytes, Result},
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use derive_more::{Constructor, Deref};
 use eos_chain::{
     AccountName as EosAccountName,

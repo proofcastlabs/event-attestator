@@ -1,4 +1,5 @@
-use common::{traits::DatabaseInterface, types::Result, EthChainId};
+use common::{traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 
 use crate::{eth_database_utils::EthDbUtilsExt, EthState};
 

@@ -1,19 +1,10 @@
+use common::types::{Byte, Bytes, Result};
 use derive_more::Constructor;
 use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::Address as EthAddress;
 use serde::Serialize;
 
-use crate::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_chain_id::MetadataChainId,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_version::MetadataVersion,
-        Metadata,
-    },
-    types::{Byte, Bytes, Result},
-    EosMetadata,
-};
+use crate::{EosMetadata, Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, MetadataVersion};
 
 impl Metadata {
     fn to_bytes_for_eth_v1(&self) -> Result<Bytes> {
@@ -229,11 +220,7 @@ impl Metadata {
 
 #[cfg(test)]
 mod tests {
-    use crate::metadata::test_utils::{
-        get_sample_eth_metadata,
-        get_sample_eth_metadata_v2,
-        get_sample_eth_metadata_v3,
-    };
+    use crate::test_utils::{get_sample_eth_metadata, get_sample_eth_metadata_v2, get_sample_eth_metadata_v3};
 
     #[test]
     fn should_encode_eth_metadata_for_eos() {

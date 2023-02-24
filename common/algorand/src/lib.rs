@@ -1,5 +1,4 @@
 mod add_latest_algo_submission_material;
-mod algo_chain_id;
 mod algo_constants;
 mod algo_database_transactions;
 mod algo_db_utils;
@@ -27,7 +26,6 @@ mod update_algo_tail_block_hash;
 
 pub use self::{
     add_latest_algo_submission_material::add_latest_algo_submission_material_to_db_and_return_state,
-    algo_chain_id::AlgoChainId,
     algo_constants::{
         ALGO_CORE_IS_INITIALIZED_JSON,
         ALGO_MAX_FOREIGN_ITEMS,

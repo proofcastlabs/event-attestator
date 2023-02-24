@@ -6,11 +6,11 @@ use bitcoin::{
     util::address::Address as BtcAddress,
 };
 use common::{
-    metadata::metadata_chain_id::MetadataChainId,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{decode_hex_with_err_msg, strip_hex_prefix},
 };
+use common_metadata::MetadataChainId;
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
 

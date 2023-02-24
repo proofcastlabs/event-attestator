@@ -1,22 +1,27 @@
-pub mod metadata_address;
-pub mod metadata_chain_id;
-pub mod metadata_encoders;
-pub mod metadata_json;
-pub mod metadata_protocol_id;
-pub mod metadata_traits;
-pub mod metadata_version;
-pub mod test_utils;
+#[macro_use]
+extern crate log;
 
+mod eos_metadata;
+mod metadata_address;
+mod metadata_chain_id;
+mod metadata_encoders;
+mod metadata_json;
+mod metadata_protocol_id;
+mod metadata_traits;
+mod metadata_version;
+mod test_utils;
+
+use common::types::{Byte, Bytes, NoneError, Result};
 use serde::{Deserialize, Serialize};
 
-pub use crate::metadata::{
+pub use self::{
+    eos_metadata::EosMetadata,
     metadata_address::MetadataAddress,
-    metadata_chain_id::MetadataChainId,
+    metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     metadata_protocol_id::MetadataProtocolId,
     metadata_traits::{ToMetadata, ToMetadataChainId},
     metadata_version::MetadataVersion,
 };
-use crate::types::{Byte, Bytes, NoneError, Result};
 
 /// Metadata V1 Specification per @bertani:
 /// [

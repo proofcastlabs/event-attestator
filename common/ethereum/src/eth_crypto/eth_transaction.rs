@@ -1,7 +1,7 @@
 use common::{
     types::{Byte, Bytes, Result},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, U256};
 use rlp::RlpStream;

@@ -1,4 +1,5 @@
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 
 use crate::{EthDbUtilsExt, EthState};
 

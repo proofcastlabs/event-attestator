@@ -1,9 +1,9 @@
 [package]
-name = "common"
 license = "MIT"
 publish = false
 edition = "2021"
-version = "6.10.1"
+name = "chain_ids"
+version = "1.0.0"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -51,6 +51,8 @@ eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e5784
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
+
+common = { path = "../common" }
 
 [dev-dependencies]
 serial_test = "0.6.0"

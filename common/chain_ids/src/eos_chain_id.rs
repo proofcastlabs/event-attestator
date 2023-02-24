@@ -1,19 +1,17 @@
 use std::{fmt, str::FromStr};
 
-use ethereum_types::H256 as KeccakHash;
-use serde::{Deserialize, Serialize};
-use strum::IntoEnumIterator;
-use strum_macros::EnumIter;
-
-use crate::{
+use common::{
     constants::THIRTY_TWO_ZERO_BYTES,
     crypto_utils::keccak_hash_bytes,
     errors::AppError,
-    metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::decode_hex_with_err_msg,
 };
+use ethereum_types::H256 as KeccakHash;
+use serde::{Deserialize, Serialize};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 const EOS_CHAIN_ID_LENGTH_IN_BYTES: usize = 32;
 
@@ -25,8 +23,8 @@ pub enum EosChainId {
     UltraMainnet,
     UltraTestnet,
     FioMainnet,
-    PhoenixTestnet,
-    PhoenixMainnet,
+    LibreTestnet,
+    LibreMainnet,
     Unknown(Bytes),
 }
 
@@ -39,22 +37,6 @@ impl Default for EosChainId {
 impl ChainId for EosChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
         Ok(keccak_hash_bytes(&self.to_bytes()))
-    }
-}
-
-impl ToMetadataChainId for EosChainId {
-    fn to_metadata_chain_id(&self) -> MetadataChainId {
-        match self {
-            Self::Unknown(_) => MetadataChainId::EosUnknown,
-            Self::EosMainnet => MetadataChainId::EosMainnet,
-            Self::FioMainnet => MetadataChainId::FioMainnet,
-            Self::TelosMainnet => MetadataChainId::TelosMainnet,
-            Self::UltraMainnet => MetadataChainId::UltraMainnet,
-            Self::UltraTestnet => MetadataChainId::UltraTestnet,
-            Self::PhoenixTestnet => MetadataChainId::PhoenixTestnet,
-            Self::PhoenixMainnet => MetadataChainId::PhoenixMainnet,
-            Self::EosJungleTestnet => MetadataChainId::EosJungleTestnet,
-        }
     }
 }
 
@@ -107,8 +89,8 @@ impl EosChainId {
             Self::UltraMainnet => hex::encode(&*ULTRA_MAINNET_BYTES),
             Self::UltraTestnet => hex::encode(&*ULTRA_TESTNET_BYTES),
             Self::FioMainnet => hex::encode(&*FIO_MAINNET_BYTES),
-            Self::PhoenixTestnet => hex::encode(&*PHOENIX_TESTNET_BYTES),
-            Self::PhoenixMainnet => hex::encode(&*PHOENIX_MAINNET_BYTES),
+            Self::LibreTestnet => hex::encode(&*PHOENIX_TESTNET_BYTES),
+            Self::LibreMainnet => hex::encode(&*PHOENIX_MAINNET_BYTES),
             Self::Unknown(ref bytes) => hex::encode(bytes),
         }
     }
@@ -155,8 +137,8 @@ impl EosChainId {
             Self::EosJungleTestnet => EOS_JUNGLE_TESTNET_BYTES.to_vec(),
             Self::UltraMainnet => ULTRA_MAINNET_BYTES.to_vec(),
             Self::UltraTestnet => ULTRA_TESTNET_BYTES.to_vec(),
-            Self::PhoenixTestnet => PHOENIX_TESTNET_BYTES.to_vec(),
-            Self::PhoenixMainnet => PHOENIX_MAINNET_BYTES.to_vec(),
+            Self::LibreTestnet => PHOENIX_TESTNET_BYTES.to_vec(),
+            Self::LibreMainnet => PHOENIX_MAINNET_BYTES.to_vec(),
             Self::FioMainnet => FIO_MAINNET_BYTES.to_vec(),
             Self::Unknown(ref bytes) => bytes.to_vec(),
         }
@@ -170,23 +152,24 @@ impl EosChainId {
 impl fmt::Display for EosChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Self::EosMainnet => write!(f, "EOS Mainnet: 0x{}", self.to_hex()),
-            Self::FioMainnet => write!(f, "FIO Mainnet: 0x{}", self.to_hex()),
-            Self::TelosMainnet => write!(f, "Telos Mainnet: 0x{}", self.to_hex()),
-            Self::UltraMainnet => write!(f, "Ultra Mainnet: 0x{}", self.to_hex()),
-            Self::UltraTestnet => write!(f, "Ultra Testnet: 0x{}", self.to_hex()),
-            Self::PhoenixTestnet => write!(f, "Phoenix Testnet: 0x{}", self.to_hex()),
-            Self::PhoenixMainnet => write!(f, "Phoenix Mainnet: 0x{}", self.to_hex()),
-            Self::Unknown(_) => write!(f, "Unknown EOS chain ID: 0x{}", self.to_hex()),
-            Self::EosJungleTestnet => write!(f, "EOS Jungle Testnet: 0x{}", self.to_hex()),
+            Self::EosMainnet => write!(f, "EosMainnet"),
+            Self::FioMainnet => write!(f, "FioMainnet"),
+            Self::Unknown(_) => write!(f, "EosUnknown"),
+            Self::TelosMainnet => write!(f, "TelosMainnet"),
+            Self::UltraMainnet => write!(f, "UltraMainnet"),
+            Self::UltraTestnet => write!(f, "UltraTestnet"),
+            Self::LibreTestnet => write!(f, "LibreTestnet"),
+            Self::LibreMainnet => write!(f, "LibreMainnet"),
+            Self::EosJungleTestnet => write!(f, "EosJungleTestnet"),
         }
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use common::errors::AppError;
+
     use super::*;
-    use crate::errors::AppError;
 
     #[test]
     fn should_make_bytes_roundtrip_for_all_eos_chain_ids() {

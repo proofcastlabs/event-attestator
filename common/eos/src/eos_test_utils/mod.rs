@@ -5,8 +5,8 @@ use common::{
     errors::AppError,
     test_utils::get_sample_message_to_sign_bytes,
     types::{Byte, Bytes, Result},
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use eos_chain::{NumBytes, Write};
 use secp256k1::Message as Secp256k1Message;
 use serde::{Deserialize, Serialize};

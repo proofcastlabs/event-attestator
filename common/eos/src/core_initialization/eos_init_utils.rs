@@ -5,8 +5,8 @@ use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 

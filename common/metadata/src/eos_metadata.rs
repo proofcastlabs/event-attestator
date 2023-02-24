@@ -1,7 +1,6 @@
+use common::types::{Byte, Bytes};
 use derive_more::Constructor;
 use eos_chain::{NumBytes, Read, SerializeData, Write};
-
-use crate::types::{Byte, Bytes};
 
 #[derive(Clone, Debug, Read, Write, NumBytes, Eq, PartialEq, Default, Constructor)]
 #[eosio_core_root_path = "eos_chain"]
@@ -15,7 +14,7 @@ pub struct EosMetadata {
 impl SerializeData for EosMetadata {}
 
 impl EosMetadata {
-    pub fn to_bytes(&self) -> crate::types::Result<Bytes> {
+    pub fn to_bytes(&self) -> common::types::Result<Bytes> {
         Ok(self.to_serialize_data()?)
     }
 }
@@ -23,7 +22,7 @@ impl EosMetadata {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::metadata::metadata_chain_id::MetadataChainId;
+    use crate::MetadataChainId;
 
     #[test]
     fn should_serialize_eos_metadata() {

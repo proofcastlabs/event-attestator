@@ -7,7 +7,7 @@ version = "6.10.1"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
-authors = ["Provable Things <provable.xyz>", "Greg Kapka <gregkapka@gmail.com>"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [dependencies]
 hex = "0.4.3"
@@ -28,6 +28,7 @@ rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev 
 
 common = { path = "../common" }
 common_eth = { package = "ethereum", path = "../ethereum" }
+common_metadata = { package = "metadata", path = "../metadata" }
 
 [dev-dependencies]
 simple_logger = "2.0.0"

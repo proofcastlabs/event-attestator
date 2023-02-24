@@ -1,4 +1,5 @@
-use common::{types::Result, EthChainId};
+use common::types::Result;
+use common_chain_ids::EthChainId;
 use derive_more::Constructor;
 use ethereum_types::U256;
 

@@ -1,17 +1,15 @@
 use std::{fmt, str::FromStr};
 
-use ethereum_types::H256 as KeccakHash;
-use serde::{Deserialize, Serialize};
-use strum_macros::EnumIter;
-
-use crate::{
+use common::{
     crypto_utils::keccak_hash_bytes,
     errors::AppError,
-    metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_bytes_to_u8},
 };
+use ethereum_types::H256 as KeccakHash;
+use serde::{Deserialize, Serialize};
+use strum_macros::EnumIter;
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter, Serialize, Deserialize)]
 pub enum EthChainId {
@@ -39,26 +37,6 @@ impl Default for EthChainId {
 impl ChainId for EthChainId {
     fn keccak_hash(&self) -> Result<KeccakHash> {
         Ok(keccak_hash_bytes(&self.to_bytes()?))
-    }
-}
-
-impl ToMetadataChainId for EthChainId {
-    fn to_metadata_chain_id(&self) -> MetadataChainId {
-        match self {
-            Self::Unknown(_) => MetadataChainId::EthUnknown,
-            Self::BscMainnet => MetadataChainId::BscMainnet,
-            Self::Goerli => MetadataChainId::EthereumGoerli,
-            Self::Sepolia => MetadataChainId::EthereumSepolia,
-            Self::XDaiMainnet => MetadataChainId::XDaiMainnet,
-            Self::Mainnet => MetadataChainId::EthereumMainnet,
-            Self::Rinkeby => MetadataChainId::EthereumRinkeby,
-            Self::Ropsten => MetadataChainId::EthereumRopsten,
-            Self::InterimChain => MetadataChainId::InterimChain,
-            Self::FantomMainnet => MetadataChainId::FantomMainnet,
-            Self::PolygonMainnet => MetadataChainId::PolygonMainnet,
-            Self::ArbitrumMainnet => MetadataChainId::ArbitrumMainnet,
-            Self::LuxochainMainnet => MetadataChainId::LuxochainMainnet,
-        }
     }
 }
 
@@ -238,21 +216,20 @@ impl EthChainId {
 
 impl fmt::Display for EthChainId {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let u_64 = self.to_u64();
         match self {
-            Self::Mainnet => write!(f, "ETH Mainnet: {}", u_64),
-            Self::Goerli => write!(f, "Goerli Testnet: {}", u_64),
-            Self::BscMainnet => write!(f, "BSC Mainnet: {}", u_64),
-            Self::Sepolia => write!(f, "Sepolia Testnet: {}", u_64),
-            Self::Rinkeby => write!(f, "Rinekby Testnet: {}", u_64),
-            Self::Ropsten => write!(f, "Ropsten Testnet: {}", u_64),
-            Self::XDaiMainnet => write!(f, "xDai Mainnet: {}", u_64),
-            Self::InterimChain => write!(f, "Interim Chain: {}", u_64),
-            Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", u_64),
-            Self::Unknown(_) => write!(f, "Unkown ETH chain ID: {}", u_64),
-            Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", u_64),
-            Self::ArbitrumMainnet => write!(f, "Abritrum Mainnet: {}", u_64),
-            Self::LuxochainMainnet => write!(f, "Luxochain Mainnet: {}", u_64),
+            Self::Unknown(_) => write!(f, "EthUnknown"),
+            Self::Goerli => write!(f, "EthereumGoerli"),
+            Self::BscMainnet => write!(f, "BscMainnet"),
+            Self::Sepolia => write!(f, "SepoliaTestnet"),
+            Self::Rinkeby => write!(f, "EthereumRinkeby"),
+            Self::Ropsten => write!(f, "EthereumRopsten"),
+            Self::XDaiMainnet => write!(f, "XDaiMainnet"),
+            Self::Mainnet => write!(f, "EthereumMainnet"),
+            Self::InterimChain => write!(f, "InterimChain"),
+            Self::FantomMainnet => write!(f, "FantomMainnet"),
+            Self::PolygonMainnet => write!(f, "PolygonMainnet"),
+            Self::ArbitrumMainnet => write!(f, "ArbritrumMainnet"),
+            Self::LuxochainMainnet => write!(f, "LuxochainMainnet"),
         }
     }
 }

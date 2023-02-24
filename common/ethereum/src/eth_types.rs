@@ -1,4 +1,4 @@
-use common::EthChainId;
+use common_chain_ids::EthChainId;
 use ethereum_types::{Address, H256};
 
 use crate::EthPrivateKey;

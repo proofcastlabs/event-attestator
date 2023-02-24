@@ -1,19 +1,17 @@
-use std::fmt;
+use std::{fmt, str::FromStr};
 
+use common::{
+    constants::THIRTY_TWO_ZERO_BYTES,
+    traits::ChainId,
+    types::{Byte, Bytes, Result},
+    AppError,
+};
+use common_chain_ids::{AlgoChainId, BtcChainId, EosChainId, EthChainId};
 use ethereum_types::H256 as KeccakHash;
 use serde::{Deserialize, Serialize};
 use strum_macros::EnumIter;
 
-use crate::{
-    constants::THIRTY_TWO_ZERO_BYTES,
-    metadata::metadata_protocol_id::MetadataProtocolId,
-    traits::ChainId,
-    types::{Byte, Bytes, Result},
-    AlgoChainId,
-    BtcChainId,
-    EosChainId,
-    EthChainId,
-};
+use crate::MetadataProtocolId;
 
 pub const METADATA_CHAIN_ID_NUMBER_OF_BYTES: usize = 4;
 
@@ -41,8 +39,8 @@ pub enum MetadataChainId {
     LuxochainMainnet, // 0x00d5beb0
     FantomMainnet,    // 0x0022af98
     AlgorandMainnet,  // 0x03c38e67
-    PhoenixTestnet,   // 0x02a75f2c
-    PhoenixMainnet,   // 0x026776fa
+    LibreTestnet,     // 0x02a75f2c
+    LibreMainnet,     // 0x026776fa
     EthereumGoerli,   // 0x00b4f6c5
     EthereumSepolia,  // 0x0030d6b5
 }
@@ -50,6 +48,49 @@ pub enum MetadataChainId {
 impl Default for MetadataChainId {
     fn default() -> Self {
         Self::InterimChain
+    }
+}
+
+impl FromStr for MetadataChainId {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        match s {
+            // Algorand...
+            "AlgorandMainnet" | "0x03c38e67" => Ok(Self::AlgorandMainnet),
+
+            // Bitcoin...
+            "BtcUnknown" | "0x01000000" => Ok(Self::BtcUnknown),
+            "BitcoinMainnet" | "0x01ec97de" => Ok(Self::BitcoinMainnet),
+            "BitcoinTestnet" | "0x018afeb2" => Ok(Self::BitcoinTestnet),
+
+            // Eos...
+            "EosMainnet" | "0x02e7261c" => Ok(Self::EosMainnet),
+            "FioMainnet" | "0x02174f20" => Ok(Self::FioMainnet),
+            "EosUnknown" | "0x02000000" => Ok(Self::EosUnknown),
+            "TelosMainnet" | "0x028c7109" => Ok(Self::TelosMainnet),
+            "UltraTestnet" | "0x02b5a4d6" => Ok(Self::UltraTestnet),
+            "LibreTestnet" | "0x02a75f2c" => Ok(Self::LibreTestnet),
+            "LibreMainnet" | "0x026776fa" => Ok(Self::LibreMainnet),
+            "UltraMainnet" | "0x025d3c68" => Ok(Self::UltraMainnet),
+            "EosJungleTestnet" | "0x0282317f" => Ok(Self::EosJungleTestnet),
+
+            // Eth...
+            "EthUnknown" | "0x00000000" => Ok(Self::EthUnknown),
+            "BscMainnet" | "0x00e4b170" => Ok(Self::BscMainnet),
+            "XDaiMainnet" | "0x00f1918e" => Ok(Self::XDaiMainnet),
+            "InterimChain" | "0xffffffff" => Ok(Self::InterimChain),
+            "FantomMainnet" | "0x0022af98" => Ok(Self::FantomMainnet),
+            "EthereumGoerli" | "0x00b4f6c5" => Ok(Self::EthereumGoerli),
+            "PolygonMainnet" | "0x0075dd4c" => Ok(Self::PolygonMainnet),
+            "EthereumMainnet" | "0x005fe7f9" => Ok(Self::EthereumMainnet),
+            "EthereumRinkeby" | "0x00f34368" => Ok(Self::EthereumRinkeby),
+            "EthereumSepolia" | "0x0030d6b5" => Ok(Self::EthereumSepolia),
+            "EthereumRopsten" | "0x0069c322" => Ok(Self::EthereumRopsten),
+            "ArbritrumMainnet" | "0x00ce98c4" => Ok(Self::ArbitrumMainnet),
+            "LuxochainMainnet" | "0x00d5beb0" => Ok(Self::LuxochainMainnet),
+            _ => Err(format!("Unrecognised chain id: {s}").into()),
+        }
     }
 }
 
@@ -61,8 +102,8 @@ impl MetadataChainId {
             | Self::UltraMainnet
             | Self::UltraTestnet
             | Self::TelosMainnet
-            | Self::PhoenixTestnet
-            | Self::PhoenixMainnet
+            | Self::LibreTestnet
+            | Self::LibreMainnet
             | Self::EosJungleTestnet
             | Self::EosUnknown => MetadataProtocolId::Eos,
             Self::AlgorandMainnet => MetadataProtocolId::Algorand,
@@ -106,8 +147,8 @@ impl MetadataChainId {
             Self::InterimChain => Box::new(EthChainId::InterimChain),
             Self::FantomMainnet => Box::new(EthChainId::FantomMainnet),
             Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
-            Self::PhoenixTestnet => Box::new(EosChainId::PhoenixTestnet),
-            Self::PhoenixMainnet => Box::new(EosChainId::PhoenixMainnet),
+            Self::LibreTestnet => Box::new(EosChainId::LibreTestnet),
+            Self::LibreMainnet => Box::new(EosChainId::LibreMainnet),
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
@@ -200,8 +241,8 @@ impl fmt::Display for MetadataChainId {
             Self::InterimChain => write!(f, "Interim Chain: {}", hex),
             Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
             Self::EthereumGoerli => write!(f, "Goerli Testnet: {}", hex),
-            Self::PhoenixTestnet => write!(f, "Phoenix Testnet: {}", hex),
-            Self::PhoenixMainnet => write!(f, "Phoenix Mainnet: {}", hex),
+            Self::LibreTestnet => write!(f, "Libre Testnet: {}", hex),
+            Self::LibreMainnet => write!(f, "Libre Mainnet: {}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: {}", hex),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: {}", hex),
@@ -220,8 +261,9 @@ impl fmt::Display for MetadataChainId {
 
 #[cfg(test)]
 mod tests {
+    use common::AppError;
+
     use super::*;
-    use crate::errors::AppError;
 
     #[test]
     fn should_print_all_ids() {

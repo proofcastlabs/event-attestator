@@ -1,12 +1,11 @@
 use std::fmt;
 
+use common::types::Byte;
+#[cfg(test)]
+use common::types::Result;
 #[cfg(test)]
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
-
-use crate::types::Byte;
-#[cfg(test)]
-use crate::types::Result;
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum MetadataProtocolId {

@@ -1,15 +1,12 @@
 #![cfg(test)]
+use common::types::Result;
+#[cfg(test)]
+use common::types::{Byte, Bytes};
 use serde::{Deserialize, Serialize};
 
+use crate::{Metadata, MetadataVersion};
 #[cfg(test)]
-use crate::{
-    metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId},
-    types::{Byte, Bytes},
-};
-use crate::{
-    metadata::{metadata_version::MetadataVersion, Metadata},
-    types::Result,
-};
+use crate::{MetadataAddress, MetadataChainId};
 
 impl Metadata {
     pub fn to_json(&self) -> Result<MetadataJson> {
@@ -93,8 +90,10 @@ impl MetadataJson {
 
 #[cfg(test)]
 mod tests {
+    use common::errors::AppError;
+
     use super::*;
-    use crate::{errors::AppError, metadata::test_utils::get_sample_eth_metadata_v3};
+    use crate::test_utils::get_sample_eth_metadata_v3;
 
     #[test]
     fn should_serde_metadata_to_and_from_json() {

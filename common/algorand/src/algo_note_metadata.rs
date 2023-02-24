@@ -1,9 +1,9 @@
 use common::{
-    metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
+use common_metadata::MetadataChainId;
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 use serde_with::skip_serializing_none;

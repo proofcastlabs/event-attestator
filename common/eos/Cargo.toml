@@ -7,7 +7,7 @@ version = "6.10.1"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
-authors = ["Provable Things <provable.xyz>", "Greg Kapka <gregkapka@gmail.com>"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 # TODO Clear out unused deps
 [dependencies]
@@ -46,6 +46,7 @@ web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
 
 common = { path = "../common" }
+common_chain_ids = { package = "chain_ids", path = "../chain_ids" }
 common_debug_signers = { package = "debug_signers", path = "../debug_signers" }
 
 [dev-dependencies]

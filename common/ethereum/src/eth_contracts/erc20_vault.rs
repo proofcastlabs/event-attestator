@@ -1,7 +1,7 @@
 use common::{
-    metadata::metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     types::{Bytes, Result},
 };
+use common_metadata::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES};
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};

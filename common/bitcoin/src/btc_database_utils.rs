@@ -6,8 +6,8 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, DataSensitivity, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
-    BtcChainId,
 };
+use common_chain_ids::BtcChainId;
 
 use crate::{
     btc_block::BtcBlockInDbFormat,

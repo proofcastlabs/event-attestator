@@ -1,8 +1,8 @@
-use common::{
-    metadata::{metadata_address::MetadataAddress, metadata_protocol_id::MetadataProtocolId, Metadata},
-    types::{Byte, Bytes, Result},
-    BtcChainId,
-};
+use std::str::FromStr;
+
+use common::types::{Byte, Bytes, Result};
+use common_chain_ids::BtcChainId;
+use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId};
 
 use crate::btc_utils::convert_str_to_btc_address_or_safe_address;
 
@@ -57,7 +57,7 @@ pub trait ToMetadata {
             user_data,
             &MetadataAddress::new_from_btc_address(
                 &convert_str_to_btc_address_or_safe_address(&self.get_originating_tx_address())?,
-                &btc_chain_id.to_metadata_chain_id(),
+                &MetadataChainId::from_str(&btc_chain_id.to_string())?,
             )?,
         )))
     }

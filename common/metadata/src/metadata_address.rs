@@ -3,15 +3,9 @@ use std::str::from_utf8;
 use std::str::FromStr;
 
 use bitcoin::util::address::Address as BtcAddress;
-use eos_chain::AccountName as EosAddress;
-use ethereum_types::Address as EthAddress;
-use rust_algorand::{AlgorandAddress, AlgorandAppId};
-use serde::{Deserialize, Serialize};
-
 #[cfg(test)]
-use crate::types::Byte;
-use crate::{
-    metadata::{metadata_chain_id::MetadataChainId, metadata_protocol_id::MetadataProtocolId},
+use common::types::Byte;
+use common::{
     safe_addresses::{
         safely_convert_str_to_algo_address,
         safely_convert_str_to_btc_address,
@@ -22,6 +16,12 @@ use crate::{
     utils::strip_hex_prefix,
     Result,
 };
+use eos_chain::AccountName as EosAddress;
+use ethereum_types::Address as EthAddress;
+use rust_algorand::{AlgorandAddress, AlgorandAppId};
+use serde::{Deserialize, Serialize};
+
+use crate::{MetadataChainId, MetadataProtocolId};
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct MetadataAddress {
@@ -186,18 +186,17 @@ impl MetadataAddress {
 
 #[cfg(test)]
 mod tests {
+    use common::utils::convert_hex_to_eth_address;
+
     use super::*;
-    use crate::{
-        metadata::test_utils::{
-            get_sample_algo_origin_address,
-            get_sample_btc_address,
-            get_sample_btc_origin_address,
-            get_sample_eos_address,
-            get_sample_eos_origin_address,
-            get_sample_eth_address,
-            get_sample_eth_origin_address,
-        },
-        utils::convert_hex_to_eth_address,
+    use crate::test_utils::{
+        get_sample_algo_origin_address,
+        get_sample_btc_address,
+        get_sample_btc_origin_address,
+        get_sample_eos_address,
+        get_sample_eos_origin_address,
+        get_sample_eth_address,
+        get_sample_eth_origin_address,
     };
 
     #[test]

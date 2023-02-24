@@ -5,8 +5,8 @@ use common::{
     database_utils::{get_string_from_db, get_u64_from_db, put_string_in_db, put_u64_in_db},
     traits::DatabaseInterface,
     types::{Bytes, Result},
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 
 use crate::{

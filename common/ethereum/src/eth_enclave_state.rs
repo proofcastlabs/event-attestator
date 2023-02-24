@@ -101,7 +101,8 @@ make_enclave_state_struct!(EvmEnclaveState, evm);
 
 #[cfg(test)]
 mod tests {
-    use common::{test_utils::get_test_database, EthChainId};
+    use common::{test_utils::get_test_database};
+    use common_chain_ids::EthChainId;
 
     use super::*;
     use crate::{test_utils::get_sample_eth_submission_material_n, EthDbUtils, EvmDbUtils};

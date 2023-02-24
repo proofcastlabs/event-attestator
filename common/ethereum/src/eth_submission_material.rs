@@ -4,8 +4,8 @@ use common::{
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};

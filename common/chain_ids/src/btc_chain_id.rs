@@ -1,16 +1,12 @@
-use std::fmt;
-
 use bitcoin::network::constants::Network as BtcNetwork;
-use ethereum_types::H256 as KeccakHash;
-use strum_macros::EnumIter;
-
-use crate::{
+use common::{
     crypto_utils::keccak_hash_bytes,
-    metadata::metadata_chain_id::MetadataChainId,
     traits::ChainId,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
+use ethereum_types::H256 as KeccakHash;
+use strum_macros::EnumIter;
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 pub enum BtcChainId {
@@ -26,6 +22,16 @@ impl ChainId for BtcChainId {
             Self::Testnet => "Testnet".as_bytes(),
             Self::Unknown(bytes) => bytes,
         }))
+    }
+}
+
+impl std::fmt::Display for BtcChainId {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Self::Unknown(_) => write!(f, "BtcUnknown"),
+            Self::Bitcoin => write!(f, "BitcoinMainnet"),
+            Self::Testnet => write!(f, "BitcoinTestnet"),
+        }
     }
 }
 
@@ -68,6 +74,7 @@ impl BtcChainId {
         }
     }
 
+    #[allow(unused)]
     fn to_hex(&self) -> String {
         hex::encode(self.to_bytes())
     }
@@ -81,24 +88,6 @@ impl BtcChainId {
     fn get_all() -> Vec<Self> {
         use strum::IntoEnumIterator;
         Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
-    }
-
-    pub fn to_metadata_chain_id(&self) -> MetadataChainId {
-        match self {
-            Self::Bitcoin => MetadataChainId::BitcoinMainnet,
-            Self::Testnet => MetadataChainId::BitcoinTestnet,
-            Self::Unknown(_) => MetadataChainId::BtcUnknown,
-        }
-    }
-}
-
-impl fmt::Display for BtcChainId {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Self::Bitcoin => write!(f, "Bitcoin Mainnet: 0x{}", self.to_hex()),
-            Self::Testnet => write!(f, "Bitcoin Testnet: 0x{}", self.to_hex()),
-            Self::Unknown(_) => write!(f, "Bitcoin Unknown: 0x{}", self.to_hex()),
-        }
     }
 }
 

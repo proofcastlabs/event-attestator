@@ -50,6 +50,7 @@ dependencies = [
  "hex",
  "lazy_static",
  "log",
+ "metadata",
  "paste",
  "rmp-serde",
  "rust-algorand",
@@ -206,6 +207,7 @@ name = "bitcoin"
 version = "6.10.1"
 dependencies = [
  "bitcoin 0.29.2",
+ "chain_ids",
  "common",
  "debug_signers",
  "derive_more",
@@ -214,6 +216,7 @@ dependencies = [
  "hex",
  "lazy_static",
  "log",
+ "metadata",
  "paste",
  "serde",
  "serde_json",
@@ -420,6 +423,48 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "chain_ids"
+version = "1.0.0"
+dependencies = [
+ "base64 0.13.1",
+ "bitcoin 0.29.2",
+ "bs58",
+ "byteorder",
+ "chrono",
+ "common",
+ "derive_more",
+ "eip-712",
+ "eos-chain",
+ "ethabi 15.0.0",
+ "ethereum-types 0.12.1",
+ "function_name",
+ "hex",
+ "keccak-hasher",
+ "lazy_static",
+ "log",
+ "paste",
+ "quick-error",
+ "rand 0.8.5",
+ "rlp",
+ "rmp-serde",
+ "rust-algorand",
+ "rustc-hex",
+ "secp256k1 0.15.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "serial_test",
+ "simple_logger 2.3.0",
+ "simplelog",
+ "strum",
+ "strum_macros",
+ "tiny-keccak 2.0.2",
+ "triehash",
+ "web3",
+]
 
 [[package]]
 name = "chrono"
@@ -911,6 +956,7 @@ dependencies = [
  "bitcoin 0.29.2",
  "bs58",
  "byteorder",
+ "chain_ids",
  "chrono",
  "common",
  "debug_signers",
@@ -1204,6 +1250,7 @@ dependencies = [
 name = "ethereum"
 version = "6.10.1"
 dependencies = [
+ "chain_ids",
  "common",
  "derive_more",
  "ethabi 15.0.0",
@@ -1212,6 +1259,7 @@ dependencies = [
  "keccak-hasher",
  "lazy_static",
  "log",
+ "metadata",
  "paste",
  "rand 0.8.5",
  "rlp",
@@ -2323,6 +2371,38 @@ name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
+
+[[package]]
+name = "metadata"
+version = "6.10.1"
+dependencies = [
+ "bitcoin 0.29.2",
+ "chain_ids",
+ "common",
+ "derive_more",
+ "eos-chain",
+ "ethabi 15.0.0",
+ "ethereum-types 0.12.1",
+ "hex",
+ "keccak-hasher",
+ "lazy_static",
+ "log",
+ "paste",
+ "rand 0.8.5",
+ "rlp",
+ "rmp-serde",
+ "rust-algorand",
+ "secp256k1 0.15.3",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "simple_logger 2.3.0",
+ "strum",
+ "strum_macros",
+ "tiny-keccak 2.0.2",
+ "triehash",
+ "web3",
+]
 
 [[package]]
 name = "mime"

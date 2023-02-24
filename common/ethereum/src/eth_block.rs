@@ -2,8 +2,8 @@ use common::{
     crypto_utils::keccak_hash_bytes,
     types::{Bytes, NoneError, Result},
     utils::strip_hex_prefix,
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use ethereum_types::{Address as EthAddress, Bloom, H256 as EthHash, U256};
 use rlp::RlpStream;
 use serde::{Deserialize, Serialize};
