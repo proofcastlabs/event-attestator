@@ -4,8 +4,8 @@ use std::{fs::read_to_string, path::Path, str::FromStr};
 use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
     types::Result,
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eos::EosSubmissionMaterial;
 use common_eth::{EthLog, EthReceipt, EthSubmissionMaterial};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};

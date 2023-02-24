@@ -26,6 +26,8 @@ common_db = { package = "db", path = "../../common/db" }
 common_eos = { package = "eos", path = "../../common/eos" }
 common_fees = { package = "fees", path = "../../common/fees" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
+common_metadata = { package = "metadata", path = "../../common/metadata" }
+common_chain_ids = { package = "chain_ids", path = "../../common/chain_ids" }
 common_enclave_info = { package = "enclave_info", path = "../../common/enclave_info" }
 common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_debug" }
 common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }

@@ -6,8 +6,8 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use common_eth::{
     encode_erc777_mint_with_no_data_fxn,

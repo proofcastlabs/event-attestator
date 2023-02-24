@@ -1,4 +1,5 @@
-use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 use common_eth::{
     end_eth_db_transaction_and_return_state,
     generate_and_store_eos_on_eth_contract_address,

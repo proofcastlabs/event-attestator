@@ -2,20 +2,15 @@ use std::str::{from_utf8, FromStr};
 
 use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::{ToMetadata, ToMetadataChainId},
-        Metadata,
-    },
     safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use common_eth::{EthDbUtils, EthDbUtilsExt, MAX_BYTES_FOR_ETH_USER_DATA};
+use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, ToMetadata};
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};
@@ -169,7 +164,10 @@ impl ToMetadata for Erc20OnEosEthTxInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataAddress::new_from_eos_address(&self.from, &self.origin_chain_id.to_metadata_chain_id())?,
+            &MetadataAddress::new_from_eos_address(
+                &self.from,
+                &MetadataChainId::from_str(&self.origin_chain_id.to_string())?,
+            )?,
         ))
     }
 

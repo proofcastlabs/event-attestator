@@ -28,6 +28,8 @@ common_db = { package = "db", path = "../../common/db"}
 common_eos = { package = "eos", path = "../../common/eos"}
 common_fees = { package = "fees", path = "../../common/fees"}
 common_btc = { package = "bitcoin", path = "../../common/bitcoin"}
+common_metadata = { package = "metadata",  path = "../../common/metadata" }
+common_chain_ids = { package = "chain_ids",  path = "../../common/chain_ids" }
 common_debug_signers = { package = "debug_signers",  path = "../../common/debug_signers" }
 
 [features]

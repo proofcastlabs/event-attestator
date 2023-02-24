@@ -295,8 +295,10 @@ impl ToMetadata for BtcOnEosEosTxInfo {
 
 #[cfg(test)]
 mod tests {
-    use common::{errors::AppError, metadata::metadata_protocol_id::MetadataProtocolId, BtcChainId};
+    use common::errors::AppError;
+    use common_chain_ids::BtcChainId;
     use common_eos::MAX_BYTES_FOR_EOS_USER_DATA;
+    use common_metadata::MetadataProtocolId;
 
     use super::*;
     use crate::test_utils::get_sample_btc_on_eos_eos_tx_infos;

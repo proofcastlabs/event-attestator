@@ -1,11 +1,9 @@
 use common::{
-    metadata::metadata_protocol_id::MetadataProtocolId,
     traits::{DatabaseInterface, Serdable},
     types::Result,
-    BtcChainId,
-    EosChainId,
 };
 use common_btc::{BtcState, ToMetadata};
+use common_chain_ids::{BtcChainId, EosChainId};
 use common_eos::{
     get_eos_tx_expiration_timestamp_with_offset,
     get_signed_eos_ptoken_issue_tx,
@@ -15,6 +13,7 @@ use common_eos::{
     EosSignedTransactions,
     MAX_BYTES_FOR_EOS_USER_DATA,
 };
+use common_metadata::MetadataProtocolId;
 
 use crate::btc::eos_tx_info::BtcOnEosEosTxInfos;
 

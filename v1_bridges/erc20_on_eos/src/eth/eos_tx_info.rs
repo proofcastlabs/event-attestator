@@ -2,18 +2,11 @@ use std::str::FromStr;
 
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::{ToMetadata, ToMetadataChainId},
-        Metadata,
-    },
     safe_addresses::safely_convert_str_to_eos_address,
     traits::{DatabaseInterface, Serdable},
     types::{Byte, Bytes, Result},
-    EosChainId,
-    EthChainId,
 };
+use common_chain_ids::{EosChainId, EthChainId};
 use common_eos::{
     get_eos_tx_expiration_timestamp_with_offset,
     get_signed_eos_ptoken_issue_tx,
@@ -36,6 +29,7 @@ use common_eth::{
     ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,
     ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
 };
+use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, ToMetadata};
 use derive_more::{Constructor, Deref};
 use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -61,7 +55,10 @@ impl ToMetadata for Erc20OnEosEosTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         Ok(Metadata::new(
             &self.user_data,
-            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id.to_metadata_chain_id())?,
+            &MetadataAddress::new_from_eth_address(
+                &self.token_sender,
+                &MetadataChainId::from_str(&self.origin_chain_id.to_string())?,
+            )?,
         ))
     }
 
@@ -174,7 +171,7 @@ impl Erc20OnEosEosTxInfo {
                 info!("✔ Wrapping `user_data` in metadata for `Erc20OnEosEosTxInfo¬");
                 Some(
                     self.to_metadata()?
-                        .to_bytes_for_protocol(&chain_id.to_metadata_chain_id().to_protocol_id())?,
+                        .to_bytes_for_protocol(&MetadataChainId::from_str(&chain_id.to_string())?.to_protocol_id())?,
                 )
             },
         )

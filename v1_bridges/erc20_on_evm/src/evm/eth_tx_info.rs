@@ -1,16 +1,12 @@
+use std::str::FromStr;
+
 use common::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::{ToMetadata, ToMetadataChainId},
-        Metadata,
-    },
     safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_with_user_data,
     encode_erc20_vault_peg_out_fxn_data_without_user_data,
@@ -30,6 +26,7 @@ use common_eth::{
     MAX_BYTES_FOR_ETH_USER_DATA,
     ZERO_ETH_VALUE,
 };
+use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, ToMetadata};
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
@@ -64,7 +61,10 @@ impl ToMetadata for Erc20OnEvmEthTxInfo {
         };
         Ok(Metadata::new(
             &user_data,
-            &MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id.to_metadata_chain_id())?,
+            &MetadataAddress::new_from_eth_address(
+                &self.token_sender,
+                &MetadataChainId::from_str(&self.origin_chain_id.to_string())?,
+            )?,
         ))
     }
 

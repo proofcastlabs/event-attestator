@@ -58,8 +58,8 @@ mod tests {
     use std::str::FromStr;
 
     use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
-    use common::EthChainId;
     use common_btc::test_utils::SAMPLE_TARGET_BTC_ADDRESS;
+    use common_chain_ids::EthChainId;
     use common_eth::test_utils::{get_sample_eth_address, get_sample_eth_private_key};
     use ethereum_types::Address as EthAddress;
 
