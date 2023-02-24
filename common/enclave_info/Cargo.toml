@@ -7,7 +7,7 @@ readme = "README.md"
 name = "enclave_info"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
-authors = ["Provable Things <provable.xyz>", "Greg Kapka <greg@oraclize.it>"]
+authors = ["Provable Things <provable.xyz>", "Greg Kapka <gregkapka@gmail.com>"]
 
 [dependencies]
 hex = "0.4.3"

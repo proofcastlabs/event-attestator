@@ -7,7 +7,7 @@ version = "6.10.1"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["defi", "crypto"]
-authors = ["Greg Kapka <greg@oraclize.it>"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [dependencies]
 hex = "0.4.3"

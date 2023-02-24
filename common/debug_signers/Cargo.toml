@@ -7,7 +7,7 @@ readme = "README.md"
 rust-version = "1.56"
 name = "debug_signers"
 keywords = ["defi", "crypto"]
-authors = ["Greg Kapka <greg@oraclize.it>"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [dependencies]
 hex = "0.4.3"
