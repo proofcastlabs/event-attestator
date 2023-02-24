@@ -89,7 +89,7 @@ impl FromStr for MetadataChainId {
             "EthereumRopsten" | "0x0069c322" => Ok(Self::EthereumRopsten),
             "ArbritrumMainnet" | "0x00ce98c4" => Ok(Self::ArbitrumMainnet),
             "LuxochainMainnet" | "0x00d5beb0" => Ok(Self::LuxochainMainnet),
-            _ => Err(format!("Unrecognised chain id: {s}").into()),
+            _ => Err(format!("Unrecognised chain id: '{s}'").into()),
         }
     }
 }
@@ -145,10 +145,10 @@ impl MetadataChainId {
             Self::UltraMainnet => Box::new(EosChainId::UltraMainnet),
             Self::UltraTestnet => Box::new(EosChainId::UltraTestnet),
             Self::InterimChain => Box::new(EthChainId::InterimChain),
-            Self::FantomMainnet => Box::new(EthChainId::FantomMainnet),
-            Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
             Self::LibreTestnet => Box::new(EosChainId::LibreTestnet),
             Self::LibreMainnet => Box::new(EosChainId::LibreMainnet),
+            Self::FantomMainnet => Box::new(EthChainId::FantomMainnet),
+            Self::PolygonMainnet => Box::new(EthChainId::PolygonMainnet),
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
