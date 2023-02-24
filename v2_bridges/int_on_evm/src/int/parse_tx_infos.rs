@@ -115,8 +115,8 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
 
 #[cfg(test)]
 mod tests {
-    use common::metadata::MetadataChainId;
     use common_eth::convert_hex_to_eth_address;
+    use common_metadata::MetadataChainId;
     use ethereum_types::{H256 as EthHash, U256};
 
     use super::*;

@@ -1,13 +1,16 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    str::FromStr,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use common::{
-    metadata::ToMetadataChainId,
     traits::{DatabaseInterface, Serdable},
     types::Result,
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use common_eos::{EosDbUtils, EosSignedTransaction, EosSignedTransactions};
 use common_eth::{EthDbUtilsExt, EthState};
+use common_metadata::MetadataChainId;
 
 use crate::int::{EosOnIntEosTxInfo, EosOnIntEosTxInfos};
 
@@ -56,11 +59,11 @@ impl EosTxInfo {
             eos_tx_amount: tx_info.eos_asset_amount.clone(),
             _id: format!("peos-on-int-eos-{}", eos_account_nonce),
             native_token_address: tx_info.eos_token_address.to_string(),
-            destination_chain_id: eos_chain_id.to_metadata_chain_id().to_hex()?,
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender)),
             host_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash)),
+            destination_chain_id: MetadataChainId::from_str(&eos_chain_id.to_string())?.to_hex()?,
         })
     }
 }

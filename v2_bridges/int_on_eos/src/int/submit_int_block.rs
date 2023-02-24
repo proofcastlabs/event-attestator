@@ -96,7 +96,8 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 mod tests {
     use std::str::FromStr;
 
-    use common::{test_utils::get_test_database, EthChainId};
+    use common::test_utils::get_test_database;
+    use common_chain_ids::EthChainId;
     use common_eos::{initialize_eos_core_inner, EosPrivateKey};
     use common_eth::{
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,

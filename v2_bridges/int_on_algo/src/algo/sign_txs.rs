@@ -1,5 +1,6 @@
-use common::{metadata::metadata_traits::ToMetadata, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{traits::DatabaseInterface, types::Result};
 use common_algorand::AlgoState;
+use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_with_user_data,
     EthDbUtilsExt,
@@ -8,6 +9,7 @@ use common_eth::{
     EthTransactions as IntTransactions,
     ZERO_ETH_VALUE,
 };
+use common_metadata::ToMetadata;
 
 use crate::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos};
 

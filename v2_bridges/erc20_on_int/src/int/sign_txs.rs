@@ -1,10 +1,5 @@
-use common::{
-    metadata::metadata_traits::ToMetadata,
-    safe_addresses::safely_convert_str_to_eth_address,
-    traits::DatabaseInterface,
-    types::Result,
-    EthChainId,
-};
+use common::{safe_addresses::safely_convert_str_to_eth_address, traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_with_user_data,
     encode_erc20_vault_peg_out_fxn_data_without_user_data,

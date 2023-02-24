@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use bitcoin::{
     blockdata::transaction::Transaction as BtcTransaction,
     network::constants::Network as BtcNetwork,
@@ -6,10 +8,11 @@ use bitcoin::{
 use common::{
     traits::DatabaseInterface,
     types::{NoneError, Result},
-    BtcChainId,
 };
 use common_btc::{convert_satoshis_to_wei, BtcState, DepositInfoHashMap};
+use common_chain_ids::BtcChainId;
 use common_eth::{EthDbUtils, EthDbUtilsExt};
+use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
 use crate::btc::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos};
@@ -59,9 +62,10 @@ impl BtcOnIntIntTxInfos {
                                 destination_address: deposit_info.address.clone(),
                                 destination_chain_id: deposit_info.chain_id.clone(),
                                 host_token_amount: convert_satoshis_to_wei(tx_out.value),
-                                origin_chain_id: BtcChainId::from_btc_network(&network)?
-                                    .to_metadata_chain_id()
-                                    .to_bytes()?,
+                                origin_chain_id: MetadataChainId::from_str(
+                                    &BtcChainId::from_btc_network(&network)?.to_string(),
+                                )?
+                                .to_bytes()?,
                                 originating_tx_address: address
                                     .ok_or(NoneError("Could not unwrap BTC address!"))?
                                     .to_string(),

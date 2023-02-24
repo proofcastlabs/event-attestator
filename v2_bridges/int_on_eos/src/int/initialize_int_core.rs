@@ -1,4 +1,5 @@
-use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 use common_eth::{
     convert_hex_to_eth_address,
     end_eth_db_transaction_and_return_state,

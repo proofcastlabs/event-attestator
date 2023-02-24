@@ -88,10 +88,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
 mod tests {
     use std::str::FromStr;
 
-    use common::{
-        metadata::{metadata_address::MetadataAddress, metadata_chain_id::MetadataChainId, Metadata},
-        test_utils::get_test_database,
-    };
+    use common::test_utils::get_test_database;
     use common_btc::{
         get_first_utxo_and_value,
         get_utxo_nonce_from_db,
@@ -101,6 +98,7 @@ mod tests {
         BtcSubmissionMaterial,
     };
     use common_eth::{convert_hex_to_eth_address, EthDbUtils, EthDbUtilsExt, EthPrivateKey, EthState, EthTransaction};
+    use common_metadata::{Metadata, MetadataAddress, MetadataChainId};
     use ethereum_types::{Address as EthAddress, U256};
     use serde_json::json;
 

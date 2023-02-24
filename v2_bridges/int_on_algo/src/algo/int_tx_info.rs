@@ -2,10 +2,10 @@ use std::str::FromStr;
 
 use common::{
     address::Address,
-    metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
 };
+use common_metadata::MetadataChainId;
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, U256};
 use rust_algorand::AlgorandAddress;

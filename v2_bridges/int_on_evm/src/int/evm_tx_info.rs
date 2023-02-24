@@ -2,12 +2,12 @@ use std::fmt;
 
 use common::{
     address::Address,
-    metadata::metadata_chain_id::MetadataChainId,
     safe_addresses::SAFE_ETH_ADDRESS_STR,
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_string,
 };
 use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string};
+use common_metadata::MetadataChainId;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};

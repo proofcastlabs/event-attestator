@@ -1,12 +1,15 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    str::FromStr,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use common::{
-    metadata::metadata_traits::ToMetadataChainId,
     traits::DatabaseInterface,
     types::{NoneError, Result},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eth::{EthDbUtilsExt, EthState, EthTransaction, EthTxInfoCompatible, RelayTransaction};
+use common_metadata::MetadataChainId;
 
 use crate::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos};
 
@@ -66,7 +69,10 @@ impl EthTxInfo {
             native_token_address: format!("0x{}", hex::encode(tx_info.eth_token_address)),
             originating_address: format!("0x{}", hex::encode(tx_info.token_sender.as_bytes())),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(eth_chain_id.to_metadata_chain_id().to_bytes()?)),
+            destination_chain_id: format!(
+                "0x{}",
+                hex::encode(MetadataChainId::from_str(&eth_chain_id.to_string())?.to_bytes()?)
+            ),
         })
     }
 }

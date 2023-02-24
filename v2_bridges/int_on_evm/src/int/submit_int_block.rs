@@ -105,7 +105,8 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 mod tests {
     use std::fs::read_to_string;
 
-    use common::{dictionaries::eth_evm::EthEvmTokenDictionary, test_utils::get_test_database, EthChainId};
+    use common::{dictionaries::eth_evm::EthEvmTokenDictionary, test_utils::get_test_database};
+    use common_chain_ids::EthChainId;
     use common_eth::{
         convert_hex_to_eth_address,
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,

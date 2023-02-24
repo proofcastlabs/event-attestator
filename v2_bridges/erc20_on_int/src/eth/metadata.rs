@@ -1,17 +1,10 @@
-use common::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::ToMetadata,
-        Metadata,
-    },
-    types::{Bytes, Result},
-};
+use common::types::{Bytes, Result};
 use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
+use common_metadata::{Metadata, MetadataAddress, MetadataProtocolId};
 
 use crate::eth::int_tx_info::Erc20OnIntIntTxInfo;
 
-impl ToMetadata for Erc20OnIntIntTxInfo {
+impl Erc20OnIntIntTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
             info!(
@@ -31,7 +24,7 @@ impl ToMetadata for Erc20OnIntIntTxInfo {
         ))
     }
 
-    fn to_metadata_bytes(&self) -> Result<Bytes> {
+    pub fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
     }
 }

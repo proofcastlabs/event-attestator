@@ -1,4 +1,5 @@
-use common::{metadata::metadata_traits::ToMetadata, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 use common_eth::{
     convert_eth_address_to_string,
     encode_erc20_vault_peg_out_fxn_data_with_user_data,

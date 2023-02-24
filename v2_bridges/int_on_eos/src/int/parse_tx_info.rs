@@ -1,11 +1,12 @@
+use std::str::FromStr;
+
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    metadata::metadata_traits::ToMetadataChainId,
     safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::Result,
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eth::{
     Erc20VaultPegInEventParams,
     EthDbUtils,
@@ -18,6 +19,7 @@ use common_eth::{
     EthSubmissionMaterial,
     ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
 };
+use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
 use crate::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos};
@@ -74,8 +76,8 @@ impl IntOnEosEosTxInfos {
                         eth_token_address: params.token_address,
                         token_amount: params.token_amount,
                         user_data: params.user_data.clone(),
-                        origin_chain_id: origin_chain_id.to_metadata_chain_id(),
                         destination_chain_id: params.get_destination_chain_id()?,
+                        origin_chain_id: MetadataChainId::from_str(&origin_chain_id.to_string())?,
                     };
                     info!("✔ Parsed `IntOnEosEosTxInfo`: {:?}", tx_info);
                     Ok(tx_info)

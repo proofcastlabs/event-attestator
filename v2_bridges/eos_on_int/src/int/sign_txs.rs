@@ -1,9 +1,8 @@
 use common::{
-    metadata::metadata_traits::ToMetadata,
     traits::{DatabaseInterface, Serdable},
     types::{Byte, Result},
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use common_eos::{
     get_eos_tx_expiration_timestamp_with_offset,
     EosDbUtils,

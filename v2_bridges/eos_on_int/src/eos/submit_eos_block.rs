@@ -85,7 +85,8 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
 mod tests {
     use std::str::FromStr;
 
-    use common::{test_utils::get_test_database, EthChainId};
+    use common::test_utils::get_test_database;
+    use common_chain_ids::EthChainId;
     use common_eos::{initialize_eos_core_inner, EosPrivateKey, ProcessedGlobalSequences};
     use common_eth::{
         initialize_eth_core_with_router_contract_and_return_state,

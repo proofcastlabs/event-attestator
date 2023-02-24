@@ -1,5 +1,6 @@
-use common::{metadata::metadata_traits::ToMetadata, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{traits::DatabaseInterface, types::Result};
 use common_btc::BtcState;
+use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc777_mint_fxn_maybe_with_data,
     EthDbUtils,

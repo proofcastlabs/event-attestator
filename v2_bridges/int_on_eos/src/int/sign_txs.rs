@@ -1,10 +1,11 @@
+use std::str::FromStr;
+
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    metadata::metadata_traits::{ToMetadata, ToMetadataChainId},
     traits::{DatabaseInterface, Serdable},
     types::Result,
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use common_eos::{
     get_eos_tx_expiration_timestamp_with_offset,
     get_signed_eos_ptoken_issue_tx,
@@ -15,6 +16,7 @@ use common_eos::{
     EosSignedTransactions,
 };
 use common_eth::EthState;
+use common_metadata::MetadataChainId;
 
 use crate::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos};
 
@@ -77,7 +79,7 @@ impl IntOnEosEosTxInfo {
                 info!("✔ Wrapping `user_data` in metadata for `IntOnEosEosTxInfo¬");
                 Some(
                     self.to_metadata()?
-                        .to_bytes_for_protocol(&chain_id.to_metadata_chain_id().to_protocol_id())?,
+                        .to_bytes_for_protocol(&MetadataChainId::from_str(&chain_id.to_string())?.to_protocol_id())?,
                 )
             },
         )

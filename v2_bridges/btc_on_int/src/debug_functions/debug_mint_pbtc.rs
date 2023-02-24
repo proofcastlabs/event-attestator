@@ -5,8 +5,8 @@ use common::{
     traits::DatabaseInterface,
     types::Result,
     utils::{decode_hex_with_err_msg, prepend_debug_output_marker_to_string, strip_hex_prefix},
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{get_signed_minting_tx, EthDbUtils, EthDbUtilsExt};
 use ethereum_types::Address as EthAddress;

@@ -1,13 +1,15 @@
+use std::str::FromStr;
+
 use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-    metadata::{metadata_chain_id::MetadataChainId, metadata_traits::ToMetadataChainId},
     traits::DatabaseInterface,
     types::{Bytes, Result},
     utils::convert_bytes_to_u64,
-    EosChainId,
 };
+use common_chain_ids::EosChainId;
 use common_eos::{EosActionProof, EosState};
 use common_eth::{EthDbUtils, EthDbUtilsExt};
+use common_metadata::MetadataChainId;
 use ethereum_types::{Address as EthAddress, U256};
 
 use crate::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos};
@@ -108,8 +110,8 @@ impl IntOnEosIntTxInfo {
                     int_token_address: dictionary_entry.eth_address,
                     user_data: Self::get_user_data_from_proof(proof)?,
                     global_sequence: proof.action_receipt.global_sequence,
-                    origin_chain_id: origin_chain_id.to_metadata_chain_id(),
                     destination_address: Self::get_destination_address_from_proof(proof),
+                    origin_chain_id: MetadataChainId::from_str(&origin_chain_id.to_string())?,
                 })
             })
     }

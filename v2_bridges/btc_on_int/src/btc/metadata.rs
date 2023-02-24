@@ -1,18 +1,10 @@
-use common::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_chain_id::MetadataChainId,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::ToMetadata,
-        Metadata,
-    },
-    types::{Bytes, Result},
-};
+use common::types::{Bytes, Result};
 use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
+use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId};
 
 use crate::btc::BtcOnIntIntTxInfo;
 
-impl ToMetadata for BtcOnIntIntTxInfo {
+impl BtcOnIntIntTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
             info!(
@@ -35,7 +27,7 @@ impl ToMetadata for BtcOnIntIntTxInfo {
         Ok(metadata)
     }
 
-    fn to_metadata_bytes(&self) -> Result<Bytes> {
+    pub fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
     }
 }

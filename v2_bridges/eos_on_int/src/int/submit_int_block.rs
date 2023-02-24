@@ -98,7 +98,8 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
 #[cfg(all(test, feature = "non-validating"))] // NOTE: The test uses TELOS blocks, whose headers fail validation.
 #[cfg(test)]
 mod tests {
-    use common::{test_utils::get_test_database, EthChainId};
+    use common::test_utils::get_test_database;
+    use common_chain_ids::EthChainId;
     use common_eos::{initialize_eos_core_inner, EosPrivateKey};
     use common_eth::{
         initialize_eth_core_with_router_contract_and_return_state,

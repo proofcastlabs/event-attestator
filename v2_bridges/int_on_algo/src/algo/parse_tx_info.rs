@@ -1,6 +1,10 @@
+use std::str::FromStr;
+
 use common::{dictionaries::evm_algo::EvmAlgoTokenDictionary, traits::DatabaseInterface, types::Result};
-use common_algorand::{AlgoChainId, AlgoNoteMetadata, AlgoState};
+use common_algorand::{AlgoNoteMetadata, AlgoState};
+use common_chain_ids::AlgoChainId;
 use common_eth::EthDbUtilsExt;
+use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 use rust_algorand::{AlgorandGenesisId, AlgorandHash, AlgorandTransaction, AlgorandTransactions};
 
@@ -46,8 +50,9 @@ impl IntOnAlgoIntTxInfos {
             destination_chain_id: metadata.destination_chain_id,
             int_token_address: dictionary.get_evm_address_from_asset_id(asset_id)?,
             native_token_amount: dictionary.convert_algo_amount_to_evm_amount(asset_id, host_asset_amount)?,
-            origin_chain_id: AlgoChainId::from_genesis_id(&AlgorandGenesisId::from_hash(genesis_hash)?)?
-                .to_metadata_chain_id(),
+            origin_chain_id: MetadataChainId::from_str(
+                &AlgoChainId::from_genesis_id(&AlgorandGenesisId::from_hash(genesis_hash)?)?.to_string(),
+            )?,
         };
         info!("✔ Parsed tx info: {:?}", tx_info);
         Ok(tx_info)

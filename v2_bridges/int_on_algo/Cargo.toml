@@ -22,9 +22,11 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
 
 common = { path = "../../common/common" }
-common_algorand = { package = "algorand", path = "../../common/algorand" }
 common_db = { package = "db", path = "../../common/db" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
+common_algorand = { package = "algorand", path = "../../common/algorand" }
+common_metadata = { package = "metadata", path = "../../common/metadata" }
+common_chain_ids = { package = "chain_ids", path = "../../common/chain_ids" }
 common_enclave_info = { package = "enclave_info", path = "../../common/enclave_info" }
 common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_debug" }
 common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }

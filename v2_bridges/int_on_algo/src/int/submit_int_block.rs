@@ -99,9 +99,9 @@ mod tests {
         dictionaries::evm_algo::EvmAlgoTokenDictionary,
         test_utils::get_test_database,
         utils::get_prefixed_db_key,
-        EthChainId,
     };
     use common_algorand::AlgoDbUtils;
+    use common_chain_ids::EthChainId;
     use common_eth::{
         convert_hex_to_eth_address,
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,

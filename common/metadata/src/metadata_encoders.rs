@@ -98,6 +98,7 @@ impl Metadata {
         .to_bytes()
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn to_bytes_for_algorand(&self) -> Result<Bytes> {
         info!("✔ Converting metadata to bytes for Algorand...");
 

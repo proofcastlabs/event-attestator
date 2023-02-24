@@ -1,10 +1,10 @@
 use common::{
-    metadata::metadata_traits::ToMetadata,
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
 use common_algorand::{AlgoDbUtils, AlgoUserData, ALGO_MAX_FOREIGN_ITEMS};
 use common_eth::EthState;
+use common_metadata::ToMetadata;
 use rust_algorand::{
     AlgorandAddress,
     AlgorandApplicationArg,

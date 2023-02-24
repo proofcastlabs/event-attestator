@@ -1,4 +1,5 @@
-use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result, EthChainId};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
+use common_chain_ids::EthChainId;
 use common_eth::{
     Erc777RedeemEvent,
     EthDbUtilsExt,

@@ -1,13 +1,17 @@
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::{
+    str::FromStr,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     traits::{DatabaseInterface, Serdable},
     types::Result,
-    BtcChainId,
 };
 use common_btc::{get_hex_tx_from_signed_btc_tx, BtcDbUtils, BtcTransactions};
+use common_chain_ids::BtcChainId;
 use common_eth::{EthDbUtilsExt, EthState};
+use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
 use crate::int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
@@ -58,7 +62,10 @@ impl BtcTxInfo {
             originating_address: format!("0x{}", hex::encode(tx_info.from.as_bytes())),
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
             originating_tx_hash: format!("0x{}", hex::encode(tx_info.originating_tx_hash.as_bytes())),
-            destination_chain_id: format!("0x{}", hex::encode(btc_chain_id.to_metadata_chain_id().to_bytes()?)),
+            destination_chain_id: format!(
+                "0x{}",
+                hex::encode(MetadataChainId::from_str(&btc_chain_id.to_string())?.to_bytes()?)
+            ),
         })
     }
 }

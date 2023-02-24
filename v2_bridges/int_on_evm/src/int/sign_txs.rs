@@ -1,11 +1,10 @@
 use common::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    metadata::metadata_traits::ToMetadata,
     safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::Result,
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc777_mint_fxn_maybe_with_data,
     EthDbUtilsExt,

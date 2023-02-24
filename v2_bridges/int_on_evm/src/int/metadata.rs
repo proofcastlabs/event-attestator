@@ -1,18 +1,13 @@
 use common::{
-    metadata::{
-        metadata_address::MetadataAddress,
-        metadata_protocol_id::MetadataProtocolId,
-        metadata_traits::ToMetadata,
-        Metadata,
-    },
     safe_addresses::safely_convert_str_to_eth_address,
     types::{Bytes, Result},
 };
 use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
+use common_metadata::{Metadata, MetadataAddress, MetadataProtocolId};
 
 use crate::int::evm_tx_info::IntOnEvmEvmTxInfo;
 
-impl ToMetadata for IntOnEvmEvmTxInfo {
+impl IntOnEvmEvmTxInfo {
     fn to_metadata(&self) -> Result<Metadata> {
         let user_data = if self.user_data.len() > MAX_BYTES_FOR_ETH_USER_DATA {
             // TODO Test for this case!
@@ -36,7 +31,7 @@ impl ToMetadata for IntOnEvmEvmTxInfo {
         ))
     }
 
-    fn to_metadata_bytes(&self) -> Result<Bytes> {
+    pub fn to_metadata_bytes(&self) -> Result<Bytes> {
         self.to_metadata()?.to_bytes_for_protocol(&MetadataProtocolId::Ethereum)
     }
 }

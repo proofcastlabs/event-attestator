@@ -1,7 +1,5 @@
-use common::{
-    metadata::MetadataChainId,
-    types::{Byte, Bytes, Result},
-};
+use common::types::{Byte, Bytes, Result};
+use common_metadata::MetadataChainId;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};

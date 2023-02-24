@@ -1,11 +1,12 @@
+use std::str::FromStr;
+
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    metadata::ToMetadataChainId,
     safe_addresses::safely_convert_str_to_eos_address,
     traits::DatabaseInterface,
     types::Result,
-    EthChainId,
 };
+use common_chain_ids::EthChainId;
 use common_eth::{
     Erc777RedeemEvent,
     EthDbUtilsExt,
@@ -14,6 +15,7 @@ use common_eth::{
     EthSubmissionMaterial,
     ERC777_REDEEM_EVENT_TOPIC_V2,
 };
+use common_metadata::MetadataChainId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::int::eos_tx_info::{EosOnIntEosTxInfo, EosOnIntEosTxInfos};
@@ -34,9 +36,9 @@ impl EosOnIntEosTxInfo {
                 token_sender: params.redeemer,
                 int_token_address: log.address,
                 user_data: params.user_data.clone(),
-                origin_chain_id: origin_chain_id.to_metadata_chain_id(),
                 destination_chain_id: params.get_destination_chain_id()?,
                 router_address: format!("0x{}", hex::encode(router_address)),
+                origin_chain_id: MetadataChainId::from_str(&origin_chain_id.to_string())?,
                 eos_token_address: token_dictionary.get_eos_account_name_from_eth_token_address(&log.address)?,
                 eos_asset_amount: token_dictionary.convert_u256_to_eos_asset_string(&log.address, &params.value)?,
                 destination_address: safely_convert_str_to_eos_address(&params.underlying_asset_recipient).to_string(),
