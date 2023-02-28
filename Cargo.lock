@@ -509,7 +509,7 @@ dependencies = [
  "serde_with",
  "serial_test",
  "simple_logger 2.3.0",
- "simplelog 0.10.2",
+ "simplelog",
  "strum",
  "strum_macros",
  "tiny-keccak 2.0.2",
@@ -643,7 +643,7 @@ dependencies = [
  "serde_with",
  "serial_test",
  "simple_logger 2.3.0",
- "simplelog 0.10.2",
+ "simplelog",
  "strum",
  "strum_macros",
  "tiny-keccak 2.0.2",
@@ -1012,7 +1012,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "simple_logger 2.3.0",
- "simplelog 0.10.2",
+ "simplelog",
  "strum",
  "strum_macros",
  "tiny-keccak 2.0.2",
@@ -1065,7 +1065,7 @@ dependencies = [
  "serde_json",
  "serde_with",
  "simple_logger 2.3.0",
- "simplelog 0.10.2",
+ "simplelog",
  "strum",
  "strum_macros",
  "tiny-keccak 2.0.2",
@@ -1497,6 +1497,17 @@ dependencies = [
  "serde",
  "serde_json",
  "simple_logger 2.3.0",
+]
+
+[[package]]
+name = "file_logger"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "flexi_logger",
+ "lazy_static",
+ "log",
+ "quick-error",
 ]
 
 [[package]]
@@ -2513,19 +2524,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if",
-]
-
-[[package]]
-name = "loggers"
-version = "1.0.0"
-dependencies = [
- "common",
- "flexi_logger",
- "lazy_static",
- "log",
- "quick-error",
- "simplelog 0.12.0",
- "stderrlog",
 ]
 
 [[package]]
@@ -3935,17 +3933,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "simplelog"
-version = "0.12.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48dfff04aade74dd495b007c831cd6f4e0cee19c344dd9dc0884c0289b70a786"
-dependencies = [
- "log",
- "termcolor",
- "time 0.3.17",
-]
-
-[[package]]
 name = "slab"
 version = "0.4.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3996,6 +3983,14 @@ name = "static_assertions"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"
+
+[[package]]
+name = "stderr_logger"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "stderrlog",
+]
 
 [[package]]
 name = "stderrlog"
