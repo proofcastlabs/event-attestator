@@ -3,7 +3,6 @@ use bitcoin::{
     Txid,
 };
 use common::{
-    database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -17,6 +16,17 @@ use crate::utxo_manager::{
 };
 
 // FIXME Make a struct of this ala BtdDbutils
+
+fn put_u64_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], u_64: u64) -> Result<()> {
+    debug!("✔ Putting `u64` of {} in db...", u_64);
+    db.put(key.to_vec(), u_64.to_le_bytes().to_vec(), None)
+}
+
+fn get_u64_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<u64> {
+    debug!("✔ Getting `u64` from db...");
+    db.get(key.to_vec(), None)
+        .and_then(|ref bytes| convert_bytes_to_u64(bytes))
+}
 
 pub fn get_x_utxos<D: DatabaseInterface>(db: &D, num_utxos_to_get: usize) -> Result<BtcUtxosAndValues> {
     let total_num_utxos = get_total_number_of_utxos_from_db(db);

@@ -24,7 +24,7 @@ bitcoin = { version = "0.29.2", features = ["serde", "rand"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
 
 common = { path = "../../common/common" }
-common_db = { package = "db", path = "../../common/db"}
+common_database_utils = { package = "database_utils", path = "../../common/database_utils"}
 common_eos = { package = "eos", path = "../../common/eos"}
 common_fees = { package = "fees", path = "../../common/fees"}
 common_btc = { package = "bitcoin", path = "../../common/bitcoin"}

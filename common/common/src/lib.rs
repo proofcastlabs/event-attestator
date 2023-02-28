@@ -27,7 +27,6 @@ pub mod address;
 pub mod constants;
 pub mod core_type;
 pub mod crypto_utils;
-pub mod database_utils;
 pub mod dictionaries;
 pub mod errors;
 pub mod test_utils;

@@ -1,6 +1,5 @@
 use common::{
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
-    database_utils::{get_u64_from_db, put_u64_in_db},
     errors::AppError,
     traits::DatabaseInterface,
     types::{Byte, Bytes, DataSensitivity, Result},
@@ -10,6 +9,17 @@ use common_chain_ids::EthChainId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{convert_h256_to_bytes, AnySenderSigningParams, EthPrivateKey, EthSigningParams, EthSubmissionMaterial};
+
+pub fn put_u64_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], u_64: u64) -> Result<()> {
+    debug!("✔ Putting `u64` of {} in db...", u_64);
+    db.put(key.to_vec(), u_64.to_le_bytes().to_vec(), None)
+}
+
+pub fn get_u64_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<u64> {
+    debug!("✔ Getting `u64` from db...");
+    db.get(key.to_vec(), None)
+        .and_then(|ref bytes| convert_bytes_to_u64(bytes))
+}
 
 create_db_utils_with_getters!(
     "Eth";

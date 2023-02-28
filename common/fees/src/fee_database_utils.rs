@@ -1,12 +1,22 @@
 use common::{
     core_type::CoreType,
-    database_utils::{get_u64_from_db, put_u64_in_db},
     traits::DatabaseInterface,
     types::{Byte, Result},
+    utils::convert_bytes_to_u64,
 };
 
 use crate::fee_constants::FeeConstantDbKeys;
 
+fn put_u64_in_db<D: DatabaseInterface>(db: &D, key: &[Byte], u_64: u64) -> Result<()> {
+    debug!("✔ Putting `u64` of {} in db...", u_64);
+    db.put(key.to_vec(), u_64.to_le_bytes().to_vec(), None)
+}
+
+fn get_u64_from_db<D: DatabaseInterface>(db: &D, key: &[Byte]) -> Result<u64> {
+    debug!("✔ Getting `u64` from db...");
+    db.get(key.to_vec(), None)
+        .and_then(|ref bytes| convert_bytes_to_u64(bytes))
+}
 pub struct FeeDatabaseUtils {
     pub core_type: CoreType,
     pub db_keys: FeeConstantDbKeys,

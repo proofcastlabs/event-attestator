@@ -1,0 +1,13 @@
+[package]
+name = "perc20-on-evm"
+version = "2.1.0"
+authors = ["gregkapka <greg@oraclize.it>"]
+edition = "2021"
+rust-version = "1.56"
+
+[dependencies]
+log = "0.4.14"
+paste = "1.0.7"
+docopt = "1.1.1"
+lib = { path = "../lib", default-features = false }
+serde = { version = "1.0.130", features = ["derive"] }

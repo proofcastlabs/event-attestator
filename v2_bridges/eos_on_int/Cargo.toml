@@ -22,7 +22,7 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
 
 common = { path = "../../common/common" }
-common_db = { package = "db", path = "../../common/db" }
+common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 common_eos = { package = "eos", path = "../../common/eos" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
 common_metadata = { package = "metadata", path = "../../common/metadata" }
