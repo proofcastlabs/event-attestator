@@ -3453,6 +3453,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rocksdb_database"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "hex",
+ "log",
+ "quick-error",
+ "rocksdb",
+]
+
+[[package]]
 name = "ron"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
