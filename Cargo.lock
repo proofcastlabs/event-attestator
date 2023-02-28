@@ -2346,6 +2346,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonrpc_database"
+version = "1.0.0"
+dependencies = [
+ "common",
+ "hex",
+ "log",
+ "quick-error",
+ "reqwest",
+ "serde_json",
+ "serial_test 0.5.1",
+ "simple_logger 1.16.0",
+]
+
+[[package]]
 name = "jsonrpsee"
 version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
