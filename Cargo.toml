@@ -4,6 +4,7 @@ members = [
     "common/fees",
     "common/common",
     "common/bitcoin",
+    "common/loggers",
     "common/vanilla",
     "common/metadata",
     "common/algorand",
