@@ -40,3 +40,6 @@ non-validating = ["common/non-validating"]
 
 [dev-dependencies]
 simple_logger = "4.0.0"
+
+[lib]
+doctest = false

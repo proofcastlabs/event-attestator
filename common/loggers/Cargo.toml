@@ -20,3 +20,6 @@ lazy_static = { version = "1.4.0", optional = true }
 # NOTE: We need to use this chrono feature, see here:
 # https://docs.rs/flexi_logger/latest/flexi_logger/error_info/index.html#time
 flexi_logger = { version = "0.23.3", features = [ "compress", "use_chrono_for_offset" ] }
+
+[lib]
+doctest = false

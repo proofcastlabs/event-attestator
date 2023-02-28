@@ -2,6 +2,17 @@
 edition = "2021"
 name = "sentinel"
 version = "0.1.0"
+authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
+description = "A pTokens Sentinel for EVM-to-EVM style bridges."
+
+[lib]
+name = "lib"
+doctest = false
+path = "src/lib/lib.rs"
+
+[[bin]]
+name = "sentinel"
+path = "src/main.rs"
 
 [dependencies]
 log = "0.4.17"
@@ -18,3 +29,4 @@ common = { path = "../../common/common" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
 
 [dev-dependencies]
+dotenv = "0.15.0"

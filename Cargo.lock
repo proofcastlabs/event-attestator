@@ -507,7 +507,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "serde_with",
- "serial_test 0.6.0",
+ "serial_test",
  "simple_logger 2.3.0",
  "simplelog 0.10.2",
  "strum",
@@ -601,17 +601,6 @@ dependencies = [
 
 [[package]]
 name = "colored"
-version = "1.9.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4ffc801dacf156c5854b9df4f425a626539c3a6ef7893cc0c5084a23f0b6c59"
-dependencies = [
- "atty",
- "lazy_static",
- "winapi",
-]
-
-[[package]]
-name = "colored"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b3616f750b84d8f0de8a58bda93e08e2a81ad3f523089b05f1dffecab48c6cbd"
@@ -652,7 +641,7 @@ dependencies = [
  "serde_bytes",
  "serde_json",
  "serde_with",
- "serial_test 0.6.0",
+ "serial_test",
  "simple_logger 2.3.0",
  "simplelog 0.10.2",
  "strum",
@@ -856,7 +845,6 @@ dependencies = [
  "hex",
  "log",
  "serde_json",
- "simple_logger 2.3.0",
  "tiny-keccak 2.0.2",
 ]
 
@@ -1440,43 +1428,16 @@ dependencies = [
 name = "ethereum_debug"
 version = "6.10.1"
 dependencies = [
- "base64 0.13.1",
- "bitcoin 0.29.2",
- "bs58",
- "byteorder",
- "chrono",
  "common",
  "debug_signers",
- "derive_more",
- "eip-712",
- "eos-chain",
- "ethabi 15.0.0",
  "ethereum",
  "ethereum-types 0.12.1",
  "function_name",
  "hex",
- "keccak-hasher",
- "lazy_static",
  "log",
- "paste",
- "quick-error",
- "rand 0.8.5",
- "rlp",
- "rmp-serde",
- "rust-algorand",
- "rustc-hex",
- "secp256k1 0.15.3",
- "serde",
- "serde_bytes",
  "serde_json",
- "serde_with",
  "simple_logger 2.3.0",
- "simplelog 0.10.2",
- "strum",
- "strum_macros",
  "tiny-keccak 2.0.2",
- "triehash",
- "web3",
 ]
 
 [[package]]
@@ -2194,7 +2155,7 @@ dependencies = [
  "safe_addresses",
  "serde",
  "serde_json",
- "serial_test 0.6.0",
+ "serial_test",
  "tiny-keccak 2.0.2",
 ]
 
@@ -2347,8 +2308,6 @@ dependencies = [
  "quick-error",
  "reqwest",
  "serde_json",
- "serial_test 0.5.1",
- "simple_logger 1.16.0",
 ]
 
 [[package]]
@@ -3823,35 +3782,13 @@ dependencies = [
 
 [[package]]
 name = "serial_test"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e0bccbcf40c8938196944a3da0e133e031a33f4d6b72db3bda3cc556e361905d"
-dependencies = [
- "lazy_static",
- "parking_lot 0.11.2",
- "serial_test_derive 0.5.1",
-]
-
-[[package]]
-name = "serial_test"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e5bcc41d18f7a1d50525d080fd3e953be87c4f9f1a974f3c21798ca00d54ec15"
 dependencies = [
  "lazy_static",
  "parking_lot 0.11.2",
- "serial_test_derive 0.6.0",
-]
-
-[[package]]
-name = "serial_test_derive"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b2acd6defeddb41eb60bb468f8825d0cfd0c2a76bc03bfd235b6a1dc4f6a1ad5"
-dependencies = [
- "proc-macro2 1.0.51",
- "quote 1.0.23",
- "syn 1.0.107",
+ "serial_test_derive",
 ]
 
 [[package]]
@@ -3962,25 +3899,12 @@ checksum = "74233d3b3b2f6d4b006dc19dee745e73e2a6bfb6f93607cd3b02bd5b00797d7c"
 
 [[package]]
 name = "simple_logger"
-version = "1.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "45b60258a35dc3cb8a16890b8fd6723349bfa458d7960e25e633f1b1c19d7b5e"
-dependencies = [
- "atty",
- "colored 1.9.3",
- "log",
- "time 0.3.17",
- "winapi",
-]
-
-[[package]]
-name = "simple_logger"
 version = "2.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "48047e77b528151aaf841a10a9025f9459da80ba820e425ff7eb005708a76dc7"
 dependencies = [
  "atty",
- "colored 2.0.0",
+ "colored",
  "log",
  "time 0.3.17",
  "winapi",
@@ -3993,7 +3917,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e190a521c2044948158666916d9e872cbb9984f755e9bb3b5b75a836205affcd"
 dependencies = [
  "atty",
- "colored 2.0.0",
+ "colored",
  "log",
  "time 0.3.17",
  "windows-sys 0.42.0",

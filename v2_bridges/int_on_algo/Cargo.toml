@@ -38,3 +38,6 @@ serial_test = "0.6.0"
 [features]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common/non-validating", "common_algorand/non-validating"]
+
+[lib]
+doctest = false

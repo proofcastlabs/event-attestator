@@ -49,3 +49,6 @@ common_debug_signers = { package = "debug_signers", path = "../debug_signers" }
 
 [dev-dependencies]
 simple_logger = "2.0.0"
+
+[lib]
+doctest = false

@@ -37,3 +37,6 @@ common_safe_addresses = { package = "safe_addresses", path = "../../common/safe_
 disable-fees = ["common/disable-fees"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common/non-validating"]
+
+[lib]
+doctest = false

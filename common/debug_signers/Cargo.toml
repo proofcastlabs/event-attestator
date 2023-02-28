@@ -28,3 +28,6 @@ common_safe_addresses = { package = "safe_addresses", path = "../safe_addresses"
 
 [dev-dependencies]
 simple_logger = "2.0.0"
+
+[lib]
+doctest = false

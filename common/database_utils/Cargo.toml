@@ -20,5 +20,5 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 common = { path = "../common" }
 common_eos = { package = "eos", path = "../eos" }
 
-[dev-dependencies]
-simple_logger = "2.0.0"
+[lib]
+doctest = false

@@ -40,3 +40,6 @@ simple_logger = "4.0.0"
 disable-fees = ["common/disable-fees"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common/non-validating"]
+
+[lib]
+doctest = false
