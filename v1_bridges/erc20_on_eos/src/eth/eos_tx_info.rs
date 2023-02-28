@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    safe_addresses::safely_convert_str_to_eos_address,
     traits::{DatabaseInterface, Serdable},
     types::{Byte, Bytes, Result},
 };
@@ -30,6 +29,7 @@ use common_eth::{
     ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC,
 };
 use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, ToMetadata};
+use common_safe_addresses::safely_convert_str_to_eos_address;
 use derive_more::{Constructor, Deref};
 use eos_chain::AccountName as EosAccountName;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};

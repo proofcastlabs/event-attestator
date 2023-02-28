@@ -5,10 +5,10 @@ use bitcoin::{
 };
 use common::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
+use common_safe_addresses::SAFE_BTC_ADDRESS_STR;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{

@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use common::{
-    safe_addresses::SAFE_BTC_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -27,6 +26,7 @@ use common_eth::{
     ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 use common_fees::{sanity_check_basis_points_value, FEE_BASIS_POINTS_DIVISOR};
+use common_safe_addresses::SAFE_BTC_ADDRESS_STR;
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use serde::{Deserialize, Serialize};

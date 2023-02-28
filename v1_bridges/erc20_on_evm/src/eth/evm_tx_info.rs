@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use common::{
     dictionaries::eth_evm::EthEvmTokenDictionary,
-    safe_addresses::safely_convert_str_to_eth_address,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -26,6 +25,7 @@ use common_eth::{
     ZERO_ETH_VALUE,
 };
 use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, ToMetadata};
+use common_safe_addresses::safely_convert_str_to_eth_address;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};

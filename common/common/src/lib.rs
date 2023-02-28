@@ -30,7 +30,6 @@ pub mod crypto_utils;
 pub mod database_utils;
 pub mod dictionaries;
 pub mod errors;
-pub mod safe_addresses;
 pub mod test_utils;
 pub mod traits;
 pub mod types;

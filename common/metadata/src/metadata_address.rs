@@ -5,16 +5,12 @@ use std::str::FromStr;
 use bitcoin::util::address::Address as BtcAddress;
 #[cfg(test)]
 use common::types::Byte;
-use common::{
-    safe_addresses::{
-        safely_convert_str_to_algo_address,
-        safely_convert_str_to_btc_address,
-        safely_convert_str_to_eos_address,
-        safely_convert_str_to_eth_address,
-    },
-    types::Bytes,
-    utils::strip_hex_prefix,
-    Result,
+use common::{types::Bytes, utils::strip_hex_prefix, Result};
+use common_safe_addresses::{
+    safely_convert_str_to_algo_address,
+    safely_convert_str_to_btc_address,
+    safely_convert_str_to_eos_address,
+    safely_convert_str_to_eth_address,
 };
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;

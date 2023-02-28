@@ -1,9 +1,4 @@
-use common::{
-    dictionaries::eth_evm::EthEvmTokenDictionary,
-    safe_addresses::safely_convert_str_to_eth_address,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
 use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc777_mint_fxn_maybe_with_data,
@@ -14,6 +9,7 @@ use common_eth::{
     EthTransactions as EvmTransactions,
     ZERO_ETH_VALUE,
 };
+use common_safe_addresses::safely_convert_str_to_eth_address;
 use ethereum_types::U256;
 
 use crate::int::evm_tx_info::{IntOnEvmEvmTxInfo, IntOnEvmEvmTxInfos};

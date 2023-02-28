@@ -1,5 +1,5 @@
 use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-use common::{safe_addresses::safely_convert_str_to_btc_address, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 use common_btc::{
     convert_wei_to_satoshis,
     create_signed_raw_btc_tx_for_n_input_n_outputs,
@@ -19,6 +19,7 @@ use common_eth::{
     EthSubmissionMaterial,
     ERC777_REDEEM_EVENT_TOPIC_V2,
 };
+use common_safe_addresses::safely_convert_str_to_btc_address;
 use ethereum_types::Address as EthAddress;
 
 use crate::int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};

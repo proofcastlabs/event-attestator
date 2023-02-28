@@ -7,13 +7,13 @@ use bitcoin::{
     Txid,
 };
 use common::{
-    safe_addresses::SAFE_EOS_ADDRESS_STR,
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
 use common_btc::{BtcState, DepositInfoHashMap, ToMetadata, BTC_NUM_DECIMALS, MINIMUM_REQUIRED_SATOSHIS};
 use common_eos::{convert_eos_asset_to_u64, get_symbol_from_eos_asset, EosDbUtils};
 use common_fees::{sanity_check_basis_points_value, FEE_BASIS_POINTS_DIVISOR};
+use common_safe_addresses::SAFE_EOS_ADDRESS_STR;
 use derive_more::{Constructor, Deref, DerefMut};
 use eos_chain::AccountName as EosAccountName;
 use serde::{Deserialize, Serialize};

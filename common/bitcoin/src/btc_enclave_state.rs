@@ -1,4 +1,5 @@
-use common::{safe_addresses::SAFE_BTC_ADDRESS_STR, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
+use common_safe_addresses::SAFE_BTC_ADDRESS_STR;
 use serde::{Deserialize, Serialize};
 
 use crate::{

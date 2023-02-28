@@ -1,10 +1,10 @@
 use common::{
     constants::FIELD_NOT_SET_MSG,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
-    safe_addresses::SAFE_EOS_ADDRESS_STR,
     traits::DatabaseInterface,
     types::Result,
 };
+use common_safe_addresses::SAFE_EOS_ADDRESS_STR;
 use serde::{Deserialize, Serialize};
 
 use crate::{

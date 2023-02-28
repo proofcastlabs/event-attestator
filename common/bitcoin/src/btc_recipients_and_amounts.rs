@@ -9,10 +9,8 @@ pub use bitcoin::{
     hashes::sha256d,
     util::address::Address as BtcAddress,
 };
-use common::{
-    safe_addresses::{SAFE_BTC_ADDRESS, SAFE_BTC_ADDRESS_STR},
-    types::Result,
-};
+use common::types::Result;
+use common_safe_addresses::{SAFE_BTC_ADDRESS, SAFE_BTC_ADDRESS_STR};
 use derive_more::{Constructor, Deref, DerefMut};
 
 use crate::btc_utils::create_new_tx_output;

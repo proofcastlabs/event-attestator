@@ -1,5 +1,6 @@
-use common::{safe_addresses::SAFE_ETH_ADDRESS, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 use common_eth::EthState;
+use common_safe_addresses::SAFE_ETH_ADDRESS;
 use ethereum_types::Address as EthAddress;
 
 use crate::eth::evm_tx_info::{Erc20OnEvmEvmTxInfo, Erc20OnEvmEvmTxInfos};

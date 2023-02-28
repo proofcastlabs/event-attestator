@@ -2,7 +2,6 @@ use std::str::{from_utf8, FromStr};
 
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
-    safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
@@ -18,6 +17,7 @@ use common_eth::{
     EthTransactions,
     ZERO_ETH_VALUE,
 };
+use common_safe_addresses::SAFE_ETH_ADDRESS;
 use derive_more::{Constructor, Deref};
 use eos_chain::{
     symbol::symbol_to_string as eos_symbol_to_string,

@@ -1,6 +1,4 @@
-use common::{
-    types::{Byte, Bytes, Result},
-};
+use common::types::{Byte, Bytes, Result};
 use common_chain_ids::EthChainId;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, U256};

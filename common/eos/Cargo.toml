@@ -48,6 +48,7 @@ secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", feature
 common = { path = "../common" }
 common_chain_ids = { package = "chain_ids", path = "../chain_ids" }
 common_debug_signers = { package = "debug_signers", path = "../debug_signers" }
+common_safe_addresses = { package = "safe_addresses", path = "../safe_addresses" }
 
 [dev-dependencies]
 simple_logger = "2.0.0"

@@ -1,11 +1,6 @@
 use std::str::FromStr;
 
-use common::{
-    dictionaries::eos_eth::EosEthTokenDictionary,
-    safe_addresses::safely_convert_str_to_eos_address,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::eos_eth::EosEthTokenDictionary, traits::DatabaseInterface, types::Result};
 use common_chain_ids::EthChainId;
 use common_eth::{
     Erc777RedeemEvent,
@@ -16,6 +11,7 @@ use common_eth::{
     ERC777_REDEEM_EVENT_TOPIC_V2,
 };
 use common_metadata::MetadataChainId;
+use common_safe_addresses::safely_convert_str_to_eos_address;
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::int::eos_tx_info::{EosOnIntEosTxInfo, EosOnIntEosTxInfos};

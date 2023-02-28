@@ -1,8 +1,5 @@
-use common::{
-    safe_addresses::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS},
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{traits::DatabaseInterface, types::Result};
+use common_safe_addresses::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS};
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 
@@ -101,7 +98,7 @@ make_enclave_state_struct!(EvmEnclaveState, evm);
 
 #[cfg(test)]
 mod tests {
-    use common::{test_utils::get_test_database};
+    use common::test_utils::get_test_database;
     use common_chain_ids::EthChainId;
 
     use super::*;

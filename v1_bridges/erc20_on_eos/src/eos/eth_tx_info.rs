@@ -2,7 +2,6 @@ use std::str::{from_utf8, FromStr};
 
 use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryEntry},
-    safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
     utils::{convert_bytes_to_u64, strip_hex_prefix},
@@ -11,6 +10,7 @@ use common_chain_ids::EosChainId;
 use common_eos::{EosActionProof, EosState, GlobalSequence, GlobalSequences, ProcessedGlobalSequences};
 use common_eth::{EthDbUtils, EthDbUtilsExt, MAX_BYTES_FOR_ETH_USER_DATA};
 use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId, ToMetadata};
+use common_safe_addresses::SAFE_ETH_ADDRESS;
 use derive_more::{Constructor, Deref};
 use eos_chain::{AccountName as EosAccountName, Checksum256};
 use ethereum_types::{Address as EthAddress, U256};

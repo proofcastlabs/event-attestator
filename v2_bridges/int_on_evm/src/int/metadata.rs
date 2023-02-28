@@ -1,9 +1,7 @@
-use common::{
-    safe_addresses::safely_convert_str_to_eth_address,
-    types::{Bytes, Result},
-};
+use common::types::{Bytes, Result};
 use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
 use common_metadata::{Metadata, MetadataAddress, MetadataProtocolId};
+use common_safe_addresses::safely_convert_str_to_eth_address;
 
 use crate::int::evm_tx_info::IntOnEvmEvmTxInfo;
 

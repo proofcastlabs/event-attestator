@@ -1,11 +1,16 @@
+#[macro_use]
+extern crate lazy_static;
+
+#[macro_use]
+extern crate log;
+
 use std::str::FromStr;
 
 use bitcoin::Address as BtcAddress;
+use common::utils::convert_hex_to_eth_address;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 use rust_algorand::AlgorandAddress;
-
-use crate::utils::convert_hex_to_eth_address;
 
 pub const SAFE_EOS_ADDRESS_STR: &str = "safu.ptokens";
 pub const SAFE_EVM_ADDRESS_STR: &str = SAFE_ETH_ADDRESS_STR;

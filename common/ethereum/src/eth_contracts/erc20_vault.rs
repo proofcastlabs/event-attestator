@@ -1,6 +1,4 @@
-use common::{
-    types::{Bytes, Result},
-};
+use common::types::{Bytes, Result};
 use common_metadata::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES};
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};

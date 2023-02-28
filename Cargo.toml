@@ -12,6 +12,7 @@ members = [
     "common/enclave_info",
     "v3_bridges/sentinel",
     "common/debug_signers",
+    "common/safe_addresses",
     "common/ethereum_debug",
     "v2_bridges/btc_on_int",
     "v1_bridges/btc_on_eos",

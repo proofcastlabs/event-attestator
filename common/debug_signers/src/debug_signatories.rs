@@ -2,11 +2,11 @@ use common::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     core_type::CoreType,
     errors::AppError,
-    safe_addresses::SAFE_ETH_ADDRESS,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
 use common_eth::EthSignature;
+use common_safe_addresses::SAFE_ETH_ADDRESS;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, H256};
 use serde::{Deserialize, Serialize};

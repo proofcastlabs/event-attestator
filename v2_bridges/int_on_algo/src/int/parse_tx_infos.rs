@@ -1,11 +1,6 @@
 use std::str::FromStr;
 
-use common::{
-    dictionaries::evm_algo::EvmAlgoTokenDictionary,
-    safe_addresses::SAFE_ALGO_ADDRESS,
-    traits::DatabaseInterface,
-    types::Result,
-};
+use common::{dictionaries::evm_algo::EvmAlgoTokenDictionary, traits::DatabaseInterface, types::Result};
 use common_algorand::AlgoDbUtils;
 use common_eth::{
     Erc20VaultPegInEventParams,
@@ -18,6 +13,7 @@ use common_eth::{
     EthSubmissionMaterial,
     ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
 };
+use common_safe_addresses::SAFE_ALGO_ADDRESS;
 use ethereum_types::Address as EthAddress;
 use rust_algorand::{AlgorandAddress, AlgorandAppId};
 

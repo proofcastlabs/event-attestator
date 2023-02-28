@@ -1,5 +1,6 @@
-use common::{safe_addresses::SAFE_EOS_ADDRESS_STR, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 use common_eth::EthState;
+use common_safe_addresses::SAFE_EOS_ADDRESS_STR;
 
 use crate::eth::eos_tx_info::{EosOnEthEosTxInfo, EosOnEthEosTxInfos};
 

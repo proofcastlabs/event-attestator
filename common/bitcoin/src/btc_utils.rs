@@ -21,10 +21,10 @@ use bitcoin::{
 };
 use common::{
     constants::PTOKEN_ERC777_NUM_DECIMALS,
-    safe_addresses::SAFE_BTC_ADDRESS,
     types::{Byte, Bytes, Result},
     utils::strip_hex_prefix,
 };
+use common_safe_addresses::SAFE_BTC_ADDRESS;
 use ethereum_types::U256;
 
 use crate::{

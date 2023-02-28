@@ -1,4 +1,4 @@
-use common::{safe_addresses::safely_convert_str_to_eth_address, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_with_user_data,
@@ -10,6 +10,7 @@ use common_eth::{
     EthTransactions as EvmTransactions,
     ZERO_ETH_VALUE,
 };
+use common_safe_addresses::safely_convert_str_to_eth_address;
 use ethereum_types::Address as EthAddress;
 
 use crate::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos};
