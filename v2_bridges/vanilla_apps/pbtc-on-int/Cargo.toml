@@ -1,0 +1,27 @@
+[package]
+edition = "2021"
+version = "2.1.0"
+name = "pbtc-on-int"
+rust-version = "1.56"
+authors = ["gregkapka <gregkapka@gmail.com>"]
+
+[features]
+file-logger = ["common_file_logger"]
+default = ["rocks-db", "file-logger"]
+rocks-db = ["common_rocksdb_database"]
+json-rpc-db = ["common_jsonrpc_database"]
+std-err-logger = ["common_stderr_logger"]
+
+[dependencies]
+log = "0.4.14"
+paste = "1.0.7"
+anyhow = "1.0.69"
+serde = { version = "1.0.130", features = ["derive"] }
+
+btc_on_int = { path = "../../btc_on_int" }
+common = { path = "../../../common/common" }
+common_docopt_macros = { package = "docopt_macros", path = "../../../common/docopt_macros" }
+common_file_logger = { package = "file_logger", path = "../../../common/file_logger", optional = true }
+common_stderr_logger = { package = "stderr_logger", path = "../../../common/stderr_logger", optional = true }
+common_rocksdb_database = { package = "rocksdb_database", path = "../../../common/rocksdb_database", optional = true }
+common_jsonrpc_database = { package = "jsonrpc_database", path = "../../../common/jsonrpc_database", optional = true }
