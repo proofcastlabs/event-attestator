@@ -27,17 +27,17 @@ function cleanUpAndExit() {
 	maybeCleanUpSubmissinFile
 
 	if [[ $exitCodeBeforeCleanup == 0 ]]; then
-		echo ✔ HOST multiple block submission test to \'$BINARY_NAME\' core test PASSED!
+		echo [+] HOST multiple block submission test to \'$BINARY_NAME\' core test PASSED!
 	else
-		echo ✘ \'${last_command}\' command failed with exit code $?.
-		echo ✘ HOST block submission test to \'$BINARY_NAME\' core test FAILED!
+		echo [-] \'${last_command}\' command failed with exit code $?.
+		echo [-] HOST block submission test to \'$BINARY_NAME\' core test FAILED!
 		exit 1
 	fi
 }
 
 trap cleanUpAndExit EXIT
 
-echo ✔ Testing multiple HOST block submission to \'$BINARY_NAME\' core...
+echo [+] Testing multiple HOST block submission to \'$BINARY_NAME\' core...
 
 ../../scripts/clean-up.sh $BINARY_NAME
 maybeCleanUpSubmissinFile
@@ -59,7 +59,7 @@ getExpectedBlockNumber() {
 
 if [[ $(getCoreLatestEvmBlockNumber) == null ]]; then
 	../../scripts/clean-up.sh $BINARY_NAME
-	echo ✘ Something went wrong with core initalization!
+	echo [-] Something went wrong with core initalization!
 	exit 1
 fi
 

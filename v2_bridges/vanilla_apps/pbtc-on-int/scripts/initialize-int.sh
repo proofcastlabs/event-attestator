@@ -6,7 +6,7 @@ cd $(dirname -- $0)
 
 BINARY_NAME=$(getBinaryName)
 
-echo ✔ Initializing \'$BINARY_NAME\'s HOST side...
+echo [+] Initializing \'$BINARY_NAME\'s HOST side...
 
 ../../scripts/build-binary.sh $BINARY_NAME
 
@@ -18,4 +18,4 @@ echo ✔ Initializing \'$BINARY_NAME\'s HOST side...
 --gasPrice=20000000000 \
 --file=./int-init-block.json
 
-echo ✔ \'$BINARY_NAME\'s HOST side initialized!
+echo [+] \'$BINARY_NAME\'s HOST side initialized!

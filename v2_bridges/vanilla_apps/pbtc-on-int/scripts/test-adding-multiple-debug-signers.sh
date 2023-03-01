@@ -8,7 +8,7 @@ cd "$(dirname -- $0)"
 BINARY_NAME=$(getBinaryName)
 BINARY_PATH="../../../../target/release/$BINARY_NAME"
 
-echo ✔ Testing adding multiple debug signatories to \'$BINARY_NAME\' core...
+echo [+] Testing adding multiple debug signatories to \'$BINARY_NAME\' core...
 
 ../../scripts/clean-up.sh $BINARY_NAME
 
@@ -25,7 +25,7 @@ get_second_debug_signer_address() {
 
 if [[ $(get_first_debug_signer_address) != null ]];then
 	../../scripts/clean-up.sh $BINARY_NAME
-	echo ✘ Unexpected debug signatories before the test was started!
+	echo [-] Unexpected debug signatories before the test was started!
 	exit 1
 fi
 
@@ -38,9 +38,9 @@ if [[
 	$(get_second_debug_signer_address) == \"0x0000000000000000000000000000000000000002\"
    ]]; then
 	../../scripts/clean-up.sh $BINARY_NAME
-	echo ✔ Adding multiple debug signatories to \'$BINARY_NAME\' core test passed!
+	echo [+] Adding multiple debug signatories to \'$BINARY_NAME\' core test passed!
 else
 	../../scripts/clean-up.sh $BINARY_NAME
-	echo ✘ Add debug signatory test to \'$BINARY_NAME\' FAILED!
+	echo [-] Add debug signatory test to \'$BINARY_NAME\' FAILED!
 	exit 1
 fi

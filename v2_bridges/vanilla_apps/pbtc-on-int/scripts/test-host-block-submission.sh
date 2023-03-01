@@ -7,7 +7,7 @@ cd "$(dirname -- $0)"
 BINARY_NAME=$(getBinaryName)
 BINARY_PATH="../../../../target/release/$BINARY_NAME"
 
-echo ✔ Testing HOST block submission to \'$BINARY_NAME\' core...
+echo [+] Testing HOST block submission to \'$BINARY_NAME\' core...
 
 ../../scripts/clean-up.sh $BINARY_NAME
 
@@ -28,7 +28,7 @@ getExpectedBlockNumber() {
 
 if [[ $(getCoreLatestBlockNumber) == null ]]; then
 	../../scripts/clean-up.sh $BINARY_NAME
-	echo ✘ Something went wrong with core initalization!
+	echo [-] Something went wrong with core initalization!
 	exit 1
 fi
 
@@ -42,8 +42,8 @@ $BINARY_PATH submitIntBlock --file=./int-subsequent-block-3.json
 ../../scripts/clean-up.sh $BINARY_NAME
 
 if [[ $result == true ]]; then
-	echo ✔ HOST block submission test to \'$BINARY_NAME\' core test PASSED!
+	echo [+] HOST block submission test to \'$BINARY_NAME\' core test PASSED!
 else
-	echo ✘ HOST block submission test to \'$BINARY_NAME\' core test FAILED!
+	echo [-] HOST block submission test to \'$BINARY_NAME\' core test FAILED!
 	exit 1
 fi

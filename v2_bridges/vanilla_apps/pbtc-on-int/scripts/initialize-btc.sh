@@ -6,7 +6,7 @@ cd $(dirname -- $0)
 
 BINARY_NAME=$(getBinaryName)
 
-echo ✔ Initializing \'$BINARY_NAME\'s NATIVE side...
+echo [+] Initializing \'$BINARY_NAME\'s NATIVE side...
 
 ../../scripts/build-binary.sh $BINARY_NAME
 
@@ -17,5 +17,5 @@ echo ✔ Initializing \'$BINARY_NAME\'s NATIVE side...
 --network="Testnet" \
 --file=btc-submission-material.json
 
-echo ✔ \'$BINARY_NAME\'s NATIVE side initialized!
+echo [+] \'$BINARY_NAME\'s NATIVE side initialized!
 

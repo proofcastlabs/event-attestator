@@ -4,7 +4,7 @@ cd $(dirname -- $0)
 
 . ./scripts/get-binary-name.sh
 
-echo Running all \'$(getBinaryName)\' tests...
+echo [+] Running all \'$(getBinaryName)\' tests...
 
 ./scripts/test-adding-debug-signer.sh
 ./scripts/test-core-initialization.sh

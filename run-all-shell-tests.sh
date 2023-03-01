@@ -8,7 +8,7 @@ array=( $(find ./ -name "test-*.sh" -o -name "*-test.sh -print0") )
 
 for t in "${array[@]}"
 do
-  echo Running test script: \'$t\'...
+  echo [+] Running test script: \'$t\'...
   $t
 done
 

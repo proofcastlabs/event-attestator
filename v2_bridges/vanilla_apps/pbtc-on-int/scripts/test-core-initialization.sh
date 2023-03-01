@@ -6,7 +6,7 @@ cd "$(dirname -- $0)"
 
 BINARY_NAME=$(getBinaryName)
 
-echo ✔ Testing \'$BINARY_NAME\' core initialization...
+echo [+] Testing \'$BINARY_NAME\' core initialization...
 
 ../../scripts/clean-up.sh $BINARY_NAME
 ./initialize-int.sh
@@ -14,4 +14,4 @@ echo ✔ Testing \'$BINARY_NAME\' core initialization...
 ../../../../target/release/$BINARY_NAME getEnclaveState
 ../../scripts/clean-up.sh
 
-echo ✔ \'$BINARY_NAME\' core initialization test successful!
+echo [+] \'$BINARY_NAME\' core initialization test successful!
