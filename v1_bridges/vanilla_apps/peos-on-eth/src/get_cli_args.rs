@@ -1,4 +1,5 @@
-use crate::lib::{eos_on_eth::CORE_TYPE, Result};
+use common::types::Result;
+use eos_on_eth::CORE_TYPE;
 
 make_cli_args_struct!(
     CORE_TYPE;
