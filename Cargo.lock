@@ -2963,6 +2963,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "peos-on-int"
+version = "2.0.2"
+dependencies = [
+ "anyhow",
+ "common",
+ "docopt",
+ "docopt_macros",
+ "eos_on_int",
+ "file_logger",
+ "jsonrpc_database",
+ "log",
+ "paste",
+ "rocksdb_database",
+ "serde",
+ "stderr_logger",
+]
+
+[[package]]
 name = "perc20-on-eos"
 version = "2.1.0"
 dependencies = [

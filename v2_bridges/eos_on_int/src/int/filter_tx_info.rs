@@ -51,23 +51,33 @@ pub fn maybe_filter_out_int_tx_info_with_value_too_low_in_state<D: DatabaseInter
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe filtering `EosOnIntEosTxInfos`...");
-    let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
-    debug!("✔ Num tx infos before: {}", tx_infos.len());
-    tx_infos
-        .filter_out_those_with_value_too_low()
-        .and_then(|filtered_infos| {
-            debug!("✔ Num tx infos after: {}", filtered_infos.len());
-            filtered_infos.to_bytes()
-        })
-        .map(|bytes| state.add_tx_infos(bytes))
+    if state.tx_infos.is_empty() {
+        info!("✔ No `EosOnIntEosTxInfos` to filter!");
+        Ok(state)
+    } else {
+        let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
+        debug!("✔ Num tx infos before: {}", tx_infos.len());
+        tx_infos
+            .filter_out_those_with_value_too_low()
+            .and_then(|filtered_infos| {
+                debug!("✔ Num tx infos after: {}", filtered_infos.len());
+                filtered_infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }
 
 pub fn maybe_filter_out_zero_eos_asset_amounts_in_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
     info!("✔ Maybe filtering out zero eos asset amounts in state...");
-    let dictionary = EosEthTokenDictionary::get_from_db(state.db)?;
-    let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
-    let filtered = tx_infos.filter_out_those_with_zero_eos_asset_amount(&dictionary);
-    Ok(state.add_tx_infos(filtered.to_bytes()?))
+    if state.tx_infos.is_empty() {
+        info!("✔ No `EosOnIntEosTxInfos` to filter!");
+        Ok(state)
+    } else {
+        let dictionary = EosEthTokenDictionary::get_from_db(state.db)?;
+        let tx_infos = EosOnIntEosTxInfos::from_bytes(&state.tx_infos)?;
+        let filtered = tx_infos.filter_out_those_with_zero_eos_asset_amount(&dictionary);
+        Ok(state.add_tx_infos(filtered.to_bytes()?))
+    }
 }
