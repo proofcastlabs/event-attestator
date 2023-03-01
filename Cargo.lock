@@ -2904,6 +2904,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pbtc-on-eth"
+version = "2.1.0"
+dependencies = [
+ "anyhow",
+ "btc_on_eth",
+ "common",
+ "docopt",
+ "docopt_macros",
+ "file_logger",
+ "jsonrpc_database",
+ "log",
+ "paste",
+ "rocksdb_database",
+ "serde",
+ "stderr_logger",
+]
+
+[[package]]
 name = "peeking_take_while"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"

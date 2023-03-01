@@ -12,7 +12,7 @@ echo ✔ Testing \'$BINARY_NAME\' core initialization...
 
 ./initialize-eth.sh
 ./initialize-btc.sh
-../../target/release/$BINARY_NAME getEnclaveState
+../../../../target/release/$BINARY_NAME getEnclaveState
 ../../scripts/clean-up.sh $BINARY_NAME
 
 echo ✔ \'$BINARY_NAME\' core initialization test successful!

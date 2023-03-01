@@ -10,7 +10,7 @@ echo ✔ Initializing \'$BINARY_NAME\'s HOST side...
 
 ../../scripts/build-binary.sh $BINARY_NAME
 
-../../target/release/$BINARY_NAME initializeEth \
+../../../../target/release/$BINARY_NAME initializeEth \
 --confs=0 \
 --chainId=3 \
 --gasPrice=20000000000 \

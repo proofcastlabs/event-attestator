@@ -10,7 +10,7 @@ echo ✔ Initializing \'$BINARY_NAME\'s NATIVE side...
 
 ../../scripts/build-binary.sh $BINARY_NAME
 
-../../target/release/$BINARY_NAME initializeBtc \
+../../../../target/release/$BINARY_NAME initializeBtc \
 --fee=23 \
 --confs=0 \
 --difficulty=0 \
