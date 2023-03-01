@@ -154,6 +154,10 @@ quick_error! {
             from()
             display("✘ EIP712 error: {}", err)
         }
+        DocoptError(err: docopt::Error) {
+            from()
+            display("Docopt error: {}", err)
+        }
         NoneError(err: &'static str) {
             display("✘ None error {}", err)
         }

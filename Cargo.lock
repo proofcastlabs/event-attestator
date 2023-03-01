@@ -620,6 +620,7 @@ dependencies = [
  "byteorder",
  "chrono",
  "derive_more",
+ "docopt",
  "eip-712",
  "eos-chain",
  "ethabi 15.0.0",
@@ -917,8 +918,24 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0688c2a7f92e427f44895cd63841bff7b29f8d7a1648b9e7e07a4a365b2e1257"
 
 [[package]]
+name = "docopt"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7f3f119846c823f9eafcf953a8f6ffb6ed69bf6240883261a7f13b634579a51f"
+dependencies = [
+ "lazy_static",
+ "regex",
+ "serde",
+ "strsim",
+]
+
+[[package]]
 name = "docopt_macros"
 version = "1.0.0"
+dependencies = [
+ "common",
+ "docopt",
+]
 
 [[package]]
 name = "dotenv"
@@ -2867,6 +2884,24 @@ name = "pathdiff"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8835116a5c179084a830efb3adc117ab007512b535bc1a21c991d3b32a6b44dd"
+
+[[package]]
+name = "pbtc-on-eos"
+version = "2.1.0"
+dependencies = [
+ "anyhow",
+ "btc_on_eos",
+ "common",
+ "docopt",
+ "docopt_macros",
+ "file_logger",
+ "jsonrpc_database",
+ "log",
+ "paste",
+ "rocksdb_database",
+ "serde",
+ "stderr_logger",
+]
 
 [[package]]
 name = "peeking_take_while"

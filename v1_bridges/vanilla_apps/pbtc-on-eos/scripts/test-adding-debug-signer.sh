@@ -5,7 +5,7 @@ cd "$(dirname -- $0)"
 . ./get-binary-name.sh
 
 BINARY_NAME=$(getBinaryName)
-BINARY_PATH="../../target/release/$BINARY_NAME"
+BINARY_PATH="../../../../target/release/$BINARY_NAME"
 
 echo ✔ Testing adding debug signatory to \'$BINARY_NAME\' core...
 
@@ -19,7 +19,7 @@ get_first_debug_signer_address() {
 ./initialize-btc.sh
 
 if [[ $(get_first_debug_signer_address) != null ]];then
-	../../scripts/clean-up.sh $BINARY_NAME
+	../../../../scripts/clean-up.sh $BINARY_NAME
 	echo ✘ Unexpected debug signatories before the test was started!
 	exit 1
 fi

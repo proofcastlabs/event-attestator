@@ -1,4 +1,5 @@
-use lib::{btc_on_eos::CORE_TYPE, Result};
+use btc_on_eos::CORE_TYPE;
+use common::types::Result;
 
 make_cli_args_struct!(
     CORE_TYPE;

@@ -30,6 +30,7 @@ members = [
     "v1_bridges/erc20_on_evm",
     "v1_bridges/erc20_on_eos",
     "v2_bridges/erc20_on_int",
+    "v1_bridges/vanilla_apps/pbtc-on-eos",
 ]
 
 [profile.dev]

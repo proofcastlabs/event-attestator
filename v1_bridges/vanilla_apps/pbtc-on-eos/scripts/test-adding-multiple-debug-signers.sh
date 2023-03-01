@@ -6,7 +6,7 @@ cd "$(dirname -- $0)"
 . ../../scripts/get-sample-debug-signers.sh
 
 BINARY_NAME=$(getBinaryName)
-BINARY_PATH="../../target/release/$BINARY_NAME"
+BINARY_PATH="../../../../target/release/$BINARY_NAME"
 
 echo ✔ Testing adding multiple debug signatories to $BINARY_NAME core...
 

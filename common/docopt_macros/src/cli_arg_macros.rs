@@ -23,16 +23,16 @@ macro_rules! make_cli_args_struct {
         impl CliArgs {
             // NOTE: The CLI arg parser will ALWAYS try and read a `blockJson` or `blocksJson` from
             // a path if extant, since they're used in ALL cores.
-            pub fn parse(usage_info: &str) -> $crate::Result<Self> {
+            pub fn parse(usage_info: &str) -> $crate::common::Result<Self> {
                 Self::parse_from_usage_info(usage_info)
                     .and_then(|cli_args| cli_args.maybe_update_block_json())
             }
 
-            fn parse_from_usage_info(usage_info: &str) -> $crate::Result<Self> {
+            fn parse_from_usage_info(usage_info: &str) -> $crate::common::Result<Self> {
                 Ok($crate::docopt::Docopt::new(usage_info).and_then(|d| d.deserialize())?)
             }
 
-            fn maybe_update_block_json(self) -> $crate::Result<Self> {
+            fn maybe_update_block_json(self) -> $crate::common::Result<Self> {
                 if self.file_exists_at_path() {
                     self.read_file_to_string().map(|s| self.update_block_json(s))
                 } else {
@@ -45,7 +45,7 @@ macro_rules! make_cli_args_struct {
                 self
             }
 
-            pub fn read_file_to_string(&self) -> $crate::Result<String> {
+            pub fn read_file_to_string(&self) -> $crate::common::Result<String> {
                 Ok(std::fs::read_to_string(&self.flag_file)?)
             }
 
@@ -53,7 +53,7 @@ macro_rules! make_cli_args_struct {
                 std::path::Path::new(&self.flag_file).exists()
             }
 
-            pub fn core_type() -> $crate::CoreType {
+            pub fn core_type() -> common::CoreType {
                 $core_type
             }
 
