@@ -1,4 +1,5 @@
-use crate::lib::{erc20_on_evm::CORE_TYPE, Result};
+use common::types::Result;
+use erc20_on_evm::CORE_TYPE;
 
 make_cli_args_struct!(
     CORE_TYPE;

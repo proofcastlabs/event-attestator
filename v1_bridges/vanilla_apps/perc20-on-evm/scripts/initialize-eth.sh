@@ -10,7 +10,7 @@ echo ✔ Initializing \'$BINARY_NAME\'s NATIVE side...
 
 ../../scripts/build-binary.sh $BINARY_NAME
 
-../../target/release/$BINARY_NAME initializeEth \
+../../../../target/release/$BINARY_NAME initializeEth \
 --confs=0 \
 --chainId=0 \
 --gasPrice=20000000000 \
