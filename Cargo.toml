@@ -33,6 +33,7 @@ members = [
     "v1_bridges/vanilla_apps/pbtc-on-eos",
     "v1_bridges/vanilla_apps/pbtc-on-eth",
     "v1_bridges/vanilla_apps/peos-on-eth",
+    "v1_bridges/vanilla_apps/perc20-on-eos",
 ]
 
 [profile.dev]

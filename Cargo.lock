@@ -2946,6 +2946,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "perc20-on-eos"
+version = "2.1.0"
+dependencies = [
+ "anyhow",
+ "common",
+ "docopt",
+ "docopt_macros",
+ "erc20_on_eos",
+ "file_logger",
+ "jsonrpc_database",
+ "log",
+ "paste",
+ "rocksdb_database",
+ "serde",
+ "stderr_logger",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
