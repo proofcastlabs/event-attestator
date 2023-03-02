@@ -41,15 +41,20 @@ impl Erc20OnIntIntTxInfos {
 
 pub fn filter_out_zero_value_evm_tx_infos_from_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
     info!("✔ Maybe filtering out zero value `Erc20OnIntIntTxInfos`...");
-    debug!(
-        "✔ Num `Erc20OnIntIntTxInfos` before: {}",
-        state.erc20_on_int_int_signed_txs.len()
-    );
-    Erc20OnIntIntTxInfos::from_bytes(&state.tx_infos)
-        .and_then(|tx_infos| tx_infos.filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?))
-        .and_then(|filtered_tx_infos| {
-            debug!("✔ Num `Erc20OnIntIntTxInfos` after: {}", filtered_tx_infos.len());
-            filtered_tx_infos.to_bytes()
-        })
-        .map(|bytes| state.add_tx_infos(bytes))
+    if state.tx_infos.is_empty() {
+        info!("✔ No `Erc20OnIntIntTxInfos` in state to filter!");
+        Ok(state)
+    } else {
+        info!(
+            "✔ Num `Erc20OnIntIntTxInfos` before: {}",
+            state.erc20_on_int_int_signed_txs.len()
+        );
+        Erc20OnIntIntTxInfos::from_bytes(&state.tx_infos)
+            .and_then(|tx_infos| tx_infos.filter_out_zero_values(&EthEvmTokenDictionary::get_from_db(state.db)?))
+            .and_then(|filtered_tx_infos| {
+                info!("✔ Num `Erc20OnIntIntTxInfos` after: {}", filtered_tx_infos.len());
+                filtered_tx_infos.to_bytes()
+            })
+            .map(|bytes| state.add_tx_infos(bytes))
+    }
 }

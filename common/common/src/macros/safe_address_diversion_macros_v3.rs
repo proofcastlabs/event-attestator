@@ -14,20 +14,23 @@ macro_rules! impl_safe_address_diversion_fxn_v3 {
             ) -> $crate::types::Result<$state_type>
                 where D: $crate::traits::DatabaseInterface
             {
-                info!(
-                    "✔ Diverting tx infos if destination address is the {} address...",
-                    $thing_to_check,
-                );
-                let tx_infos = [< $tx_info_name:camel s>]::from_bytes(&state.tx_infos)?;
-                let filtered = [< $tx_info_name:camel s>]::new(
-                    tx_infos
-                        .iter()
-                        .cloned()
-                        .map(|tx_info| tx_info.[< divert_to_safe_address_if_destination_is_ $thing_to_check:snake:lower _address>]())
-                        .collect::<Vec<[< $tx_info_name:camel >]>>()
+                info!("✔ Maybe diverting tx infos if destination address is the {} address...", $thing_to_check);
+                if state.tx_infos.is_empty() {
+                    info!("✔ No tx infos in state to divert!");
+                    Ok(state)
+                } else {
+                    let tx_infos = [< $tx_info_name:camel s>]::from_bytes(&state.tx_infos)?;
+                    info!("✔ Diverting {} tx infos ...", tx_infos.len());
+                    let filtered = [< $tx_info_name:camel s>]::new(
+                        tx_infos
+                            .iter()
+                            .cloned()
+                            .map(|tx_info| tx_info.[< divert_to_safe_address_if_destination_is_ $thing_to_check:snake:lower _address>]())
+                            .collect::<Vec<[< $tx_info_name:camel >]>>()
 
-                );
-                Ok(state.add_tx_infos(filtered.to_bytes()?))
+                    );
+                    Ok(state.add_tx_infos(filtered.to_bytes()?))
+                }
             }
         }
     }

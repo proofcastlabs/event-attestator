@@ -3017,6 +3017,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "perc20-on-int"
+version = "2.0.1"
+dependencies = [
+ "anyhow",
+ "common",
+ "docopt_macros",
+ "erc20_on_int",
+ "file_logger",
+ "jsonrpc_database",
+ "log",
+ "paste",
+ "rocksdb_database",
+ "serde",
+ "stderr_logger",
+]
+
+[[package]]
 name = "percent-encoding"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
