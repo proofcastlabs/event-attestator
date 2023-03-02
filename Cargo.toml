@@ -30,6 +30,7 @@ members = [
     "v1_bridges/erc20_on_evm",
     "v1_bridges/erc20_on_eos",
     "v2_bridges/erc20_on_int",
+    "v2_bridges/vanilla_apps/pint-on-evm",
     "v1_bridges/vanilla_apps/pbtc-on-eos",
     "v1_bridges/vanilla_apps/pbtc-on-eth",
     "v1_bridges/vanilla_apps/peos-on-eth",
