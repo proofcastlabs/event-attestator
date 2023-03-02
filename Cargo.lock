@@ -3139,6 +3139,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "pint-on-eos"
+version = "2.0.0"
+dependencies = [
+ "anyhow",
+ "common",
+ "docopt_macros",
+ "file_logger",
+ "int_on_eos",
+ "jsonrpc_database",
+ "log",
+ "paste",
+ "rocksdb_database",
+ "serde",
+ "stderr_logger",
+]
+
+[[package]]
 name = "pkg-config"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
