@@ -101,7 +101,7 @@ impl Encodable for EthLog {
     }
 }
 
-#[derive(Debug, Clone, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
+#[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
 pub struct EthLogs(pub Vec<EthLog>);
 
 impl EthLogs {

@@ -149,7 +149,7 @@ impl FromStr for EthReceiptJson {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EthReceipt {
     pub to: EthAddress,
     pub from: EthAddress,
