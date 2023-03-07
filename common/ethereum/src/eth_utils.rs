@@ -49,6 +49,10 @@ pub fn convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
     }
 }
 
+pub fn convert_hex_strings_to_eth_addresses(hex_strings: Vec<String>) -> Result<Vec<EthAddress>> {
+    hex_strings.iter().map(|ref s| convert_hex_to_eth_address(s)).collect()
+}
+
 pub fn convert_eth_address_to_string(eth_address: &EthAddress) -> String {
     // NOTE: Because of the way the `ethereum_types` crate converts an eth address
     // to `0xaaaa...bbbb` style string.

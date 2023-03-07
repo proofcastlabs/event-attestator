@@ -134,6 +134,8 @@ pub use self::{
         convert_eth_hash_to_string,
         convert_h256_to_bytes,
         convert_h256_to_string,
+        convert_hex_strings_to_eth_addresses,
+        convert_hex_strings_to_h256s,
         convert_hex_to_eth_address,
         convert_hex_to_h256,
         get_eth_address_from_str,
