@@ -276,10 +276,10 @@ impl EthSubmissionMaterial {
 
     pub fn remove_receipts_if_no_logs_from_addresses(self, addresses: &[EthAddress]) -> Self {
         if self.contains_log_from_addresses(addresses) {
-            info!("NOT removing receipts from ETh sub mat because they contain pertinent logs!");
+            info!("NOT removing receipts from ETH sub mat because they contain pertinent logs!");
             self
         } else {
-            info!("REMOVING receipts from ETh sub mat because they do NOT contain pertinent logs!");
+            info!("REMOVING receipts from ETH sub mat because they do NOT contain pertinent logs!");
             let mut mutable_self = self.clone();
             mutable_self.receipts = EthReceipts::new(vec![]);
             mutable_self
