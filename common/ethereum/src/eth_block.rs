@@ -96,20 +96,20 @@ impl EthBlock {
             hash: convert_hex_to_h256(&json.hash)?,
             timestamp: U256::from(json.timestamp),
             nonce: decode_prefixed_hex(&json.nonce)?,
-            miner: convert_hex_to_eth_address(&json.miner)?,
             mix_hash: convert_hex_to_h256(&json.mix_hash)?,
+            miner: convert_hex_to_eth_address(&json.miner)?,
             state_root: convert_hex_to_h256(&json.state_root)?,
+            uncles: convert_hex_strings_to_h256s(&json.uncles)?,
             extra_data: convert_hex_to_bytes(&json.extra_data)?,
             parent_hash: convert_hex_to_h256(&json.parent_hash)?,
             sha3_uncles: convert_hex_to_h256(&json.sha3_uncles)?,
             difficulty: convert_dec_str_to_u256(&json.difficulty)?,
             receipts_root: convert_hex_to_h256(&json.receipts_root)?,
+            transactions: convert_hex_strings_to_h256s(&json.transactions)?,
             transactions_root: convert_hex_to_h256(&json.transactions_root)?,
             total_difficulty: convert_dec_str_to_u256(&json.total_difficulty)?,
             base_fee_per_gas: Self::parse_base_fee_per_gas(&json.base_fee_per_gas)?,
             logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&json.logs_bloom)?[..]),
-            uncles: convert_hex_strings_to_h256s(json.uncles.iter().map(AsRef::as_ref).collect())?,
-            transactions: convert_hex_strings_to_h256s(json.transactions.iter().map(AsRef::as_ref).collect())?,
         })
     }
 

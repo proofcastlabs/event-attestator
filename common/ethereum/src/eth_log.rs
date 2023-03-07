@@ -55,7 +55,7 @@ impl EthLog {
         Ok(EthLog {
             data: convert_hex_to_bytes(&log_json.data)?,
             address: convert_hex_to_eth_address(&log_json.address)?,
-            topics: convert_hex_strings_to_h256s(log_json.topics.iter().map(AsRef::as_ref).collect())?,
+            topics: convert_hex_strings_to_h256s(&log_json.topics)?,
         })
     }
 

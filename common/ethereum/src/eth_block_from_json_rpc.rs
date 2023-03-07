@@ -65,6 +65,7 @@ impl EthBlock {
             nonce: decode_prefixed_hex(&json.nonce)?,
             miner: convert_hex_to_eth_address(&json.miner)?,
             mix_hash: convert_hex_to_h256(&json.mix_hash)?,
+            uncles: convert_hex_strings_to_h256s(&json.uncles)?,
             state_root: convert_hex_to_h256(&json.state_root)?,
             extra_data: convert_hex_to_bytes(&json.extra_data)?,
             parent_hash: convert_hex_to_h256(&json.parent_hash)?,
@@ -78,7 +79,6 @@ impl EthBlock {
             logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&json.logs_bloom)?[..]),
             timestamp: U256::from_str_radix(&strip_hex_prefix(&json.timestamp), radix)?,
             difficulty: U256::from_str_radix(&strip_hex_prefix(&json.difficulty), radix)?,
-            uncles: convert_hex_strings_to_h256s(json.uncles.iter().map(AsRef::as_ref).collect())?,
             total_difficulty: U256::from_str_radix(&strip_hex_prefix(&json.total_difficulty), radix)?,
             transactions: json
                 .transactions
