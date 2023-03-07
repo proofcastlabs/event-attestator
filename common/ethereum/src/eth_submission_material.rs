@@ -255,14 +255,30 @@ impl EthSubmissionMaterial {
     }
 
     fn contains_log_from_addresses(&self, addresses: &[EthAddress]) -> bool {
+        info!("Checking ETH sub mat for logs from addresses: {addresses:?}...");
         for receipt in self.receipts.iter() {
             for log in receipt.logs.iter() {
-                if addresses.contains(&log.address) {
+                let needle = log.address;
+                if addresses.contains(&needle) {
+                    info!("Eth sub mat HAS logs from address {needle}!");
                     return true;
                 }
             }
         }
+        info!("Eth sub mat has NO logs from given addresses!");
         return false;
+    }
+
+    pub fn remove_receipts_if_no_logs_from_addresses(self, addresses: &[EthAddress]) -> Self {
+        if self.contains_log_from_addresses(addresses) {
+            info!("NOT removing receipts from ETh sub mat because they contain pertinent logs!");
+            self
+        } else {
+            info!("REMOVING receipts from ETh sub mat because they do NOT contain pertinent logs!");
+            let mut mutable_self = self.clone();
+            mutable_self.receipts = EthReceipts::new(vec![]);
+            mutable_self
+        }
     }
 
     pub fn get_receipts_containing_log_from_address_and_with_topics(
@@ -570,5 +586,22 @@ mod tests {
         let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
         let addresses = vec![convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()];
         assert!(!sub_mat.contains_log_from_addresses(&addresses));
+    }
+
+    #[test]
+    fn should_remove_receipts_if_no_logs_from_addresses() {
+        let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
+        let addresses = vec![convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()];
+        let result = sub_mat.remove_receipts_if_no_logs_from_addresses(&addresses);
+        assert!(result.receipts.is_empty());
+    }
+
+    #[test]
+    fn should_not_remove_receipts_if_no_logs_from_addresses() {
+        let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
+        let num_receipts_before = sub_mat.receipts.len();
+        let addresses = vec![convert_hex_to_eth_address("0x37e1abc100676acbd5c581a9d60d914a10d08dd5").unwrap()];
+        let result = sub_mat.remove_receipts_if_no_logs_from_addresses(&addresses);
+        assert_eq!(result.receipts.len(), num_receipts_before);
     }
 }
