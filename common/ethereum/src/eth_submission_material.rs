@@ -255,18 +255,23 @@ impl EthSubmissionMaterial {
     }
 
     fn contains_log_from_addresses(&self, addresses: &[EthAddress]) -> bool {
-        info!("Checking ETH sub mat for logs from addresses: {addresses:?}...");
-        for receipt in self.receipts.iter() {
-            for log in receipt.logs.iter() {
-                let needle = log.address;
-                if addresses.contains(&needle) {
-                    info!("Eth sub mat HAS logs from address {needle}!");
-                    return true;
+        if addresses.is_empty() {
+            info!("NOT Checking ETH sub mat for logs from addresses because none passed in!");
+            return false;
+        } else {
+            info!("Checking ETH sub mat for logs from addresses: {addresses:?}...");
+            for receipt in self.receipts.iter() {
+                for log in receipt.logs.iter() {
+                    let needle = log.address;
+                    if addresses.contains(&needle) {
+                        info!("Eth sub mat HAS logs from address {needle}!");
+                        return true;
+                    }
                 }
             }
+            info!("Eth sub mat has NO logs from given addresses!");
+            return false;
         }
-        info!("Eth sub mat has NO logs from given addresses!");
-        return false;
     }
 
     pub fn remove_receipts_if_no_logs_from_addresses(self, addresses: &[EthAddress]) -> Self {
