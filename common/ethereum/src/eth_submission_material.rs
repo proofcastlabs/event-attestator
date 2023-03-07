@@ -39,9 +39,10 @@ impl FromStr for EthSubmissionMaterial {
     fn from_str(json_str: &str) -> Result<Self> {
         info!("✔ Parsing ETH submission material...");
         let sub_mat = match serde_json::from_str::<Self>(json_str) {
-            // NOTE: First attempt to deserailize via serde_json itself.
+            // NOTE: First attempt to deseriallize via serde_json itself.
             Ok(r) => Ok(r),
-            // Otherwise, we try from json structs (used if a JS syncer has serialized the block to json).
+            // Otherwise, we try from json structs (used if a pToken javascript syncer has serialized the block to
+            // json).
             Err(_) => Self::from_json(&EthSubmissionMaterialJson::from_str(json_str)?),
         }?;
         let block_num = sub_mat.get_block_number()?;
@@ -253,6 +254,17 @@ impl EthSubmissionMaterial {
         Ok(self.to_json()?.to_string())
     }
 
+    fn contains_log_from_addresses(&self, addresses: &[EthAddress]) -> bool {
+        for receipt in self.receipts.iter() {
+            for log in receipt.logs.iter() {
+                if addresses.contains(&log.address) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     pub fn get_receipts_containing_log_from_address_and_with_topics(
         &self,
         address: &EthAddress,
@@ -364,6 +376,7 @@ pub fn parse_eth_submission_material_json_and_put_in_state<'a, D: DatabaseInterf
 mod tests {
     use super::*;
     use crate::{
+        convert_hex_to_eth_address,
         test_utils::{
             get_expected_block,
             get_expected_receipt,
@@ -543,5 +556,19 @@ mod tests {
         let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
         let result = sub_mat.receipts_are_valid().unwrap();
         assert!(result);
+    }
+
+    #[test]
+    fn should_contain_receipt_from_addresses() {
+        let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
+        let addresses = vec![convert_hex_to_eth_address("0x37e1abc100676acbd5c581a9d60d914a10d08dd5").unwrap()];
+        assert!(sub_mat.contains_log_from_addresses(&addresses));
+    }
+
+    #[test]
+    fn should_not_contain_receipt_from_addresses() {
+        let sub_mat = get_sample_eth_submission_material_n(19).unwrap();
+        let addresses = vec![convert_hex_to_eth_address("0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC").unwrap()];
+        assert!(!sub_mat.contains_log_from_addresses(&addresses));
     }
 }
