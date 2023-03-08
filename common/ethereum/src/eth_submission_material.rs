@@ -6,14 +6,14 @@ use common::{
     types::{Byte, Bytes, NoneError, Result},
 };
 use common_chain_ids::EthChainId;
-use derive_more::{Constructor, Deref};
+use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as JsonValue};
 
 use crate::{EthBlock, EthBlockJson, EthReceipt, EthReceiptJson, EthReceipts, EthState};
 
-#[derive(Clone, Debug, PartialEq, Eq, Deref, Constructor, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Deref, DerefMut, Constructor, Deserialize, Serialize)]
 pub struct EthSubmissionMaterials(Vec<EthSubmissionMaterial>);
 
 impl FromStr for EthSubmissionMaterials {

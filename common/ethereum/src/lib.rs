@@ -128,6 +128,7 @@ pub use self::{
         EthSubmissionMaterial,
         EthSubmissionMaterialJson,
         EthSubmissionMaterialJsons,
+        EthSubmissionMaterials,
     },
     eth_traits::{EthSigningCapabilities, EthTxInfoCompatible},
     eth_types::{AnySenderSigningParams, EthSigningParams},
