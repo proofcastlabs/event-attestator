@@ -9,6 +9,12 @@ use rust_algorand::AlgorandTxGroup;
 
 use crate::{EthDbUtils, EthSubmissionMaterial, EthTransactions, EvmDbUtils};
 
+pub trait EthStateCompatible<D: DatabaseInterface> {
+    fn get_eth_db_utils(&self) -> &EthDbUtils<D>;
+    fn get_evm_db_utils(&self) -> &EvmDbUtils<D>;
+    fn get_sub_mat(&self) -> Result<&EthSubmissionMaterial>;
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct EthState<'a, D: DatabaseInterface> {
     pub db: &'a D,
@@ -29,6 +35,20 @@ pub struct EthState<'a, D: DatabaseInterface> {
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionary>,
     pub eth_evm_token_dictionary: Option<EthEvmTokenDictionary>,
     pub evm_algo_token_dictionary: Option<EvmAlgoTokenDictionary>,
+}
+
+impl<'a, D: DatabaseInterface> EthStateCompatible<D> for EthState<'a, D> {
+    fn get_eth_db_utils(&self) -> &EthDbUtils<D> {
+        &self.eth_db_utils
+    }
+
+    fn get_evm_db_utils(&self) -> &EvmDbUtils<D> {
+        &self.evm_db_utils
+    }
+
+    fn get_sub_mat(&self) -> Result<&EthSubmissionMaterial> {
+        self.get_eth_submission_material()
+    }
 }
 
 impl<'a, D: DatabaseInterface> EthState<'a, D> {
@@ -52,6 +72,13 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
             erc20_on_evm_eth_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_int_signed_txs: EthTransactions::new(vec![]),
             erc20_on_int_eth_signed_txs: EthTransactions::new(vec![]),
+        }
+    }
+
+    pub fn get_eth_submission_material(&self) -> Result<&EthSubmissionMaterial> {
+        match self.eth_submission_material {
+            Some(ref eth_submission_material) => Ok(eth_submission_material),
+            None => Err(get_not_in_state_err("eth_submission_material").into()),
         }
     }
 
@@ -164,13 +191,6 @@ impl<'a, D: DatabaseInterface> EthState<'a, D> {
     ) -> Result<Self> {
         self.eth_submission_material = Some(new_eth_submission_material);
         Ok(self)
-    }
-
-    pub fn get_eth_submission_material(&self) -> Result<&EthSubmissionMaterial> {
-        match self.eth_submission_material {
-            Some(ref eth_submission_material) => Ok(eth_submission_material),
-            None => Err(get_not_in_state_err("eth_submission_material").into()),
-        }
     }
 
     pub fn get_parent_hash(&self) -> Result<EthHash> {

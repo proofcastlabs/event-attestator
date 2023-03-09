@@ -119,7 +119,7 @@ pub use self::{
     },
     eth_receipt::{EthReceipt, EthReceiptJson, EthReceipts},
     eth_receipt_from_json_rpc::EthReceiptFromJsonRpc,
-    eth_state::EthState,
+    eth_state::{EthState, EthStateCompatible},
     eth_submission_material::{
         parse_eth_submission_material_and_put_in_state,
         parse_eth_submission_material_json_and_put_in_state,
