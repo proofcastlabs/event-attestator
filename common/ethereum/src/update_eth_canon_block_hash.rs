@@ -1,6 +1,11 @@
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::{eth_database_utils::EthDbUtilsExt, eth_submission_material::EthSubmissionMaterial, EthState};
+use crate::{
+    eth_database_utils::EthDbUtilsExt,
+    eth_submission_material::EthSubmissionMaterial,
+    EthState,
+    EthStateCompatible,
+};
 
 fn does_canon_block_require_updating<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
     db_utils: &E,
@@ -53,36 +58,36 @@ pub fn maybe_update_canon_block_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
     }
 }
 
-fn maybe_update_canon_block_hash_and_return_state<D: DatabaseInterface>(
+pub fn update_canon_block_hash<D: DatabaseInterface>(
     is_for_eth: bool,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
+    state: &impl EthStateCompatible<D>,
+) -> Result<()> {
     info!(
         "✔ Maybe updating {} canon block hash...",
         if is_for_eth { "ETH" } else { "EVM" }
     );
     let canon_to_tip_length = if is_for_eth {
-        state.eth_db_utils.get_eth_canon_to_tip_length_from_db()?
+        state.get_eth_db_utils().get_eth_canon_to_tip_length_from_db()?
     } else {
-        state.evm_db_utils.get_eth_canon_to_tip_length_from_db()?
+        state.get_evm_db_utils().get_eth_canon_to_tip_length_from_db()?
     };
     if is_for_eth {
-        maybe_update_canon_block_hash(&state.eth_db_utils, canon_to_tip_length).and(Ok(state))
+        maybe_update_canon_block_hash(state.get_eth_db_utils(), canon_to_tip_length)
     } else {
-        maybe_update_canon_block_hash(&state.evm_db_utils, canon_to_tip_length).and(Ok(state))
+        maybe_update_canon_block_hash(state.get_evm_db_utils(), canon_to_tip_length)
     }
 }
 
 pub fn maybe_update_eth_canon_block_hash_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    maybe_update_canon_block_hash_and_return_state(true, state)
+    update_canon_block_hash(true, &state).and(Ok(state))
 }
 
 pub fn maybe_update_evm_canon_block_hash_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    maybe_update_canon_block_hash_and_return_state(false, state)
+    update_canon_block_hash(false, &state).and(Ok(state))
 }
 
 #[cfg(test)]
