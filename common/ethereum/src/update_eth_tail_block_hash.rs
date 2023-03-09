@@ -17,7 +17,7 @@ fn does_tail_block_require_updating<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
         .and_then(|db_tail_block| Ok(db_tail_block.get_block_number()? < calculated_tail_block.get_block_number()?))
 }
 
-fn maybe_update_eth_tail_block_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) -> Result<()> {
+pub fn maybe_update_eth_tail_block_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) -> Result<()> {
     info!(
         "✔ Maybe updating {} tail block hash...",
         if db_utils.get_is_for_eth() { "ETH" } else { "EVM" }

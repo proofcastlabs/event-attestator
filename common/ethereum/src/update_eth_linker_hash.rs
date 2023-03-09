@@ -31,7 +31,7 @@ fn maybe_get_parent_of_eth_tail_block<D: DatabaseInterface, E: EthDbUtilsExt<D>>
         .and_then(|canon_block| Ok(db_utils.maybe_get_parent_eth_submission_material(&canon_block.get_block_hash()?)))
 }
 
-fn maybe_update_linker_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) -> Result<()> {
+pub fn maybe_update_linker_hash<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) -> Result<()> {
     let block_type = if db_utils.get_is_for_eth() { "ETH" } else { "EVM" };
     info!("✔ Maybe updating the {} linker hash...", block_type);
     match maybe_get_parent_of_eth_tail_block(db_utils)? {

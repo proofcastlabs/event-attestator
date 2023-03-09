@@ -2,7 +2,7 @@ use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{eth_database_utils::EthDbUtilsExt, eth_submission_material::EthSubmissionMaterial, EthState};
 
-fn update_latest_block_hash_if_subsequent<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
+pub fn update_latest_block_hash_if_subsequent<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
     db_utils: &E,
     maybe_subsequent_submission_material: &EthSubmissionMaterial,
 ) -> Result<()> {
