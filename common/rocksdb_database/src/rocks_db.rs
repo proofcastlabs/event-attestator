@@ -16,6 +16,17 @@ pub struct Database {
     pub hashmap: RefCell<HashMap<Bytes, Bytes>>,
 }
 
+impl Default for Database {
+    fn default() -> Self {
+        Self {
+            batch_db_ops: RefCell::new(vec![]),
+            keys_to_delete: RefCell::new(vec![]),
+            hashmap: RefCell::new(HashMap::new()),
+            rocks_db: DB::open_default(DATABASE_PATH).expect("Cannot create default rocksdb instance!"),
+        }
+    }
+}
+
 pub enum DbOp {
     Delete(Bytes),
     Put(Bytes, Bytes),
@@ -91,32 +102,29 @@ impl DatabaseInterface for Database {
     fn get(&self, key: Bytes, _sensitivity: DataSensitivity) -> PTokensResult<Bytes> {
         trace!("✔ Getting key: {}", hex::encode(&key));
         let not_in_db_error = "Cannot find item in database!".to_string();
-        match self.keys_to_delete.borrow().contains(&key) {
-            true => {
-                trace!("✔ Key already in delete list ∴ 'not found'!");
-                Err(PTokensCoreError::Custom(not_in_db_error))
-            },
-            false => {
-                trace!("✔ Checking hashmap for key...");
-                match self.hashmap.borrow().get(&key) {
-                    Some(value) => {
-                        trace!("✔ Key found in hashmap!");
-                        Ok(value.to_vec())
-                    },
-                    None => {
-                        trace!("✘ Key NOT in hashmap!");
-                        trace!("✔ Looking in underlying DB...");
-                        match self.rocks_db.get(key) {
-                            Ok(Some(value)) => {
-                                trace!("✔ Key found in DB!");
-                                Ok(value.to_vec())
-                            },
-                            Err(e) => Err(PTokensCoreError::Custom(e.to_string())),
-                            Ok(None) => Err(PTokensCoreError::Custom(not_in_db_error)),
-                        }
-                    },
-                }
-            },
+        if self.keys_to_delete.borrow().contains(&key) {
+            trace!("✔ Key already in delete list ∴ 'not found'!");
+            Err(PTokensCoreError::Custom(not_in_db_error))
+        } else {
+            trace!("✔ Checking hashmap for key...");
+            match self.hashmap.borrow().get(&key) {
+                Some(value) => {
+                    trace!("✔ Key found in hashmap!");
+                    Ok(value.to_vec())
+                },
+                None => {
+                    trace!("✘ Key NOT in hashmap!");
+                    trace!("✔ Looking in underlying DB...");
+                    match self.rocks_db.get(key) {
+                        Ok(Some(value)) => {
+                            trace!("✔ Key found in DB!");
+                            Ok(value.to_vec())
+                        },
+                        Err(e) => Err(PTokensCoreError::Custom(e.to_string())),
+                        Ok(None) => Err(PTokensCoreError::Custom(not_in_db_error)),
+                    }
+                },
+            }
         }
     }
 }
