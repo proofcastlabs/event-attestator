@@ -17,6 +17,7 @@ pub fn maybe_strip_hex_prefix(hex: &str) -> &str {
     }
 }
 
+#[derive(Default)]
 pub struct Database {
     pub url: String,
     pub batch_db_ops: RefCell<Vec<DbOp>>,
@@ -175,5 +176,15 @@ impl DatabaseInterface for Database {
                 }
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_get_default_database() {
+        Database::default();
     }
 }
