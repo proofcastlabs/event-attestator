@@ -192,6 +192,15 @@ impl EthChainId {
             Self::ArbitrumMainnet => 42161,
         }
     }
+
+    pub fn get_all() -> Vec<Self> {
+        use strum::IntoEnumIterator;
+        Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
+    }
+
+    fn is_unknown(&self) -> bool {
+        matches!(self, Self::Unknown(_))
+    }
 }
 
 #[cfg(test)]
@@ -202,15 +211,6 @@ impl EthChainId {
 
     fn to_keccak_hash_hex(&self) -> Result<String> {
         self.keccak_hash().map(|ref bytes| hex::encode(bytes))
-    }
-
-    fn get_all() -> Vec<Self> {
-        use strum::IntoEnumIterator;
-        Self::iter().filter(|chain_id| !chain_id.is_unknown()).collect()
-    }
-
-    fn is_unknown(&self) -> bool {
-        matches!(self, Self::Unknown(_))
     }
 }
 
