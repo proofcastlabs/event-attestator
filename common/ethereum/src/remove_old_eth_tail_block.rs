@@ -21,56 +21,41 @@ pub fn remove_parents_if_not_anchor<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
         },
         Ok(parent_block) => {
             info!("✔ Block found, checking if it's the anchor block...");
-            match is_anchor_block(db_utils, &parent_block.get_block_hash()?)? {
-                true => {
-                    info!("✔ Block IS the anchor block ∴ not removing it!");
-                    Ok(())
-                },
-                false => {
-                    info!("✔ Block is NOT the anchor ∴ removing it...");
-                    db_utils
-                        .delete_block_by_block_hash(&parent_block)
-                        .and_then(|_| remove_parents_if_not_anchor(db_utils, &parent_block))
-                },
+            if is_anchor_block(db_utils, &parent_block.get_block_hash()?)? {
+                info!("✔ Block IS the anchor block ∴ not removing it!");
+                Ok(())
+            } else {
+                info!("✔ Block is NOT the anchor ∴ removing it...");
+                db_utils
+                    .delete_block_by_block_hash(&parent_block)
+                    .and_then(|_| remove_parents_if_not_anchor(db_utils, &parent_block))
             }
         },
     }
 }
 
-fn maybe_remove_old_tail_block_and_return_state<D: DatabaseInterface>(
-    is_for_eth: bool,
-    state: EthState<D>,
-) -> Result<EthState<D>> {
-    // NOTE: This function is to be called AFTER the tail block has been updated in a submission
-    // pipeline. This way, the old tail block will be an ancestor of the current one (except in
-    // the case of a fork), and hence why only the ancestor(s) is/are removed by this function,
-    // and not the tail block itself.
+pub fn maybe_remove_tail_and_older_blocks<D: DatabaseInterface, E: EthDbUtilsExt<D>>(db_utils: &E) -> Result<()> {
+    let is_for_eth = db_utils.get_is_for_eth();
     info!(
         "✔ Maybe removing old {} tail block...",
         if is_for_eth { "ETH" } else { "EVM" }
     );
-    let tail_block = if is_for_eth {
-        state.eth_db_utils.get_eth_tail_block_from_db()?
-    } else {
-        state.evm_db_utils.get_eth_tail_block_from_db()?
-    };
-    if is_for_eth {
-        remove_parents_if_not_anchor(&state.eth_db_utils, &tail_block).and(Ok(state))
-    } else {
-        remove_parents_if_not_anchor(&state.evm_db_utils, &tail_block).and(Ok(state))
-    }
+    db_utils
+        .get_eth_tail_block_from_db()
+        .and_then(|ref tail| remove_parents_if_not_anchor(db_utils, tail))
+        .and(Ok(()))
 }
 
 pub fn maybe_remove_old_evm_tail_block_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    maybe_remove_old_tail_block_and_return_state(false, state)
+    maybe_remove_tail_and_older_blocks(&state.evm_db_utils).and(Ok(state))
 }
 
 pub fn maybe_remove_old_eth_tail_block_and_return_state<D: DatabaseInterface>(
     state: EthState<D>,
 ) -> Result<EthState<D>> {
-    maybe_remove_old_tail_block_and_return_state(true, state)
+    maybe_remove_tail_and_older_blocks(&state.eth_db_utils).and(Ok(state))
 }
 
 #[cfg(test)]

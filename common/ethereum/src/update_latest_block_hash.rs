@@ -4,7 +4,7 @@ use crate::{eth_database_utils::EthDbUtilsExt, eth_submission_material::EthSubmi
 
 pub fn update_latest_block_hash_if_subsequent<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
     db_utils: &E,
-    maybe_subsequent_submission_material: &EthSubmissionMaterial,
+    sub_mat: &EthSubmissionMaterial,
 ) -> Result<()> {
     info!(
         "✔ Updating latest {} block hash if subsequent...",
@@ -14,15 +14,12 @@ pub fn update_latest_block_hash_if_subsequent<D: DatabaseInterface, E: EthDbUtil
         .get_eth_latest_block_from_db()
         .and_then(|latest_submission_material| latest_submission_material.get_block_number())
         .and_then(|latest_block_number| {
-            match latest_block_number + 1 == maybe_subsequent_submission_material.get_block_number()? {
-                false => {
-                    info!("✔ Block NOT subsequent ∴ NOT updating latest block hash!");
-                    Ok(())
-                },
-                true => {
-                    info!("✔ Block IS subsequent ∴ updating latest block hash...",);
-                    db_utils.put_eth_latest_block_hash_in_db(&maybe_subsequent_submission_material.get_block_hash()?)
-                },
+            if latest_block_number + 1 == sub_mat.get_block_number()? {
+                info!("✔ Block IS subsequent ∴ updating latest block hash...",);
+                db_utils.put_eth_latest_block_hash_in_db(&sub_mat.get_block_hash()?)
+            } else {
+                info!("✔ Block NOT subsequent ∴ NOT updating latest block hash!");
+                Ok(())
             }
         })
 }
