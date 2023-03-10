@@ -343,6 +343,10 @@ impl EthSubmissionMaterial {
             Some(ref b) => b.is_valid(chain_id),
         }
     }
+
+    pub fn block_header_is_valid(&self, chain_id: &EthChainId) -> bool {
+        matches!(self.block.clone().unwrap_or_default().is_valid(chain_id), Ok(true))
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Deref, Constructor)]
