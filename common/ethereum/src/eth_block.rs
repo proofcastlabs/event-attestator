@@ -21,7 +21,7 @@ use crate::{
     },
 };
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EthBlock {
     pub difficulty: U256,
     pub extra_data: Bytes,
@@ -337,5 +337,17 @@ mod tests {
         let chain_id = EthChainId::Mainnet;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(!result);
+    }
+
+    #[test]
+    fn default_eth_block_should_not_be_valid_for_any_chain_id() {
+        let chain_ids = EthChainId::get_all();
+        let block = EthBlock::default();
+        chain_ids.iter().for_each(|id| {
+            let r = block.is_valid(id);
+            // NOTE: Newer blocks need `base_fee_per_gas` which defaults to none, and thus we
+            // error. Older blocks will not error though, but should return Ok(false).
+            assert!(!r.is_ok() || matches!(r, Ok(false)))
+        });
     }
 }
