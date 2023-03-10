@@ -363,6 +363,17 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         self.get_eth_hash_from_db(&key.to_vec())
     }
 
+    #[cfg(test)]
+    fn get_special_hashes(&self) -> SpecialHashes {
+        SpecialHashes {
+            linker: self.get_linker_hash_or_genesis_hash().unwrap(),
+            tail: self.get_special_eth_hash_from_db("tail").unwrap(),
+            canon: self.get_special_eth_hash_from_db("canon").unwrap(),
+            anchor: self.get_special_eth_hash_from_db("anchor").unwrap(),
+            latest: self.get_special_eth_hash_from_db("latest").unwrap(),
+        }
+    }
+
     fn get_eth_hash_from_db(&self, key: &[Byte]) -> Result<EthHash> {
         debug!("✔ Getting ETH hash from db under key: {}", hex::encode(key));
         self.get_db()
@@ -831,6 +842,16 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     fn get_all_as_hex_strings(&self) -> Vec<String> {
         self.get_all().iter().map(hex::encode).collect()
     }
+}
+
+#[cfg(test)]
+#[derive(Debug, Clone, Eq, PartialEq)]
+pub struct SpecialHashes {
+    pub tail: EthHash,
+    pub canon: EthHash,
+    pub linker: EthHash,
+    pub anchor: EthHash,
+    pub latest: EthHash,
 }
 
 #[cfg(test)]

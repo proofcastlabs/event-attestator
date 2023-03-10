@@ -7,6 +7,9 @@ pub fn calculate_linker_hash(
     anchor_block_hash: EthHash,
     linker_hash: EthHash,
 ) -> EthHash {
+    trace!("to link to: {}", hex::encode(block_hash_to_link_to));
+    trace!("    anchor: {}", hex::encode(anchor_block_hash));
+    trace!("    linker: {}", hex::encode(linker_hash));
     let data = [
         convert_h256_to_bytes(block_hash_to_link_to),
         convert_h256_to_bytes(anchor_block_hash),
