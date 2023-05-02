@@ -19,7 +19,6 @@ use crate::{
             maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
             maybe_filter_out_proofs_with_invalid_merkle_proofs,
             maybe_filter_out_proofs_with_wrong_action_mroot,
-            maybe_filter_proofs_for_v2_redeem_actions,
         },
         get_active_schedule::get_active_schedule_from_db_and_add_to_state,
         get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
@@ -42,6 +41,7 @@ use crate::{
         filter_tx_infos::maybe_filter_out_already_processed_tx_infos_from_state,
         get_eos_output::get_eos_output,
         increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
+        maybe_filter_proofs_for_v1_and_v2_redeem_actions,
         parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,
         sign_int_txs::maybe_sign_int_txs_and_add_to_state,
     },
@@ -76,7 +76,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(maybe_filter_proofs_for_v2_redeem_actions)
+        .and_then(maybe_filter_proofs_for_v1_and_v2_redeem_actions)
         .and_then(maybe_parse_int_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_infos_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
@@ -120,6 +120,7 @@ mod tests {
             test_utils::{
                 get_contiguous_int_block_json_strs,
                 get_sample_dictionary,
+                get_sample_dictionary_2,
                 get_sample_eos_init_block_1,
                 get_sample_eos_init_block_2,
                 get_sample_eos_private_key,
@@ -309,7 +310,7 @@ mod tests {
         assert_eq!(int_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
 
         // NOTE: Add the token dictionary to the db...
-        let dictionary = get_sample_dictionary();
+        let dictionary = get_sample_dictionary_2();
         dictionary.save_to_db(&db).unwrap();
 
         // NOTE: Assert that there are no processed global sequences in the db...
