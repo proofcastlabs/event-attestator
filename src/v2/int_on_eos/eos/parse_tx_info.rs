@@ -87,10 +87,20 @@ impl IntOnEosIntTxInfo {
             .and_then(|dictionary_entry| {
                 let amount = Self::get_redeem_amount_from_proof(proof, &dictionary_entry)?;
                 let eos_tx_amount = dictionary_entry.convert_u256_to_eos_asset_string(&amount)?;
+                let destination_chain_id = if proof.is_v1_redeem() && origin_chain_id == &EosChainId::UltraMainnet {
+                    // NOTE: Ultra currently has some restrictions meaning `redeem2` actions cannot be used
+                    // when upgrading from a v1 bridge. Instead, we listen for _both_ v1 and v2 actions in
+                    // here, and in the case of the former, we default to ETH mainnet as the destination.
+                    warn!("ultra v1 redeem action detected, defaulting to ETH mainnet for destination chain ID");
+                    MetadataChainId::EthereumMainnet
+                } else {
+                    Self::get_destination_chain_id_from_proof(proof)?
+                };
                 info!("✔ Converting action proof to `erc20-on-eos` redeem info...");
                 Ok(Self {
                     amount,
                     eos_tx_amount,
+                    destination_chain_id,
                     originating_tx_id: proof.tx_id,
                     router_address: *router_address,
                     int_vault_address: *int_vault_address,
@@ -101,7 +111,6 @@ impl IntOnEosIntTxInfo {
                     global_sequence: proof.action_receipt.global_sequence,
                     origin_chain_id: origin_chain_id.to_metadata_chain_id(),
                     destination_address: Self::get_destination_address_from_proof(proof),
-                    destination_chain_id: Self::get_destination_chain_id_from_proof(proof)?,
                 })
             })
     }

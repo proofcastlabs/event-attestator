@@ -1,5 +1,5 @@
 mod divert_to_safe_address;
-mod filter_for_v1_and_v2_redeems;
+mod filter_for_redeems;
 mod filter_tx_infos;
 mod get_eos_output;
 mod increment_int_nonce;
@@ -19,7 +19,7 @@ pub(super) use self::{
         divert_tx_infos_to_safe_address_if_destination_is_vault_address,
         divert_tx_infos_to_safe_address_if_destination_is_zero_address,
     },
-    filter_for_v1_and_v2_redeems::maybe_filter_proofs_for_v1_and_v2_redeem_actions,
+    filter_for_redeems::maybe_filter_for_relevant_redeem_actions,
     get_eos_output::{get_tx_infos_from_signed_txs, EosOutput},
     increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
     parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,

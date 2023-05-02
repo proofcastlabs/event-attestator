@@ -41,7 +41,7 @@ use crate::{
         filter_tx_infos::maybe_filter_out_already_processed_tx_infos_from_state,
         get_eos_output::get_eos_output,
         increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
-        maybe_filter_proofs_for_v1_and_v2_redeem_actions,
+        maybe_filter_for_relevant_redeem_actions,
         parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,
         sign_int_txs::maybe_sign_int_txs_and_add_to_state,
     },
@@ -76,7 +76,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(maybe_filter_proofs_for_v1_and_v2_redeem_actions)
+        .and_then(maybe_filter_for_relevant_redeem_actions)
         .and_then(maybe_parse_int_tx_infos_and_put_in_state)
         .and_then(maybe_filter_out_already_processed_tx_infos_from_state)
         .and_then(maybe_add_global_sequences_to_processed_list_and_return_state)
@@ -104,6 +104,7 @@ mod tests {
         chains::{
             eos::{
                 core_initialization::initialize_eos_core::initialize_eos_core_inner,
+                eos_chain_id::EosChainId,
                 eos_crypto::eos_private_key::EosPrivateKey,
                 eos_global_sequences::ProcessedGlobalSequences,
             },
@@ -261,13 +262,13 @@ mod tests {
         let router_address = get_sample_router_address();
 
         // NOTE: Initialize the EOS core...
-        let eos_chain_id = "4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11";
+        let eos_chain_id = EosChainId::UltraMainnet.to_hex();
         let maybe_eos_account_name = None;
         let maybe_eos_token_symbol = None;
         let eos_init_block = get_sample_eos_init_block_2();
         initialize_eos_core_inner(
             &db,
-            eos_chain_id,
+            &eos_chain_id,
             maybe_eos_account_name,
             maybe_eos_token_symbol,
             &eos_init_block,
@@ -317,6 +318,9 @@ mod tests {
         let processed_glob_sequences_before = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert!(processed_glob_sequences_before.is_empty());
 
+        use simple_logger;
+        simple_logger::init().unwrap();
+
         // NOTE: Submit the block with the peg in in it...
         let output = EosOutput::from_str(
             &submit_eos_block_to_core(&db, &get_sample_eos_submission_material_string_2()).unwrap(),
@@ -327,21 +331,21 @@ mod tests {
             "int_signed_transactions":[{
                 "_id":"pint-on-eos-int-0",
                 "broadcast":false,
-                "int_tx_hash":"0x1af095397f13194a4fbbf59300d3cc251844d9bebe1f28954a1602e99b352e0a",
-                "int_tx_amount":"10000000000000000",
-                "eos_tx_amount":"0.01000000 IOE",
+                "int_tx_hash":"0x13ebb8b0dc8114829bf08d2b603911afe36247b283565d14af5d6ed97d72602e",
+                "int_tx_amount":"1000000000000000000",
+                "eos_tx_amount":"1.00000000 PUOS",
                 "int_account_nonce":0,
-                "int_tx_recipient":"0x307866454446653236313645423336363143423846456432373832463546306343393144353944436143",
+                "int_tx_recipient":"0xf3916dDFCbe751e0928D1EE4FC53FA74AEf27C0c",
                 "witnessed_timestamp":1651750150,
-                "host_token_address":"intoneostest",
-                "originating_tx_hash":"40460cd0fcb312cb1aafe6dac8e0f52622176d99d501010a18779e30cca1ff11",
-                "originating_address":"ptestpout111",
+                "host_token_address":"uos1ptokens1",
+                "originating_tx_hash":"7636ba40355a96d495e49c08f786f4e67793aa95e4d103fe229953b5462f5c1e",
+                "originating_address":"ultra.swap",
                 "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
-                "int_signed_tx":"f9032b808504a817c8008306ddd094e0806ce04978224e27c6bb10e27fd30a7785ae9d80b902c422965469000000000000000000000000ec1700a39972482d5db20e73bb3ffe6829b0c1020000000000000000000000004262d1f878d191fbc66dca73bad57309916b1412000000000000000000000000000000000000000000000000002386f26fc100000000000000000000000000000000000000000000000000000000000000000080000000000000000000000000000000000000000000000000000000000000022003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100028c71090000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001400069c32200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000003c0ffee000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000081042c89ad68c55ae000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a30786665646665323631366562333636316362386665643237383266356630636339316435396463616300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002aa00c80762454cbdf9b9bc3544b25ee52b30e3b6dccd9791db7b465aa0ceb2632aba051fe084b0e8154ca39083f50cc024f2778d8fdca8bf301d0640ecbafbd455b9c",
+                "int_signed_tx":"f9030b808504a817c8008306ddd094e0806ce04978224e27c6bb10e27fd30a7785ae9d80b902a422965469000000000000000000000000ec1700a39972482d5db20e73bb3ffe6829b0c1020000000000000000000000004262d1f878d191fbc66dca73bad57309916b14120000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002000300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010002f9337d000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120005fe7f900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000016000000000000000000000000000000000000000000000000000000000000001c000000000000000000000000000000000000000000000000000000000000001e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000080040351c037373d4000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a307866333931366464666362653735316530393238643165653466633533666137346165663237633063000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029a05092bb8d1c7c8c3ada4c8cc74f4630ec906156fb386481c033dd2516dfcfd160a038e7020dd6badde9d88e230a0123d0bac68c08cedea10c47c2dc45bc58c500bf",
                 "int_latest_block_number":12236005,
                 "broadcast_tx_hash":null,
                 "broadcast_timestamp":null,
-                "destination_chain_id": "0x0069c322",
+                "destination_chain_id": "0x005fe7f9",
             }]
         }).to_string()).unwrap();
 
@@ -370,6 +374,6 @@ mod tests {
 
         // NOTE: Assert that we processed the expected global sequence...
         let processed_glob_sequences_after = ProcessedGlobalSequences::get_from_db(&db).unwrap();
-        assert!(processed_glob_sequences_after.contains(&9837463233));
+        assert!(processed_glob_sequences_after.contains(&294821926));
     }
 }

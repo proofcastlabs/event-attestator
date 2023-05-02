@@ -97,6 +97,7 @@ pub fn get_sample_dictionary() -> EosEthTokenDictionary {
     .unwrap()])
 }
 
+#[cfg(feature = "non-validating")]
 pub fn get_sample_dictionary_2() -> EosEthTokenDictionary {
     EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_json(
         &EosEthTokenDictionaryEntryJson {
