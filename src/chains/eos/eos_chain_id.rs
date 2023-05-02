@@ -73,7 +73,7 @@ lazy_static! {
         hex::decode("e70aaab8997e1dfce58fbfac80cbbb8fecec7b99cf982a9444273cbc64c41473")
             .expect("✘ Invalid hex in `EOS_JUNGLE_TESTNET_BYTES`");
     pub static ref ULTRA_MAINNET_BYTES: Bytes =
-        hex::decode("9d4ce4f29989020912def3bd130481ad4d34ab7a6b2cae969a62b11b86f32d7f")
+        hex::decode("a9c481dfbc7d9506dc7e87e9a137c931b0a9303f64fd7a1d08b8230133920097")
             .expect("✘ Invalid hex in `ULTRA_MAINNET_BYTES`");
     pub static ref ULTRA_TESTNET_BYTES: Bytes =
         hex::decode("7fc56be645bb76ab9d747b53089f132dcb7681db06f0852cfa03eaf6f7ac80e9")

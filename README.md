@@ -83,7 +83,7 @@ BscMainnet,       // 0x00e4b170
 EosJungleTestnet, // 0x0282317f
 XDaiMainnet,      // 0x00f1918e
 PolygonMainnet,   // 0x0075dd4c
-UltraMainnet,     // 0x025d3c68
+UltraMainnet,     // 0x02f9337d
 FioMainnet,       // 0x02174f20
 UltraTestnet,     // 0x02b5a4d6
 EthUnknown,       // 0x00000000
