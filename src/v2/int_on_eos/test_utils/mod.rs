@@ -50,11 +50,18 @@ write_int_paths_and_getter_fxn!(
 
 write_eos_paths_and_getter_fxn!(
     0 => "src/v2/int_on_eos/test_utils/eos-init-block-213498746.json",
-    1 => "src/v2/int_on_eos/test_utils/eos-block-213499122.json"
+    1 => "src/v2/int_on_eos/test_utils/eos-block-213499122.json",
+    2 => "src/v2/int_on_eos/test_utils/eos-init-block-117915975.json",
+    3 => "src/v2/int_on_eos/test_utils/eos-submission-material-block-117916087.json"
 );
 
-pub fn get_sample_eos_init_block() -> String {
+pub fn get_sample_eos_init_block_1() -> String {
     read_to_string(get_eos_path_n(0).unwrap()).unwrap()
+}
+
+#[cfg(feature = "non-validating")]
+pub fn get_sample_eos_init_block_2() -> String {
+    read_to_string(get_eos_path_n(2).unwrap()).unwrap()
 }
 
 pub fn get_contiguous_int_block_json_strs() -> Vec<String> {
@@ -90,6 +97,24 @@ pub fn get_sample_dictionary() -> EosEthTokenDictionary {
     .unwrap()])
 }
 
+pub fn get_sample_dictionary_2() -> EosEthTokenDictionary {
+    EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_json(
+        &EosEthTokenDictionaryEntryJson {
+            eth_token_decimals: 18,
+            eos_token_decimals: 8,
+            eth_symbol: "TOK".to_string(),
+            eos_symbol: "PUOS".to_string(),
+            eth_address: "0x4262d1f878d191fbc66dca73bad57309916b1412".to_string(),
+            eos_address: "uos1ptokens1".to_string(),
+            eth_fee_basis_points: None,
+            eos_fee_basis_points: None,
+            accrued_fees: None,
+            last_withdrawal: None,
+        },
+    )
+    .unwrap()])
+}
+
 pub fn get_sample_eos_private_key() -> EosPrivateKey {
     EosPrivateKey::from_wallet_import_format("5KXpfu8A5E8zZcuKuigZFbVUQUPdwDedbKCEnjFdfpMdXgW318K").unwrap()
 }
@@ -104,6 +129,11 @@ pub fn get_sample_int_address() -> EthAddress {
 }
 
 #[cfg(feature = "non-validating")]
-pub fn get_sample_eos_submission_material_string() -> String {
+pub fn get_sample_eos_submission_material_string_1() -> String {
     read_to_string(get_eos_path_n(1).unwrap()).unwrap()
+}
+
+#[cfg(feature = "non-validating")]
+pub fn get_sample_eos_submission_material_string_2() -> String {
+    read_to_string(get_eos_path_n(3).unwrap()).unwrap()
 }
