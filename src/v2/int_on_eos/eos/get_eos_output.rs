@@ -61,12 +61,12 @@ impl TxInfo {
             int_tx_amount: tx_info.amount.to_string(),
             int_tx_hash: format!("0x{}", tx.get_tx_hash()),
             eos_tx_amount: tx_info.eos_tx_amount.to_string(),
+            int_tx_recipient: tx_info.destination_address.clone(),
             originating_address: tx_info.origin_address.to_string(),
             host_token_address: tx_info.eos_token_address.to_string(),
             originating_tx_hash: tx_info.originating_tx_id.to_string(),
             destination_chain_id: tx_info.destination_chain_id.to_hex()?,
             witnessed_timestamp: SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs(),
-            int_tx_recipient: format!("0x{}", hex::encode(tx_info.destination_address.as_bytes())),
             native_token_address: format!("0x{}", hex::encode(tx_info.int_token_address)),
         })
     }

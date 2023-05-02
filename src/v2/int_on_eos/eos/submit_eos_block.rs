@@ -212,7 +212,7 @@ mod tests {
                 "int_tx_amount":"10000000000000000",
                 "eos_tx_amount":"0.01000000 IOE",
                 "int_account_nonce":0,
-                "int_tx_recipient":"0x307866454446653236313645423336363143423846456432373832463546306343393144353944436143",
+                "int_tx_recipient":"0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC",
                 "witnessed_timestamp":1651750150,
                 "host_token_address":"intoneostest",
                 "originating_tx_hash":"40460cd0fcb312cb1aafe6dac8e0f52622176d99d501010a18779e30cca1ff11",
