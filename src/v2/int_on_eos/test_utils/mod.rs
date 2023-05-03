@@ -79,7 +79,7 @@ pub fn get_sample_router_address() -> EthAddress {
     convert_hex_to_eth_address("0xec1700a39972482d5db20e73bb3ffe6829b0c102").unwrap()
 }
 
-pub fn get_sample_dictionary() -> EosEthTokenDictionary {
+pub fn get_sample_dictionary_1() -> EosEthTokenDictionary {
     EosEthTokenDictionary::new(vec![EosEthTokenDictionaryEntry::from_json(
         &EosEthTokenDictionaryEntryJson {
             eth_token_decimals: 18,

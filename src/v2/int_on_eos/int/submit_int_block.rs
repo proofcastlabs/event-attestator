@@ -123,7 +123,7 @@ mod tests {
             int::get_output_json::IntOutput,
             test_utils::{
                 get_contiguous_int_block_json_strs,
-                get_sample_dictionary,
+                get_sample_dictionary_1,
                 get_sample_eos_init_block_1,
                 get_sample_eos_private_key,
                 get_sample_int_address,
@@ -193,7 +193,7 @@ mod tests {
         assert_eq!(int_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
 
         // NOTE: Add the token dictionary to the db...
-        let dictionary = get_sample_dictionary();
+        let dictionary = get_sample_dictionary_1();
         dictionary.save_to_db(&db).unwrap();
 
         // NOTE: Submit the block with the peg in in it...
