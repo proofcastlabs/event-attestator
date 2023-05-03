@@ -54,7 +54,10 @@ pub fn filter_proofs_for_accounts(
         .concat())
 }
 
-fn filter_for_proofs_with_action_name(action_proofs: &[EosActionProof], action_name: &str) -> Result<EosActionProofs> {
+pub fn filter_for_proofs_with_action_name(
+    action_proofs: &[EosActionProof],
+    action_name: &str,
+) -> Result<EosActionProofs> {
     let required_action_name = EosActionName::from_str(action_name)?;
     let filtered: EosActionProofs = action_proofs
         .iter()

@@ -123,8 +123,8 @@ mod tests {
             int::get_output_json::IntOutput,
             test_utils::{
                 get_contiguous_int_block_json_strs,
-                get_sample_dictionary,
-                get_sample_eos_init_block,
+                get_sample_dictionary_1,
+                get_sample_eos_init_block_1,
                 get_sample_eos_private_key,
                 get_sample_int_address,
                 get_sample_int_private_key,
@@ -145,7 +145,7 @@ mod tests {
         let eos_chain_id = "4667b205c6838ef70ff7988f6e8257e8be0e1284a2f59699054a018f743b1d11";
         let maybe_eos_account_name = None;
         let maybe_eos_token_symbol = None;
-        let eos_init_block = get_sample_eos_init_block();
+        let eos_init_block = get_sample_eos_init_block_1();
         let is_native = false;
         initialize_eos_core_inner(
             &db,
@@ -193,7 +193,7 @@ mod tests {
         assert_eq!(int_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
 
         // NOTE: Add the token dictionary to the db...
-        let dictionary = get_sample_dictionary();
+        let dictionary = get_sample_dictionary_1();
         dictionary.save_to_db(&db).unwrap();
 
         // NOTE: Submit the block with the peg in in it...

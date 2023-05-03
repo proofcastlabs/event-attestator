@@ -32,7 +32,7 @@ pub enum MetadataChainId {
     EosJungleTestnet, // 0x0282317f
     XDaiMainnet,      // 0x00f1918e
     PolygonMainnet,   // 0x0075dd4c
-    UltraMainnet,     // 0x025d3c68
+    UltraMainnet,     // 0x02f9337d
     FioMainnet,       // 0x02174f20
     UltraTestnet,     // 0x02b5a4d6
     EthUnknown,       // 0x00000000
@@ -258,7 +258,7 @@ mod tests {
         let chain_ids_bytes = vec![
             "005fe7f9", "0069c322", "00f34368", "01ec97de",
             "018afeb2", "02e7261c", "028c7109", "00e4b170",
-            "0282317f", "00f1918e", "0075dd4c", "025d3c68",
+            "0282317f", "00f1918e", "0075dd4c", "02f9337d",
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
             "0022af98", "03c38e67", "02a75f2c", "026776fa",
