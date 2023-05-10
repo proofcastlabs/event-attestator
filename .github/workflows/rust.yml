@@ -10,7 +10,81 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build_and_test:
+    build_and_test:
+      runs-on: ubuntu-20.04
+      steps:
+        - name: Checkout ptokens_core
+          uses: actions/checkout@v2
+  
+        - name: Install stable Rust (minimal)
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: stable
+            override: true
+  
+        - name: Cache stable
+          uses: Swatinem/rust-cache@v1
+  
+        - name: Check code
+          run: cargo check
+  
+        - name: Build code
+          run: cargo build
+  
+        - name: Run tests
+          run: cargo test
+  
+        - name: Run non validating tests
+          run: cargo test --features non-validating
+  
+    check_formatting:
+      runs-on: ubuntu-20.04
+      steps:
+        - name: Checkout ptokens_core
+          uses: actions/checkout@v2
+  
+        - name: Install nightly Rust (minimal with clippy and rustfmt)
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: nightly
+            override: true
+            components: rustfmt
+  
+        - name: Cache nightly
+          uses: Swatinem/rust-cache@v1
+  
+        - name: Check code formatting
+          uses: actions-rs/cargo@v1
+          with:
+            command: fmt
+            args: --all -- --check
+  
+    check_clippy:
+      runs-on: ubuntu-20.04
+      steps:
+        - name: Checkout ptokens_core
+          uses: actions/checkout@v2
+  
+        - name: Install stable Rust (minimal with clippy and rustfmt)
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: stable
+            override: true
+            components: clippy
+  
+        - name: Cache stable
+          uses: Swatinem/rust-cache@v1
+  
+        - name: Check clippy
+          uses: actions-rs/clippy-check@v1
+          with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            args: -- -D warnings
+
+  run_shell_tests:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout ptokens_core
@@ -22,64 +96,9 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
-
+ 
       - name: Cache stable
         uses: Swatinem/rust-cache@v1
 
-      - name: Check code
-        run: cargo check
-
-      - name: Build code
-        run: cargo build
-
-      - name: Run tests
-        run: cargo test
-
-      - name: Run non validating tests
-        run: cargo test --features non-validating
-
-  check_formatting:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout ptokens_core
-        uses: actions/checkout@v2
-
-      - name: Install nightly Rust (minimal with clippy and rustfmt)
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: nightly
-          override: true
-          components: rustfmt
-
-      - name: Cache nightly
-        uses: Swatinem/rust-cache@v1
-
-      - name: Check code formatting
-        uses: actions-rs/cargo@v1
-        with:
-          command: fmt
-          args: --all -- --check
-
-  check_clippy:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout ptokens_core
-        uses: actions/checkout@v2
-
-      - name: Install stable Rust (minimal with clippy and rustfmt)
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          components: clippy
-
-      - name: Cache stable
-        uses: Swatinem/rust-cache@v1
-
-      - name: Check clippy
-        uses: actions-rs/clippy-check@v1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          args: -- -D warnings
+      - name: Run shell tests
+        run: ./run-all-shell-tests.sh
