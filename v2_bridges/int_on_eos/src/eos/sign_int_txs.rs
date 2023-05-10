@@ -10,7 +10,6 @@ use common_eth::{
     EthTransactions,
     ZERO_ETH_VALUE,
 };
-use common_metadata::ToMetadata;
 
 use crate::eos::int_tx_info::{IntOnEosIntTxInfo, IntOnEosIntTxInfos};
 

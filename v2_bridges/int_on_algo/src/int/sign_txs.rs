@@ -4,7 +4,6 @@ use common::{
 };
 use common_algorand::{AlgoDbUtils, AlgoUserData, ALGO_MAX_FOREIGN_ITEMS};
 use common_eth::EthState;
-use common_metadata::ToMetadata;
 use rust_algorand::{
     AlgorandAddress,
     AlgorandApplicationArg,

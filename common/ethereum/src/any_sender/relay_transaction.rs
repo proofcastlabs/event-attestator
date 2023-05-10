@@ -1,11 +1,6 @@
-#[cfg(test)]
-use std::str::FromStr;
-
 use common::types::{Byte, Bytes, Result};
 #[cfg(test)]
 use common::utils::strip_hex_prefix;
-#[cfg(test)]
-use common::AppError;
 use common_chain_ids::EthChainId;
 use derive_more::Deref;
 use ethabi::{encode, Token};

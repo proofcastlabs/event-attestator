@@ -9,7 +9,6 @@ use common_eth::{
     EthTransactions as IntTransactions,
     ZERO_ETH_VALUE,
 };
-use common_metadata::ToMetadata;
 
 use crate::algo::int_tx_info::{IntOnAlgoIntTxInfo, IntOnAlgoIntTxInfos};
 

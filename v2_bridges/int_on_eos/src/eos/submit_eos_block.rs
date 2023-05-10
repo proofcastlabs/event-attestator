@@ -14,7 +14,6 @@ use common_eos::{
     maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
     maybe_filter_out_proofs_with_invalid_merkle_proofs,
     maybe_filter_out_proofs_with_wrong_action_mroot,
-    maybe_filter_proofs_for_v2_redeem_actions,
     parse_submission_material_and_add_to_state,
     save_incremerkle_from_state_to_db,
     save_latest_block_id_to_db,

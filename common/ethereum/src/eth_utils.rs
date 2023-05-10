@@ -37,7 +37,7 @@ pub fn convert_hex_to_h256(hex: &str) -> Result<H256> {
 }
 
 pub fn convert_hex_strings_to_h256s(hex_strings: &[String]) -> Result<Vec<H256>> {
-    hex_strings.into_iter().map(|ref s| convert_hex_to_h256(s)).collect()
+    hex_strings.iter().map(|s| convert_hex_to_h256(s)).collect()
 }
 
 pub fn convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
@@ -50,7 +50,7 @@ pub fn convert_hex_to_eth_address(hex: &str) -> Result<EthAddress> {
 }
 
 pub fn convert_hex_strings_to_eth_addresses(hex_strings: &[String]) -> Result<Vec<EthAddress>> {
-    hex_strings.iter().map(|ref s| convert_hex_to_eth_address(s)).collect()
+    hex_strings.iter().map(|s| convert_hex_to_eth_address(s)).collect()
 }
 
 pub fn convert_eth_address_to_string(eth_address: &EthAddress) -> String {
