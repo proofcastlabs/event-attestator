@@ -38,7 +38,7 @@ jobs:
       - name: Run non validating tests
         run: cargo test --features non-validating
 
-  check_formating_and_clippy:
+  check_formatting:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout ptokens_core
@@ -50,7 +50,7 @@ jobs:
           profile: minimal
           toolchain: nightly
           override: true
-          components: rustfmt, clippy
+          components: rustfmt
 
       - name: Cache nightly
         uses: Swatinem/rust-cache@v1
@@ -60,6 +60,23 @@ jobs:
         with:
           command: fmt
           args: --all -- --check
+
+  check_clippy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout ptokens_core
+        uses: actions/checkout@v2
+
+      - name: Install stable Rust (minimal with clippy and rustfmt)
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+          components: clippy
+
+      - name: Cache stable
+        uses: Swatinem/rust-cache@v1
 
       - name: Check clippy
         uses: actions-rs/clippy-check@v1
