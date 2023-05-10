@@ -11,6 +11,7 @@ mod sign_int_txs;
 mod submit_eos_block;
 
 // FIXME Used in `State`.
+pub(in crate::v2::int_on_eos) use self::filter_for_redeems::maybe_filter_for_relevant_redeem_actions;
 pub(crate) use self::int_tx_info::IntOnEosIntTxInfos;
 pub(super) use self::{
     divert_to_safe_address::{
@@ -23,6 +24,4 @@ pub(super) use self::{
     increment_int_nonce::maybe_increment_int_nonce_in_db_and_return_eos_state,
     parse_tx_info::maybe_parse_int_tx_infos_and_put_in_state,
 };
-
-pub(in crate::v2::int_on_eos::eos) use self::filter_for_redeems::maybe_filter_for_relevant_redeem_actions;
 pub use self::{initialize_eos_core::maybe_initialize_eos_core, submit_eos_block::submit_eos_block_to_core};

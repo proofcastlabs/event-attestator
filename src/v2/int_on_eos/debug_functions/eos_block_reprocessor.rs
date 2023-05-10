@@ -19,7 +19,6 @@ use crate::{
                 maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
                 maybe_filter_out_proofs_with_invalid_merkle_proofs,
                 maybe_filter_out_proofs_with_wrong_action_mroot,
-                maybe_filter_proofs_for_v2_redeem_actions,
             },
             get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
         },
@@ -39,6 +38,7 @@ use crate::{
             divert_tx_infos_to_safe_address_if_destination_is_vault_address,
             divert_tx_infos_to_safe_address_if_destination_is_zero_address,
             get_tx_infos_from_signed_txs,
+            maybe_filter_for_relevant_redeem_actions,
             maybe_increment_int_nonce_in_db_and_return_eos_state,
             maybe_parse_int_tx_infos_and_put_in_state,
             EosOutput,
@@ -72,7 +72,7 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(maybe_filter_out_invalid_action_receipt_digests)
         .and_then(maybe_filter_out_proofs_with_invalid_merkle_proofs)
         .and_then(maybe_filter_out_proofs_with_wrong_action_mroot)
-        .and_then(maybe_filter_proofs_for_v2_redeem_actions)
+        .and_then(maybe_filter_for_relevant_redeem_actions)
         .and_then(maybe_parse_int_tx_infos_and_put_in_state)
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_vault_address)

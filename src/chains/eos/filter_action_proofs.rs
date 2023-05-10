@@ -186,6 +186,7 @@ pub fn maybe_filter_proofs_for_v1_redeem_actions<D: DatabaseInterface>(state: Eo
         .and_then(|proofs| state.replace_action_proofs(proofs))
 }
 
+#[allow(unused)]
 pub fn maybe_filter_proofs_for_v2_redeem_actions<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     info!(
         "✔ Filtering for proofs with action name: '{}'...",
