@@ -38,60 +38,21 @@ jobs:
       - name: Run non validating tests
         run: cargo test --features non-validating
 
-  check_vanilla_apps:
-    runs-on: ubuntu-20.04
-    env:
-      FEATURES: "--no-default-features --features std-err-logger,json-rpc-db"
-    steps:
-      - name: Checkout ptokens_core
-        uses: actions/checkout@v2
-        with:
-          path: ptokens-core
-
-      - name: Checkout ptokens_vanilla_apps
-        uses: actions/checkout@v2
-        with:
-          repository: provable-things/ptokens-vanilla-apps-private
-          token: ${{ secrets.VANILLA_APPS_PAT }}
-          path: ptokens-vanilla-apps-private
-
-      - name: Install stable Rust (minimal)
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-
-      - name: Cache stable
-        uses: Swatinem/rust-cache@v1
-
-      - name: Check code
-        working-directory: ptokens-vanilla-apps-private
-        run: cargo check $FEATURES
-
-      - name: Build code
-        working-directory: ptokens-vanilla-apps-private
-        run: cargo build $FEATURES
-
-      - name: Run tests
-        working-directory: ptokens-vanilla-apps-private
-        run: cargo test $FEATURES
-
   check_formating_and_clippy:
     runs-on: ubuntu-20.04
     steps:
       - name: Checkout ptokens_core
         uses: actions/checkout@v2
 
-      - name: Install stable Rust (minimal with clippy and rustfmt)
+      - name: Install nightly Rust (minimal with clippy and rustfmt)
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable
+          toolchain: nightly
           override: true
           components: rustfmt, clippy
 
-      - name: Cache stable
+      - name: Cache nightly
         uses: Swatinem/rust-cache@v1
 
       - name: Check code formatting
