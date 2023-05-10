@@ -50,7 +50,13 @@ pub use self::{
     },
     eos_action_proofs::EosActionProof,
     eos_actions::PTokenPegOutAction,
-    eos_constants::{EOS_ACCOUNT_PERMISSION_LEVEL, MAX_BYTES_FOR_EOS_USER_DATA, PEGOUT_ACTION_NAME},
+    eos_constants::{
+        EOS_ACCOUNT_PERMISSION_LEVEL,
+        MAX_BYTES_FOR_EOS_USER_DATA,
+        PEGOUT_ACTION_NAME,
+        REDEEM_ACTION_NAME,
+        V2_REDEEM_ACTION_NAME,
+    },
     eos_crypto::{
         eos_private_key::EosPrivateKey,
         eos_transaction::{get_signed_eos_ptoken_issue_tx, EosSignedTransaction, EosSignedTransactions},
@@ -90,6 +96,7 @@ pub use self::{
         remove_symbol_from_eos_asset,
     },
     filter_action_proofs::{
+        filter_for_proofs_with_action_name,
         maybe_filter_duplicate_proofs_from_state,
         maybe_filter_out_action_proof_receipt_mismatches_and_return_state,
         maybe_filter_out_invalid_action_receipt_digests,

@@ -10,7 +10,6 @@ members = [
     "common/chain_ids",
     "common/file_logger",
     "common/enclave_info",
-    "v3_bridges/sentinel",
     "common/stderr_logger",
     "common/docopt_macros",
     "common/debug_signers",

@@ -1,12 +1,10 @@
+use common::{traits::DatabaseInterface, types::Result};
+use common_chain_ids::EosChainId;
 use common_eos::{
-    eos_chain_id::EosChainId,
-    eos_constants::{REDEEM_ACTION_NAME as V1_REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
-    eos_state::EosState,
-    filter_action_proofs::filter_for_proofs_with_action_name,
-};
-use common::{
-    traits::DatabaseInterface,
-    types::Result,
+    filter_for_proofs_with_action_name,
+    EosState,
+    REDEEM_ACTION_NAME as V1_REDEEM_ACTION_NAME,
+    V2_REDEEM_ACTION_NAME,
 };
 
 pub fn maybe_filter_for_relevant_redeem_actions<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {

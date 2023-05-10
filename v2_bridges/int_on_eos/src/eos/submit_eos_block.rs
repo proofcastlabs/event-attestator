@@ -25,13 +25,13 @@ use common_eos::{
 };
 
 use crate::eos::{
-    maybe_filter_for_relevant_redeem_actions,
     divert_tx_infos_to_safe_address_if_destination_is_router_address,
     divert_tx_infos_to_safe_address_if_destination_is_token_address,
     divert_tx_infos_to_safe_address_if_destination_is_vault_address,
     divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-    maybe_filter_out_already_processed_tx_infos_from_state,
     get_eos_output,
+    maybe_filter_for_relevant_redeem_actions,
+    maybe_filter_out_already_processed_tx_infos_from_state,
     maybe_increment_int_nonce_in_db_and_return_eos_state,
     maybe_parse_int_tx_infos_and_put_in_state,
     maybe_sign_int_txs_and_add_to_state,
@@ -85,7 +85,8 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
 mod tests {
     use std::str::FromStr;
 
-    use common::{test_utils::get_test_database, EthChainId};
+    use common::test_utils::get_test_database;
+    use common_chain_ids::{EosChainId, EthChainId};
     use common_eos::{initialize_eos_core_inner, EosPrivateKey, ProcessedGlobalSequences};
     use common_eth::{
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,
