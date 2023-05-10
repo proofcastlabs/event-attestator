@@ -83,15 +83,15 @@ jobs:
       - name: Checkout ptokens_core
         uses: actions/checkout@v2
 
-      - name: Install nightly Rust (minimal with clippy and rustfmt)
+      - name: Install stable Rust (minimal with clippy and rustfmt)
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: nightly
+          toolchain: stable
           override: true
           components: rustfmt, clippy
 
-      - name: Cache nightly
+      - name: Cache stable
         uses: Swatinem/rust-cache@v1
 
       - name: Check code formatting
