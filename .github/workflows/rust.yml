@@ -84,21 +84,21 @@ jobs:
             token: ${{ secrets.GITHUB_TOKEN }}
             args: -- -D warnings
 
-  run_shell_tests:
-    runs-on: ubuntu-20.04
-    steps:
-      - name: Checkout ptokens_core
-        uses: actions/checkout@v2
+    run_shell_tests:
+      runs-on: ubuntu-20.04
+      steps:
+        - name: Checkout ptokens_core
+          uses: actions/checkout@v2
 
-      - name: Install stable Rust (minimal)
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
- 
-      - name: Cache stable
-        uses: Swatinem/rust-cache@v1
+        - name: Install stable Rust (minimal)
+          uses: actions-rs/toolchain@v1
+          with:
+            profile: minimal
+            toolchain: stable
+            override: true
+   
+        - name: Cache stable
+          uses: Swatinem/rust-cache@v1
 
-      - name: Run shell tests
-        run: ./run-all-shell-tests.sh
+        - name: Run shell tests
+          run: ./run-all-shell-tests.sh
