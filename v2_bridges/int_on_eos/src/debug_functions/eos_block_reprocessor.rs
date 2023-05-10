@@ -12,7 +12,6 @@ use common_eos::{
     maybe_filter_out_proofs_for_accounts_not_in_token_dictionary,
     maybe_filter_out_proofs_with_invalid_merkle_proofs,
     maybe_filter_out_proofs_with_wrong_action_mroot,
-    maybe_filter_proofs_for_v2_redeem_actions,
     parse_submission_material_and_add_to_state,
     EosState,
 };
@@ -28,8 +27,8 @@ use crate::{
         divert_tx_infos_to_safe_address_if_destination_is_token_address,
         divert_tx_infos_to_safe_address_if_destination_is_vault_address,
         divert_tx_infos_to_safe_address_if_destination_is_zero_address,
-        maybe_filter_for_relevant_redeem_actions,
         get_tx_infos_from_signed_txs,
+        maybe_filter_for_relevant_redeem_actions,
         maybe_increment_int_nonce_in_db_and_return_eos_state,
         maybe_parse_int_tx_infos_and_put_in_state,
         EosOutput,

@@ -10,7 +10,6 @@ mod parse_tx_info;
 mod sign_int_txs;
 mod submit_eos_block;
 
-pub(in crate::v2::int_on_eos) use self::filter_for_redeems::maybe_filter_for_relevant_redeem_actions;
 pub(super) use self::{
     divert_to_safe_address::{
         divert_tx_infos_to_safe_address_if_destination_is_router_address,
