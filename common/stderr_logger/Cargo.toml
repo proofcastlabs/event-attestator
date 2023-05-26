@@ -1,0 +1,13 @@
+[package]
+edition = "2021"
+version = "1.0.0"
+rust-version = "1.56"
+name = "stderr_logger"
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[dependencies]
+stderrlog =  "0.5.1"
+common = { package = "common", path = "../common" }
+
+[lib]
+doctest = false

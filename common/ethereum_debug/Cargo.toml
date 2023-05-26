@@ -1,0 +1,28 @@
+[package]
+license = "MIT"
+publish = false
+edition = "2021"
+name = "ethereum_debug"
+version = "6.10.1"
+readme = "README.md"
+rust-version = "1.56"
+keywords = ["provable", "defi", "crypto"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[dependencies]
+hex = "0.4.3"
+log = "0.4.14"
+serde_json = "1.0.68"
+function_name = "0.3.0"
+ethereum-types = "0.12.1"
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+
+common = { path = "../common" }
+common_eth = { package = "ethereum", path = "../ethereum" }
+common_debug_signers = { package = "debug_signers", path = "../debug_signers" }
+
+[dev-dependencies]
+simple_logger = "2.0.0"
+
+[lib]
+doctest = false

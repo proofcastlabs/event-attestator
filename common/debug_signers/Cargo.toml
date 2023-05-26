@@ -1,0 +1,33 @@
+[package]
+license = "MIT"
+publish = false
+edition = "2021"
+version = "6.10.1"
+readme = "README.md"
+rust-version = "1.56"
+name = "debug_signers"
+keywords = ["defi", "crypto"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[dependencies]
+hex = "0.4.3"
+log = "0.4.14"
+rand = "0.8.4"
+serde_json = "1.0.68"
+lazy_static = "1.4.0"
+function_name = "0.3.0"
+derive_more = "0.99.16"
+ethereum-types = "0.12.1"
+serde = { version = "1.0.130", features = ["derive"] }
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+eip-712 = { git = "https://github.com/paritytech/EIP-712", rev = "551dfd9" }
+
+common = { path = "../common" }
+common_eth = { package = "ethereum", path = "../ethereum" }
+common_safe_addresses = { package = "safe_addresses", path = "../safe_addresses" }
+
+[dev-dependencies]
+simple_logger = "2.0.0"
+
+[lib]
+doctest = false

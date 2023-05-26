@@ -1,0 +1,42 @@
+[package]
+license = "MIT"
+publish = false
+edition = "2021"
+name = "algorand"
+version = "6.10.1"
+readme = "README.md"
+rust-version = "1.56"
+keywords = ["provable", "defi", "crypto"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[dependencies]
+hex = "0.4.3"
+log = "0.4.14"
+paste = "1.0.6"
+lazy_static = "1.4.0"
+rmp-serde = "0.15.5"
+serde_with = "1.11.0"
+serde_json = "1.0.68"
+serde_bytes = "0.11.6"
+function_name = "0.3.0"
+derive_more = "0.99.16"
+ethereum-types = "0.12.1"
+debug_signers = { path = "../debug_signers" }
+serde = { version = "1.0.130", features = ["derive"] }
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
+
+common = { path = "../common" }
+common_eth = { package = "ethereum", path = "../ethereum" }
+common_metadata = { package = "metadata", path = "../metadata" }
+common_safe_addresses = { package = "safe_addresses", path = "../safe_addresses" }
+
+[dev-dependencies]
+simple_logger = "2.0.0"
+
+[features]
+# Disables block validation
+non-validating = []
+
+[lib]
+doctest = false
