@@ -1,6 +1,3 @@
-#[cfg(test)]
-pub const EOS_ADDRESS_LENGTH_IN_BYTES: usize = 8;
-
 pub const MEMO: &str = "";
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;

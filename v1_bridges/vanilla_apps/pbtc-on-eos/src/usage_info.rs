@@ -43,9 +43,9 @@ Usage:  pbtc-on-eos [--help]
         pbtc-on-eos debugReprocessBtcBlock (<blocksJson> | --file=<path>) [--sig=<hex>]
         pbtc-on-eos debugReprocessEosBlock (<blocksJson> | --file=<path>) [--sig=<hex>]
         pbtc-on-eos debugGetChildPaysForParentTx <txId> <vOut> [--fee=<uint>] [--sig=<hex>]
-        pbtc-on-eos debugConsolidateUtxosToAddress <numUtxos> <address>[--fee=<uint>] [--sig=<hex>]
         pbtc-on-eos debugReprocessBtcBlockAccruingFees (<blocksJson> | --file=<path>) [--sig=<hex>]
         pbtc-on-eos debugReprocessEosBlockAccruingFees (<blocksJson> | --file=<path>) [--sig=<hex>]
+        pbtc-on-eos debugConsolidateUtxosToAddress <numUtxos> <address> [--fee=<uint>] [--sig=<hex>]
 
 Commands:
 

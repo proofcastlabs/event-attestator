@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-version = "2.1.0"
+version = "2.1.1"
 name = "pbtc-on-eos"
 rust-version = "1.56"
 authors = ["Greg Kapka <gregkapka@gmail.com>"]

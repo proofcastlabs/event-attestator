@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     eos_action_receipt::EosActionReceipt,
-    eos_constants::REDEEM_ACTION_NAME,
+    eos_constants::{REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
     eos_global_sequences::GlobalSequence,
     eos_types::{MerkleProof, PermissionLevels},
     eos_utils::{convert_hex_to_checksum256, get_symbol_from_eos_asset},
@@ -53,6 +53,10 @@ impl Eq for EosActionProof {}
 impl EosActionProof {
     pub fn is_v1_redeem(&self) -> bool {
         self.action.name.to_string() == REDEEM_ACTION_NAME
+    }
+
+    pub fn is_v2_redeem(&self) -> bool {
+        self.action.name.to_string() == V2_REDEEM_ACTION_NAME
     }
 
     pub fn get_global_sequence(&self) -> GlobalSequence {
