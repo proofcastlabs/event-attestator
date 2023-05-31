@@ -86,6 +86,7 @@ impl IntOnEosIntTxInfo {
                 &proof.get_action_eos_account().to_string(),
             )
             .and_then(|dictionary_entry| {
+                let eos_address = dictionary_entry.eos_address.clone();
                 let amount = Self::get_redeem_amount_from_proof(proof, &dictionary_entry)?;
                 let eos_tx_amount = dictionary_entry.convert_u256_to_eos_asset_string(&amount)?;
 
@@ -100,17 +101,21 @@ impl IntOnEosIntTxInfo {
                             // NOTE: Ultra currently has some restrictions meaning `redeem2` actions cannot be used
                             // when upgrading from a v1 bridge. Instead, we listen for _both_ v1 and v2 actions in
                             // here, and in the case of the former, we default to ETH mainnet as the destination.
-                            warn!(
-                                "ultra v1 redeem action detected, defaulting to ETH mainnet for destination chain ID"
-                            );
+                            warn!("ULTRA v1 redeem detected, defaulting to ETH mainnet as destination chain ID");
                             Ok(MetadataChainId::EthereumMainnet)
                         },
                         EosChainId::EosMainnet => {
-                            // NOTE: The v1 pBTC EOS-based smart contract can currently only emit v1 redeem actions.
-                            // So when we see such an action coming from the EOS mainnet, we assume it's destination
-                            // is the BTC mainnet.
-                            warn!("eos v1 redeem action detected, defaulting to BTC mainnet for destination chain ID");
-                            Ok(MetadataChainId::BitcoinMainnet)
+                            match eos_address.as_ref() {
+                                "wmbt.ptokens" => {
+                                    warn!("pWOMBAT on EOS v1 redeem action detected, using ETH mainnet as destination chain ID");
+                                    Ok(MetadataChainId::EthereumMainnet)
+                                },
+                                "btc.ptokens" => {
+                                    warn!("pBTC on EOS v1 redeem action detected, using BTC mainnet as destination chain ID");
+                                    Ok(MetadataChainId::BitcoinMainnet)
+                                },
+                                _ => Err(format!("cannot handle EOS v1 redeem action from address: {eos_address}").into()),
+                            }
                         },
                         _ => Err(format!("cannot handle v1 redeem action from origin chain: {origin_chain_id}").into()),
                     }
@@ -121,11 +126,11 @@ impl IntOnEosIntTxInfo {
                     amount,
                     eos_tx_amount,
                     destination_chain_id,
+                    eos_token_address: eos_address,
                     originating_tx_id: proof.tx_id,
                     router_address: *router_address,
                     int_vault_address: *int_vault_address,
                     origin_address: proof.get_action_sender()?,
-                    eos_token_address: dictionary_entry.eos_address,
                     int_token_address: dictionary_entry.eth_address,
                     user_data: Self::get_user_data_from_proof(proof)?,
                     global_sequence: proof.action_receipt.global_sequence,
