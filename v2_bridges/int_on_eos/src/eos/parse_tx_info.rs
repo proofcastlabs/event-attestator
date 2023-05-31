@@ -88,15 +88,34 @@ impl IntOnEosIntTxInfo {
             .and_then(|dictionary_entry| {
                 let amount = Self::get_redeem_amount_from_proof(proof, &dictionary_entry)?;
                 let eos_tx_amount = dictionary_entry.convert_u256_to_eos_asset_string(&amount)?;
-                let destination_chain_id = if proof.is_v1_redeem() && origin_chain_id == &EosChainId::UltraMainnet {
-                    // NOTE: Ultra currently has some restrictions meaning `redeem2` actions cannot be used
-                    // when upgrading from a v1 bridge. Instead, we listen for _both_ v1 and v2 actions in
-                    // here, and in the case of the former, we default to ETH mainnet as the destination.
-                    warn!("ultra v1 redeem action detected, defaulting to ETH mainnet for destination chain ID");
-                    MetadataChainId::EthereumMainnet
+
+                let destination_chain_id = if proof.is_v2_redeem() {
+                    Self::get_destination_chain_id_from_proof(proof)
                 } else {
-                    Self::get_destination_chain_id_from_proof(proof)?
-                };
+                    // NOTE: If in future we need more granular control here, we can also match on
+                    // the eos addresses in the dictionary. That would however require hard coding
+                    // addresses which is less than ideal.
+                    match origin_chain_id {
+                        EosChainId::UltraMainnet => {
+                            // NOTE: Ultra currently has some restrictions meaning `redeem2` actions cannot be used
+                            // when upgrading from a v1 bridge. Instead, we listen for _both_ v1 and v2 actions in
+                            // here, and in the case of the former, we default to ETH mainnet as the destination.
+                            warn!(
+                                "ultra v1 redeem action detected, defaulting to ETH mainnet for destination chain ID"
+                            );
+                            Ok(MetadataChainId::EthereumMainnet)
+                        },
+                        EosChainId::EosMainnet => {
+                            // NOTE: The v1 pBTC EOS-based smart contract can currently only emit v1 redeem actions.
+                            // So when we see such an action coming from the EOS mainnet, we assume it's destination
+                            // is the BTC mainnet.
+                            warn!("eos v1 redeem action detected, defaulting to BTC mainnet for destination chain ID");
+                            Ok(MetadataChainId::BitcoinMainnet)
+                        },
+                        _ => Err(format!("cannot handle v1 redeem action from origin chain: {origin_chain_id}").into()),
+                    }
+                }?;
+
                 info!("✔ Converting action proof to `erc20-on-eos` redeem info...");
                 Ok(Self {
                     amount,
