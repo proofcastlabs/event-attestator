@@ -59,9 +59,11 @@ write_algo_paths_and_getter_fxn!(
     2 => "src/test_utils/algo-block-20642398.json",
     3 => "src/test_utils/algo-block-21515430.json",
     4 => "src/test_utils/algo-block-21515431.json",
-    5 => "src/test_utils/algo-block-21530957.json",
-    6 => "src/test_utils/algo-block-21530958.json",
-    7 => "src/test_utils/algo-block-17962555.json"
+    5 => "src/test_utils/algo-block-21515432.json",
+    6 => "src/test_utils/algo-block-21530957.json",
+    7 => "src/test_utils/algo-block-21530958.json",
+    8 => "src/test_utils/algo-block-21530959.json",
+    9 => "src/test_utils/algo-block-17962555.json"
 );
 
 pub fn get_sample_vault_address() -> EthAddress {
@@ -105,13 +107,15 @@ pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_p
     vec![
         read_to_string(get_algo_path_n(3).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(4).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(5).unwrap()).unwrap(),
     ]
 }
 
 pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out() -> Vec<String> {
     vec![
-        read_to_string(get_algo_path_n(5).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(6).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(7).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(8).unwrap()).unwrap(),
     ]
 }
 

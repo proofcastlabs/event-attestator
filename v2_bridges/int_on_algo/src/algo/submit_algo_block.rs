@@ -225,7 +225,7 @@ mod tests {
         let algo_submission_material = get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();
-        let algo_peg_in_block = algo_submission_material[2].clone();
+        let algo_peg_out_block = algo_submission_material[1].clone();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
@@ -291,11 +291,11 @@ mod tests {
             .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
             .unwrap();
 
-        // NOTE: Submit the block containing the peg in, though there will be no output due to 1 confirmations.
-        submit_algo_block_to_core(&db, &algo_submission_material[1]).unwrap();
+        // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
+        submit_algo_block_to_core(&db, &algo_peg_out_block).unwrap();
 
         // NOTE: Submit the next block to the core, which will result in a signed transaction.
-        let output = submit_algo_block_to_core(&db, &algo_peg_in_block).unwrap();
+        let output = submit_algo_block_to_core(&db, &algo_submission_material[2]).unwrap();
         let expected_result_json = json!({
             "algo_latest_block_number":20642398,
             "int_signed_transactions":[{
@@ -331,7 +331,7 @@ mod tests {
             get_sample_contiguous_algo_submission_json_strings_for_application_call_peg_out();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();
-        let algo_peg_in_block = algo_submission_material[1].clone();
+        let algo_peg_out_block = algo_submission_material[1].clone();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
@@ -397,10 +397,13 @@ mod tests {
             .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
             .unwrap();
 
-        // NOTE: Submit the block containing the peg in, though there will be no output due to 1 confirmations.
-        let output = submit_algo_block_to_core(&db, &algo_peg_in_block).unwrap();
+        // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
+        submit_algo_block_to_core(&db, &algo_peg_out_block).unwrap();
+
+        // NOTE: Submit the next block to the core, which will result in a signed transaction.
+        let output = submit_algo_block_to_core(&db, &algo_submission_material[2]).unwrap();
         let expected_result_json = json!({
-            "algo_latest_block_number": 21515431,
+            "algo_latest_block_number": 21515432,
             "int_signed_transactions":[{
                 "_id":"pint-on-algo-int-0",
                 "broadcast":false,
@@ -434,7 +437,7 @@ mod tests {
             get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();
-        let algo_peg_in_block = algo_submission_material[1].clone();
+        let algo_peg_out_block = algo_submission_material[1].clone();
         let router_address = get_sample_router_address();
         let vault_address = get_sample_vault_address();
         let int_confirmations = 0;
@@ -500,10 +503,13 @@ mod tests {
             .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
             .unwrap();
 
-        // NOTE: Submit the block containing the peg in, though there will be no output due to 1 confirmations.
-        let output = submit_algo_block_to_core(&db, &algo_peg_in_block).unwrap();
+        // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
+        submit_algo_block_to_core(&db, &algo_peg_out_block).unwrap();
+
+        // NOTE: Submit the next block to the core, which will result in a signed transaction.
+        let output = submit_algo_block_to_core(&db, &algo_submission_material[2]).unwrap();
         let expected_result_json = json!({
-            "algo_latest_block_number": 21530958,
+            "algo_latest_block_number": 21530959,
             "int_signed_transactions":[{
                 "_id":"pint-on-algo-int-0",
                 "broadcast":false,
