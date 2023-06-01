@@ -105,9 +105,11 @@ mod tests {
         test_utils::{
             get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out,
             get_sample_contiguous_algo_submission_json_strings_for_application_call_peg_out,
-            get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out,
+            get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_1,
+            get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_2,
             get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in,
-            get_sample_evm_algo_dictionary_entry,
+            get_sample_evm_algo_dictionary_entry_1,
+            get_sample_evm_algo_dictionary_entry_2,
             get_sample_router_address,
             get_sample_vault_address,
         },
@@ -219,10 +221,11 @@ mod tests {
 
     #[test]
     #[serial]
-    fn should_submit_algo_block_with_asset_transfer_peg_out_successfully() {
+    fn should_submit_algo_block_with_asset_transfer_peg_out_successfully_1() {
         let db = get_test_database();
         let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
-        let algo_submission_material = get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out();
+        let algo_submission_material =
+            get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_1();
         let int_init_block = int_submission_material[0].clone();
         let algo_init_block = algo_submission_material[0].clone();
         let algo_peg_out_block = algo_submission_material[1].clone();
@@ -288,7 +291,7 @@ mod tests {
 
         // NOTE Save the token dictionary into the db...
         EvmAlgoTokenDictionary::new(vec![])
-            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
+            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry_1(), &db)
             .unwrap();
 
         // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
@@ -316,6 +319,111 @@ mod tests {
                 "broadcast_tx_hash":null,
                 "broadcast_timestamp":null
             }]
+        });
+        let expected_result = AlgoOutput::from_str(&expected_result_json.to_string()).unwrap();
+        let result = AlgoOutput::from_str(&output).unwrap();
+        assert_output(&result, &expected_result);
+    }
+
+    #[test]
+    #[serial]
+    fn should_submit_algo_block_with_asset_transfer_peg_out_successfully_2() {
+        let db = get_test_database();
+        let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
+        let algo_submission_material =
+            get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_2();
+        let int_init_block = int_submission_material[0].clone();
+        let algo_init_block = algo_submission_material[0].clone();
+        let algo_peg_out_block = algo_submission_material[1].clone();
+        let router_address = get_sample_router_address();
+        let vault_address = get_sample_vault_address();
+        let int_confirmations = 0;
+        let algo_confirmations = 1;
+        let gas_price = 20_000_000_000;
+        let algo_fee = 1000;
+        let app_id = 1337;
+
+        // NOTE: Initialize the INT side of the core...
+        let is_native = true;
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &int_init_block,
+            &EthChainId::Ropsten,
+            gas_price,
+            int_confirmations,
+            EthState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::IntOnAlgo,
+            is_native,
+        )
+        .unwrap();
+
+        // NOTE: Initialize the ALGO side of the core...
+        maybe_initialize_algo_core(
+            &db,
+            &algo_init_block,
+            &AlgorandGenesisId::Mainnet.to_string(),
+            algo_fee,
+            algo_confirmations,
+            app_id,
+        )
+        .unwrap();
+
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let int_address = convert_hex_to_eth_address("0x49B9d619E3402de8867A8113C7bc204653F5DB4c").unwrap();
+        let int_private_key = EthPrivateKey::from_slice(
+            &hex::decode("e87a3a4b16ffc44c78d53f633157f0c08dc085a33483c2cbae78aa5892247e4c").unwrap(),
+        )
+        .unwrap();
+        let eth_db_utils = EthDbUtils::new(&db);
+        eth_db_utils
+            .put_eth_address_in_db(&eth_db_utils.get_eth_address_key(), &int_address)
+            .unwrap();
+        eth_db_utils.put_eth_private_key_in_db(&int_private_key).unwrap();
+        assert_eq!(eth_db_utils.get_public_eth_address_from_db().unwrap(), int_address);
+        assert_eq!(eth_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
+
+        // NOTE: Overwrite the ALGO address since it's generated randomly above...
+        let algo_db_utils = AlgoDbUtils::new(&db);
+        let algo_address =
+            AlgorandAddress::from_str("XXMOLMZYB5SMKNZP4PN4FRR5EX64BJURDZDYSQULMXS5SB354SDLBZX6HI").unwrap();
+        db.put(
+            get_prefixed_db_key("algo_redeem_address_key").to_vec(),
+            algo_address.to_bytes(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+        .unwrap();
+        assert_eq!(algo_db_utils.get_redeem_address().unwrap(), algo_address);
+
+        // NOTE Save the token dictionary into the db...
+        EvmAlgoTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry_2(), &db)
+            .unwrap();
+
+        // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
+        submit_algo_block_to_core(&db, &algo_peg_out_block).unwrap();
+
+        // NOTE: Submit the next block to the core, which will result in a signed transaction.
+        let output = submit_algo_block_to_core(&db, &algo_submission_material[2]).unwrap();
+        let expected_result_json = json!({
+            "algo_latest_block_number":29285130,
+            "int_signed_transactions":[{
+                "_id":"pint-on-algo-int-0",
+            "broadcast":false,
+            "int_tx_hash":"0x9b44bbcf6590b359e9be271210c96433a7dd2f36a183f83c9006b23bb4b1acf9",
+            "int_tx_amount":"1993896196000000000000",
+            "int_account_nonce":0,
+            "int_tx_recipient":"0xbA26A5FE275c52085901609D98Eb5d71480A4483",
+            "witnessed_timestamp":1650986069,
+            "host_token_address":"748211185",
+            "originating_tx_hash":"DGQGIT64MMKLV4PP7PXVJK6OFZ6HGUTJZ7V7ZNGVRZKDIHLPBVFQ",
+            "originating_address":"ZGVH5EWHRIQVNRDQKMODY6YWVWNXGH5E3DYYY4COX3KOESSUAGVQPWUOKE",
+            "destination_chain_id":"0x005fe7f9",
+            "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
+            "int_signed_tx":"f9032b808504a817c8008306ddd094e0806ce04978224e27c6bb10e27fd30a7785ae9d80b902c422965469000000000000000000000000ec1700a39972482d5db20e73bb3ffe6829b0c1020000000000000000000000004262d1f878d191fbc66dca73bad57309916b141200000000000000000000000000000000000000000000006c16de4a25aea44000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002200300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010003c38e67000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000120005fe7f900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003a5a47564835455748524951564e5244514b4d4f445936595756574e5847483545334459595934434f58334b4f45535355414756515057554f4b45000000000000000000000000000000000000000000000000000000000000000000000000002a307862613236613566653237356335323038353930313630396439386562356437313438306134343833000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029a06dd168e2c277e36750ab654e1530611ba6e6731c2d4527f09ff8380d7af9b263a059927970f480082a6c373430e7703238b58d798456c4ee4841053248d34dd9d1",
+            "int_latest_block_number":12221813,
+            "broadcast_tx_hash":null,
+            "broadcast_timestamp":null}]
         });
         let expected_result = AlgoOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = AlgoOutput::from_str(&output).unwrap();
@@ -394,7 +502,7 @@ mod tests {
 
         // NOTE Save the token dictionary into the db...
         EvmAlgoTokenDictionary::new(vec![])
-            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
+            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry_1(), &db)
             .unwrap();
 
         // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
@@ -500,7 +608,7 @@ mod tests {
 
         // NOTE Save the token dictionary into the db...
         EvmAlgoTokenDictionary::new(vec![])
-            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry(), &db)
+            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry_1(), &db)
             .unwrap();
 
         // NOTE: Submit the block containing the peg out, though there will be no output due to 1 confirmations.
