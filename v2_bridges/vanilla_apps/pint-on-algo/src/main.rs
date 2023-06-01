@@ -156,7 +156,7 @@ fn program() -> anyhow::Result<String> {
         } => {
             info!("✔ Debug setting INT account nonce...");
             Ok(debug_set_int_account_nonce(
-                &get_db()?,
+                &db,
                 cli_args.arg_nonce,
                 &CliArgs::core_type(),
                 &cli_args.flag_sig,
