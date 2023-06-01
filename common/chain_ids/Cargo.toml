@@ -3,7 +3,7 @@ license = "MIT"
 publish = false
 edition = "2021"
 name = "chain_ids"
-version = "1.0.0"
+version = "1.0.1"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -48,7 +48,7 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 bitcoin = { version = "0.29.2", features = ["serde", "rand"] }
 eip-712 = { git = "https://github.com/paritytech/EIP-712", rev = "551dfd9" }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
-rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "a249201" }
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
 

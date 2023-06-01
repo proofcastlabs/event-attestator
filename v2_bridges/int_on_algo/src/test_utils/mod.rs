@@ -59,9 +59,14 @@ write_algo_paths_and_getter_fxn!(
     2 => "src/test_utils/algo-block-20642398.json",
     3 => "src/test_utils/algo-block-21515430.json",
     4 => "src/test_utils/algo-block-21515431.json",
-    5 => "src/test_utils/algo-block-21530957.json",
-    6 => "src/test_utils/algo-block-21530958.json",
-    7 => "src/test_utils/algo-block-17962555.json"
+    5 => "src/test_utils/algo-block-21515432.json",
+    6 => "src/test_utils/algo-block-21530957.json",
+    7 => "src/test_utils/algo-block-21530958.json",
+    8 => "src/test_utils/algo-block-21530959.json",
+    9 => "src/test_utils/algo-block-17962555.json",
+    10 => "src/test_utils/algo-block-29285128.json",
+    11 => "src/test_utils/algo-block-29285129.json",
+    12 => "src/test_utils/algo-block-29285130.json"
 );
 
 pub fn get_sample_vault_address() -> EthAddress {
@@ -93,7 +98,7 @@ pub fn get_sample_contiguous_int_submission_json_strings_for_msg_pack_encoded_us
     ]
 }
 
-pub fn get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out() -> Vec<String> {
+pub fn get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_1() -> Vec<String> {
     vec![
         read_to_string(get_algo_path_n(0).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(1).unwrap()).unwrap(),
@@ -101,23 +106,39 @@ pub fn get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg
     ]
 }
 
+pub fn get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_2() -> Vec<String> {
+    vec![
+        read_to_string(get_algo_path_n(10).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(11).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(12).unwrap()).unwrap(),
+    ]
+}
+
 pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_peg_out() -> Vec<String> {
     vec![
         read_to_string(get_algo_path_n(3).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(4).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(5).unwrap()).unwrap(),
     ]
 }
 
 pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out() -> Vec<String> {
     vec![
-        read_to_string(get_algo_path_n(5).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(6).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(7).unwrap()).unwrap(),
+        read_to_string(get_algo_path_n(8).unwrap()).unwrap(),
     ]
 }
 
-pub fn get_sample_evm_algo_dictionary_entry() -> EvmAlgoTokenDictionaryEntry {
+pub fn get_sample_evm_algo_dictionary_entry_1() -> EvmAlgoTokenDictionaryEntry {
     EvmAlgoTokenDictionaryEntry::from_str(
         "{\"algo_symbol\":\"ALGO\",\"evm_symbol\":\"EVM\",\"evm_decimals\": 18,\"algo_decimals\": 10,\"algo_asset_id\": 714666072,\"evm_address\": \"0x4262d1f878d191fbc66dca73bad57309916b1412\"}",
+    ).unwrap()
+}
+
+pub fn get_sample_evm_algo_dictionary_entry_2() -> EvmAlgoTokenDictionaryEntry {
+    EvmAlgoTokenDictionaryEntry::from_str(
+        "{\"algo_symbol\":\"SYM\",\"evm_symbol\":\"EVM\",\"evm_decimals\": 18,\"algo_decimals\": 6,\"algo_asset_id\": 748211185,\"evm_address\": \"0x4262d1f878d191fbc66dca73bad57309916b1412\"}",
     ).unwrap()
 }
 

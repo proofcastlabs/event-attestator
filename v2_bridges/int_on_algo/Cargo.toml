@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.0.0"
+version = "1.0.1"
 name = "int_on_algo"
 readme = "README.md"
 rust-version = "1.56"
@@ -19,7 +19,7 @@ derive_more = "0.99.17"
 ethereum-types = "0.12.1"
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "a249201" }
 
 common = { path = "../../common/common" }
 common_database_utils = { package = "database_utils", path = "../../common/database_utils" }

@@ -3,7 +3,7 @@ license = "MIT"
 publish = false
 edition = "2021"
 name = "algorand"
-version = "6.10.1"
+version = "6.10.2"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -24,7 +24,7 @@ ethereum-types = "0.12.1"
 debug_signers = { path = "../debug_signers" }
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "79768a3" }
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand", rev = "a249201" }
 
 common = { path = "../common" }
 common_eth = { package = "ethereum", path = "../ethereum" }
