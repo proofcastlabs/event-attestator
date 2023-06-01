@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "algorand"
-version = "6.10.1"
+version = "6.10.2"
 dependencies = [
  "common",
  "debug_signers",
@@ -449,7 +449,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chain_ids"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "base64 0.13.1",
  "bitcoin 0.29.2",
@@ -547,7 +547,7 @@ dependencies = [
 
 [[package]]
 name = "common"
-version = "6.10.1"
+version = "6.10.2"
 dependencies = [
  "base64 0.13.1",
  "bitcoin 0.29.2",
@@ -891,7 +891,7 @@ checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
 name = "enclave_info"
-version = "6.10.1"
+version = "6.10.2"
 dependencies = [
  "base64 0.13.1",
  "bitcoin 0.29.2",
@@ -1217,7 +1217,7 @@ dependencies = [
 
 [[package]]
 name = "ethereum"
-version = "6.10.1"
+version = "6.10.2"
 dependencies = [
  "chain_ids",
  "common",
@@ -1933,7 +1933,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_algo"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "algorand",
  "chain_ids",
@@ -1960,7 +1960,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_eos"
-version = "1.1.0"
+version = "1.1.1"
 dependencies = [
  "chain_ids",
  "common",
@@ -2237,7 +2237,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "metadata"
-version = "6.10.1"
+version = "6.10.2"
 dependencies = [
  "bitcoin 0.29.2",
  "chain_ids",
@@ -3149,8 +3149,8 @@ dependencies = [
 
 [[package]]
 name = "rust-algorand"
-version = "1.6.0"
-source = "git+https://github.com/provable-things/rust-algorand?rev=79768a3#79768a351205f20fed2762a9d7440d61515118a7"
+version = "1.8.0"
+source = "git+https://github.com/provable-things/rust-algorand?rev=a249201#a249201df8c3eb5c1eafa5f5b0cf988bd2d0b817"
 dependencies = [
  "base32",
  "base64 0.13.1",
@@ -3233,7 +3233,7 @@ checksum = "7b4b9743ed687d4b4bcedf9ff5eaa7398495ae14e61cba0a295704edbc7decde"
 
 [[package]]
 name = "safe_addresses"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.2",
  "common",
