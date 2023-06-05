@@ -113,7 +113,7 @@ fn debug_reprocess_algo_block_maybe_with_nonce<D: DatabaseInterface>(
         .and_then(end_algo_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting ALGO output...");
-            let signed_txs = state.eth_signed_txs.clone();
+            let signed_txs = state.eth_signed_txs;
             let tx_infos = IntOnAlgoIntTxInfos::from_bytes(&state.tx_infos)?;
             let output = AlgoOutput {
                 algo_latest_block_number: state.algo_db_utils.get_latest_block_number()?,

@@ -132,7 +132,7 @@ pub fn get_int_signed_tx_info_from_algo_txs(
 
 pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<String> {
     info!("✔ Getting ALGO output...");
-    let signed_txs = state.eth_signed_txs.clone();
+    let signed_txs = state.eth_signed_txs;
     let tx_infos = IntOnAlgoIntTxInfos::from_bytes(&state.tx_infos)?;
     let output = AlgoOutput {
         algo_latest_block_number: state.algo_db_utils.get_latest_block_number()?,
