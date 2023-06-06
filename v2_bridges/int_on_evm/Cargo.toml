@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.0.1"
+version = "1.1.0"
 name = "int_on_evm"
 readme = "README.md"
 rust-version = "1.56"
@@ -22,7 +22,6 @@ serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 
 common = { path = "../../common/common" }
-common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 common_fees = { package = "fees", path = "../../common/fees" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
 common_metadata = { package = "metadata", path = "../../common/metadata" }
@@ -31,6 +30,7 @@ common_enclave_info = { package = "enclave_info", path = "../../common/enclave_i
 common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_debug" }
 common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }
 common_safe_addresses = { package = "safe_addresses", path = "../../common/safe_addresses" }
+common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 
 [features]
 # NOTE: Turns off fee-taking capabilities.
