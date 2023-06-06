@@ -8,6 +8,8 @@ use common_eth::{
     EthState,
     EthSubmissionMaterial,
     ERC777_REDEEM_EVENT_TOPIC_V2,
+    ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 
 use crate::evm::int_tx_info::IntOnEvmIntTxInfos;
@@ -87,7 +89,13 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_addresses_and_with_topics(
             &state.get_eth_evm_token_dictionary()?.to_evm_addresses(),
-            &[*ERC777_REDEEM_EVENT_TOPIC_V2],
+            &[
+                *ERC777_REDEEM_EVENT_TOPIC_V2,
+                // NOTE: The following v1 events are for allowing the migration of v1 bridge whose
+                // contracts are not upgradeable to v2 bridges.
+                *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+                *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+            ],
         )
         .and_then(|filtered_submission_material| {
             IntOnEvmIntTxInfos::filter_eth_submission_material_for_supported_redeems(
