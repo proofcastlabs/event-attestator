@@ -67,3 +67,5 @@ extern crate common_eth;
 extern crate log;
 #[macro_use]
 extern crate paste;
+#[macro_use]
+extern crate lazy_static;
