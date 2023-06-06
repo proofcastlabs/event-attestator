@@ -1,8 +1,12 @@
 use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
 use common_eth::{Erc777RedeemEvent, EthDbUtilsExt, EthReceipt, EthState, EthSubmissionMaterial};
+use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
-use crate::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos};
+use crate::{
+    constants::PTELOS_ADDRESS,
+    evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos},
+};
 
 impl IntOnEvmIntTxInfos {
     fn from_eth_receipt(
@@ -16,8 +20,22 @@ impl IntOnEvmIntTxInfos {
             Self::get_relevant_logs_from_receipt(receipt, dictionary)
                 .iter()
                 .map(|log| {
+                    // NOTE: The event parser can handle v1 events w/ & w/out user data, and also v2 events.
+                    // This core will filter for some v1 events in order to facilitate migration from v1 to v2
+                    // of some legacy bridges which do not have upgradeable smart contracts.
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
+
+                    let destination_chain_id = if log.address == *PTELOS_ADDRESS {
+                        warn!("pTelos peg out detected, defaulting to TELOS mainnet as destination chain ID");
+                        Ok(MetadataChainId::TelosMainnet)
+                    } else {
+                        // NOTE This will error for legacy events that are not explicitly handled above, because
+                        // there will be no destination chain ID in the event log.
+                        event_params.get_destination_chain_id()
+                    }?;
+
                     let tx_info = IntOnEvmIntTxInfo {
+                        destination_chain_id,
                         vault_address: *vault_address,
                         evm_token_address: log.address,
                         router_address: *router_address,
@@ -26,7 +44,6 @@ impl IntOnEvmIntTxInfos {
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
                         origin_chain_id: event_params.get_origin_chain_id()?,
-                        destination_chain_id: event_params.get_destination_chain_id()?,
                         destination_address: event_params.underlying_asset_recipient.clone(),
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
                         native_token_amount: dictionary
