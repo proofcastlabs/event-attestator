@@ -105,14 +105,14 @@ fn reprocess_eos_block<D: DatabaseInterface>(
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting EOS output json...");
-            let txs = state.eth_signed_txs.clone();
+            let txs = state.eth_signed_txs;
             let num_txs = txs.len();
             let output = serde_json::to_string(&EosOutput {
                 eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
                 int_signed_transactions: if num_txs == 0 {
                     vec![]
                 } else {
-                    let txs = EthTransactions::from_bytes(&state.eth_signed_txs)?;
+                    let txs = EthTransactions::from_bytes(&txs)?;
                     get_tx_infos_from_signed_txs(
                         &txs,
                         &IntOnEosIntTxInfos::from_bytes(&state.tx_infos)?,

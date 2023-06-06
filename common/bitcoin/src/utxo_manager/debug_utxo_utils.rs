@@ -158,6 +158,7 @@ fn consolidate_utxos<D: DatabaseInterface>(
     let change_address = match maybe_change_address {
         None => {
             info!("✔ Using enclave's own address to send the change to...");
+            #[allow(clippy::redundant_clone)] // NOTE: This is a false positive by clippy since it's used later.
             enclave_address.to_string()
         },
         Some(address_str) => {

@@ -126,7 +126,7 @@ fn reprocess_int_block<D: DatabaseInterface>(
         .and_then(end_eth_db_transaction_and_return_state)
         .and_then(|state| {
             info!("✔ Getting INT output json...");
-            let txs = state.int_on_evm_evm_signed_txs.clone();
+            let txs = state.int_on_evm_evm_signed_txs;
             let num_txs = txs.len();
             let output = serde_json::to_string(&IntOutput {
                 int_latest_block_number: state.eth_db_utils.get_latest_eth_block_number()?,
