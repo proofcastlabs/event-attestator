@@ -14,7 +14,13 @@ use rust_algorand::AlgorandAddress;
 
 pub const SAFE_EOS_ADDRESS_STR: &str = "safu.ptokens";
 pub const SAFE_EVM_ADDRESS_STR: &str = SAFE_ETH_ADDRESS_STR;
+
+#[cfg(feature = "ltc")]
+pub const SAFE_BTC_ADDRESS_STR: &str = "LYjG4bw9KuikboQqiowXseebzkQu6Ah7pk"; // gitmp01
+
+#[cfg(not(feature = "ltc"))]
 pub const SAFE_BTC_ADDRESS_STR: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
+
 pub const SAFE_ETH_ADDRESS_STR: &str = "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
 pub const SAFE_ALGO_ADDRESS_STR: &str = "2U3SCPKBJXMBXG2RJFXJ6DS5ZKJBW4DUH55OE6VPRJVWZWGZVOABRZCCTI";
 
