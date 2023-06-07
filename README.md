@@ -98,6 +98,7 @@ PhoenixTestnet,   // 0x02a75f2c
 PhoenixMainnet,   // 0x026776fa
 EthereumGoerli,   // 0x00b4f6c5
 EthereumSepolia,  // 0x0030d6b5
+LitecoinMainnet,  // 0x01840435
 ```
 
 &nbsp;
@@ -120,15 +121,23 @@ EthereumSepolia,  // 0x0030d6b5
 
 ## :mag: Features
 
-When building the vanilla apps, you can enable features lik so:
+When building the vanilla apps, you can enable features like so:
 
-__`pbtc_core = { version = "0.1.0", features = ["non-validating"] }`__.
-
-__`❍ cargo b -r -p pbtc-on-int --features=non-validating`__
+__`❍ cargo b -r -p <packageName> --features=<featureName>[,<featureName>]`__
 
 Currently supported features include:
 
  - __`non-validating`__ Build a bridge with block & receipt validation skipped.
+ - __`disable-fees`__ Build a v1 bridge with fees disabled. Note that v2 bridges handle fees differently, and this flag doesn't exist/does nothing.
+
+ - __`ltc`__ Build a Litecoin bridge. Note this flag only exists for:
+
+`pbtc-on-eth` (v1 vanilla binary)
+`pbtc-on-eos` (v1 vanilla binary)
+`pbtc-on-int` (v2 vanilla binary)
+
+`common/bitcoin` (library crate)
+`common/safe_addresses` (library crate)
 
 &nbsp;
 
