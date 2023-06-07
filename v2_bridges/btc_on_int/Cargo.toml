@@ -10,6 +10,8 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
+# NOTE: Turns this into an `ltc-on-int` core.
+ltc = ["common_btc/ltc", "common_safe_addresses/ltc"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eth/non-validating","common_btc/non-validating"]
 
