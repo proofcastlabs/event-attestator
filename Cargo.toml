@@ -91,6 +91,7 @@ flexi_logger = { version = "0.23.3", features = [ "compress", "use_chrono_for_of
 reqwest = { version = "0.11.4", features = ["blocking", "json"], default-features = false }
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
+litecoin = { git = "https://github.com/provable-things/rust-bitcoin.git", package = "bitcoin", branch = "provable-ltc", features = ["serde", "rand"] }
 
 common = { path = "./common/common" }
 common_eos = { package = "eos", path = "./common/eos" }
