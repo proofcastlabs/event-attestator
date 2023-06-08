@@ -48,3 +48,6 @@ split-debuginfo = "unpacked"
 [profile.release]
 lto = "thin"
 overflow-checks = true
+
+[workspace.dependencies]
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }

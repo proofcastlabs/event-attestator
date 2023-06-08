@@ -21,10 +21,10 @@ serde_bytes = "0.11.6"
 function_name = "0.3.0"
 derive_more = "0.99.16"
 ethereum-types = "0.12.1"
+rust-algorand = { workspace = true }
 debug_signers = { path = "../debug_signers" }
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
 
 common = { path = "../common" }
 common_eth = { package = "ethereum", path = "../ethereum" }

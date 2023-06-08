@@ -24,9 +24,9 @@ strum_macros = "0.22.0"
 derive_more = "0.99.16"
 keccak-hasher = "0.15.3"
 ethereum-types = "0.12.1"
+rust-algorand = { workspace = true }
 serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
 
