@@ -1,16 +1,17 @@
 [package]
 edition = "2021"
-version = "1.0.0"
+version = "1.0.1"
 rust-version = "1.56"
 name = "rocksdb_database"
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [dependencies]
-hex = "0.4.3"
-log = "0.4.14"
-rocksdb = "0.21.0"
-quick-error = "2.0.1"
-common = { package = "common", path = "../common" }
+hex = { workspace = true }
+log = { workspace = true }
+rocksdb = { workspace = true }
+quick-error = { workspace = true }
+
+common = { workspace = true }
 
 [lib]
 doctest = false
