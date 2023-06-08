@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-version = "2.1.0"
+version = "2.1.1"
 name = "pbtc-on-int"
 rust-version = "1.56"
 authors = ["gregkapka <gregkapka@gmail.com>"]
@@ -11,6 +11,7 @@ default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
+non-validating = ["common/non-validating", "btc_on_int/non-validating"]
 
 [dependencies]
 log = "0.4.14"

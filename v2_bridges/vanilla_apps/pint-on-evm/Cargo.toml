@@ -1,5 +1,5 @@
 [package]
-version = "2.1.0"
+version = "2.1.1"
 edition = "2021"
 name = "pint-on-evm"
 rust-version = "1.56"
@@ -11,6 +11,7 @@ default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
+non-validating = ["common/non-validating", "int_on_evm/non-validating"]
 
 [dependencies]
 log = "0.4.14"

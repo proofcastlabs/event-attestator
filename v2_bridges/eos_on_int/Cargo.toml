@@ -2,12 +2,16 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.0.1"
+version = "1.0.2"
 name = "eos_on_int"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[features]
+# NOTE: Turns off block header & chain validation.
+non-validating = ["common/non-validating", "common_chain_ids/non-validating"]
 
 [dependencies]
 hex = "0.4.3"
@@ -22,7 +26,6 @@ tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
 
 common = { path = "../../common/common" }
-common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 common_eos = { package = "eos", path = "../../common/eos" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
 common_metadata = { package = "metadata", path = "../../common/metadata" }
@@ -30,13 +33,8 @@ common_chain_ids = { package = "chain_ids", path = "../../common/chain_ids" }
 common_enclave_info = { package = "enclave_info", path = "../../common/enclave_info" }
 common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_debug" }
 common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }
+common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 common_safe_addresses = { package = "safe_addresses", path = "../../common/safe_addresses" }
-
-[features]
-# NOTE: Turns off fee-taking capabilities.
-disable-fees = ["common/disable-fees"]
-# NOTE: Turns off block header & chain validation.
-non-validating = ["common/non-validating"]
 
 [lib]
 doctest = false

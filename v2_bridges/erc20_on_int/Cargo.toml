@@ -9,6 +9,10 @@ rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
+[features]
+# NOTE: Turns off block header & chain validation.
+non-validating = ["common/non-validating", "common_chain_ids/non-validating"]
+
 [dependencies]
 hex = "0.4.3"
 log = "0.4.14"
@@ -21,7 +25,6 @@ serde = { version = "1.0.130", features = ["derive"] }
 tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 
 common = { path = "../../common/common" }
-common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 common_fees = { package = "fees", path = "../../common/fees" }
 common_eth = { package = "ethereum", path = "../../common/ethereum" }
 common_metadata = { package = "metadata", path = "../../common/metadata" }
@@ -30,12 +33,7 @@ common_enclave_info = { package = "enclave_info", path = "../../common/enclave_i
 common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_debug" }
 common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }
 common_safe_addresses = { package = "safe_addresses", path = "../../common/safe_addresses" }
-
-[features]
-# NOTE: Turns off fee-taking capabilities.
-disable-fees = ["common/disable-fees"]
-# NOTE: Turns off block header & chain validation.
-non-validating = ["common/non-validating"]
+common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
 
 [lib]
 doctest = false

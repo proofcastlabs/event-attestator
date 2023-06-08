@@ -2,12 +2,16 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.1.0"
+version = "1.1.1"
 name = "int_on_evm"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[features]
+# NOTE: Turns off block header & chain validation.
+non-validating = ["common/non-validating", "common_chain_ids/non-validating"]
 
 [dependencies]
 hex = "0.4.3"
@@ -31,12 +35,6 @@ common_eth_debug = { package = "ethereum_debug", path = "../../common/ethereum_d
 common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers" }
 common_safe_addresses = { package = "safe_addresses", path = "../../common/safe_addresses" }
 common_database_utils = { package = "database_utils", path = "../../common/database_utils" }
-
-[features]
-# NOTE: Turns off fee-taking capabilities.
-disable-fees = ["common/disable-fees"]
-# NOTE: Turns off block header & chain validation.
-non-validating = ["common/non-validating"]
 
 [lib]
 doctest = false
