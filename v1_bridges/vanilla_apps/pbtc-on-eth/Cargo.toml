@@ -1,6 +1,6 @@
 [package]
 name = "pbtc-on-eth"
-version = "2.1.0"
+version = "2.1.1"
 authors = ["gregkapka <greg@oraclize.it>"]
 edition = "2021"
 rust-version = "1.56"
@@ -11,6 +11,8 @@ default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
+disable-fees = ["btc_on_eth/disable-fees"]
+non-validating = ["btc_on_eth/non-validating", "common/non-validating"]
 
 [dependencies]
 log = "0.4.14"

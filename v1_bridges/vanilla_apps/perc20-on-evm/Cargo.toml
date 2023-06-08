@@ -1,6 +1,6 @@
 [package]
 name = "perc20-on-evm"
-version = "2.1.0"
+version = "2.1.1"
 authors = ["gregkapka <greg@oraclize.it>"]
 edition = "2021"
 rust-version = "1.56"
@@ -11,6 +11,8 @@ default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
+disable-fees = ["erc20_on_evm/disable-fees"]
+non-validating = ["erc20_on_evm/non-validating", "common/non-validating"]
 
 [dependencies]
 log = "0.4.14"
