@@ -813,42 +813,11 @@ checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 name = "enclave_info"
 version = "6.10.3"
 dependencies = [
- "base64 0.13.1",
- "bitcoin 0.29.2",
- "bs58",
- "byteorder",
- "chrono",
  "common",
  "debug_signers",
- "derive_more",
- "eip-712",
- "eos-chain",
- "ethabi 15.0.0",
- "ethereum-types 0.12.1",
- "function_name",
- "hex",
- "keccak-hasher",
- "lazy_static",
- "log",
- "paste",
- "quick-error",
- "rand 0.8.5",
- "rlp",
- "rmp-serde",
- "rust-algorand",
- "rustc-hex",
- "secp256k1 0.15.3",
  "serde",
- "serde_bytes",
  "serde_json",
- "serde_with",
  "simple_logger 2.3.0",
- "simplelog",
- "strum",
- "strum_macros",
- "tiny-keccak 2.0.2",
- "triehash",
- "web3",
 ]
 
 [[package]]
@@ -3414,17 +3383,6 @@ dependencies = [
  "log",
  "time 0.3.22",
  "windows-sys 0.42.0",
-]
-
-[[package]]
-name = "simplelog"
-version = "0.10.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85d04ae642154220ef00ee82c36fb07853c10a4f2a0ca6719f9991211d2eb959"
-dependencies = [
- "chrono",
- "log",
- "termcolor",
 ]
 
 [[package]]
