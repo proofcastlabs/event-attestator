@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use bitcoin::Address as BtcAddress;
 use common::{constants::SUCCESS_JSON, core_type::CoreType, traits::DatabaseInterface, types::Result};
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
