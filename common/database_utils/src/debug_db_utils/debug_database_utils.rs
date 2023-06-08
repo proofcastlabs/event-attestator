@@ -5,7 +5,7 @@ use common::{
     types::{Byte, Result},
     utils::get_prefixed_db_key,
 };
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 
 fn is_private_key_key(key: &[Byte]) -> bool {
