@@ -200,7 +200,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "6.10.2"
+version = "6.10.3"
 dependencies = [
  "bitcoin 0.29.2",
  "chain_ids",
@@ -311,7 +311,7 @@ name = "btc_on_eos"
 version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.2",
+ "bitcoin 6.10.3",
  "chain_ids",
  "common",
  "database_utils",
@@ -338,7 +338,7 @@ name = "btc_on_eth"
 version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.2",
+ "bitcoin 6.10.3",
  "chain_ids",
  "common",
  "database_utils",
@@ -366,7 +366,7 @@ name = "btc_on_int"
 version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.2",
+ "bitcoin 6.10.3",
  "chain_ids",
  "common",
  "database_utils",
@@ -457,42 +457,19 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 name = "chain_ids"
 version = "1.0.2"
 dependencies = [
- "base64 0.13.1",
  "bitcoin 0.29.2",
- "bs58",
- "byteorder",
- "chrono",
  "common",
  "derive_more",
- "eip-712",
- "eos-chain",
- "ethabi 15.0.0",
  "ethereum-types 0.12.1",
- "function_name",
  "hex",
- "keccak-hasher",
  "lazy_static",
  "log",
- "paste",
- "quick-error",
- "rand 0.8.5",
- "rlp",
- "rmp-serde",
  "rust-algorand",
- "rustc-hex",
- "secp256k1 0.15.3",
  "serde",
- "serde_bytes",
- "serde_json",
- "serde_with",
  "serial_test",
  "simple_logger 2.3.0",
- "simplelog",
  "strum",
  "strum_macros",
- "tiny-keccak 2.0.2",
- "triehash",
- "web3",
 ]
 
 [[package]]
@@ -1296,7 +1273,7 @@ name = "fees"
 version = "6.10.1"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.2",
+ "bitcoin 6.10.3",
  "common",
  "derive_more",
  "hex",
