@@ -83,6 +83,7 @@ bitcoin = { version = "0.29.2", features = ["serde", "rand"] }
 eip-712 = { git = "https://github.com/paritytech/EIP-712", rev = "551dfd9" }
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
 eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
+flexi_logger = { version = "0.23.3", features = [ "compress", "use_chrono_for_offset" ] }
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
 
