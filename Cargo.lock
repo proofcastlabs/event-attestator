@@ -42,7 +42,7 @@ dependencies = [
  "metadata",
  "paste",
  "rmp-serde",
- "rust-algorand",
+ "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
  "safe_addresses",
  "serde",
  "serde_bytes",
@@ -561,7 +561,7 @@ dependencies = [
  "rand 0.8.5",
  "rlp",
  "rmp-serde",
- "rust-algorand",
+ "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand)",
  "rustc-hex",
  "secp256k1 0.15.3",
  "serde",
@@ -1145,7 +1145,7 @@ dependencies = [
  "paste",
  "rand 0.8.5",
  "rlp",
- "rust-algorand",
+ "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
  "safe_addresses",
  "secp256k1 0.15.3",
  "serde",
@@ -1863,7 +1863,7 @@ dependencies = [
  "log",
  "metadata",
  "paste",
- "rust-algorand",
+ "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
  "safe_addresses",
  "serde",
  "serde_json",
@@ -2151,7 +2151,7 @@ dependencies = [
  "hex",
  "log",
  "rmp-serde",
- "rust-algorand",
+ "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
  "safe_addresses",
  "serde",
  "serde_bytes",
@@ -3054,6 +3054,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "rust-algorand"
+version = "1.8.0"
+source = "git+https://github.com/provable-things/rust-algorand#a249201df8c3eb5c1eafa5f5b0cf988bd2d0b817"
+dependencies = [
+ "base32",
+ "base64 0.13.1",
+ "derive_more",
+ "ed25519-dalek",
+ "hex",
+ "lazy_static",
+ "paste",
+ "quick-error",
+ "rand 0.7.3",
+ "rmp-serde",
+ "serde",
+ "serde_bytes",
+ "serde_json",
+ "serde_with",
+ "sha2 0.10.6",
+ "strum",
+ "strum_macros",
+]
+
+[[package]]
 name = "rustc-demangle"
 version = "0.1.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3134,7 +3158,7 @@ dependencies = [
  "ethereum-types 0.12.1",
  "lazy_static",
  "log",
- "rust-algorand",
+ "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
 ]
 
 [[package]]
