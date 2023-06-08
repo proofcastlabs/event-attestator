@@ -87,4 +87,9 @@ secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", feature
 
 common = { path = "./common/common" }
 common_eos = { package = "eos", path = "./common/eos" }
+common_eth = { package = "ethereum", path = "./common/ethereum" }
+common_bitcoin = { package = "bitcoin", path = "./common/bitcoin" }
+common_metadata = { package = "metadata", path = "./common/metadata" }
+common_chain_ids = { package = "chain_ids", path = "./common/chain_ids" }
 common_debug_signers = { package = "debug_signers", path = "./common/debug_signers" }
+common_safe_addresses = { package = "safe_addresses", path = "./common/safe_addresses" }

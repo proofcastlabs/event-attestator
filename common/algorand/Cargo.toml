@@ -25,11 +25,11 @@ function_name = { workspace = true }
 ethereum-types = { workspace = true }
 rust-algorand = { workspace = true }
 
-common = { path = "../common" }
-common_eth = { package = "ethereum", path = "../ethereum" }
-common_metadata = { package = "metadata", path = "../metadata" }
-common_debug_signers = { package = "debug_signers", path = "../debug_signers" }
-common_safe_addresses = { package = "safe_addresses", path = "../safe_addresses" }
+common = { workspace = true }
+common_eth = { workspace = true }
+common_metadata = { workspace = true }
+common_debug_signers = { workspace = true }
+common_safe_addresses = { workspace = true }
 
 [dev-dependencies]
 simple_logger = "2.0.0"
