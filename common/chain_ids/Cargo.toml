@@ -3,7 +3,7 @@ license = "MIT"
 publish = false
 edition = "2021"
 name = "chain_ids"
-version = "1.0.1"
+version = "1.0.2"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -11,8 +11,6 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 # FIXME Rm now unused feaures
 [features]
-# NOTE: Turns off fee-taking capabilities.
-disable-fees = []
 # NOTE: Turns off block header & chain validation.
 non-validating = []
 
