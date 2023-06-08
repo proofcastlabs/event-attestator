@@ -17,6 +17,7 @@ tiny-keccak = { workspace = true }
 function_name = { workspace = true }
 
 common = { workspace = true }
+common_eos = {  workspace = true }
 common_debug_signers = { workspace = true }
 
 [lib]
