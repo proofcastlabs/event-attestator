@@ -9,6 +9,9 @@ rust-version = "1.56"
 keywords = ["defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
+[features]
+disable-fees = []
+
 [dependencies]
 hex = "0.4.3"
 log = "0.4.14"
