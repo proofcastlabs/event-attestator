@@ -831,7 +831,7 @@ dependencies = [
 
 [[package]]
 name = "eos"
-version = "6.11.0"
+version = "6.11.1"
 dependencies = [
  "bitcoin 0.29.2",
  "bs58",
