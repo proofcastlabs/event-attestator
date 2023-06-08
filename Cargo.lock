@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "algorand"
-version = "6.10.2"
+version = "6.10.3"
 dependencies = [
  "common",
  "debug_signers",
@@ -42,7 +42,7 @@ dependencies = [
  "metadata",
  "paste",
  "rmp-serde",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
  "safe_addresses",
  "serde",
  "serde_bytes",
@@ -478,7 +478,7 @@ dependencies = [
  "rand 0.8.5",
  "rlp",
  "rmp-serde",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
  "rustc-hex",
  "secp256k1 0.15.3",
  "serde",
@@ -566,7 +566,7 @@ dependencies = [
  "rand 0.8.5",
  "rlp",
  "rmp-serde",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand)",
+ "rust-algorand",
  "rustc-hex",
  "secp256k1 0.15.3",
  "serde",
@@ -842,7 +842,7 @@ checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
 name = "enclave_info"
-version = "6.10.2"
+version = "6.10.3"
 dependencies = [
  "base64 0.13.1",
  "bitcoin 0.29.2",
@@ -866,7 +866,7 @@ dependencies = [
  "rand 0.8.5",
  "rlp",
  "rmp-serde",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
  "rustc-hex",
  "secp256k1 0.15.3",
  "serde",
@@ -1168,7 +1168,7 @@ dependencies = [
 
 [[package]]
 name = "ethereum"
-version = "6.10.2"
+version = "6.10.3"
 dependencies = [
  "chain_ids",
  "common",
@@ -1183,7 +1183,7 @@ dependencies = [
  "paste",
  "rand 0.8.5",
  "rlp",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
  "safe_addresses",
  "secp256k1 0.15.3",
  "serde",
@@ -1900,7 +1900,7 @@ dependencies = [
  "log",
  "metadata",
  "paste",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
  "safe_addresses",
  "serde",
  "serde_json",
@@ -2176,7 +2176,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "metadata"
-version = "6.10.2"
+version = "6.10.3"
 dependencies = [
  "bitcoin 0.29.2",
  "chain_ids",
@@ -2193,7 +2193,7 @@ dependencies = [
  "rand 0.8.5",
  "rlp",
  "rmp-serde",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
  "safe_addresses",
  "secp256k1 0.15.3",
  "serde",
@@ -3078,30 +3078,6 @@ dependencies = [
 [[package]]
 name = "rust-algorand"
 version = "1.8.0"
-source = "git+https://github.com/provable-things/rust-algorand?rev=a249201#a249201df8c3eb5c1eafa5f5b0cf988bd2d0b817"
-dependencies = [
- "base32",
- "base64 0.13.1",
- "derive_more",
- "ed25519-dalek",
- "hex",
- "lazy_static",
- "paste",
- "quick-error",
- "rand 0.7.3",
- "rmp-serde",
- "serde",
- "serde_bytes",
- "serde_json",
- "serde_with",
- "sha2 0.10.6",
- "strum",
- "strum_macros",
-]
-
-[[package]]
-name = "rust-algorand"
-version = "1.8.0"
 source = "git+https://github.com/provable-things/rust-algorand#a249201df8c3eb5c1eafa5f5b0cf988bd2d0b817"
 dependencies = [
  "base32",
@@ -3195,7 +3171,7 @@ checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
 
 [[package]]
 name = "safe_addresses"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bitcoin 0.29.2",
  "common",
@@ -3203,7 +3179,7 @@ dependencies = [
  "ethereum-types 0.12.1",
  "lazy_static",
  "log",
- "rust-algorand 1.8.0 (git+https://github.com/provable-things/rust-algorand?rev=a249201)",
+ "rust-algorand",
 ]
 
 [[package]]
