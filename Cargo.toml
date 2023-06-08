@@ -60,6 +60,7 @@ docopt = "1.1.1"
 strum = "0.22.0"
 base64 = "0.13.0"
 chrono = "0.4.19"
+anyhow = "1.0.69"
 triehash = "0.8.4"
 ethabi = "15.0.0"
 rocksdb = "0.21.0"
@@ -97,8 +98,13 @@ common_btc = { package = "bitcoin", path = "./common/bitcoin" }
 common_eth = { package = "ethereum", path = "./common/ethereum" }
 common_metadata = { package = "metadata", path = "./common/metadata" }
 common_chain_ids = { package = "chain_ids", path = "./common/chain_ids" }
+common_file_logger = { package = "file_logger", path = "./common/file_logger" }
 common_eth_debug = { package = "ethereum_debug", path = "./common/ethereum_debug"}
 common_enclave_info = { package = "enclave_info", path = "./common/enclave_info" }
 common_debug_signers = { package = "debug_signers", path = "./common/debug_signers" }
+common_docopt_macros = { package = "docopt_macros", path = "./common/docopt_macros" }
+common_stderr_logger = { package = "stderr_logger", path = "./common/stderr_logger" }
 common_database_utils = { package = "database_utils", path = "./common/database_utils"}
 common_safe_addresses = { package = "safe_addresses", path = "./common/safe_addresses" }
+common_rocksdb_database = { package = "rocksdb_database", path = "./common/rocksdb_database" }
+common_jsonrpc_database = { package = "jsonrpc_database", path = "./common/jsonrpc_database" }
