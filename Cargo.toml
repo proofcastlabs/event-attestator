@@ -97,6 +97,7 @@ common_btc = { package = "bitcoin", path = "./common/bitcoin" }
 common_eth = { package = "ethereum", path = "./common/ethereum" }
 common_metadata = { package = "metadata", path = "./common/metadata" }
 common_chain_ids = { package = "chain_ids", path = "./common/chain_ids" }
+common_eth_debug = { package = "ethereum_debug", path = "./common/ethereum_debug"}
 common_enclave_info = { package = "enclave_info", path = "./common/enclave_info" }
 common_debug_signers = { package = "debug_signers", path = "./common/debug_signers" }
 common_database_utils = { package = "database_utils", path = "./common/database_utils"}
