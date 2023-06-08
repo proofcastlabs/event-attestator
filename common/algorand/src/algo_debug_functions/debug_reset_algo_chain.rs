@@ -1,5 +1,5 @@
 use common::{constants::ZERO_CONFS_WARNING, core_type::CoreType, traits::DatabaseInterface, types::Result};
-use debug_signers::validate_debug_command_signature;
+use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use rust_algorand::AlgorandHash;
 use serde_json::json;

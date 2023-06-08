@@ -50,4 +50,17 @@ lto = "thin"
 overflow-checks = true
 
 [workspace.dependencies]
+hex = "0.4.3"
+log = "0.4.14"
+paste = "1.0.6"
+lazy_static = "1.4.0"
+rmp-serde = "0.15.5"
+serde_with = "1.11.0"
+serde_json = "1.0.68"
+serde_bytes = "0.11.6"
+function_name = "0.3.0"
+derive_more = "0.99.16"
+ethereum-types = "0.12.1"
+serde = { version = "1.0.130", features = ["derive"] }
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
 rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
