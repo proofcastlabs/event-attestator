@@ -1247,7 +1247,7 @@ dependencies = [
 
 [[package]]
 name = "file_logger"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "common",
  "flexi_logger",
@@ -1955,7 +1955,7 @@ dependencies = [
 
 [[package]]
 name = "jsonrpc_database"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "common",
  "hex",
