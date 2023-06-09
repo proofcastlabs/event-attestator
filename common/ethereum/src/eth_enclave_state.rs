@@ -27,6 +27,7 @@ macro_rules! make_enclave_state_struct {
                 [<$prefix _canon_block_number>]: usize,
                 [<$prefix _anchor_block_number>]: usize,
                 [<$prefix _latest_block_number>]: usize,
+                [<$prefix _core_is_validating>]: bool,
                 smart_contract_address: String,
                 router_contract_address: String,
                 erc777_proxy_contract_address: String,
@@ -82,6 +83,7 @@ macro_rules! make_enclave_state_struct {
                             hex::encode([<$prefix _anchor_block>].get_block_hash()?.as_bytes()),
                         [<$prefix _latest_block_hash>]:
                             hex::encode([<$prefix _latest_block>].get_block_hash()?.as_bytes()),
+                        [<$prefix _core_is_validating>]: !cfg!(feature="non-validating"),
                         router_contract_address: match router_address {
                             Some(address) => hex::encode(address.as_bytes()),
                             None => hex::encode(EthAddress::zero().as_bytes()),
