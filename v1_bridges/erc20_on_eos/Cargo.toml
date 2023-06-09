@@ -13,7 +13,7 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 # NOTE: Turns off fee-taking capabilities.
 disable-fees = ["common_fees/disable-fees"]
 # NOTE: Turns off block header & chain validation.
-non-validating = ["common/non-validating", "common_chain_ids/non-validating"]
+non-validating = ["common/non-validating"]
 
 [dependencies]
 hex = { workspace = true }
