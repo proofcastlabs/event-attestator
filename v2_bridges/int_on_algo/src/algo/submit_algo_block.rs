@@ -1,5 +1,5 @@
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
-use common_algorand::{
+use common_algo::{
     add_latest_algo_submission_material_to_db_and_return_state,
     check_parent_of_algo_block_in_state_exists,
     check_submitted_block_is_subsequent_and_return_state,
@@ -83,7 +83,7 @@ mod tests {
         test_utils::get_test_database,
         utils::get_prefixed_db_key,
     };
-    use common_algorand::AlgoDbUtils;
+    use common_algo::AlgoDbUtils;
     use common_chain_ids::EthChainId;
     use common_eth::{
         convert_hex_to_eth_address,

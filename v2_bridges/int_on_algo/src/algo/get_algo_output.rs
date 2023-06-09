@@ -4,7 +4,7 @@ use std::{
 };
 
 use common::{traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoState;
+use common_algo::AlgoState;
 use common_eth::{EthDbUtilsExt, EthTransaction as IntTransaction, EthTxInfoCompatible};
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};

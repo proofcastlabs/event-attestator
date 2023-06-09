@@ -2,7 +2,7 @@
 use std::{fs::read_to_string, str::FromStr};
 
 use common::{dictionaries::evm_algo::EvmAlgoTokenDictionaryEntry, errors::AppError, types::Result};
-use common_algorand::AlgoSubmissionMaterial;
+use common_algo::AlgoSubmissionMaterial;
 use common_eth::{convert_hex_to_eth_address, EthSubmissionMaterial};
 use ethereum_types::Address as EthAddress;
 

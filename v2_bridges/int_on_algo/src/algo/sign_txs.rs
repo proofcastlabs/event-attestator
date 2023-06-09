@@ -1,5 +1,5 @@
 use common::{traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoState;
+use common_algo::AlgoState;
 use common_chain_ids::EthChainId;
 use common_eth::{
     encode_erc20_vault_peg_out_fxn_data_with_user_data,

@@ -11,7 +11,7 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
 # NOTE: Turns off block header & chain validation.
-non-validating = ["common_eth/non-validating","common_algorand/non-validating"]
+non-validating = ["common_eth/non-validating","common_algo/non-validating"]
 
 [dependencies]
 hex = { workspace = true }
@@ -27,7 +27,7 @@ ethereum-types = { workspace = true }
 
 common = { workspace = true }
 common_eth = { workspace = true }
-common_algorand = { workspace = true }
+common_algo = { workspace = true }
 common_metadata = { workspace = true }
 common_chain_ids = { workspace = true }
 common_eth_debug = { workspace = true }

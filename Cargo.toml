@@ -97,8 +97,8 @@ common_eos = { package = "eos", path = "./common/eos" }
 common_fees = { package = "fees", path = "./common/fees" }
 common_btc = { package = "bitcoin", path = "./common/bitcoin" }
 common_eth = { package = "ethereum", path = "./common/ethereum" }
+common_algo = { package = "algorand", path = "./common/algorand" }
 common_metadata = { package = "metadata", path = "./common/metadata" }
-common_algorand = { package = "algorand", path = "./common/algorand" }
 common_chain_ids = { package = "chain_ids", path = "./common/chain_ids" }
 common_file_logger = { package = "file_logger", path = "./common/file_logger" }
 common_eth_debug = { package = "ethereum_debug", path = "./common/ethereum_debug"}

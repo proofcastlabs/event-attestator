@@ -1,5 +1,5 @@
 use common::{traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoState;
+use common_algo::AlgoState;
 use common_eth::EthDbUtilsExt;
 
 pub fn maybe_increment_eth_account_nonce_and_return_algo_state<D: DatabaseInterface>(

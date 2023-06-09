@@ -100,7 +100,7 @@ mod tests {
         test_utils::get_test_database,
         utils::get_prefixed_db_key,
     };
-    use common_algorand::AlgoDbUtils;
+    use common_algo::AlgoDbUtils;
     use common_chain_ids::EthChainId;
     use common_eth::{
         convert_hex_to_eth_address,

@@ -1,5 +1,5 @@
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoDbUtils;
+use common_algo::AlgoDbUtils;
 use common_debug_signers::validate_debug_command_signature;
 use common_eth::{
     end_eth_db_transaction_and_return_state,

@@ -1,7 +1,7 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
 use common::{traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoDbUtils;
+use common_algo::AlgoDbUtils;
 use common_eth::{convert_eth_address_to_string, EthDbUtilsExt, EthState};
 use rust_algorand::AlgorandTxGroup;
 

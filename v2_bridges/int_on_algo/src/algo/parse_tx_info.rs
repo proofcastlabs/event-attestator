@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use common::{dictionaries::evm_algo::EvmAlgoTokenDictionary, traits::DatabaseInterface, types::Result};
-use common_algorand::{AlgoNoteMetadata, AlgoState};
+use common_algo::{AlgoNoteMetadata, AlgoState};
 use common_chain_ids::AlgoChainId;
 use common_eth::EthDbUtilsExt;
 use common_metadata::MetadataChainId;

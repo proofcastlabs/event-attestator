@@ -1,5 +1,5 @@
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoDbUtils;
+use common_algo::AlgoDbUtils;
 use common_eth::{EthDbUtils, EthDbUtilsExt};
 use serde::{Deserialize, Serialize};
 
