@@ -1,4 +1,4 @@
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{btc_block::BtcBlockAndId, BtcState};
 
@@ -12,12 +12,12 @@ fn validate_btc_block_header(btc_block_and_id: &BtcBlockAndId) -> Result<()> {
 }
 
 pub fn validate_btc_block_header_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    if CORE_IS_VALIDATING {
-        info!("✔ Validating BTC block header...");
-        validate_btc_block_header(state.get_btc_block_and_id()?).map(|_| state)
-    } else {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping BTC block-header validation!");
         Ok(state)
+    } else {
+        info!("✔ Validating BTC block header...");
+        validate_btc_block_header(state.get_btc_block_and_id()?).map(|_| state)
     }
 }
 

@@ -9,6 +9,9 @@ rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
+[features]
+non-validating = []
+
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
