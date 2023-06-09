@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use common::{
-    constants::CORE_IS_VALIDATING,
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
@@ -118,7 +117,10 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
     block_json: &EosBlockHeaderJson,
     state: EosState<'a, D>,
 ) -> Result<EosState<'a, D>> {
-    if CORE_IS_VALIDATING {
+    if cfg!(feature = "non-validating") {
+        info!("✔ Skipping EOS init block validation check!");
+        Ok(state)
+    } else {
         info!("✔ Checking block validation passes...");
         check_block_signature_is_valid(
             state
@@ -137,9 +139,6 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
                 .get_eos_schedule_from_db(block_json.schedule_version)?,
         )
         .and(Ok(state))
-    } else {
-        info!("✔ Skipping EOS init block validation check!");
-        Ok(state)
     }
 }
 

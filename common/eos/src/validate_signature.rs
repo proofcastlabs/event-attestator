@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use bitcoin::hashes::{sha256, Hash};
 use common::{
-    constants::CORE_IS_VALIDATING,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
@@ -158,7 +157,7 @@ pub fn check_block_signature_is_valid(
 }
 
 pub fn validate_block_header_signature<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    if !CORE_IS_VALIDATING {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping EOS block header signature validation");
         Ok(state)
     } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
