@@ -1,11 +1,11 @@
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 use common_chain_ids::EthChainId;
 
 use crate::{EthDbUtilsExt, EthState, EthStateCompatible};
 
 fn validate_block_in_state<D: DatabaseInterface>(state: &impl EthStateCompatible<D>, is_for_eth: bool) -> Result<()> {
     let symbol = if is_for_eth { "ETH" } else { "EVM" };
-    if !CORE_IS_VALIDATING {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping {} block header validaton!", symbol);
         Ok(())
     } else {

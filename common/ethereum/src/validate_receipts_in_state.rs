@@ -1,9 +1,9 @@
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 
 use crate::EthState;
 
 pub fn validate_receipts_in_state<D: DatabaseInterface>(state: EthState<D>) -> Result<EthState<D>> {
-    if !CORE_IS_VALIDATING {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping ETH receipts validation!");
         Ok(state)
     } else {
