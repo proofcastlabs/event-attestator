@@ -95,6 +95,7 @@ mod tests {
         let result = AlgoEnclaveState::new(&db_utils).unwrap();
         let expected_result = AlgoEnclaveState {
             algo_account_nonce: 0,
+            algo_core_is_validating: true,
             algo_tail_block_number: block_num,
             algo_app_id: format!("{}", app_id),
             algo_tail_length: ALGO_TAIL_LENGTH,
