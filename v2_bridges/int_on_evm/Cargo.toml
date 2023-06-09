@@ -11,7 +11,7 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
 # NOTE: Turns off block header & chain validation.
-non-validating = []
+non-validating = ["common_eth/non-validating"]
 
 [dependencies]
 hex = { workspace = true }

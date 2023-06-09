@@ -10,10 +10,10 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
-# NOTE: Turns off block header & chain validation.
-non-validating = []
 # NOTE: Turns off fee-taking capabilities.
 disable-fees = ["common_fees/disable-fees"]
+# NOTE: Turns off block header & chain validation.
+non-validating = ["common_eth/non-validating","common_btc/non-validating"]
 
 [dependencies]
 hex = { workspace = true }
