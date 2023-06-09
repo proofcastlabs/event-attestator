@@ -9,6 +9,10 @@ rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
+[features]
+# Disables block validation
+non-validating = []
+
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
@@ -33,10 +37,6 @@ common_safe_addresses = { workspace = true }
 
 [dev-dependencies]
 simple_logger = "2.0.0"
-
-[features]
-# Disables block validation
-non-validating = []
 
 [lib]
 doctest = false

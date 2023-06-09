@@ -12,7 +12,7 @@ rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
 disable-fees = ["eos_on_eth/disable-fees"]
-non-validating = ["eos_on_eth/non-validating", "common/non-validating"]
+non-validating = ["eos_on_eth/non-validating"]
 
 [dependencies]
 log = { workspace = true }

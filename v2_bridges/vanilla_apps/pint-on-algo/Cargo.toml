@@ -11,7 +11,7 @@ default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
-non-validating = ["common/non-validating", "int_on_algo/non-validating"]
+non-validating = ["int_on_algo/non-validating"]
 
 [dependencies]
 log = { workspace = true }

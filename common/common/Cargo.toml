@@ -9,10 +9,6 @@ rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
-[features]
-# NOTE: Turns off block header & chain validation.
-non-validating = []
-
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
