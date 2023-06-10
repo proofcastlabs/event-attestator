@@ -6,7 +6,15 @@ extern crate log;
 
 use std::str::FromStr;
 
-use bitcoin::Address as BtcAddress;
+
+// NOTE: This means we can (relatively) easily make this LTC based instead of BTC.
+#[cfg(feature = "ltc")]
+pub use litecoin as bitcoin_crate_alias;
+#[cfg(not(feature = "ltc"))]
+pub use bitcoin as bitcoin_crate_alias;
+
+use crate::bitcoin_crate_alias::Address as BtcAddress;
+
 use common::utils::convert_hex_to_eth_address;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
@@ -97,8 +105,18 @@ mod tests {
     }
 
     #[test]
-    fn should_safely_convert_str_to_btc_address() {
+    #[cfg_attr(feature = "ltc", ignore)]
+    fn should_safely_convert_btc_str_to_btc_address() {
         let s = "bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej";
+        let expected_result = BtcAddress::from_str(s).unwrap();
+        let result = safely_convert_str_to_btc_address(s);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    #[cfg_attr(not(feature = "ltc"), ignore)]
+    fn should_safely_convert_ltc_str_to_ltc_address() {
+        let s = "LNUuFferCYjeJNBGV1Y2cKS7T5XCCptpt8";
         let expected_result = BtcAddress::from_str(s).unwrap();
         let result = safely_convert_str_to_btc_address(s);
         assert_eq!(result, expected_result);
