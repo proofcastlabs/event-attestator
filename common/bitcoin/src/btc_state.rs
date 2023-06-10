@@ -1,4 +1,3 @@
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
@@ -6,6 +5,7 @@ use common::{
 };
 
 use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
     btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
     btc_database_utils::BtcDbUtils,
     btc_submission_material::{BtcSubmissionMaterial, BtcSubmissionMaterialJson},

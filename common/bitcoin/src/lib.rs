@@ -1,3 +1,9 @@
+// NOTE: This means we can (relatively) easily make this LTC based instead of BTC.
+#[cfg(not(feature = "ltc"))]
+pub use bitcoin as bitcoin_crate_alias;
+#[cfg(feature = "ltc")]
+pub use litecoin as bitcoin_crate_alias;
+
 mod add_btc_block_to_db;
 mod btc_block;
 mod btc_constants;

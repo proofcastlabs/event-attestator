@@ -1,7 +1,7 @@
-use bitcoin::blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction};
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
+    bitcoin_crate_alias::blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction},
     btc_utils::{create_unsigned_utxo_from_tx, get_pay_to_pub_key_hash_script},
     utxo_manager::{BtcUtxoAndValue, BtcUtxosAndValues},
     BtcState,

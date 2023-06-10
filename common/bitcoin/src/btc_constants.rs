@@ -1,8 +1,9 @@
 use std::str::FromStr;
 
-use bitcoin::{hashes::sha256d, PackedLockTime, Sequence};
-
-use crate::btc_utils::calculate_dust_amount;
+use crate::{
+    bitcoin_crate_alias::{hashes::sha256d, PackedLockTime, Sequence},
+    btc_utils::calculate_dust_amount,
+};
 
 #[cfg(feature = "ltc")]
 pub const BTC_TAIL_LENGTH: u64 = 40;

@@ -1,6 +1,8 @@
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
-
-use crate::{btc_constants::MAX_NUM_OUTPUTS, btc_types::BtcTransactions};
+use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
+    btc_constants::MAX_NUM_OUTPUTS,
+    btc_types::BtcTransactions,
+};
 
 pub fn maybe_filter_out_btc_txs_with_too_many_outputs(txs: &[BtcTransaction]) -> BtcTransactions {
     info!("✔ Filtering out BTC transactions with > {} outputs...", MAX_NUM_OUTPUTS);

@@ -1,10 +1,13 @@
-use bitcoin::{
-    hashes::{sha256d, Hash},
-    BlockHash,
-};
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::{btc_database_utils::BtcDbUtils, BtcState};
+use crate::{
+    bitcoin_crate_alias::{
+        hashes::{sha256d, Hash},
+        BlockHash,
+    },
+    btc_database_utils::BtcDbUtils,
+    BtcState,
+};
 
 fn calculate_linker_hash(
     hash_to_link_to: &BlockHash,

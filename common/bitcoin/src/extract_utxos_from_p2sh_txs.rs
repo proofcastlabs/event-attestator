@@ -1,11 +1,11 @@
-use bitcoin::{
-    blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
+        network::constants::Network as BtcNetwork,
+        util::address::Address as BtcAddress,
+    },
     btc_utils::create_unsigned_utxo_from_tx,
     deposit_address_info::DepositInfoHashMap,
     utxo_manager::{BtcUtxoAndValue, BtcUtxosAndValues},

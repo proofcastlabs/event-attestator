@@ -1,8 +1,11 @@
-use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, hashes::sha256d};
 use common::types::{Byte, Bytes};
 use serde::{Deserialize, Serialize};
 
-use crate::{btc_constants::BTC_PUB_KEY_SLICE_LENGTH, deposit_address_info::DepositAddressInfoJson};
+use crate::{
+    bitcoin_crate_alias::{blockdata::transaction::Transaction as BtcTransaction, hashes::sha256d},
+    btc_constants::BTC_PUB_KEY_SLICE_LENGTH,
+    deposit_address_info::DepositAddressInfoJson,
+};
 
 #[derive(
     Debug,

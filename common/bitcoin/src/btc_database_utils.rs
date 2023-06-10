@@ -1,4 +1,3 @@
-use bitcoin::{hashes::Hash, network::constants::Network as BtcNetwork, BlockHash};
 use common::{
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     errors::AppError,
@@ -9,6 +8,7 @@ use common::{
 use common_chain_ids::BtcChainId;
 
 use crate::{
+    bitcoin_crate_alias::{hashes::Hash, network::constants::Network as BtcNetwork, BlockHash},
     btc_block::BtcBlockInDbFormat,
     btc_types::BtcPubKeySlice,
     btc_utils::{convert_btc_address_to_bytes, convert_bytes_to_btc_address, convert_bytes_to_btc_pub_key_slice},

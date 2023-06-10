@@ -1,7 +1,7 @@
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
     btc_database_utils::BtcDbUtils,
     btc_utils::get_pay_to_pub_key_hash_script,
     extract_utxos_from_p2pkh_txs::extract_utxos_from_p2pkh_txs,

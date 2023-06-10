@@ -1,10 +1,10 @@
-use bitcoin::{
-    blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
-    Sighash,
-};
 use common::types::{Bytes, Result};
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
+        Sighash,
+    },
     btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
     btc_recipients_and_amounts::BtcRecipientsAndAmounts,
     btc_utils::{

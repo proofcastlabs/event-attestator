@@ -1,11 +1,11 @@
-use bitcoin::{
-    blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
+        network::constants::Network as BtcNetwork,
+        util::address::Address as BtcAddress,
+    },
     btc_types::{BtcPubKeySlice, BtcTransactions},
     btc_utils::get_p2sh_redeem_script_sig,
     deposit_address_info::DepositInfoHashMap,
@@ -127,13 +127,12 @@ pub fn filter_p2sh_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: Btc
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{
-        blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
-        util::address::Address as BtcAddress,
-    };
-
     use super::*;
     use crate::{
+        bitcoin_crate_alias::{
+            blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
+            util::address::Address as BtcAddress,
+        },
         btc_block::BtcBlockAndId,
         get_deposit_info_hash_map::create_hash_map_from_deposit_info_list,
         test_utils::{get_sample_btc_block_n, get_sample_btc_pub_key_slice, SAMPLE_TARGET_BTC_ADDRESS},

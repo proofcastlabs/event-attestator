@@ -1,11 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::{
-    blockdata::block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-    consensus::encode::deserialize as btc_deserialize,
-    hash_types::{BlockHash, TxMerkleNode},
-    hashes::Hash,
-};
 use common::{
     errors::AppError,
     traits::DatabaseInterface,
@@ -15,7 +9,17 @@ use common::{
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
-use crate::{btc_submission_material::BtcSubmissionMaterialJson, deposit_address_info::DepositInfoList, BtcState};
+use crate::{
+    bitcoin_crate_alias::{
+        blockdata::block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
+        consensus::encode::deserialize as btc_deserialize,
+        hash_types::{BlockHash, TxMerkleNode},
+        hashes::Hash,
+    },
+    btc_submission_material::BtcSubmissionMaterialJson,
+    deposit_address_info::DepositInfoList,
+    BtcState,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcBlockAndId {
@@ -299,13 +303,14 @@ impl SerializedBlockInDbFormatLegacy {
 
 #[cfg(test)]
 mod tests {
-    use bitcoin::{
-        blockdata::transaction::Transaction as BtcTransaction,
-        consensus::encode::deserialize as btc_deserialize,
-    };
-
     use super::*;
-    use crate::test_utils::{get_sample_btc_block_in_db_format, get_sample_btc_submission_material_json};
+    use crate::{
+        bitcoin_crate_alias::{
+            blockdata::transaction::Transaction as BtcTransaction,
+            consensus::encode::deserialize as btc_deserialize,
+        },
+        test_utils::{get_sample_btc_block_in_db_format, get_sample_btc_submission_material_json},
+    };
 
     #[test]
     fn should_parse_block_and_tx_json_to_struct() {

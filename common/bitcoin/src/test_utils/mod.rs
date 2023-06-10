@@ -1,13 +1,5 @@
 use std::{fs::read_to_string, str::FromStr};
 
-use bitcoin::{
-    blockdata::{
-        script::Script as BtcScript,
-        transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo},
-    },
-    hashes::{sha256d, Hash},
-    Witness,
-};
 use common::{
     errors::AppError,
     traits::DatabaseInterface,
@@ -15,6 +7,14 @@ use common::{
 };
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::{
+            script::Script as BtcScript,
+            transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo},
+        },
+        hashes::{sha256d, Hash},
+        Witness,
+    },
     btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
     btc_constants::DEFAULT_BTC_SEQUENCE,
     btc_database_utils::BtcDbUtils,

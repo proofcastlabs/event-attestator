@@ -1,7 +1,3 @@
-use bitcoin::{
-    hashes::{sha256d, Hash},
-    Txid,
-};
 use common::{
     errors::AppError,
     traits::DatabaseInterface,
@@ -9,10 +5,16 @@ use common::{
     utils::{convert_bytes_to_u64, convert_u64_to_bytes},
 };
 
-use crate::utxo_manager::{
-    utxo_constants::{UTXO_BALANCE, UTXO_FIRST, UTXO_LAST, UTXO_NONCE},
-    utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
-    utxo_utils::{deserialize_utxo_and_value, get_utxo_and_value_db_key, serialize_btc_utxo_and_value},
+use crate::{
+    bitcoin_crate_alias::{
+        hashes::{sha256d, Hash},
+        Txid,
+    },
+    utxo_manager::{
+        utxo_constants::{UTXO_BALANCE, UTXO_FIRST, UTXO_LAST, UTXO_NONCE},
+        utxo_types::{BtcUtxoAndValue, BtcUtxosAndValues},
+        utxo_utils::{deserialize_utxo_and_value, get_utxo_and_value_db_key, serialize_btc_utxo_and_value},
+    },
 };
 
 // FIXME Make a struct of this ala BtdDbutils

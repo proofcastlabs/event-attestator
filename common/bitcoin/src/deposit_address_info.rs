@@ -1,10 +1,5 @@
 use std::{collections::HashMap, fmt, str::FromStr};
 
-use bitcoin::{
-    hashes::{sha256d, Hash},
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
 use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -15,6 +10,11 @@ use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    bitcoin_crate_alias::{
+        hashes::{sha256d, Hash},
+        network::constants::Network as BtcNetwork,
+        util::address::Address as BtcAddress,
+    },
     btc_types::BtcPubKeySlice,
     btc_utils::{convert_hex_to_sha256_hash, get_p2sh_redeem_script_sig},
     BtcState,

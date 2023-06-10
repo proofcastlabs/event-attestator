@@ -1,11 +1,13 @@
 use std::str::FromStr;
 
-use bitcoin::{blockdata::transaction::TxOut as BtcTxOut, util::address::Address as BtcAddress};
 use common::types::Result;
 use common_safe_addresses::{SAFE_BTC_ADDRESS, SAFE_BTC_ADDRESS_STR};
 use derive_more::{Constructor, Deref, DerefMut};
 
-use crate::btc_utils::create_new_tx_output;
+use crate::{
+    bitcoin_crate_alias::{blockdata::transaction::TxOut as BtcTxOut, util::address::Address as BtcAddress},
+    btc_utils::create_new_tx_output,
+};
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Deref, DerefMut, Constructor)]
 pub struct BtcRecipientsAndAmounts(Vec<BtcRecipientAndAmount>);

@@ -1,7 +1,9 @@
-use bitcoin::{blockdata::block::BlockHeader as BtcBlockHeader, network::constants::Network as BtcNetwork};
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::BtcState;
+use crate::{
+    bitcoin_crate_alias::{blockdata::block::BlockHeader as BtcBlockHeader, network::constants::Network as BtcNetwork},
+    BtcState,
+};
 
 fn check_difficulty_is_above_threshold(
     threshold: u64,

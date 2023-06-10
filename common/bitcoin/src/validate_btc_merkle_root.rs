@@ -1,7 +1,6 @@
-use bitcoin::blockdata::block::Block as BtcBlock;
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::BtcState;
+use crate::{bitcoin_crate_alias::blockdata::block::Block as BtcBlock, BtcState};
 
 fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
     match btc_block.check_merkle_root() {

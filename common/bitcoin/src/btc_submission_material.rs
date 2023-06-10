@@ -1,10 +1,10 @@
 use std::str::FromStr;
 
-use bitcoin::blockdata::{block::Block as BtcBlock, transaction::Transaction as BtcTransaction};
 use common::{errors::AppError, traits::DatabaseInterface, types::Result};
 use serde::Deserialize;
 
 use crate::{
+    bitcoin_crate_alias::blockdata::{block::Block as BtcBlock, transaction::Transaction as BtcTransaction},
     btc_block::{BtcBlockAndId, BtcBlockJson},
     btc_utils::convert_hex_tx_to_btc_transaction,
     deposit_address_info::DepositAddressInfoJsonList,
