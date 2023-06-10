@@ -1,12 +1,12 @@
 use bitcoin::{
-    blockdata::transaction::TxOut as BtcTxOut,
+    blockdata::transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
     network::constants::Network as BtcNetwork,
     util::address::Address as BtcAddress,
 };
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
-    btc_types::{BtcPubKeySlice, BtcTransaction, BtcTransactions},
+    btc_types::{BtcPubKeySlice, BtcTransactions},
     btc_utils::get_p2sh_redeem_script_sig,
     deposit_address_info::DepositInfoHashMap,
     BtcState,

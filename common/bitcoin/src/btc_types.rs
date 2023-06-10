@@ -1,12 +1,4 @@
-pub use bitcoin::{
-    blockdata::{
-        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
-    },
-    consensus::encode::deserialize as btc_deserialize,
-    hashes::sha256d,
-    util::address::Address as BtcAddress,
-};
+use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, hashes::sha256d};
 use common::types::{Byte, Bytes};
 use serde::{Deserialize, Serialize};
 

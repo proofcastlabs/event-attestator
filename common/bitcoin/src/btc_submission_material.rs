@@ -1,14 +1,6 @@
 use std::str::FromStr;
 
-pub use bitcoin::{
-    blockdata::{
-        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::Transaction as BtcTransaction,
-    },
-    consensus::encode::deserialize as btc_deserialize,
-    hashes::sha256d,
-    util::address::Address as BtcAddress,
-};
+use bitcoin::blockdata::{block::Block as BtcBlock, transaction::Transaction as BtcTransaction};
 use common::{errors::AppError, traits::DatabaseInterface, types::Result};
 use serde::Deserialize;
 

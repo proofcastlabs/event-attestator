@@ -1,14 +1,6 @@
 use std::str::FromStr;
 
-pub use bitcoin::{
-    blockdata::{
-        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::{Transaction as BtcTransaction, TxOut as BtcTxOut},
-    },
-    consensus::encode::deserialize as btc_deserialize,
-    hashes::sha256d,
-    util::address::Address as BtcAddress,
-};
+use bitcoin::{blockdata::transaction::TxOut as BtcTxOut, util::address::Address as BtcAddress};
 use common::types::Result;
 use common_safe_addresses::{SAFE_BTC_ADDRESS, SAFE_BTC_ADDRESS_STR};
 use derive_more::{Constructor, Deref, DerefMut};

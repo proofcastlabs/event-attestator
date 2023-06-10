@@ -1,14 +1,10 @@
 use std::str::FromStr;
 
-pub use bitcoin::{
-    blockdata::{
-        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::Transaction as BtcTransaction,
-    },
-    consensus::encode::{deserialize as btc_deserialize, serialize as btc_serialize},
+use bitcoin::{
+    blockdata::block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
+    consensus::encode::deserialize as btc_deserialize,
     hash_types::{BlockHash, TxMerkleNode},
-    hashes::{sha256d, Hash},
-    util::address::Address as BtcAddress,
+    hashes::Hash,
 };
 use common::{
     errors::AppError,
