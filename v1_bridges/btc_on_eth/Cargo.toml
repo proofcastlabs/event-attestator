@@ -13,7 +13,7 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 # NOTE: Turns off fee-taking capabilities.
 disable-fees = ["common_fees/disable-fees"]
 # NOTE: Turns this into an `ltc-on-int` core.
-ltc = ["common_btc/ltc", "common_safe_addresses/ltc"]
+ltc = ["common_btc/ltc", "common_safe_addresses/ltc", "common_fees/ltc"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eth/non-validating","common_btc/non-validating"]
 
