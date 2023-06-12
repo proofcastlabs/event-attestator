@@ -7,13 +7,13 @@ extern crate log;
 use std::str::FromStr;
 
 #[cfg(not(feature = "ltc"))]
-pub use bitcoin as bitcoin_crate_alias;
+use bitcoin as bitcoin_crate_alias;
 use common::utils::convert_hex_to_eth_address;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
 // NOTE: This means we can (relatively) easily make this LTC based instead of BTC.
 #[cfg(feature = "ltc")]
-pub use litecoin as bitcoin_crate_alias;
+use litecoin as bitcoin_crate_alias;
 use rust_algorand::AlgorandAddress;
 
 use crate::bitcoin_crate_alias::Address as BtcAddress;
