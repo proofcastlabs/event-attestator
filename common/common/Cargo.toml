@@ -24,6 +24,7 @@ base64 = { workspace = true }
 ethabi = { workspace = true }
 bitcoin = { workspace = true }
 eip-712 = { workspace = true }
+litecoin = { workspace = true }
 eos-chain = { workspace = true }
 secp256k1 = { workspace = true }
 rustc-hex = { workspace = true }
