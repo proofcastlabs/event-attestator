@@ -1,10 +1,11 @@
-use bitcoin::{util::address::Address as BtcAddress, Txid};
 use common::types::{Byte, Bytes, Result};
 use common_btc::{ToMetadata, ZERO_HASH};
 use common_safe_addresses::safely_convert_str_to_eth_address;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
+
+use crate::bitcoin_crate_alias::{util::address::Address as BtcAddress, Txid};
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnEthEthTxInfos(pub Vec<BtcOnEthEthTxInfo>);
@@ -78,18 +79,21 @@ impl ToMetadata for BtcOnEthEthTxInfo {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{hashes::Hash, util::address::Address as BtcAddress};
     use common_chain_ids::BtcChainId;
     use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
     use common_metadata::MetadataProtocolId;
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
-    use crate::{test_utils::get_sample_eth_tx_infos, utils::convert_satoshis_to_wei};
+    use crate::{
+        bitcoin_crate_alias::{hashes::Hash, util::address::Address as BtcAddress},
+        test_utils::get_sample_eth_tx_infos,
+        utils::convert_satoshis_to_wei,
+    };
 
     #[test]
     fn should_serde_eth_tx_infos() {
