@@ -34,6 +34,13 @@ impl IntOnEvmIntTxInfos {
                         event_params.get_destination_chain_id()
                     }?;
 
+                    let origin_chain_id = if log.address == *PTELOS_ADDRESS {
+                        warn!("pTelos peg out detected, defaulting to ETH mainnet as origin chain ID");
+                        Ok(MetadataChainId::EthereumMainnet)
+                    } else {
+                        event_params.get_origin_chain_id()
+                    }?;
+
                     let tx_info = IntOnEvmIntTxInfo {
                         destination_chain_id,
                         vault_address: *vault_address,
@@ -43,7 +50,7 @@ impl IntOnEvmIntTxInfos {
                         host_token_amount: event_params.value,
                         user_data: event_params.user_data.clone(),
                         originating_tx_hash: receipt.transaction_hash,
-                        origin_chain_id: event_params.get_origin_chain_id()?,
+                        origin_chain_id,
                         destination_address: event_params.underlying_asset_recipient.clone(),
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
                         native_token_amount: dictionary

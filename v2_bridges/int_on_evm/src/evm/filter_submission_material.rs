@@ -34,9 +34,10 @@ impl IntOnEvmIntTxInfos {
     }
 
     fn is_log_relevant(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        match Self::is_log_int_on_evm_redeem(log, dictionary)? {
-            false => Ok(false),
-            true => Ok(dictionary.is_evm_token_supported(&log.address)),
+        if Self::is_log_int_on_evm_redeem(log, dictionary)? {
+            Ok(dictionary.is_evm_token_supported(&log.address))
+        } else {
+            Ok(false)
         }
     }
 
