@@ -92,6 +92,7 @@ reqwest = { version = "0.11.4", features = ["blocking", "json"], default-feature
 web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
 secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
 litecoin = { git = "https://github.com/provable-things/rust-bitcoin.git", package = "bitcoin", branch = "provable-ltc", features = ["serde", "rand"] }
+#litecoin = { path = "../temp/rust-bitcoin/bitcoin", package = "bitcoin", features = ["serde", "rand"] }
 
 common = { path = "./common/common" }
 common_eos = { package = "eos", path = "./common/eos" }

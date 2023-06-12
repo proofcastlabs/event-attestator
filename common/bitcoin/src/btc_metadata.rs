@@ -1,3 +1,4 @@
+#[cfg(not(feature = "ltc"))]
 use std::str::FromStr;
 
 use common::types::{Byte, Bytes, Result};
@@ -51,6 +52,7 @@ pub trait ToMetadata {
         }
     }
 
+    #[cfg(not(feature = "ltc"))]
     fn to_metadata(&self, user_data: &[Byte], btc_chain_id: &BtcChainId) -> Result<Option<Metadata>> {
         info!("✔ Getting metadata from user data...");
         Ok(Some(Metadata::new(
@@ -60,5 +62,16 @@ pub trait ToMetadata {
                 &MetadataChainId::from_str(&btc_chain_id.to_string())?,
             )?,
         )))
+    }
+
+    #[cfg(feature = "ltc")]
+    fn to_metadata(&self, user_data: &[Byte], _btc_chain_id: &BtcChainId) -> Result<Option<Metadata>> {
+        info!("✔ Getting metadata from user data...");
+        let ma = &MetadataAddress {
+            // NOTE: We only support litecoin mainnet
+            metadata_chain_id: MetadataChainId::LitecoinMainnet,
+            address: convert_str_to_btc_address_or_safe_address(&self.get_originating_tx_address())?.to_string(),
+        };
+        Ok(Some(Metadata::new(user_data, ma)))
     }
 }

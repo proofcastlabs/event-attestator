@@ -10,9 +10,9 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
-ltc = ["litecoin"]
 non-validating = []
 default = ["bitcoin"]
+ltc = ["litecoin","common_safe_addresses/ltc"]
 
 [dependencies]
 hex = { workspace = true }

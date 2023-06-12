@@ -9,9 +9,13 @@ use common::{
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
+#[cfg(not(feature = "ltc"))]
+use crate::bitcoin_crate_alias::blockdata::block::BlockHeader as BtcBlockHeader;
+#[cfg(feature = "ltc")]
+use crate::bitcoin_crate_alias::blockdata::block::Header as BtcBlockHeader;
 use crate::{
     bitcoin_crate_alias::{
-        blockdata::block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
+        blockdata::block::Block as BtcBlock,
         consensus::encode::deserialize as btc_deserialize,
         hash_types::{BlockHash, TxMerkleNode},
         hashes::Hash,
@@ -62,6 +66,7 @@ pub struct BtcBlockJson {
 }
 
 impl BtcBlockJson {
+    #[cfg(not(feature = "ltc"))]
     pub fn to_block_header(&self) -> Result<BtcBlockHeader> {
         info!("✔ Parsing `BtcBlockJson` to `BtcBlockHeader`...");
         Ok(BtcBlockHeader {
@@ -71,6 +76,19 @@ impl BtcBlockJson {
             version: self.version,
             merkle_root: TxMerkleNode::from_str(&self.merkle_root)?,
             prev_blockhash: BlockHash::from_str(&self.previousblockhash)?,
+        })
+    }
+
+    #[cfg(feature = "ltc")]
+    pub fn to_block_header(&self) -> Result<BtcBlockHeader> {
+        info!("✔ Parsing `BtcBlockJson` to `BtcBlockHeader`...");
+        Ok(BtcBlockHeader {
+            time: self.timestamp,
+            nonce: self.nonce,
+            merkle_root: TxMerkleNode::from_str(&self.merkle_root)?,
+            prev_blockhash: BlockHash::from_str(&self.previousblockhash)?,
+            bits: crate::bitcoin_crate_alias::CompactTarget::from_consensus(self.bits),
+            version: crate::bitcoin_crate_alias::block::Version::from_consensus(self.version),
         })
     }
 }

@@ -1,9 +1,25 @@
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::{bitcoin_crate_alias::blockdata::block::BlockHeader as BtcBlockHeader, BtcState};
+#[cfg(not(feature = "ltc"))]
+use crate::bitcoin_crate_alias::blockdata::block::BlockHeader as BtcBlockHeader;
+#[cfg(feature = "ltc")]
+use crate::bitcoin_crate_alias::blockdata::block::Header as BtcBlockHeader;
+use crate::BtcState;
 
+#[cfg(not(feature = "ltc"))]
 fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<()> {
     match btc_block_header.validate_pow(&btc_block_header.target()) {
+        Ok(_) => {
+            info!("✔ BTC block's proof-of-work is valid!");
+            Ok(())
+        },
+        Err(_) => Err("✘ Invalid block! PoW validation error: Block hash > target!".into()),
+    }
+}
+
+#[cfg(feature = "ltc")]
+fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<()> {
+    match btc_block_header.validate_pow(btc_block_header.target()) {
         Ok(_) => {
             info!("✔ BTC block's proof-of-work is valid!");
             Ok(())

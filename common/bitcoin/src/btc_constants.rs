@@ -1,7 +1,11 @@
 use std::str::FromStr;
 
+#[cfg(feature = "ltc")]
+use crate::bitcoin_crate_alias::locktime::absolute::PackedLockTime;
+#[cfg(not(feature = "ltc"))]
+use crate::bitcoin_crate_alias::PackedLockTime;
 use crate::{
-    bitcoin_crate_alias::{hashes::sha256d, PackedLockTime, Sequence},
+    bitcoin_crate_alias::{hashes::sha256d, Sequence},
     btc_utils::calculate_dust_amount,
 };
 
