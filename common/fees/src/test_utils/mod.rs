@@ -1,7 +1,6 @@
 #![cfg(test)]
 use std::{fs::read_to_string, str::FromStr};
 
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{errors::AppError, types::Result};
 use common_btc::{
     create_unsigned_utxo_from_tx,
@@ -11,6 +10,8 @@ use common_btc::{
     BtcUtxoAndValue,
     BtcUtxosAndValues,
 };
+
+use crate::bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction;
 
 pub const SAMPLE_TRANSACTION_INDEX: usize = 1;
 pub const SAMPLE_OUTPUT_INDEX_OF_UTXO: u32 = 0;

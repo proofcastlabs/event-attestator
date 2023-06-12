@@ -1279,6 +1279,7 @@ checksum = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"
 name = "fees"
 version = "6.10.2"
 dependencies = [
+ "bitcoin 0.29.0",
  "bitcoin 0.29.2",
  "bitcoin 6.11.0",
  "common",
