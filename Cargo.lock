@@ -690,7 +690,6 @@ version = "1.0.2"
 dependencies = [
  "common",
  "debug_signers",
- "eos",
  "function_name",
  "hex",
  "log",
