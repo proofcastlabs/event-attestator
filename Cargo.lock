@@ -200,7 +200,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "6.10.1"
+version = "6.10.2"
 dependencies = [
  "bitcoin 0.29.2",
  "chain_ids",
@@ -311,7 +311,7 @@ name = "btc_on_eos"
 version = "1.0.0"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.1",
+ "bitcoin 6.10.2",
  "chain_ids",
  "common",
  "database_utils",
@@ -338,7 +338,7 @@ name = "btc_on_eth"
 version = "1.0.0"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.1",
+ "bitcoin 6.10.2",
  "chain_ids",
  "common",
  "database_utils",
@@ -366,7 +366,7 @@ name = "btc_on_int"
 version = "1.0.0"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.1",
+ "bitcoin 6.10.2",
  "chain_ids",
  "common",
  "database_utils",
@@ -974,7 +974,7 @@ dependencies = [
 
 [[package]]
 name = "eos_on_int"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chain_ids",
  "common",
@@ -1037,7 +1037,7 @@ dependencies = [
 
 [[package]]
 name = "erc20_on_evm"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chain_ids",
  "common",
@@ -1062,7 +1062,7 @@ dependencies = [
 
 [[package]]
 name = "erc20_on_int"
-version = "1.0.0"
+version = "1.0.1"
 dependencies = [
  "chain_ids",
  "common",
@@ -1297,7 +1297,7 @@ name = "fees"
 version = "6.10.1"
 dependencies = [
  "bitcoin 0.29.2",
- "bitcoin 6.10.1",
+ "bitcoin 6.10.2",
  "common",
  "derive_more",
  "hex",
@@ -1884,7 +1884,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_algo"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "algorand",
  "chain_ids",
@@ -1911,7 +1911,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_eos"
-version = "1.1.1"
+version = "1.1.2"
 dependencies = [
  "chain_ids",
  "common",
@@ -1938,7 +1938,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_evm"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -1952,6 +1952,7 @@ dependencies = [
  "fees",
  "function_name",
  "hex",
+ "lazy_static",
  "log",
  "metadata",
  "paste",

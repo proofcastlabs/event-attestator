@@ -8,9 +8,11 @@ use common_eth::{
     EthState,
     EthSubmissionMaterial,
     ERC777_REDEEM_EVENT_TOPIC_V2,
+    ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 
-use crate::evm::int_tx_info::IntOnEvmIntTxInfos;
+use crate::{constants::PTLOS_ADDRESS, evm::int_tx_info::IntOnEvmIntTxInfos};
 
 impl IntOnEvmIntTxInfos {
     fn is_log_int_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
@@ -19,16 +21,23 @@ impl IntOnEvmIntTxInfos {
             hex::encode(ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes())
         );
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2);
+        let log_contains_topic = if log.address == *PTLOS_ADDRESS {
+            warn!("pTLOS redeem detected - checking for v1 event topics");
+            log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
+                || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+        } else {
+            log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2)
+        };
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)
     }
 
     fn is_log_relevant(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        match Self::is_log_int_on_evm_redeem(log, dictionary)? {
-            false => Ok(false),
-            true => Ok(dictionary.is_evm_token_supported(&log.address)),
+        if Self::is_log_int_on_evm_redeem(log, dictionary)? {
+            Ok(dictionary.is_evm_token_supported(&log.address))
+        } else {
+            Ok(false)
         }
     }
 
@@ -87,7 +96,13 @@ pub fn filter_submission_material_for_redeem_events_in_state<D: DatabaseInterfac
         .get_eth_submission_material()?
         .get_receipts_containing_log_from_addresses_and_with_topics(
             &state.get_eth_evm_token_dictionary()?.to_evm_addresses(),
-            &[*ERC777_REDEEM_EVENT_TOPIC_V2],
+            &[
+                *ERC777_REDEEM_EVENT_TOPIC_V2,
+                // NOTE: The following v1 events are for allowing the migration of v1 bridge whose
+                // contracts are not upgradeable to v2 bridges.
+                *ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
+                *ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
+            ],
         )
         .and_then(|filtered_submission_material| {
             IntOnEvmIntTxInfos::filter_eth_submission_material_for_supported_redeems(
