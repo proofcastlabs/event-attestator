@@ -9,11 +9,18 @@ use debug_signers::validate_debug_command_signature;
 use function_name::named;
 
 fn is_private_key_key(key: &[Byte]) -> bool {
-    ["eth", "evm", "int", "algo", "btc", "eos"]
-        .iter()
-        .map(|s| get_prefixed_db_key(&format!("{s}-private-key-key")).to_vec())
-        .any(|v| key == v)
+    [
+        "btc-private-key",
+        "eth-private-key-key",
+        "evm-private-key-key",
+        "algo_private_key_key",
+        "eos-private-key-db-key",
+    ]
+    .iter()
+    .map(|s| get_prefixed_db_key(s).to_vec())
+    .any(|v| key == v)
 }
+
 /// Debug Set Key In Db To Value
 ///
 /// Sets a provide key to a provided value in the database.
