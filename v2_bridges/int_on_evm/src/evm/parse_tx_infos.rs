@@ -4,7 +4,7 @@ use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    constants::PTELOS_ADDRESS,
+    constants::PTLOS_ADDRESS,
     evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos},
 };
 
@@ -25,7 +25,7 @@ impl IntOnEvmIntTxInfos {
                     // of some legacy bridges which do not have upgradeable smart contracts.
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
 
-                    let destination_chain_id = if log.address == *PTELOS_ADDRESS {
+                    let destination_chain_id = if log.address == *PTLOS_ADDRESS {
                         warn!("pTelos peg out detected, defaulting to TELOS mainnet as destination chain ID");
                         Ok(MetadataChainId::TelosMainnet)
                     } else {
@@ -34,7 +34,7 @@ impl IntOnEvmIntTxInfos {
                         event_params.get_destination_chain_id()
                     }?;
 
-                    let origin_chain_id = if log.address == *PTELOS_ADDRESS {
+                    let origin_chain_id = if log.address == *PTLOS_ADDRESS {
                         warn!("pTelos peg out detected, defaulting to ETH mainnet as origin chain ID");
                         Ok(MetadataChainId::EthereumMainnet)
                     } else {

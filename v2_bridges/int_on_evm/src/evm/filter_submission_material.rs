@@ -12,7 +12,7 @@ use common_eth::{
     ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 
-use crate::{constants::PTELOS_ADDRESS, evm::int_tx_info::IntOnEvmIntTxInfos};
+use crate::{constants::PTLOS_ADDRESS, evm::int_tx_info::IntOnEvmIntTxInfos};
 
 impl IntOnEvmIntTxInfos {
     fn is_log_int_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
@@ -21,7 +21,7 @@ impl IntOnEvmIntTxInfos {
             hex::encode(ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes())
         );
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = if log.address == *PTELOS_ADDRESS {
+        let log_contains_topic = if log.address == *PTLOS_ADDRESS {
             warn!("pTLOS redeem detected - checking for v1 event topics");
             log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
                 || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
