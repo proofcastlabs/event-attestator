@@ -15,25 +15,17 @@ fn check_difficulty_is_above_threshold(
     // NOTE: Network not configurable in difficulty calculation ∵ all members
     // of the enum return the same value from underlying lib!
     info!("✔ Checking BTC block difficulty is above threshold...");
-    match network {
-        BtcNetwork::Bitcoin => match btc_block_header.difficulty(network) > threshold {
-            true => {
-                info!("✔ BTC block difficulty is above threshold!");
-                Ok(())
-            },
-            false => {
-                trace!(
-                    "✘ Difficulty of {} is below threshold of {}!",
-                    btc_block_header.difficulty(network),
-                    threshold,
-                );
-                Err("✘ Invalid block! Difficulty is below threshold!".into())
-            },
-        },
-        _ => {
-            trace!("✔ Not on mainnet - skipping difficulty check!");
-            Ok(())
-        },
+    let difficulty = btc_block_header.difficulty(network);
+    if network != BtcNetwork::Bitcoin {
+        warn!("not on mainnet - skipping difficulty check");
+        Ok(())
+    } else if difficulty >= threshold.into() {
+        info!("✔ BTC block difficulty is above threshold");
+        Ok(())
+    } else {
+        let msg = format!("difficulty of {difficulty} is below threshold of {threshold}");
+        warn!("{msg}");
+        Err(msg.into())
     }
 }
 
@@ -50,7 +42,7 @@ fn check_difficulty_is_above_threshold(
     if network != BtcNetwork::Bitcoin {
         warn!("not on mainnet - skipping difficulty check");
         Ok(())
-    } else if difficulty > threshold.into() {
+    } else if difficulty >= threshold.into() {
         info!("✔ BTC block difficulty is above threshold");
         Ok(())
     } else {
