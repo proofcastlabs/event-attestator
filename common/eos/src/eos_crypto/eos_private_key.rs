@@ -1,12 +1,6 @@
 use std::{fmt, str::FromStr};
 
 #[cfg(test)]
-use bitcoin::hashes::sha256d;
-use bitcoin::{
-    hashes::{sha256, Hash as HashTrait},
-    util::base58,
-};
-#[cfg(test)]
 use bs58;
 #[cfg(test)]
 use common::types::Bytes;
@@ -23,7 +17,13 @@ use secp256k1::{
     Secp256k1,
 };
 
+#[cfg(test)]
+use crate::bitcoin_crate_alias::hashes::sha256d;
 use crate::{
+    bitcoin_crate_alias::{
+        hashes::{sha256, Hash as HashTrait},
+        util::base58,
+    },
     eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
     eos_database_utils::EosDbUtils,
     eos_types::EosNetwork,
@@ -79,6 +79,7 @@ impl EosPrivateKey {
         })
     }
 
+    #[cfg(not(feature = "ltc"))]
     pub fn from_wallet_import_format(wallet_import_formatted_key: &str) -> Result<EosPrivateKey> {
         let data = base58::from_check(wallet_import_formatted_key)?;
         let compressed = match data.len() {
@@ -90,6 +91,26 @@ impl EosPrivateKey {
             128 => EosNetwork::Mainnet,
             239 => EosNetwork::Testnet,
             x => return Err(AppError::Base58Error(base58::Error::InvalidAddressVersion(x))),
+        };
+        Ok(EosPrivateKey {
+            compressed,
+            network,
+            private_key: SecretKey::from_slice(&data[1..33])?,
+        })
+    }
+
+    #[cfg(feature = "ltc")]
+    pub fn from_wallet_import_format(wallet_import_formatted_key: &str) -> Result<EosPrivateKey> {
+        let data = base58::from_check(wallet_import_formatted_key)?;
+        let compressed = match data.len() {
+            33 => false,
+            34 => true,
+            _ => return Err(AppError::LitecoinBase58Error(base58::Error::InvalidLength(data.len()))),
+        };
+        let network = match data[0] {
+            128 => EosNetwork::Mainnet,
+            239 => EosNetwork::Testnet,
+            x => return Err(AppError::LitecoinBase58Error(base58::Error::InvalidAddressVersion(x))),
         };
         Ok(EosPrivateKey {
             compressed,
@@ -162,11 +183,11 @@ impl Drop for EosPrivateKey {
 
 #[cfg(test)]
 mod test {
-    use bitcoin::hashes::{sha256, Hash as HashTrait};
     use common::test_utils::get_sample_message_to_sign_bytes;
 
     use super::*;
     use crate::{
+        bitcoin_crate_alias::hashes::{sha256, Hash as HashTrait},
         eos_crypto::eos_private_key::EosPrivateKey,
         eos_test_utils::{
             get_sample_eos_private_key,

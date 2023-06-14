@@ -1,6 +1,7 @@
-use bitcoin::hashes::{sha256, Hash};
 use common::types::{Bytes, Result};
 use eos_chain::{Action as EosAction, Digest, NumBytes, SerializeData, UnsignedInt, Write};
+
+use crate::bitcoin_crate_alias::hashes::{sha256, Hash};
 
 pub fn get_action_digest(action: &EosAction, action_has_return_value: bool) -> Result<Bytes> {
     if !action_has_return_value {

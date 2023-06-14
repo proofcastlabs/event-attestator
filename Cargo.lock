@@ -328,6 +328,7 @@ checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 name = "btc_on_eos"
 version = "1.0.1"
 dependencies = [
+ "bitcoin 0.29.0",
  "bitcoin 0.29.2",
  "bitcoin 6.11.0",
  "chain_ids",
@@ -880,6 +881,7 @@ dependencies = [
 name = "eos"
 version = "6.11.1"
 dependencies = [
+ "bitcoin 0.29.0",
  "bitcoin 0.29.2",
  "bs58",
  "chain_ids",

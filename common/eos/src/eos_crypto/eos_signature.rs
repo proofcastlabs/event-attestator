@@ -1,13 +1,12 @@
 use std::{fmt, str::FromStr};
 
-use bitcoin::util::base58;
 use common::{errors::AppError, types::Result};
 use secp256k1::{
     recovery::{RecoverableSignature, RecoveryId},
     Error::InvalidSignature,
 };
 
-use crate::eos_hash::ripemd160;
+use crate::{bitcoin_crate_alias::util::base58, eos_hash::ripemd160};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EosSignature(pub RecoverableSignature);

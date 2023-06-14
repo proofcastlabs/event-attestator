@@ -1,4 +1,3 @@
-use bitcoin::hashes::{sha256, Hash};
 use common::{
     errors::AppError,
     types::{Byte, Bytes, NoneError, Result},
@@ -6,7 +5,10 @@ use common::{
 use eos_chain::Checksum256;
 use serde::{Deserialize, Serialize};
 
-use crate::eos_utils::convert_hex_to_checksum256;
+use crate::{
+    bitcoin_crate_alias::hashes::{sha256, Hash},
+    eos_utils::convert_hex_to_checksum256,
+};
 
 pub type CanonicalLeft = Bytes;
 pub type CanonicalRight = Bytes;

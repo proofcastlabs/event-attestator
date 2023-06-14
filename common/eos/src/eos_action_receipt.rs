@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
-use bitcoin::hashes::{sha256, Hash};
 use common::types::Bytes;
 use eos_chain::{names::AccountName as EosAccountName, Checksum256, NumBytes, Read, SerializeData, Write};
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    bitcoin_crate_alias::hashes::{sha256, Hash},
     eos_action_proofs::{AuthSequenceJson, EosActionReceiptJson},
     eos_utils::convert_hex_to_checksum256,
 };

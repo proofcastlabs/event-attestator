@@ -6,8 +6,9 @@ use std::{
     str,
 };
 
-use bitcoin::hashes::{ripemd160, Hash as HashTrait, HashEngine};
 use rustc_hex::{FromHex, FromHexError, ToHex};
+
+use crate::bitcoin_crate_alias::hashes::{ripemd160, Hash as HashTrait, HashEngine};
 
 macro_rules! impl_hash {
     ($name:ident, $size:expr) => {

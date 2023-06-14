@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::hashes::{sha256, Hash};
 use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -9,6 +8,7 @@ use eos_chain::{AccountName as EosAccountName, PublicKey as EosProducerKey};
 use secp256k1::Message;
 
 use crate::{
+    bitcoin_crate_alias::hashes::{sha256, Hash},
     eos_block_header::{EosBlockHeaderV1, EosBlockHeaderV2},
     eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
     eos_producer_key::EosProducerKeyV1,
