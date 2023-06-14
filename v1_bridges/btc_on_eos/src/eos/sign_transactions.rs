@@ -1,4 +1,3 @@
-use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, network::constants::Network as BtcNetwork};
 use common::{traits::DatabaseInterface, types::Result};
 use common_btc::{
     create_signed_raw_btc_tx_for_n_input_n_outputs,
@@ -10,7 +9,13 @@ use common_btc::{
 };
 use common_eos::EosState;
 
-use crate::eos::btc_tx_info::BtcOnEosBtcTxInfos;
+use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::Transaction as BtcTransaction,
+        network::constants::Network as BtcNetwork,
+    },
+    eos::btc_tx_info::BtcOnEosBtcTxInfos,
+};
 
 fn get_address_and_amounts_from_btc_tx_infos(btc_tx_infos: &BtcOnEosBtcTxInfos) -> Result<BtcRecipientsAndAmounts> {
     info!("✔ Getting addresses & amounts from redeem params...");
@@ -85,7 +90,6 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
 
 #[cfg(test)]
 mod tests {
-    use bitcoin::network::constants::Network as BtcNetwork;
     use common::test_utils::get_test_database;
     use common_btc::{
         get_hex_tx_from_signed_btc_tx,
@@ -97,10 +101,13 @@ mod tests {
     use common_eos::EosActionProof;
 
     use super::*;
-    use crate::test_utils::{
-        get_sample_eos_submission_material_json_n,
-        get_sample_p2sh_utxo_and_value_2,
-        get_sample_p2sh_utxo_and_value_3,
+    use crate::{
+        bitcoin_crate_alias::network::constants::Network as BtcNetwork,
+        test_utils::{
+            get_sample_eos_submission_material_json_n,
+            get_sample_p2sh_utxo_and_value_2,
+            get_sample_p2sh_utxo_and_value_3,
+        },
     };
 
     #[test]

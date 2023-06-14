@@ -1,11 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::{
-    blockdata::transaction::Transaction as BtcTransaction,
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-    Txid,
-};
 use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
@@ -18,7 +12,15 @@ use derive_more::{Constructor, Deref, DerefMut};
 use eos_chain::AccountName as EosAccountName;
 use serde::{Deserialize, Serialize};
 
-use crate::utils::convert_u64_to_x_decimal_eos_asset;
+use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::Transaction as BtcTransaction,
+        network::constants::Network as BtcNetwork,
+        util::address::Address as BtcAddress,
+        Txid,
+    },
+    utils::convert_u64_to_x_decimal_eos_asset,
+};
 
 #[derive(Debug, Clone, PartialEq, Default, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnEosEosTxInfos(pub Vec<BtcOnEosEosTxInfo>);
