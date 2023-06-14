@@ -1,4 +1,3 @@
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{traits::DatabaseInterface, types::Result};
 use common_btc::{
     convert_wei_to_satoshis,
@@ -22,7 +21,10 @@ use common_eth::{
 use common_safe_addresses::safely_convert_str_to_btc_address;
 use ethereum_types::Address as EthAddress;
 
-use crate::int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
+use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
+    int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
+};
 
 impl BtcOnIntBtcTxInfo {
     pub fn to_btc_tx<D: DatabaseInterface>(

@@ -5,6 +5,12 @@
 //! consists of two light clients that manage the state of the two chains, along
 //! with the creation and signing of transactions related to each chain.
 
+// NOTE: This means we can (relatively) easily make this LTC based instead of BTC.
+#[cfg(not(feature = "ltc"))]
+use bitcoin as bitcoin_crate_alias;
+#[cfg(feature = "ltc")]
+use litecoin as bitcoin_crate_alias;
+
 mod btc;
 mod constants;
 mod debug_functions;

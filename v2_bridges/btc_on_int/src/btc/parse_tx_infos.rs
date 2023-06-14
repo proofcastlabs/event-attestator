@@ -1,10 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::{
-    blockdata::transaction::Transaction as BtcTransaction,
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
 use common::{
     traits::DatabaseInterface,
     types::{NoneError, Result},
@@ -15,9 +10,27 @@ use common_eth::{EthDbUtils, EthDbUtilsExt};
 use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
-use crate::btc::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos};
+use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::Transaction as BtcTransaction,
+        network::constants::Network as BtcNetwork,
+        util::address::Address as BtcAddress,
+    },
+    btc::{BtcOnIntIntTxInfo, BtcOnIntIntTxInfos},
+};
 
 impl BtcOnIntIntTxInfos {
+    #[cfg(not(feature = "ltc"))]
+    fn get_chain_id_from_network(network: &BtcNetwork) -> Result<BtcChainId> {
+        BtcChainId::from_btc_network(network)
+    }
+
+    #[cfg(feature = "ltc")]
+    fn get_chain_id_from_network(_network: &BtcNetwork) -> Result<BtcChainId> {
+        // NOTE: We only support Litecoin mainnet, which this is an alias of.
+        Ok(BtcChainId::Bitcoin)
+    }
+
     fn from_btc_tx(
         tx: &BtcTransaction,
         deposit_info: &DepositInfoHashMap,
@@ -55,7 +68,7 @@ impl BtcOnIntIntTxInfos {
                             Ok(BtcOnIntIntTxInfo {
                                 originating_tx_hash: tx.txid(),
                                 router_address: *router_address,
-                                vault_address: EthAddress::zero(), // NOTE: There's no vault on this common!
+                                vault_address: EthAddress::zero(), // NOTE: There's no vault on this core!
                                 native_token_amount: tx_out.value,
                                 int_token_address: *int_token_address,
                                 user_data: deposit_info.user_data.clone(),
@@ -63,7 +76,7 @@ impl BtcOnIntIntTxInfos {
                                 destination_chain_id: deposit_info.chain_id.clone(),
                                 host_token_amount: convert_satoshis_to_wei(tx_out.value),
                                 origin_chain_id: MetadataChainId::from_str(
-                                    &BtcChainId::from_btc_network(&network)?.to_string(),
+                                    &Self::get_chain_id_from_network(&network)?.to_string(),
                                 )?
                                 .to_bytes()?,
                                 originating_tx_address: address
