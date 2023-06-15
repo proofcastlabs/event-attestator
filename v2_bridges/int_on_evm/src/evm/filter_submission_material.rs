@@ -12,22 +12,30 @@ use common_eth::{
     ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
 
-use crate::{constants::PTLOS_ADDRESS, evm::int_tx_info::IntOnEvmIntTxInfos};
+use crate::{
+    constants::{PLTC_ADDRESS, PTLOS_ADDRESS},
+    evm::int_tx_info::IntOnEvmIntTxInfos,
+};
 
 impl IntOnEvmIntTxInfos {
-    fn is_log_int_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
-        debug!(
-            "✔ Checking log contains topic: {}",
-            hex::encode(ERC777_REDEEM_EVENT_TOPIC_V2.as_bytes())
-        );
-        let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = if log.address == *PTLOS_ADDRESS {
+    fn log_contains_topic(log: &EthLog) -> bool {
+        debug!("checking log contains relevant topic...");
+        if log.address == *PTLOS_ADDRESS {
             warn!("pTLOS redeem detected - checking for v1 event topics");
+            log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
+                || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
+        } else if log.address == *PLTC_ADDRESS {
+            warn!("pLTC redeem detected - checking for v1 event topics");
             log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
                 || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
         } else {
             log.contains_topic(&ERC777_REDEEM_EVENT_TOPIC_V2)
-        };
+        }
+    }
+
+    fn is_log_int_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
+        let token_is_supported = dictionary.is_evm_token_supported(&log.address);
+        let log_contains_topic = Self::log_contains_topic(&log);
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)
