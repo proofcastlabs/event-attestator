@@ -16,7 +16,7 @@ disable-fees = ["common_fees/disable-fees"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eos/non-validating","common_btc/non-validating"]
 # NOTE: Turns this into an `ltc-on-int` core.
-ltc = ["litecoin", "common_btc/ltc", "common_safe_addresses/ltc", "common_fees/ltc", "common_eos/ltc"]
+ltc = ["litecoin", "common_btc/ltc", "common_safe_addresses/ltc", "common_fees/ltc", "common_eos/ltc", "non-validating"]
 
 [dependencies]
 hex = { workspace = true }
