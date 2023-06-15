@@ -22,7 +22,7 @@ pub fn validate_btc_merkle_root<D: DatabaseInterface>(state: BtcState<D>) -> Res
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::get_sample_btc_block_and_id;

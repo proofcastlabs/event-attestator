@@ -293,7 +293,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::{errors::AppError, test_utils::get_test_database};
 

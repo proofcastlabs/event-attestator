@@ -86,7 +86,7 @@ pub fn maybe_update_btc_linker_hash<D: DatabaseInterface>(state: BtcState<D>) ->
         )
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

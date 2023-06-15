@@ -123,7 +123,7 @@ pub fn filter_p2sh_deposit_txs_and_add_to_state<D: DatabaseInterface>(state: Btc
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 

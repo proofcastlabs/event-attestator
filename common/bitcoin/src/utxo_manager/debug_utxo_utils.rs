@@ -306,7 +306,7 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
         })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 

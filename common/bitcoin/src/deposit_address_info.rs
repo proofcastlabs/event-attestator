@@ -98,7 +98,7 @@ impl DepositAddressInfoJson {
         Ok(serde_json::to_string(self)?)
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     pub fn from_str(json_string: &str) -> Result<Self> {
         Ok(serde_json::from_str(json_string)?)
     }
@@ -345,7 +345,7 @@ impl DepositAddressInfo {
             .map(|chain_id| info!("✔ Chain ID successfully parsed: {}", chain_id))
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     pub fn from_str(s: &str) -> Result<Self> {
         Self::from_json(&DepositAddressInfoJson::from_str(s)?)
     }
@@ -399,7 +399,7 @@ pub fn validate_deposit_address_list_in_state<D: DatabaseInterface>(state: BtcSt
         .and(Ok(state))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::errors::AppError;
 

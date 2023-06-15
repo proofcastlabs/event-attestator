@@ -97,7 +97,7 @@ impl FromStr for BtcSubmissionMaterial {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::{get_sample_btc_block_n, get_sample_btc_submission_material_json_string};

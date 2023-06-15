@@ -81,7 +81,7 @@ pub fn filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state<D:
     filter_for_p2pkh_deposit_txs_and_add_to_state(state, true)
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 

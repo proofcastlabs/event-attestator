@@ -173,7 +173,7 @@ impl BtcUtxoAndValueJson {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::{get_sample_p2sh_utxo_and_value, get_sample_utxo_and_values};

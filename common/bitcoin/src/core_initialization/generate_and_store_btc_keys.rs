@@ -25,7 +25,7 @@ pub fn generate_and_store_btc_keys_and_return_state<'a, D: DatabaseInterface>(
     generate_and_store_btc_keys(network, &state.btc_db_utils).and(Ok(state))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

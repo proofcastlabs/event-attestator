@@ -92,7 +92,7 @@ pub fn maybe_extract_utxos_from_p2sh_txs_and_put_in_state<D: DatabaseInterface>(
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 

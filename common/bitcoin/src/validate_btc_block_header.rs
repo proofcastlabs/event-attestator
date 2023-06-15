@@ -21,7 +21,7 @@ pub fn validate_btc_block_header_in_state<D: DatabaseInterface>(state: BtcState<
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 

@@ -139,7 +139,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::{

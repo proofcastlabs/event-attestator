@@ -158,7 +158,7 @@ impl BtcBlockInDbFormat {
         ))?)
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     fn to_bytes_legacy(&self) -> Result<Bytes> {
         let serialized_id = self.id.to_vec();
         Ok(serde_json::to_vec(&SerializedBlockInDbFormatLegacy::new(
@@ -294,7 +294,7 @@ pub struct SerializedBlockInDbFormatLegacy {
 }
 
 impl SerializedBlockInDbFormatLegacy {
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     pub fn new(
         id: Bytes,
         height: Bytes,
@@ -319,7 +319,7 @@ impl SerializedBlockInDbFormatLegacy {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::{

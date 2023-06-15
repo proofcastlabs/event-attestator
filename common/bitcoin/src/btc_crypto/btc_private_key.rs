@@ -70,7 +70,7 @@ impl BtcPrivateKey {
         }))
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     pub fn to_wif(&self) -> String {
         self.0.to_wif()
     }
@@ -92,7 +92,7 @@ impl Drop for BtcPrivateKey {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::{

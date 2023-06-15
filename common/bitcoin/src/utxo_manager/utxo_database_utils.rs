@@ -353,7 +353,7 @@ pub fn increment_utxo_nonce_in_db<D: DatabaseInterface>(db: &D) -> Result<()> {
     get_utxo_nonce_from_db(db).and_then(|num| put_utxo_nonce_in_db(db, num + 1))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::{errors::AppError, test_utils::get_test_database};
 

@@ -29,7 +29,7 @@ pub fn filter_deposit_infos_for_allowed_versions(
     )
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod test {
     use serde_json::json;
 

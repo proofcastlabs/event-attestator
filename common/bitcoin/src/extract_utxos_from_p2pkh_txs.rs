@@ -55,7 +55,7 @@ pub fn maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state<D: DatabaseInterf
         })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::{

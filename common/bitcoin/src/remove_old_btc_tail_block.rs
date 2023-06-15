@@ -50,7 +50,7 @@ pub fn maybe_remove_old_btc_tail_block<D: DatabaseInterface>(state: BtcState<D>)
         .and(Ok(state))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

@@ -393,7 +393,7 @@ pub fn end_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Resul
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

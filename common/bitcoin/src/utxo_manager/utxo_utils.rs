@@ -158,7 +158,7 @@ fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

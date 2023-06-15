@@ -217,7 +217,7 @@ pub fn convert_str_to_btc_address_or_safe_address(s: &str) -> Result<BtcAddress>
     }
 }
 
-#[cfg(test)] // TODO Create then move this to chains/test_utils!
+#[cfg(all(test, not(feature = "ltc")))] // TODO Create then move this to chains/test_utils!
 pub fn get_tx_id_from_signed_btc_tx(signed_btc_tx: &BtcTransaction) -> String {
     let mut tx_id = signed_btc_tx.txid().to_vec();
     tx_id.reverse();
@@ -237,7 +237,7 @@ pub fn convert_wei_to_satoshis(ptoken: U256) -> u64 {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
