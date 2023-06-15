@@ -11,7 +11,7 @@ use super::constants::CORE_TYPE;
 struct EnclaveState {
     info: EnclaveInfo,
     eos: EosEnclaveState,
-    eth: EthEnclaveState,
+    int: EthEnclaveState,
 }
 
 impl EnclaveState {
@@ -19,7 +19,7 @@ impl EnclaveState {
         Ok(Self {
             info: EnclaveInfo::new(eth_db_utils.get_db())?,
             eos: EosEnclaveState::new(eos_db_utils)?,
-            eth: EthEnclaveState::new(
+            int: EthEnclaveState::new(
                 eth_db_utils,
                 &EthAddress::zero(),
                 Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),
