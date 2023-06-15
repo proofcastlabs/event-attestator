@@ -25,7 +25,9 @@ write_btc_paths_and_getter_fxn!(
     0 => "src/test_utils/btc-testnet-block-2163202.json",
     1 => "src/test_utils/btc-testnet-block-2163203.json",
     2 => "src/test_utils/btc-testnet-block-2163204.json",
-    3 => "src/test_utils/btc-testnet-block-2163205.json"
+    3 => "src/test_utils/btc-testnet-block-2163205.json",
+    4 => "src/test_utils/ltc-block-2466766.json",
+    5 => "src/test_utils/ltc-block-2466767.json"
 );
 
 macro_rules! write_eth_paths_and_getter_fxn {
