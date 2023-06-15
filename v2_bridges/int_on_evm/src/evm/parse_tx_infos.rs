@@ -13,6 +13,9 @@ impl IntOnEvmIntTxInfos {
         if log.address == *PTLOS_ADDRESS {
             warn!("pTelos peg out detected, defaulting to TELOS mainnet as destination chain ID");
             Ok(MetadataChainId::TelosMainnet)
+        } else if log.address == *PLTC_ADDRESS {
+            warn!("pLTC peg out detected, defaulting to LTC mainnet as destination chain ID");
+            Ok(MetadataChainId::LitecoinMainnet)
         } else {
             // NOTE This will error for legacy events that are not explicitly handled above, because
             // there will be no destination chain ID in the event log.
@@ -24,7 +27,12 @@ impl IntOnEvmIntTxInfos {
         if log.address == *PTLOS_ADDRESS {
             warn!("pTelos peg out detected, defaulting to ETH mainnet as origin chain ID");
             Ok(MetadataChainId::EthereumMainnet)
+        } else if log.address == *PLTC_ADDRESS {
+            warn!("pLTC peg out detected, defaulting to ETH mainnet as origin chain ID");
+            Ok(MetadataChainId::EthereumMainnet)
         } else {
+            // NOTE This will error for legacy events that are not explicitly handled above, because
+            // there will be no destination chain ID in the event log.
             event_params.get_origin_chain_id()
         }
     }
@@ -46,7 +54,6 @@ impl IntOnEvmIntTxInfos {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
                     let origin_chain_id = Self::get_origin_chain_id(&log, &event_params)?;
                     let destination_chain_id = Self::get_destination_chain_id(&log, &event_params)?;
-
                     let tx_info = IntOnEvmIntTxInfo {
                         origin_chain_id,
                         destination_chain_id,
