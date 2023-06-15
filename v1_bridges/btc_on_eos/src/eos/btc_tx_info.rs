@@ -214,7 +214,7 @@ pub fn maybe_filter_out_already_processed_tx_ids_from_state<D: DatabaseInterface
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature="ltc")))]
 mod tests {
     use std::str::FromStr;
 

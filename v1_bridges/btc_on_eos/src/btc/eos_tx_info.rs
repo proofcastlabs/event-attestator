@@ -295,7 +295,7 @@ impl ToMetadata for BtcOnEosEosTxInfo {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature="ltc")))]
 mod tests {
     use common::errors::AppError;
     use common_chain_ids::BtcChainId;
