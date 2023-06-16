@@ -48,3 +48,65 @@ split-debuginfo = "unpacked"
 [profile.release]
 lto = "thin"
 overflow-checks = true
+
+[workspace.dependencies]
+hex = "0.4.3"
+log = "0.4.14"
+rlp = "0.5.1"
+bs58 = "0.4.0"
+rand = "0.8.4"
+paste = "1.0.6"
+docopt = "1.1.1"
+strum = "0.22.0"
+base64 = "0.13.0"
+chrono = "0.4.19"
+anyhow = "1.0.69"
+triehash = "0.8.4"
+ethabi = "15.0.0"
+rocksdb = "0.21.0"
+byteorder = "1.4.3"
+rustc-hex = "2.1.0"
+simplelog = "0.10.2"
+rmp-serde = "0.15.5"
+stderrlog =  "0.5.1"
+lazy_static = "1.4.0"
+quick-error = "2.0.1"
+serde_with = "1.11.0"
+serde_json = "1.0.68"
+serial_test = "0.6.0"
+serde_bytes = "0.11.6"
+function_name = "0.3.0"
+simple_logger = "2.0.0"
+derive_more = "0.99.16"
+strum_macros = "0.22.0"
+keccak-hasher = "0.15.3"
+ethereum-types = "0.12.1"
+serde = { version = "1.0.130", features = ["derive"] }
+tiny-keccak = { version = "2.0.2", features = ["keccak"] }
+bitcoin = { version = "0.29.2", features = ["serde", "rand"] }
+eip-712 = { git = "https://github.com/paritytech/EIP-712", rev = "551dfd9" }
+rust-algorand = { git = "https://github.com/provable-things/rust-algorand" }
+eos-chain = { git = "https://github.com/bifrost-finance/rust-eos", rev = "8e57843" }
+flexi_logger = { version = "0.23.3", features = [ "compress", "use_chrono_for_offset" ] }
+reqwest = { version = "0.11.4", features = ["blocking", "json"], default-features = false }
+web3 = { version = "0.17.0", default-features = false, features = ["http-rustls-tls","signing"] }
+secp256k1 = { git = "https://github.com/bifrost-finance/rust-secp256k1", features = ["recovery", "rand-std"], rev = "9c756f7" }
+
+common = { path = "./common/common" }
+common_eos = { package = "eos", path = "./common/eos" }
+common_fees = { package = "fees", path = "./common/fees" }
+common_btc = { package = "bitcoin", path = "./common/bitcoin" }
+common_eth = { package = "ethereum", path = "./common/ethereum" }
+common_algo = { package = "algorand", path = "./common/algorand" }
+common_metadata = { package = "metadata", path = "./common/metadata" }
+common_chain_ids = { package = "chain_ids", path = "./common/chain_ids" }
+common_file_logger = { package = "file_logger", path = "./common/file_logger" }
+common_eth_debug = { package = "ethereum_debug", path = "./common/ethereum_debug"}
+common_enclave_info = { package = "enclave_info", path = "./common/enclave_info" }
+common_debug_signers = { package = "debug_signers", path = "./common/debug_signers" }
+common_docopt_macros = { package = "docopt_macros", path = "./common/docopt_macros" }
+common_stderr_logger = { package = "stderr_logger", path = "./common/stderr_logger" }
+common_database_utils = { package = "database_utils", path = "./common/database_utils"}
+common_safe_addresses = { package = "safe_addresses", path = "./common/safe_addresses" }
+common_rocksdb_database = { package = "rocksdb_database", path = "./common/rocksdb_database" }
+common_jsonrpc_database = { package = "jsonrpc_database", path = "./common/jsonrpc_database" }

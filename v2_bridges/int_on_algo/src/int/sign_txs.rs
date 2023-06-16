@@ -2,7 +2,7 @@ use common::{
     traits::DatabaseInterface,
     types::{Bytes, Result},
 };
-use common_algorand::{AlgoDbUtils, AlgoUserData, ALGO_MAX_FOREIGN_ITEMS};
+use common_algo::{AlgoDbUtils, AlgoUserData, ALGO_MAX_FOREIGN_ITEMS};
 use common_eth::EthState;
 use rust_algorand::{
     AlgorandAddress,

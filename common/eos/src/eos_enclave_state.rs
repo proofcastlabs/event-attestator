@@ -22,6 +22,7 @@ pub struct EosEnclaveState {
     eos_safe_address: String,
     eos_signature_nonce: u64,
     eos_last_seen_block_num: u64,
+    eos_core_is_validating: bool,
     eos_last_seen_block_id: String,
     eos_known_schedules: EosKnownSchedulesJsons,
     eos_enabled_protocol_features: EnabledFeatures,
@@ -45,6 +46,7 @@ impl EosEnclaveState {
         info!("✔ Getting EOS enclave state...");
         Ok(EosEnclaveState {
             eos_safe_address: SAFE_EOS_ADDRESS_STR.to_string(),
+            eos_core_is_validating: !cfg!(feature = "non-validating"),
             eos_chain_id: eos_db_utils.get_eos_chain_id_from_db()?.to_hex(),
             eos_signature_nonce: eos_db_utils.get_eos_account_nonce_from_db()?,
             eos_last_seen_block_num: eos_db_utils.get_latest_eos_block_number()?,

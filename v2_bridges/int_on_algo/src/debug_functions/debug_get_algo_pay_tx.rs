@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result, utils::strip_hex_prefix};
-use common_algorand::AlgoDbUtils;
+use common_algo::AlgoDbUtils;
 use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use rust_algorand::{AlgorandAddress, AlgorandGenesisId, AlgorandTransaction, MicroAlgos};

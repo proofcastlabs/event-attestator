@@ -1,5 +1,5 @@
 use bitcoin::blockdata::block::BlockHeader as BtcBlockHeader;
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 
 use crate::BtcState;
 
@@ -14,12 +14,12 @@ fn validate_proof_of_work_in_block(btc_block_header: &BtcBlockHeader) -> Result<
 }
 
 pub fn validate_proof_of_work_of_btc_block_in_state<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    if CORE_IS_VALIDATING {
-        info!("✔ Validating BTC block's proof-of-work...");
-        validate_proof_of_work_in_block(&state.get_btc_block_and_id()?.block.header).map(|_| state)
-    } else {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping BTC proof-of-work validation!");
         Ok(state)
+    } else {
+        info!("✔ Validating BTC block's proof-of-work...");
+        validate_proof_of_work_in_block(&state.get_btc_block_and_id()?.block.header).map(|_| state)
     }
 }
 

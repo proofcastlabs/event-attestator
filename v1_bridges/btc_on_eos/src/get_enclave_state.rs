@@ -1,8 +1,8 @@
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_btc::{BtcDbUtils, BtcEnclaveState};
+use common_enclave_info::EnclaveInfo;
 use common_eos::{EosDbUtils, EosEnclaveState};
 use common_fees::FeesEnclaveState;
-use enclave_info::EnclaveInfo;
 use serde::{Deserialize, Serialize};
 
 use crate::constants::CORE_TYPE;

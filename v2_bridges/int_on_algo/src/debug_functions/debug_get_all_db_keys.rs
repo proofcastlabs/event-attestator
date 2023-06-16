@@ -4,7 +4,7 @@ use common::{
     traits::DatabaseInterface,
     types::Result,
 };
-use common_algorand::AlgoDatabaseKeysJson;
+use common_algo::AlgoDatabaseKeysJson;
 use common_debug_signers::{validate_debug_command_signature, DEBUG_SIGNATORIES_DB_KEY};
 use common_eth::EthDatabaseKeysJson;
 use function_name::named;

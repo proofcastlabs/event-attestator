@@ -1,5 +1,5 @@
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
-use common_algorand::{
+use common_algo::{
     end_algo_db_transaction_and_return_state,
     initialize_algo_core,
     start_algo_db_transaction_and_return_state,
@@ -52,7 +52,7 @@ pub fn maybe_initialize_algo_core<D: DatabaseInterface>(
 #[cfg(test)]
 mod tests {
     use common::test_utils::get_test_database;
-    use common_algorand::AlgoDbUtils;
+    use common_algo::AlgoDbUtils;
     use rust_algorand::{AlgorandAppId, AlgorandHash, MicroAlgos};
 
     use super::*;

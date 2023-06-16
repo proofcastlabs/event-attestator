@@ -1,5 +1,5 @@
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
-use common_algorand::{
+use common_algo::{
     end_algo_db_transaction_and_return_state,
     maybe_update_latest_block_with_expired_participants_and_return_state,
     parse_algo_submission_material_and_put_in_state,

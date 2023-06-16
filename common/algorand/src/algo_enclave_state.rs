@@ -19,6 +19,7 @@ pub struct AlgoEnclaveState {
     algo_anchor_block_number: u64,
     algo_latest_block_number: u64,
     algo_canon_to_tip_length: u64,
+    algo_core_is_validating: bool,
     algo_canon_block_hash: String,
     algo_anchor_block_hash: String,
     algo_latest_block_hash: String,
@@ -53,6 +54,7 @@ impl AlgoEnclaveState {
             algo_app_id: db_utils.get_algo_app_id()?.to_string(),
             algo_account_nonce: db_utils.get_algo_account_nonce()?,
             algo_address: db_utils.get_redeem_address()?.to_string(),
+            algo_core_is_validating: !cfg!(feature = "non-validating"),
             algo_genesis_hash: db_utils.get_genesis_hash()?.to_string(),
             algo_canon_to_tip_length: db_utils.get_canon_to_tip_length()?,
             algo_linker_hash: db_utils.get_linker_hash_or_else_genesis_hash()?.to_string(),
@@ -110,6 +112,7 @@ mod tests {
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_linker_hash: AlgorandHash::default().to_string(),
             algo_genesis_hash: AlgorandHash::from_genesis_id(genesis_id).unwrap().to_string(),
+            algo_core_is_validating: if cfg!(feature = "non-validating") { false } else { true },
             // NOTE: The redeem address is generated randomly on initialization!
             algo_address: db_utils
                 .get_algo_private_key()

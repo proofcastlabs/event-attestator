@@ -1,4 +1,4 @@
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 use rust_algorand::AlgorandBlock;
 
 use crate::AlgoState;
@@ -23,7 +23,7 @@ fn check_submitted_block_hash_is_subsequent(
     latest_block_from_db: &AlgorandBlock,
 ) -> Result<()> {
     info!("✔ Checking if submitted ALGO block hash is subsequent...");
-    if CORE_IS_VALIDATING {
+    if !cfg!(feature = "non-validating") {
         if submitted_block.get_previous_block_hash()? == latest_block_from_db.hash()? {
             info!("✔ Submitted ALGO block hash IS subsequent to latest ALGO block in db!");
             Ok(())

@@ -1,5 +1,5 @@
 use common::types::{Bytes, Result};
-use common_algorand::{AlgoUserData, MAX_BYTES_FOR_ALGO_USER_DATA};
+use common_algo::{AlgoUserData, MAX_BYTES_FOR_ALGO_USER_DATA};
 use common_eth::convert_eth_address_to_string;
 use common_metadata::{Metadata, MetadataAddress, MetadataProtocolId};
 

@@ -3,30 +3,33 @@ license = "MIT"
 publish = false
 name = "bitcoin"
 edition = "2021"
-version = "6.10.2"
+version = "6.10.3"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
-[dependencies]
-hex = "0.4.3"
-log = "0.4.14"
-paste = "1.0.6"
-serde_json = "1.0.68"
-lazy_static = "1.4.0"
-function_name = "0.3.0"
-derive_more = "0.99.16"
-ethereum-types = "0.12.1"
-serde = { version = "1.0.130", features = ["derive"] }
-tiny-keccak = { version = "2.0.2", features = ["keccak"] }
-bitcoin = { version = "0.29.2", features = ["serde", "rand"] }
+[features]
+non-validating = []
 
-common = { path = "../common" }
-debug_signers = { path = "../debug_signers" }
-common_metadata = { package = "metadata", path = "../metadata" }
-common_chain_ids = { package = "chain_ids", path = "../chain_ids" }
-common_safe_addresses = { package = "safe_addresses", path = "../safe_addresses" }
+[dependencies]
+hex = { workspace = true }
+log = { workspace = true }
+paste = { workspace = true }
+serde = { workspace = true }
+bitcoin = { workspace = true }
+serde_json = { workspace = true }
+tiny-keccak = { workspace = true }
+lazy_static = { workspace = true }
+derive_more = { workspace = true }
+function_name = { workspace = true }
+ethereum-types = { workspace = true }
+
+common = { workspace = true }
+common_metadata = { workspace = true }
+common_chain_ids = { workspace = true }
+common_debug_signers = { workspace = true }
+common_safe_addresses = { workspace = true }
 
 [dev-dependencies]
 simple_logger = "2.0.0"

@@ -1,4 +1,4 @@
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
     eos_block_header::EosBlockHeaderV2,
@@ -30,12 +30,12 @@ fn validate_producer_slot(schedule: &EosProducerScheduleV2, block: &EosBlockHead
 }
 
 pub fn validate_producer_slot_of_block_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-    if CORE_IS_VALIDATING {
-        info!("✔ Validating slot of producer of block...");
-        validate_producer_slot(state.get_active_schedule()?, state.get_eos_block_header()?).and(Ok(state))
-    } else {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping producer slot validation!");
         Ok(state)
+    } else {
+        info!("✔ Validating slot of producer of block...");
+        validate_producer_slot(state.get_active_schedule()?, state.get_eos_block_header()?).and(Ok(state))
     }
 }
 

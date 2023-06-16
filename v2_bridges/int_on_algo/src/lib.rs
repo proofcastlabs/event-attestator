@@ -14,7 +14,7 @@ mod int;
 mod test_utils;
 mod token_dictionary;
 
-pub use common_algorand::{debug_reset_algo_chain, encode_algo_note_metadata};
+pub use common_algo::{debug_reset_algo_chain, encode_algo_note_metadata};
 pub use common_database_utils::{debug_get_key_from_db, debug_set_key_in_db_to_value};
 pub use common_debug_signers::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer};
 pub use common_eth_debug::{

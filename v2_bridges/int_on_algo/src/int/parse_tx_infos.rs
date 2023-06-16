@@ -1,7 +1,7 @@
 use std::str::FromStr;
 
 use common::{dictionaries::evm_algo::EvmAlgoTokenDictionary, traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoDbUtils;
+use common_algo::AlgoDbUtils;
 use common_eth::{
     Erc20VaultPegInEventParams,
     EthDbUtilsExt,

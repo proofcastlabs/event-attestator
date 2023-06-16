@@ -1,5 +1,5 @@
 use common::{traits::DatabaseInterface, types::Result};
-use common_algorand::AlgoDbUtils;
+use common_algo::AlgoDbUtils;
 use common_eth::EthState;
 
 fn increment_algo_account_nonce<D: DatabaseInterface>(db_utils: &AlgoDbUtils<D>, num_signatures: u64) -> Result<()> {

@@ -1,13 +1,13 @@
 [package]
-version = "1.0.0"
+version = "1.0.1"
 edition = "2021"
 rust-version = "1.56"
 name = "docopt_macros"
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [dependencies]
-docopt = "1.1.1"
-common = { path = "../common" }
+docopt = { workspace = true }
+common = { workspace = true }
 
 [lib]
 doctest = false

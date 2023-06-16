@@ -1,3 +1,8 @@
+#[cfg(test)]
+use std::str::FromStr;
+
+#[cfg(test)]
+use common::AppError;
 use common::{traits::DatabaseInterface, types::Result};
 use common_safe_addresses::{SAFE_ETH_ADDRESS, SAFE_EVM_ADDRESS};
 use ethereum_types::Address as EthAddress;
@@ -8,6 +13,15 @@ use crate::{eth_constants::ETH_TAIL_LENGTH, eth_database_utils::EthDbUtilsExt};
 macro_rules! make_enclave_state_struct {
     ($name:ident, $prefix:ident) => {
         paste! {
+            #[cfg(test)]
+            impl FromStr for $name {
+                type Err = AppError;
+
+                fn from_str(s: &str) -> Result<Self> {
+                    Ok(serde_json::from_str(&s)?)
+                }
+            }
+
             #[derive(Debug, Serialize, Deserialize, Eq, PartialEq)]
             pub struct $name {
                 [<$prefix _gas_price>]: u64,
@@ -27,6 +41,7 @@ macro_rules! make_enclave_state_struct {
                 [<$prefix _canon_block_number>]: usize,
                 [<$prefix _anchor_block_number>]: usize,
                 [<$prefix _latest_block_number>]: usize,
+                [<$prefix _core_is_validating>]: bool,
                 smart_contract_address: String,
                 router_contract_address: String,
                 erc777_proxy_contract_address: String,
@@ -82,6 +97,7 @@ macro_rules! make_enclave_state_struct {
                             hex::encode([<$prefix _anchor_block>].get_block_hash()?.as_bytes()),
                         [<$prefix _latest_block_hash>]:
                             hex::encode([<$prefix _latest_block>].get_block_hash()?.as_bytes()),
+                        [<$prefix _core_is_validating>]: !cfg!(feature="non-validating"),
                         router_contract_address: match router_address {
                             Some(address) => hex::encode(address.as_bytes()),
                             None => hex::encode(EthAddress::zero().as_bytes()),
@@ -127,14 +143,16 @@ mod tests {
             .unwrap();
         let router_address = None;
         if db_utils.get_is_for_eth() {
-            let expected_result = format!("{{\"eth_gas_price\":1337,\"eth_chain_id\":1,\"eth_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"eth_tail_length\":{ETH_TAIL_LENGTH},\"any_sender_nonce\":666,\"eth_account_nonce\":555,\"eth_linker_hash\":\"7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f\",\"eth_safe_address\":\"71a440ee9fa7f99fb9a697e96ec7839b8a1643b8\",\"eth_tail_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_canon_to_tip_length\":20,\"eth_tail_block_number\":8503804,\"eth_canon_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_anchor_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_latest_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_canon_block_number\":8503804,\"eth_anchor_block_number\":8503804,\"eth_latest_block_number\":8503804,\"smart_contract_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"router_contract_address\":\"0000000000000000000000000000000000000000\",\"erc777_proxy_contract_address\":\"0000000000000000000000000000000000000000\"}}");
-            let result =
-                serde_json::to_string(&EthEnclaveState::new(db_utils, &eth_address, router_address).unwrap()).unwrap();
+            let expected_result_str = format!("{{\"eth_gas_price\":1337,\"eth_chain_id\":1,\"eth_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"eth_tail_length\":{ETH_TAIL_LENGTH},\"any_sender_nonce\":666,\"eth_account_nonce\":555,\"eth_linker_hash\":\"7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f\",\"eth_safe_address\":\"71a440ee9fa7f99fb9a697e96ec7839b8a1643b8\",\"eth_tail_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_canon_to_tip_length\":20,\"eth_tail_block_number\":8503804,\"eth_canon_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_anchor_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_latest_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"eth_canon_block_number\":8503804,\"eth_anchor_block_number\":8503804,\"eth_latest_block_number\":8503804,\"eth_core_is_validating\":true,\"smart_contract_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"router_contract_address\":\"0000000000000000000000000000000000000000\",\"erc777_proxy_contract_address\":\"0000000000000000000000000000000000000000\"}}");
+            let mut expected_result = EthEnclaveState::from_str(&expected_result_str).unwrap();
+            expected_result.eth_core_is_validating = !cfg!(feature = "non-validating");
+            let result = EthEnclaveState::new(db_utils, &eth_address, router_address).unwrap();
             assert_eq!(result, expected_result);
         } else {
-            let expected_result = format!("{{\"evm_gas_price\":1337,\"evm_chain_id\":1,\"evm_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"evm_tail_length\":{ETH_TAIL_LENGTH},\"any_sender_nonce\":666,\"evm_account_nonce\":555,\"evm_linker_hash\":\"7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f\",\"evm_safe_address\":\"71a440ee9fa7f99fb9a697e96ec7839b8a1643b8\",\"evm_tail_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_canon_to_tip_length\":20,\"evm_tail_block_number\":8503804,\"evm_canon_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_anchor_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_latest_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_canon_block_number\":8503804,\"evm_anchor_block_number\":8503804,\"evm_latest_block_number\":8503804,\"smart_contract_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"router_contract_address\":\"0000000000000000000000000000000000000000\",\"erc777_proxy_contract_address\":\"0000000000000000000000000000000000000000\"}}");
-            let result =
-                serde_json::to_string(&EvmEnclaveState::new(db_utils, &eth_address, router_address).unwrap()).unwrap();
+            let expected_result_str = format!("{{\"evm_gas_price\":1337,\"evm_chain_id\":1,\"evm_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"evm_tail_length\":{ETH_TAIL_LENGTH},\"any_sender_nonce\":666,\"evm_account_nonce\":555,\"evm_linker_hash\":\"7eb2e65416dd107602495454d1ed094ae475cff2f3bfb2e2ae68a1c52bc0d66f\",\"evm_safe_address\":\"71a440ee9fa7f99fb9a697e96ec7839b8a1643b8\",\"evm_tail_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_canon_to_tip_length\":20,\"evm_tail_block_number\":8503804,\"evm_canon_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_anchor_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_latest_block_hash\":\"b626a7546311dd56c6f5e9fd07d00c86074077bbd6d5a4c4f8269a2490aa47c0\",\"evm_canon_block_number\":8503804,\"evm_anchor_block_number\":8503804,\"evm_latest_block_number\":8503804,\"evm_core_is_validating\":true,\"smart_contract_address\":\"1ad91ee08f21be3de0ba2ba6918e714da6b45836\",\"router_contract_address\":\"0000000000000000000000000000000000000000\",\"erc777_proxy_contract_address\":\"0000000000000000000000000000000000000000\"}}");
+            let mut expected_result = EvmEnclaveState::from_str(&expected_result_str).unwrap();
+            expected_result.evm_core_is_validating = !cfg!(feature = "non-validating");
+            let result = EvmEnclaveState::new(db_utils, &eth_address, router_address).unwrap();
             assert_eq!(result, expected_result);
         }
     }

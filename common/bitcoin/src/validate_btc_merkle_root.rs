@@ -1,5 +1,5 @@
 use bitcoin::blockdata::block::Block as BtcBlock;
-use common::{constants::CORE_IS_VALIDATING, traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result};
 
 use crate::BtcState;
 
@@ -14,12 +14,12 @@ fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
 }
 
 pub fn validate_btc_merkle_root<D: DatabaseInterface>(state: BtcState<D>) -> Result<BtcState<D>> {
-    if CORE_IS_VALIDATING {
-        info!("✔ Validating merkle-root in BTC block...");
-        validate_merkle_root(&state.get_btc_block_and_id()?.block).map(|_| state)
-    } else {
+    if cfg!(feature = "non-validating") {
         info!("✔ Skipping BTC merkle-root validation!");
         Ok(state)
+    } else {
+        info!("✔ Validating merkle-root in BTC block...");
+        validate_merkle_root(&state.get_btc_block_and_id()?.block).map(|_| state)
     }
 }
 
