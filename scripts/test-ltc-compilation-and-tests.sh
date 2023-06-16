@@ -11,5 +11,5 @@ packages=("pbtc-on-eth" "pbtc-on-eos" "pbtc-on-int")
 for package in "${packages[@]}"
 do
   echo testing litecoin compilation for package: \'$package\'...
-  cargo build --package=$package $featureFlag
+  cargo test --package=$package $featureFlag
 done
