@@ -97,7 +97,6 @@ mod tests {
         let result = AlgoEnclaveState::new(&db_utils).unwrap();
         let expected_result = AlgoEnclaveState {
             algo_account_nonce: 0,
-            algo_core_is_validating: true,
             algo_tail_block_number: block_num,
             algo_app_id: format!("{}", app_id),
             algo_tail_length: ALGO_TAIL_LENGTH,
@@ -113,6 +112,7 @@ mod tests {
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_linker_hash: AlgorandHash::default().to_string(),
             algo_genesis_hash: AlgorandHash::from_genesis_id(genesis_id).unwrap().to_string(),
+            algo_core_is_validating: if cfg!(feature = "non-validating") { false } else { true },
             // NOTE: The redeem address is generated randomly on initialization!
             algo_address: db_utils
                 .get_algo_private_key()
