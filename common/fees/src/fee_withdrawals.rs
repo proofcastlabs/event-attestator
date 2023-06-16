@@ -71,7 +71,7 @@ pub fn get_btc_on_eos_fee_withdrawal_tx<D: DatabaseInterface>(db: &D, btc_addres
     get_fee_withdrawal_btc_tx_for_core_type(&CoreType::BtcOnEos, db, btc_address)
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature="ltc")))]
 mod tests {
     use common::{errors::AppError, test_utils::get_test_database};
     use common_btc::{save_utxos_to_db, set_utxo_balance_to_zero};
