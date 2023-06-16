@@ -19,7 +19,7 @@ fn check_difficulty_is_above_threshold(
     if network != BtcNetwork::Bitcoin {
         warn!("not on mainnet - skipping difficulty check");
         Ok(())
-    } else if difficulty >= threshold.into() {
+    } else if difficulty >= threshold {
         info!("✔ BTC block difficulty is above threshold");
         Ok(())
     } else {

@@ -278,7 +278,7 @@ mod tests {
 mod tests {
     use common::test_utils::get_test_database;
     use common_btc::init_btc_core;
-    use common_eth::{EthState, convert_hex_to_eth_address};
+    use common_eth::{convert_hex_to_eth_address, EthState};
 
     use super::*;
     use crate::{

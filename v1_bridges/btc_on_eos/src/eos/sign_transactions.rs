@@ -88,7 +88,7 @@ pub fn maybe_sign_txs_and_add_to_state<D: DatabaseInterface>(state: EosState<D>)
     }
 }
 
-#[cfg(all(test, not(feature="ltc")))]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
     use common_btc::{

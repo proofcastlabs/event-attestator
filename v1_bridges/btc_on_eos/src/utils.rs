@@ -22,7 +22,7 @@ pub(super) fn convert_u64_to_x_decimal_eos_asset(value: u64, num_decimals: usize
     format!("{} {}", asset, token_symbol)
 }
 
-#[cfg(all(test, not(feature="ltc")))]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common_btc::BTC_NUM_DECIMALS;
 
