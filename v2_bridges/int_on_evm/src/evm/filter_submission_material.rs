@@ -32,8 +32,11 @@ impl RelevantLogs {
         self.redeem_logs.clone()
     }
 
-    pub fn burn_logs(&self) -> EthLogs {
-        self.burn_logs.clone()
+    pub fn to_burn_events(&self) -> Result<Vec<Erc777BurnEvent>> {
+        self.burn_logs
+            .iter()
+            .map(Erc777BurnEvent::try_from)
+            .collect::<Result<Vec<_>>>()
     }
 
     fn new(all_logs: &EthLogs) -> Result<Self> {
