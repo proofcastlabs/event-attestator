@@ -1,5 +1,7 @@
 use common::{dictionaries::eth_evm::EthEvmTokenDictionary, traits::DatabaseInterface, types::Result};
 use common_eth::{
+    Erc777BurnEvent,
+    Erc777RedeemEvent,
     EthLog,
     EthLogExt,
     EthLogs,
@@ -8,9 +10,11 @@ use common_eth::{
     EthState,
     EthSubmissionMaterial,
     ERC777_REDEEM_EVENT_TOPIC_V2,
+    ERC_777_BURN_EVENT_TOPIC,
     ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
     ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
 };
+use ethereum_types::U256;
 
 use crate::{
     constants::{PLTC_ADDRESS, PTLOS_ADDRESS},
@@ -19,13 +23,13 @@ use crate::{
 
 #[derive(Debug, Default)]
 pub struct RelevantLogs {
-    logs: EthLogs,
     burn_logs: EthLogs,
+    redeem_logs: EthLogs,
 }
 
 impl RelevantLogs {
-    pub fn logs(&self) -> EthLogs {
-        self.logs.clone()
+    pub fn redeem_logs(&self) -> EthLogs {
+        self.redeem_logs.clone()
     }
 
     pub fn burn_logs(&self) -> EthLogs {
@@ -33,7 +37,7 @@ impl RelevantLogs {
     }
 
     fn new(all_logs: &EthLogs) -> Result<Self> {
-        let (burn_logs, logs) = all_logs.iter().fold((vec![], vec![]), |mut tuple, log| {
+        let (burn_logs, redeem_logs) = all_logs.iter().fold((vec![], vec![]), |mut tuple, log| {
             if log.topics[0] == *ERC_777_BURN_EVENT_TOPIC {
                 tuple.0.push(log.clone())
             } else {
@@ -42,28 +46,58 @@ impl RelevantLogs {
             tuple
         });
 
-        let n_logs = logs.len();
-        let n_burn_logs = burn_logs.len();
+        // NOTE: Since burns can exist without a corresponding redeem event, we filter any such
+        // "orphans" out.
+        let filtered_burn_logs = burn_logs
+            .into_iter()
+            .enumerate()
+            .filter(|(i, log)| {
+                match (
+                    Self::get_value_from_burn_log(log),
+                    Self::get_value_from_redeem_log(&redeem_logs[*i]),
+                ) {
+                    (Ok(a), Ok(b)) => a == b,
+                    _ => false,
+                }
+            })
+            .map(|(_, log)| log)
+            .collect::<Vec<_>>();
 
-        if n_logs != n_burn_logs {
-            return Err(format!("relevant logs ({n_logs}) does not match number of burn logs {n_burn_logs}").into());
+        let n_redeem_logs = redeem_logs.len();
+        let n_burn_logs = filtered_burn_logs.len();
+
+        // NOTE: And after the above filtering, we should have an equal amount of burn & redeem logs
+        if n_redeem_logs != n_burn_logs {
+            return Err(
+                format!("relevant logs ({n_redeem_logs}) does not match number of burn logs {n_burn_logs}").into(),
+            );
         }
 
         Ok(Self {
-            logs: EthLogs::new(logs),
-            burn_logs: EthLogs::new(burn_logs),
+            redeem_logs: EthLogs::new(redeem_logs),
+            burn_logs: EthLogs::new(filtered_burn_logs),
         })
     }
 
     fn len(&self) -> usize {
-        self.logs.len()
+        self.redeem_logs.len()
+    }
+
+    fn get_value_from_burn_log(l: &EthLog) -> Result<U256> {
+        Erc777BurnEvent::try_from(l).map(|event| event.amount)
+    }
+
+    fn get_value_from_redeem_log(l: &EthLog) -> Result<U256> {
+        Erc777RedeemEvent::from_eth_log(l).map(|event| event.value)
     }
 }
 
 impl IntOnEvmIntTxInfos {
     fn log_contains_topic(log: &EthLog) -> bool {
         debug!("checking log contains relevant topic...");
-        if log.address == *PTLOS_ADDRESS {
+        if log.topics[0] == *ERC_777_BURN_EVENT_TOPIC {
+            true
+        } else if log.address == *PTLOS_ADDRESS {
             warn!("pTLOS redeem detected - checking for v1 event topics");
             log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
                 || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
@@ -92,22 +126,29 @@ impl IntOnEvmIntTxInfos {
         }
     }
 
-    pub fn get_relevant_logs_from_receipt(receipt: &EthReceipt, dictionary: &EthEvmTokenDictionary) -> EthLogs {
-        EthLogs::new(
+    pub fn get_relevant_logs_from_receipt(
+        receipt: &EthReceipt,
+        dictionary: &EthEvmTokenDictionary,
+    ) -> Result<RelevantLogs> {
+        RelevantLogs::new(&EthLogs::new(
             receipt
                 .logs
                 .iter()
                 .filter(|log| matches!(Self::is_log_relevant(log, dictionary), Ok(true)))
                 .cloned()
                 .collect(),
-        )
+        ))
     }
 
     fn receipt_contains_supported_erc20_on_evm_redeem(
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
-    ) -> bool {
-        Self::get_relevant_logs_from_receipt(receipt, dictionary).len() > 0
+    ) -> Result<bool> {
+        if Self::get_relevant_logs_from_receipt(receipt, dictionary)?.len() > 0 {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
     }
 
     fn filter_eth_submission_material_for_supported_redeems(
@@ -124,7 +165,10 @@ impl IntOnEvmIntTxInfos {
                 .receipts
                 .iter()
                 .filter(|receipt| {
-                    IntOnEvmIntTxInfos::receipt_contains_supported_erc20_on_evm_redeem(receipt, dictionary)
+                    matches!(
+                        IntOnEvmIntTxInfos::receipt_contains_supported_erc20_on_evm_redeem(receipt, dictionary),
+                        Ok(true)
+                    )
                 })
                 .cloned()
                 .collect(),

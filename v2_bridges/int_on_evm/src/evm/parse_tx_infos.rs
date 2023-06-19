@@ -44,9 +44,10 @@ impl IntOnEvmIntTxInfos {
         vault_address: &EthAddress,
     ) -> Result<Self> {
         info!("✔ Getting `IntOnEvmIntTxInfos` from receipt...");
+        let relevant_logs = Self::get_relevant_logs_from_receipt(receipt, dictionary)?;
+        let logs = relevant_logs.redeem_logs();
         Ok(Self::new(
-            Self::get_relevant_logs_from_receipt(receipt, dictionary)
-                .iter()
+            logs.iter()
                 .map(|log| {
                     // NOTE: The event parser can handle v1 events w/ & w/out user data, and also v2 events.
                     // This core will filter for some v1 events in order to facilitate migration from v1 to v2
