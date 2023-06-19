@@ -43,7 +43,7 @@ echo [+] Testing multiple HOST block submission to \'$BINARY_NAME\' core...
 maybeCleanUpSubmissinFile
 
 getCoreLatestEvmBlockNumber() {
-	$BINARY_PATH getEnclaveState | jq .eth.eth_latest_block_number
+	$BINARY_PATH getEnclaveState | jq .int.eth_latest_block_number
 }
 
 getInitBlockNumber() {

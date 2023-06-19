@@ -10,7 +10,7 @@ use crate::constants::CORE_TYPE;
 struct EnclaveState {
     info: EnclaveInfo,
     btc: BtcEnclaveState,
-    eth: EthEnclaveState,
+    int: EthEnclaveState,
 }
 
 impl EnclaveState {
@@ -18,7 +18,7 @@ impl EnclaveState {
         Ok(Self {
             info: EnclaveInfo::new(eth_db_utils.get_db())?,
             btc: BtcEnclaveState::new(btc_db_utils.get_db(), btc_db_utils)?,
-            eth: EthEnclaveState::new(
+            int: EthEnclaveState::new(
                 eth_db_utils,
                 &eth_db_utils.get_btc_on_int_smart_contract_address_from_db()?,
                 Some(eth_db_utils.get_eth_router_smart_contract_address_from_db()?),

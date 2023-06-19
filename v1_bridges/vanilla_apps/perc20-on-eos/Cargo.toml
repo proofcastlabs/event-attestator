@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-version = "2.1.1"
+version = "2.1.2"
 rust-version = "1.56"
 name = "perc20-on-eos"
 authors = ["gregkapka <gregkapka@gmail.com>"]

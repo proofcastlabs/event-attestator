@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "algorand"
-version = "6.10.3"
+version = "6.11.0"
 dependencies = [
  "common",
  "debug_signers",
@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "6.11.0"
+version = "6.12.0"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -330,7 +330,7 @@ version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.11.0",
+ "bitcoin 6.12.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -358,7 +358,7 @@ version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.11.0",
+ "bitcoin 6.12.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -387,7 +387,7 @@ version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.11.0",
+ "bitcoin 6.12.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -1259,7 +1259,7 @@ version = "6.10.3"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.11.0",
+ "bitcoin 6.12.0",
  "common",
  "derive_more",
  "hex",
@@ -1900,7 +1900,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_evm"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -2344,7 +2344,7 @@ dependencies = [
 
 [[package]]
 name = "pbtc-on-eth"
-version = "2.1.1"
+version = "2.1.2"
 dependencies = [
  "anyhow",
  "btc_on_eth",
@@ -2385,7 +2385,7 @@ checksum = "19b17cddbe7ec3f8bc800887bab5e717348c95ea2ca0b1bf0837fb964dc67099"
 
 [[package]]
 name = "peos-on-eth"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
  "anyhow",
  "common",
@@ -2421,7 +2421,7 @@ dependencies = [
 
 [[package]]
 name = "perc20-on-eos"
-version = "2.1.1"
+version = "2.1.2"
 dependencies = [
  "anyhow",
  "common",
@@ -3031,8 +3031,8 @@ dependencies = [
 
 [[package]]
 name = "rust-algorand"
-version = "1.8.1"
-source = "git+https://github.com/provable-things/rust-algorand#5cf0ef7b6222179ba0f30151e0a726127ba62c2e"
+version = "1.8.0"
+source = "git+https://github.com/provable-things/rust-algorand#a249201df8c3eb5c1eafa5f5b0cf988bd2d0b817"
 dependencies = [
  "base32",
  "base64 0.13.1",
