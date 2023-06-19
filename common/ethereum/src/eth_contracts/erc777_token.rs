@@ -1,6 +1,9 @@
+use std::convert::TryFrom;
+
 use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
+    AppError,
 };
 use common_metadata::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES};
 use derive_more::Constructor;
@@ -13,6 +16,7 @@ use crate::{
     eth_contracts::encode_fxn_call,
     EthDbUtils,
     EthDbUtilsExt,
+    EthLog,
     EthLogExt,
     EthTransaction,
     SupportedTopics,
@@ -36,6 +40,8 @@ const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
 
 const ERC777_REDEEM_EVENT_TOPIC_V2_HEX: &str = "dd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31";
 
+const ERC_777_BURN_EVENT_TOPIC_HEX: &str = "a78a9be3a7b862d26933ad85fb11d80ef66b8f972d7cbba06621d583943a4098";
+
 lazy_static! {
     pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA: EthHash = {
         EthHash::from_slice(
@@ -53,6 +59,11 @@ lazy_static! {
         EthHash::from_slice(
             &hex::decode(ERC777_REDEEM_EVENT_TOPIC_V2_HEX)
                 .expect("✘ Invalid hex in `ERC777_REDEEM_EVENT_TOPIC_V2_HEX`"),
+        )
+    };
+    pub static ref ERC_777_BURN_EVENT_TOPIC: EthHash = {
+        EthHash::from_slice(
+            &hex::decode(ERC_777_BURN_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `ERC_777_BURN_EVENT_TOPIC_HEX`"),
         )
     };
 }
@@ -153,6 +164,59 @@ pub struct Erc777RedeemEvent {
     pub destination_chain_id: Option<MetadataChainId>,
 }
 
+#[derive(Debug, Clone, Constructor, Eq, PartialEq, Default)]
+pub struct Erc777BurnEvent {
+    pub operator: EthAddress,
+    pub from: EthAddress,
+    pub amount: U256,
+    pub data: Bytes,
+    pub operator_data: Bytes,
+}
+
+impl TryFrom<&EthLog> for Erc777BurnEvent {
+    type Error = AppError;
+
+    fn try_from(log: &EthLog) -> std::result::Result<Self, Self::Error> {
+        info!("decoding `Erc777BurnEvent` from log...");
+
+        fn get_err_msg(field: &str) -> String {
+            format!("error decoding `{}` field from `Erc777BurnEvent`!", field)
+        }
+
+        let tokens = eth_abi_decode(
+            &[
+                EthAbiParamType::Uint(256),
+                EthAbiParamType::Bytes,
+                EthAbiParamType::Bytes,
+            ],
+            &log.get_data(),
+        )?;
+
+        log.check_has_x_topics(3).and_then(|_| {
+            Ok(Self {
+                operator: EthAddress::from_slice(
+                    &log.get_topics()[1][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
+                from: EthAddress::from_slice(
+                    &log.get_topics()[2][ETH_WORD_SIZE_IN_BYTES - ETH_ADDRESS_SIZE_IN_BYTES..],
+                ),
+                amount: match tokens[0] {
+                    EthAbiToken::Uint(value) => Ok(value),
+                    _ => Err(get_err_msg("amount")),
+                }?,
+                data: match tokens[1] {
+                    EthAbiToken::Bytes(ref bytes) => Ok(bytes.to_vec()),
+                    _ => Err(get_err_msg("data")),
+                }?,
+                operator_data: match tokens[2] {
+                    EthAbiToken::Bytes(ref bytes) => Ok(bytes.to_vec()),
+                    _ => Err(get_err_msg("operator_data")),
+                }?,
+            })
+        })
+    }
+}
+
 impl Erc777RedeemEvent {
     pub fn get_origin_chain_id(&self) -> Result<MetadataChainId> {
         self.origin_chain_id
@@ -166,7 +230,7 @@ impl Erc777RedeemEvent {
     }
 
     fn get_err_msg(field: &str) -> String {
-        format!("Error getting `{}` from `EthOnEvmErc777RedeemEvent`!", field)
+        format!("Error getting `{}` from `Erc777RedeemEvent`!", field)
     }
 
     fn from_v1_log_without_user_data<L: EthLogExt>(log: &L) -> Result<Self> {
@@ -280,8 +344,6 @@ impl Erc777RedeemEvent {
 
 #[cfg(test)]
 mod tests {
-    use common::errors::AppError;
-
     use super::*;
     use crate::{
         eth_log::EthLog,
