@@ -1,4 +1,3 @@
-use bitcoin::Txid;
 use common::{
     address::Address,
     types::{Byte, Bytes, Result},
@@ -8,6 +7,8 @@ use common_safe_addresses::SAFE_ETH_ADDRESS_STR;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
+
+use crate::bitcoin_crate_alias::Txid;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Deref, DerefMut, Constructor, Serialize, Deserialize)]
 pub struct BtcOnIntIntTxInfos(pub Vec<BtcOnIntIntTxInfo>);

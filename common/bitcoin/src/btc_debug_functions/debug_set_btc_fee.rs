@@ -31,7 +31,7 @@ pub fn debug_set_btc_fee<D: DatabaseInterface>(
         .map(prepend_debug_output_marker_to_string)
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 

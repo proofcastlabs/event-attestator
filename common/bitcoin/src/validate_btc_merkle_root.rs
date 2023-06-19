@@ -1,7 +1,6 @@
-use bitcoin::blockdata::block::Block as BtcBlock;
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::BtcState;
+use crate::{bitcoin_crate_alias::blockdata::block::Block as BtcBlock, BtcState};
 
 fn validate_merkle_root(btc_block: &BtcBlock) -> Result<()> {
     match btc_block.check_merkle_root() {
@@ -23,7 +22,7 @@ pub fn validate_btc_merkle_root<D: DatabaseInterface>(state: BtcState<D>) -> Res
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::get_sample_btc_block_and_id;

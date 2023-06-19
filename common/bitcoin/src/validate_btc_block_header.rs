@@ -21,15 +21,15 @@ pub fn validate_btc_block_header_in_state<D: DatabaseInterface>(state: BtcState<
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::BlockHash;
     use common::errors::AppError;
 
     use super::*;
     use crate::{
+        bitcoin_crate_alias::BlockHash,
         btc_block::BtcBlockAndId,
         deposit_address_info::DepositInfoList,
         test_utils::get_sample_btc_block_and_id,

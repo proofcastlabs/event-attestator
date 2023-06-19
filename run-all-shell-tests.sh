@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# NOTE: Exit early if non zero exit code is encountered
 set -e
 cd "$(dirname -- $0)"
 

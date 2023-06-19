@@ -1,4 +1,3 @@
-pub use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     dictionaries::eos_eth::EosEthTokenDictionary,
     traits::DatabaseInterface,
@@ -6,6 +5,7 @@ use common::{
     utils::get_not_in_state_err,
 };
 
+pub use crate::bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction;
 use crate::{
     eos_action_proofs::EosActionProofs,
     eos_block_header::EosBlockHeaderV2,

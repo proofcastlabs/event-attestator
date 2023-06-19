@@ -1,10 +1,10 @@
-use bitcoin::{
-    blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction},
-    consensus::encode::serialize as btc_serialize,
-};
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction},
+        consensus::encode::serialize as btc_serialize,
+    },
     btc_types::{BtcPubKeySlice, BtcTransactions},
     btc_utils::get_pay_to_pub_key_hash_script,
     BtcState,
@@ -81,17 +81,16 @@ pub fn filter_for_p2pkh_deposit_txs_including_change_outputs_and_add_to_state<D:
     filter_for_p2pkh_deposit_txs_and_add_to_state(state, true)
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{
-        hashes::{sha256d, Hash},
-        Txid,
-    };
-
     use super::*;
     use crate::{
+        bitcoin_crate_alias::{
+            hashes::{sha256d, Hash},
+            Txid,
+        },
         btc_block::BtcBlockAndId,
         btc_utils::get_script_sig,
         test_utils::{

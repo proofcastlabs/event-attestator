@@ -1,7 +1,6 @@
 #![cfg(test)]
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
-use bitcoin::hashes::{sha256d, Hash};
 use common_btc::{
     create_unsigned_utxo_from_tx,
     BtcBlockAndId,
@@ -14,6 +13,7 @@ use common_btc::{
 use common_eos::{EosSubmissionMaterial, EosSubmissionMaterialJson};
 
 use crate::{
+    bitcoin_crate_alias::hashes::{sha256d, Hash},
     btc::{BtcOnEosEosTxInfo, BtcOnEosEosTxInfos},
     eos::{BtcOnEosBtcTxInfo, BtcOnEosBtcTxInfos},
     utils::convert_u64_to_x_decimal_eos_asset,

@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(Serialize, Deserialize)]
 pub struct BtcEnclaveState {
-    btc_account_nonce: u64,
+    btc_fork: String,
     btc_difficulty: u64,
     btc_network: String,
     btc_address: String,
@@ -19,6 +19,7 @@ pub struct BtcEnclaveState {
     btc_tail_length: u64,
     btc_public_key: String,
     btc_sats_per_byte: u64,
+    btc_account_nonce: u64,
     btc_linker_hash: String,
     btc_safe_address: String,
     btc_utxo_total_value: u64,
@@ -45,7 +46,9 @@ impl BtcEnclaveState {
         let btc_anchor_block = db_utils.get_btc_anchor_block_from_db()?;
         let btc_latest_block = db_utils.get_btc_latest_block_from_db()?;
         let btc_public_key_hex = hex::encode(db_utils.get_btc_public_key_slice_from_db()?);
+        let btc_fork = if cfg!(feature = "ltc") { "litecoin" } else { "bitcoin" }.to_string();
         Ok(Self {
+            btc_fork,
             btc_tail_length: BTC_TAIL_LENGTH,
             btc_public_key: btc_public_key_hex,
             btc_utxo_nonce: get_utxo_nonce_from_db(db)?,

@@ -6,6 +6,7 @@ rust-version = "1.56"
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
+ltc = ["btc_on_eos/ltc"]
 file-logger = ["common_file_logger"]
 default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]
@@ -20,6 +21,7 @@ serde = { workspace = true }
 paste = { workspace = true }
 docopt = { workspace = true }
 anyhow = { workspace = true }
+
 btc_on_eos = { path = "../../btc_on_eos" }
 
 common = { workspace = true }

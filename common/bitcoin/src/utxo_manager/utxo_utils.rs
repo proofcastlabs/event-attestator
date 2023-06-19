@@ -1,8 +1,3 @@
-use bitcoin::{
-    blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
-    consensus::encode::deserialize as btc_deserialize,
-    hashes::{sha256d, Hash},
-};
 use common::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     traits::DatabaseInterface,
@@ -12,6 +7,11 @@ use common_safe_addresses::SAFE_BTC_ADDRESS_STR;
 use serde_json::{json, Value as JsonValue};
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
+        consensus::encode::deserialize as btc_deserialize,
+        hashes::{sha256d, Hash},
+    },
     btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
     btc_utils::create_new_pay_to_pub_key_hash_output,
     utxo_manager::{
@@ -158,7 +158,7 @@ fn get_enough_utxos_to_cover_total_recursively<D: DatabaseInterface>(
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

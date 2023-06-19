@@ -1,10 +1,10 @@
-use bitcoin::{
-    blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
-    Sighash,
-};
 use common::types::{Bytes, Result};
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
+        Sighash,
+    },
     btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
     btc_recipients_and_amounts::BtcRecipientsAndAmounts,
     btc_utils::{
@@ -139,7 +139,7 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::{

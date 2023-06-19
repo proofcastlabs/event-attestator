@@ -10,20 +10,24 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
+default = ["bitcoin"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eth/non-validating","common_btc/non-validating"]
+# NOTE: Turns this into an `ltc-on-int` core.
+ltc = ["litecoin", "common_btc/ltc", "common_safe_addresses/ltc", "non-validating"]
 
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
 paste = { workspace = true }
 serde = { workspace = true }
-bitcoin = { workspace = true }
 serde_json = { workspace = true }
 derive_more = { workspace = true }
 tiny-keccak = { workspace = true }
 function_name = { workspace = true }
 ethereum-types = { workspace = true }
+bitcoin = { workspace = true, optional = true }
+litecoin = { workspace = true, optional = true }
 
 common = { workspace = true }
 common_btc = { workspace = true }

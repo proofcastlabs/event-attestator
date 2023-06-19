@@ -1,8 +1,3 @@
-use bitcoin::{
-    blockdata::transaction::Transaction as BtcTransaction,
-    network::constants::Network as BtcNetwork,
-    util::address::Address as BtcAddress,
-};
 use common::{
     traits::DatabaseInterface,
     types::{NoneError, Result},
@@ -12,6 +7,11 @@ use common_eth::{EthDbUtils, EthDbUtilsExt};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::Transaction as BtcTransaction,
+        network::constants::Network as BtcNetwork,
+        util::address::Address as BtcAddress,
+    },
     btc::eth_tx_info::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
     utils::convert_satoshis_to_wei,
 };
@@ -100,11 +100,10 @@ pub fn parse_eth_tx_infos_from_p2sh_deposits_and_add_to_state<D: DatabaseInterfa
     .map(|bytes| state.add_tx_infos(bytes))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{util::address::Address as BtcAddress, Txid};
     use common_btc::{
         convert_bytes_to_btc_pub_key_slice,
         create_hash_map_from_deposit_info_list,
@@ -114,7 +113,10 @@ mod tests {
     use ethereum_types::H160 as EthAddress;
 
     use super::*;
-    use crate::test_utils::get_sample_btc_block_n;
+    use crate::{
+        bitcoin_crate_alias::{util::address::Address as BtcAddress, Txid},
+        test_utils::get_sample_btc_block_n,
+    };
 
     #[test]
     fn should_parse_eth_tx_infos_struct_from_p2sh_deposit_tx() {

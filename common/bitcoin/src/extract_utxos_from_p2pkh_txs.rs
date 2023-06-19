@@ -1,8 +1,7 @@
-use bitcoin::blockdata::script::Script as BtcScript;
 use common::{traits::DatabaseInterface, types::Result};
 
 use crate::{
-    btc_types::BtcTransaction,
+    bitcoin_crate_alias::blockdata::{script::Script as BtcScript, transaction::Transaction as BtcTransaction},
     btc_utils::{create_unsigned_utxo_from_tx, get_pay_to_pub_key_hash_script},
     utxo_manager::{BtcUtxoAndValue, BtcUtxosAndValues},
     BtcState,
@@ -56,7 +55,7 @@ pub fn maybe_extract_utxos_from_p2pkh_txs_and_put_in_btc_state<D: DatabaseInterf
         })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::{

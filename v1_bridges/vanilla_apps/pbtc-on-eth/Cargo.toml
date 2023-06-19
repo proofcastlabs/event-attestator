@@ -6,6 +6,7 @@ rust-version = "1.56"
 authors = ["gregkapka <gregkapka@gmail.com>"]
 
 [features]
+ltc = ["btc_on_eth/ltc"]
 file-logger = ["common_file_logger"]
 default = ["rocks-db", "file-logger"]
 rocks-db = ["common_rocksdb_database"]

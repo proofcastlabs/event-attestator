@@ -1,17 +1,20 @@
 use std::fmt;
 
-use bitcoin::{
-    network::constants::Network,
-    secp256k1::{ecdsa::Signature, rand::thread_rng, Message, PublicKey, Secp256k1, SecretKey},
-    util::{address::Address as BtcAddress, key::PrivateKey},
-};
 use common::{
     constants::MAX_DATA_SENSITIVITY_LEVEL,
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
 
-use crate::{btc_types::BtcPubKeySlice, btc_utils::get_btc_one_key};
+use crate::{
+    bitcoin_crate_alias::{
+        network::constants::Network,
+        secp256k1::{ecdsa::Signature, rand::thread_rng, Message, PublicKey, Secp256k1, SecretKey},
+        util::{address::Address as BtcAddress, key::PrivateKey},
+    },
+    btc_types::BtcPubKeySlice,
+    btc_utils::get_btc_one_key,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BtcPrivateKey(PrivateKey);
@@ -67,7 +70,7 @@ impl BtcPrivateKey {
         }))
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     pub fn to_wif(&self) -> String {
         self.0.to_wif()
     }
@@ -89,12 +92,13 @@ impl Drop for BtcPrivateKey {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
-    use bitcoin::hashes::{sha256d, Hash};
-
     use super::*;
-    use crate::test_utils::{get_sample_btc_private_key, SAMPLE_BTC_PUBLIC_KEY, SAMPLE_TARGET_BTC_ADDRESS};
+    use crate::{
+        bitcoin_crate_alias::hashes::{sha256d, Hash},
+        test_utils::{get_sample_btc_private_key, SAMPLE_BTC_PUBLIC_KEY, SAMPLE_TARGET_BTC_ADDRESS},
+    };
 
     fn get_sample_btc_private_key_slice() -> [u8; 32] {
         [

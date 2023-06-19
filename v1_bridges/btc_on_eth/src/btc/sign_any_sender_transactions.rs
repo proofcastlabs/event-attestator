@@ -57,14 +57,17 @@ pub fn maybe_sign_any_sender_canon_block_txs_and_add_to_state<D: DatabaseInterfa
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
     use common_btc::test_utils::SAMPLE_TARGET_BTC_ADDRESS;
     use common_chain_ids::EthChainId;
     use common_eth::test_utils::{get_sample_eth_address, get_sample_eth_private_key};
     use ethereum_types::Address as EthAddress;
 
     use super::*;
-    use crate::{btc::eth_tx_info::BtcOnEthEthTxInfo, utils::convert_satoshis_to_wei};
+    use crate::{
+        bitcoin_crate_alias::{hashes::Hash, util::address::Address as BtcAddress, Txid},
+        btc::eth_tx_info::BtcOnEthEthTxInfo,
+        utils::convert_satoshis_to_wei,
+    };
 
     #[test]
     fn should_get_any_sender_signatures() {

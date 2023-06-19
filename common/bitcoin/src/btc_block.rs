@@ -1,15 +1,5 @@
 use std::str::FromStr;
 
-pub use bitcoin::{
-    blockdata::{
-        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::Transaction as BtcTransaction,
-    },
-    consensus::encode::{deserialize as btc_deserialize, serialize as btc_serialize},
-    hash_types::{BlockHash, TxMerkleNode},
-    hashes::{sha256d, Hash},
-    util::address::Address as BtcAddress,
-};
 use common::{
     errors::AppError,
     traits::DatabaseInterface,
@@ -19,7 +9,21 @@ use common::{
 use derive_more::Constructor;
 use serde::{Deserialize, Serialize};
 
-use crate::{btc_submission_material::BtcSubmissionMaterialJson, deposit_address_info::DepositInfoList, BtcState};
+#[cfg(not(feature = "ltc"))]
+use crate::bitcoin_crate_alias::blockdata::block::BlockHeader as BtcBlockHeader;
+#[cfg(feature = "ltc")]
+use crate::bitcoin_crate_alias::blockdata::block::Header as BtcBlockHeader;
+use crate::{
+    bitcoin_crate_alias::{
+        blockdata::block::Block as BtcBlock,
+        consensus::encode::deserialize as btc_deserialize,
+        hash_types::{BlockHash, TxMerkleNode},
+        hashes::Hash,
+    },
+    btc_submission_material::BtcSubmissionMaterialJson,
+    deposit_address_info::DepositInfoList,
+    BtcState,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct BtcBlockAndId {
@@ -62,6 +66,7 @@ pub struct BtcBlockJson {
 }
 
 impl BtcBlockJson {
+    #[cfg(not(feature = "ltc"))]
     pub fn to_block_header(&self) -> Result<BtcBlockHeader> {
         info!("✔ Parsing `BtcBlockJson` to `BtcBlockHeader`...");
         Ok(BtcBlockHeader {
@@ -71,6 +76,19 @@ impl BtcBlockJson {
             version: self.version,
             merkle_root: TxMerkleNode::from_str(&self.merkle_root)?,
             prev_blockhash: BlockHash::from_str(&self.previousblockhash)?,
+        })
+    }
+
+    #[cfg(feature = "ltc")]
+    pub fn to_block_header(&self) -> Result<BtcBlockHeader> {
+        info!("✔ Parsing `BtcBlockJson` to `BtcBlockHeader`...");
+        Ok(BtcBlockHeader {
+            time: self.timestamp,
+            nonce: self.nonce,
+            merkle_root: TxMerkleNode::from_str(&self.merkle_root)?,
+            prev_blockhash: BlockHash::from_str(&self.previousblockhash)?,
+            bits: crate::bitcoin_crate_alias::CompactTarget::from_consensus(self.bits),
+            version: crate::bitcoin_crate_alias::block::Version::from_consensus(self.version),
         })
     }
 }
@@ -140,7 +158,7 @@ impl BtcBlockInDbFormat {
         ))?)
     }
 
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     fn to_bytes_legacy(&self) -> Result<Bytes> {
         let serialized_id = self.id.to_vec();
         Ok(serde_json::to_vec(&SerializedBlockInDbFormatLegacy::new(
@@ -276,7 +294,7 @@ pub struct SerializedBlockInDbFormatLegacy {
 }
 
 impl SerializedBlockInDbFormatLegacy {
-    #[cfg(test)]
+    #[cfg(all(test, not(feature = "ltc")))]
     pub fn new(
         id: Bytes,
         height: Bytes,
@@ -301,15 +319,16 @@ impl SerializedBlockInDbFormatLegacy {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
-    use bitcoin::{
-        blockdata::transaction::Transaction as BtcTransaction,
-        consensus::encode::deserialize as btc_deserialize,
-    };
-
     use super::*;
-    use crate::test_utils::{get_sample_btc_block_in_db_format, get_sample_btc_submission_material_json};
+    use crate::{
+        bitcoin_crate_alias::{
+            blockdata::transaction::Transaction as BtcTransaction,
+            consensus::encode::deserialize as btc_deserialize,
+        },
+        test_utils::{get_sample_btc_block_in_db_format, get_sample_btc_submission_material_json},
+    };
 
     #[test]
     fn should_parse_block_and_tx_json_to_struct() {

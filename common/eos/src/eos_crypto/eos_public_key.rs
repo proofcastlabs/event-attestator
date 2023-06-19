@@ -1,6 +1,5 @@
 use std::{fmt, io, str::FromStr};
 
-use bitcoin::util::base58;
 use common::{
     errors::AppError,
     types::{Byte, Bytes, Result},
@@ -8,6 +7,7 @@ use common::{
 use secp256k1::{self, key::PublicKey, Error::InvalidPublicKey, Secp256k1};
 
 use crate::{
+    bitcoin_crate_alias::util::base58,
     eos_constants::{PUBLIC_KEY_CHECKSUM_SIZE, PUBLIC_KEY_SIZE, PUBLIC_KEY_WITH_CHECKSUM_SIZE},
     eos_crypto::eos_signature::EosSignature,
     eos_hash::ripemd160,
@@ -38,11 +38,25 @@ impl EosPublicKey {
         format!("EOS{}", base58::encode_slice(&public_key))
     }
 
+    #[cfg(not(feature = "ltc"))]
     pub fn from_bytes(data: &[Byte]) -> Result<EosPublicKey> {
         let compressed: bool = match data.len() {
             33 => true,
             64 => false,
             len => return Err(AppError::Base58Error(base58::Error::InvalidLength(len))),
+        };
+        Ok(EosPublicKey {
+            compressed,
+            public_key: PublicKey::from_slice(data)?,
+        })
+    }
+
+    #[cfg(feature = "ltc")]
+    pub fn from_bytes(data: &[Byte]) -> Result<EosPublicKey> {
+        let compressed: bool = match data.len() {
+            33 => true,
+            64 => false,
+            len => return Err(AppError::LitecoinBase58Error(base58::Error::InvalidLength(len))),
         };
         Ok(EosPublicKey {
             compressed,
@@ -93,12 +107,12 @@ impl FromStr for EosPublicKey {
 mod test {
     use std::str::FromStr;
 
-    use bitcoin::hashes::{sha256, Hash};
     use common::test_utils::get_sample_message_to_sign_bytes;
     use secp256k1::Message;
 
     use super::*;
     use crate::{
+        bitcoin_crate_alias::hashes::{sha256, Hash},
         eos_crypto::eos_signature::EosSignature,
         eos_test_utils::{
             get_sample_eos_private_key,

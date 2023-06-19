@@ -73,7 +73,6 @@ pub fn maybe_sign_normal_canon_block_txs_and_add_to_state<D: DatabaseInterface>(
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::{hashes::Hash, util::address::Address as BtcAddress, Txid};
     use common::test_utils::get_test_database;
     use common_btc::test_utils::SAMPLE_TARGET_BTC_ADDRESS;
     use common_chain_ids::EthChainId;
@@ -84,7 +83,10 @@ mod tests {
     use ethereum_types::Address as EthAddress;
 
     use super::*;
-    use crate::utils::convert_satoshis_to_wei;
+    use crate::{
+        bitcoin_crate_alias::{hashes::Hash, util::address::Address as BtcAddress, Txid},
+        utils::convert_satoshis_to_wei,
+    };
 
     #[test]
     fn should_get_eth_signing_params() {

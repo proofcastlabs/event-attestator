@@ -1,24 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::{
-    blockdata::{
-        opcodes,
-        script::{Builder as BtcScriptBuilder, Script as BtcScript},
-        transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
-    },
-    consensus::encode::{deserialize as btc_deserialize, serialize as btc_serialize},
-    hash_types::Txid,
-    hashes::{sha256d, Hash},
-    network::constants::Network as BtcNetwork,
-    secp256k1::ONE_KEY,
-    util::{
-        base58::{encode_slice as base58_encode_slice, from as from_base58},
-        key::PrivateKey,
-    },
-    Address as BtcAddress,
-    Sequence,
-    Witness,
-};
 use common::{
     constants::PTOKEN_ERC777_NUM_DECIMALS,
     types::{Byte, Bytes, Result},
@@ -28,6 +9,25 @@ use common_safe_addresses::SAFE_BTC_ADDRESS;
 use ethereum_types::U256;
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::{
+            opcodes,
+            script::{Builder as BtcScriptBuilder, Script as BtcScript},
+            transaction::{OutPoint as BtcOutPoint, Transaction as BtcTransaction, TxIn as BtcUtxo, TxOut as BtcTxOut},
+        },
+        consensus::encode::{deserialize as btc_deserialize, serialize as btc_serialize},
+        hash_types::Txid,
+        hashes::{sha256d, Hash},
+        network::constants::Network as BtcNetwork,
+        secp256k1::ONE_KEY,
+        util::{
+            base58::{encode_slice as base58_encode_slice, from as from_base58},
+            key::PrivateKey,
+        },
+        Address as BtcAddress,
+        Sequence,
+        Witness,
+    },
     btc_constants::{
         BTC_NUM_DECIMALS,
         BTC_PUB_KEY_SLICE_LENGTH,
@@ -217,7 +217,7 @@ pub fn convert_str_to_btc_address_or_safe_address(s: &str) -> Result<BtcAddress>
     }
 }
 
-#[cfg(test)] // TODO Create then move this to chains/test_utils!
+#[cfg(all(test, not(feature = "ltc")))] // TODO Create then move this to chains/test_utils!
 pub fn get_tx_id_from_signed_btc_tx(signed_btc_tx: &BtcTransaction) -> String {
     let mut tx_id = signed_btc_tx.txid().to_vec();
     tx_id.reverse();
@@ -237,15 +237,15 @@ pub fn convert_wei_to_satoshis(ptoken: U256) -> u64 {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
-    use bitcoin::hashes::{sha256d, Hash};
     use common::errors::AppError;
 
     use super::*;
     use crate::{
+        bitcoin_crate_alias::hashes::{sha256d, Hash},
         test_utils::{
             create_p2pkh_btc_utxo_and_value_from_tx_output,
             get_sample_btc_block_and_id,

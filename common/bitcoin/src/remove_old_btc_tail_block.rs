@@ -1,7 +1,6 @@
-use bitcoin::BlockHash;
 use common::{traits::DatabaseInterface, types::Result};
 
-use crate::{btc_block::BtcBlockInDbFormat, btc_database_utils::BtcDbUtils, BtcState};
+use crate::{bitcoin_crate_alias::BlockHash, btc_block::BtcBlockInDbFormat, btc_database_utils::BtcDbUtils, BtcState};
 
 fn is_anchor_block<D: DatabaseInterface>(db_utils: &BtcDbUtils<D>, btc_block_hash: &BlockHash) -> Result<bool> {
     match db_utils.get_btc_anchor_block_hash_from_db() {
@@ -51,7 +50,7 @@ pub fn maybe_remove_old_btc_tail_block<D: DatabaseInterface>(state: BtcState<D>)
         .and(Ok(state))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

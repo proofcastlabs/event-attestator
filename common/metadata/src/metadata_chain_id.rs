@@ -43,6 +43,7 @@ pub enum MetadataChainId {
     LibreMainnet,     // 0x026776fa
     EthereumGoerli,   // 0x00b4f6c5
     EthereumSepolia,  // 0x0030d6b5
+    LitecoinMainnet,  // 0x01840435
 }
 
 impl Default for MetadataChainId {
@@ -89,6 +90,10 @@ impl FromStr for MetadataChainId {
             "EthereumRopsten" | "0x0069c322" => Ok(Self::EthereumRopsten),
             "ArbritrumMainnet" | "0x00ce98c4" => Ok(Self::ArbitrumMainnet),
             "LuxochainMainnet" | "0x00d5beb0" => Ok(Self::LuxochainMainnet),
+
+            // Ltc...
+            "LitecoinMainnet" | "0x01840435" => Ok(Self::LitecoinMainnet),
+
             _ => Err(format!("Unrecognised chain id: '{s}'").into()),
         }
     }
@@ -107,7 +112,9 @@ impl MetadataChainId {
             | Self::EosJungleTestnet
             | Self::EosUnknown => MetadataProtocolId::Eos,
             Self::AlgorandMainnet => MetadataProtocolId::Algorand,
-            Self::BitcoinMainnet | Self::BitcoinTestnet | Self::BtcUnknown => MetadataProtocolId::Bitcoin,
+            Self::BitcoinMainnet | Self::BitcoinTestnet | Self::BtcUnknown | Self::LitecoinMainnet => {
+                MetadataProtocolId::Bitcoin
+            },
             Self::BscMainnet
             | Self::EthUnknown
             | Self::XDaiMainnet
@@ -152,6 +159,8 @@ impl MetadataChainId {
             Self::ArbitrumMainnet => Box::new(EthChainId::ArbitrumMainnet),
             Self::LuxochainMainnet => Box::new(EthChainId::LuxochainMainnet),
             Self::EosJungleTestnet => Box::new(EosChainId::EosJungleTestnet),
+            // NOTE: This is how LTC is handled in the forked library it uses
+            Self::LitecoinMainnet => Box::new(BtcChainId::Bitcoin),
         }
     }
 
@@ -169,12 +178,24 @@ impl MetadataChainId {
     }
 
     fn to_first_three_bytes_of_keccak_hash(self) -> Result<Bytes> {
-        Ok(self.to_keccak_hash()?[..3].to_vec())
+        match self {
+            Self::LitecoinMainnet => Ok(vec![]),
+            _ => Ok(self.to_keccak_hash()?[..3].to_vec()),
+        }
     }
 
     pub fn to_bytes(self) -> Result<Bytes> {
         match self {
             Self::InterimChain => Ok(vec![0xff, 0xff, 0xff, 0xff]),
+            Self::LitecoinMainnet => {
+                // NOTE: Litecoin is handled via a feature flag in the `/common/bitcoin` crate.
+                // That crate uses a forked `bitcoin` lib to handle litecoin, however the underlying
+                // bitcoin based chain ID does _not_ change, and thus the hash of the bytes of that
+                // ID would match bitcoin too. So instead we just use three random bytes in the
+                // defintion of a litecoin metadata chain ID.
+                let random_bytes = vec![0x84, 0x04, 0x35];
+                Ok(vec![vec![self.to_protocol_id().to_byte()], random_bytes].concat())
+            },
             _ => Ok(vec![
                 vec![self.to_protocol_id().to_byte()],
                 self.to_first_three_bytes_of_keccak_hash()?,
@@ -239,14 +260,15 @@ impl fmt::Display for MetadataChainId {
             Self::UltraTestnet => write!(f, "Ultra Testnet: {}", hex),
             Self::UltraMainnet => write!(f, "Ultra Mainnet: {}", hex),
             Self::InterimChain => write!(f, "Interim Chain: {}", hex),
-            Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
-            Self::EthereumGoerli => write!(f, "Goerli Testnet: {}", hex),
             Self::LibreTestnet => write!(f, "Libre Testnet: {}", hex),
             Self::LibreMainnet => write!(f, "Libre Mainnet: {}", hex),
+            Self::FantomMainnet => write!(f, "Fantom Mainnet: {}", hex),
+            Self::EthereumGoerli => write!(f, "Goerli Testnet: {}", hex),
             Self::BitcoinMainnet => write!(f, "Bitcoin Mainnet: {}", hex),
             Self::PolygonMainnet => write!(f, "Polygon Mainnet: {}", hex),
             Self::BitcoinTestnet => write!(f, "Bitcoin Testnet: {}", hex),
             Self::AlgorandMainnet => write!(f, "AlgorandMainnet: {}", hex),
+            Self::LitecoinMainnet => write!(f, "LitecoinMainnet: {}", hex),
             Self::EthereumSepolia => write!(f, "Sepolia Testnet: {}", hex),
             Self::ArbitrumMainnet => write!(f, "Arbitrum Mainnet: {}", hex),
             Self::EthereumMainnet => write!(f, "Ethereum Mainnet: {}", hex),
@@ -302,7 +324,7 @@ mod tests {
             "02174f20", "02b5a4d6", "00000000", "01000000",
             "02000000", "ffffffff", "00ce98c4", "00d5beb0",
             "0022af98", "03c38e67", "02a75f2c", "026776fa",
-            "00b4f6c5", "0030d6b5",
+            "00b4f6c5", "0030d6b5", "01840435",
         ]
         .iter()
         .map(|ref hex| hex::decode(hex).unwrap())

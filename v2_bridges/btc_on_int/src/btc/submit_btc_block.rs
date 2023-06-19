@@ -84,7 +84,7 @@ pub fn submit_btc_block_to_core<D: DatabaseInterface>(db: &D, block_json_string:
         .and_then(get_btc_output_as_string)
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use std::str::FromStr;
 
@@ -111,7 +111,7 @@ mod tests {
 
     #[test]
     fn should_submit_btc_blocks_to_core() {
-        // Init the BTC common...
+        // Init the BTC core...
         let btc_pk = "93GJ65qHNjGFHzQVTzEEAdBS7vMxe3XASfWE8RUASSfd3EtfmzP";
         let db = get_test_database();
         let btc_db_utils = BtcDbUtils::new(&db);
@@ -140,7 +140,7 @@ mod tests {
             .put_btc_pub_key_slice_in_db(&btc_pk.to_public_key_slice())
             .unwrap();
 
-        // Init the ETH common...
+        // Init the ETH core...
         let eth_block_0 = get_sample_int_submission_material_json_str_n(0);
         let eth_state = EthState::init(&db);
         let eth_chain_id = 3;
@@ -271,5 +271,62 @@ mod tests {
         assert_eq!(utxo_nonce, 1);
         let utxo = get_first_utxo_and_value(&db).unwrap();
         assert_eq!(utxo.value, 5042);
+    }
+}
+
+#[cfg(all(test, feature = "ltc"))]
+mod tests {
+    use common::test_utils::get_test_database;
+    use common_btc::init_btc_core;
+    use common_eth::{convert_hex_to_eth_address, EthState};
+
+    use super::*;
+    use crate::{
+        int::init_int_core,
+        test_utils::{get_sample_btc_submission_material_json_str_n, get_sample_int_submission_material_json_str_n},
+    };
+
+    #[test]
+    fn should_submit_ltc_blocks_to_core() {
+        let db = get_test_database();
+        let btc_state = BtcState::init(&db);
+        let btc_fee = 100;
+        let btc_difficulty = 1;
+        let btc_network = "Bitcoin";
+        let btc_canon_to_tip_length = 0;
+        let btc_block_0 = get_sample_btc_submission_material_json_str_n(4);
+        init_btc_core(
+            btc_state,
+            &btc_block_0,
+            btc_fee,
+            btc_difficulty,
+            btc_network,
+            btc_canon_to_tip_length,
+        )
+        .unwrap();
+
+        // Init the ETH core...
+        let eth_block_0 = get_sample_int_submission_material_json_str_n(0);
+        let eth_state = EthState::init(&db);
+        let eth_chain_id = 3;
+        let eth_gas_price = 20_000_000_000;
+        let eth_canon_to_tip_length = 3;
+        let ptoken_address_hex = "0x0f513aa8d67820787a8fdf285bfcf967bf8e4b8b";
+        let ptoken_address = convert_hex_to_eth_address(ptoken_address_hex).unwrap();
+        let router_address_hex = "0x88d19e08cd43bba5761c10c588b2a3d85c75041f";
+        let router_address = convert_hex_to_eth_address(router_address_hex).unwrap();
+        init_int_core(
+            eth_state,
+            &eth_block_0,
+            eth_chain_id,
+            eth_gas_price,
+            eth_canon_to_tip_length,
+            &ptoken_address,
+            &router_address,
+        )
+        .unwrap();
+
+        let result = submit_btc_block_to_core(&db, &get_sample_btc_submission_material_json_str_n(5));
+        assert!(result.is_ok());
     }
 }

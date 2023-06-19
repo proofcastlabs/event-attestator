@@ -59,7 +59,7 @@ pub fn filter_out_value_too_low_utxos_from_state<D: DatabaseInterface>(state: Bt
         .and_then(|utxos| state.replace_utxos_and_values(utxos))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::{get_random_num_between, get_test_database};
 

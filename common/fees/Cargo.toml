@@ -3,7 +3,7 @@ name = "fees"
 license = "MIT"
 publish = false
 edition = "2021"
-version = "6.10.2"
+version = "6.10.3"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["defi", "crypto"]
@@ -11,15 +11,19 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
 disable-fees = []
+default = ["bitcoin"]
+ltc = ["litecoin","common_btc/ltc"]
+
 
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
 serde = { workspace = true }
-bitcoin = { workspace = true }
 serde_json = { workspace = true }
 lazy_static = { workspace = true }
 derive_more = { workspace = true }
+bitcoin = { workspace = true, optional = true }
+litecoin = { workspace = true, optional = true }
 
 common = { workspace = true }
 common_btc = { workspace = true }

@@ -1,12 +1,12 @@
 use std::str::FromStr;
 
-use bitcoin::Address as BtcAddress;
 use common::{constants::SUCCESS_JSON, core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_debug_signers::validate_debug_command_signature;
 use function_name::named;
 use serde_json::json;
 
 use crate::{
+    bitcoin_crate_alias::Address as BtcAddress,
     btc_database_utils::BtcDbUtils,
     btc_recipients_and_amounts::BtcRecipientsAndAmounts,
     btc_transaction::create_signed_raw_btc_tx_for_n_input_n_outputs,
@@ -306,7 +306,7 @@ pub fn debug_add_multiple_utxos<D: DatabaseInterface>(
         })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::{get_test_database, DUMMY_DEBUG_COMMAND_SIGNATURE};
 

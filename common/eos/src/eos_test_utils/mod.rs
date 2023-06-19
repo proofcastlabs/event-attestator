@@ -1,6 +1,5 @@
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
-use bitcoin::hashes::{sha256, Hash as HashTrait};
 use common::{
     errors::AppError,
     test_utils::get_sample_message_to_sign_bytes,
@@ -12,6 +11,7 @@ use secp256k1::Message as Secp256k1Message;
 use serde::{Deserialize, Serialize};
 
 use crate::{
+    bitcoin_crate_alias::hashes::{sha256, Hash as HashTrait},
     core_initialization::EosInitJson,
     eos_action_proofs::{EosActionProof, EosActionProofs},
     eos_action_receipt::{AuthSequence, EosActionReceipt},

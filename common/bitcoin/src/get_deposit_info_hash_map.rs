@@ -20,7 +20,7 @@ pub fn get_deposit_info_hash_map_and_put_in_state<D: DatabaseInterface>(state: B
         .and_then(|hash_map| state.add_deposit_info_hash_map(hash_map))
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::get_sample_btc_block_and_id;

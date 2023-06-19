@@ -3,7 +3,6 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     traits::{DatabaseInterface, Serdable},
     types::Result,
@@ -14,7 +13,10 @@ use common_eth::{EthDbUtilsExt, EthState};
 use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
-use crate::int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos};
+use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
+    int::{BtcOnIntBtcTxInfo, BtcOnIntBtcTxInfos},
+};
 
 make_output_structs!(Int, Btc);
 

@@ -5,10 +5,11 @@ use common::{
 };
 
 use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
     btc_block::{BtcBlockAndId, BtcBlockInDbFormat},
     btc_database_utils::BtcDbUtils,
     btc_submission_material::{BtcSubmissionMaterial, BtcSubmissionMaterialJson},
-    btc_types::{BtcTransaction, BtcTransactions},
+    btc_types::BtcTransactions,
     deposit_address_info::{DepositInfoHashMap, DepositInfoList},
     utxo_manager::BtcUtxosAndValues,
 };
@@ -292,7 +293,7 @@ impl<'a, D: DatabaseInterface> BtcState<'a, D> {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::{errors::AppError, test_utils::get_test_database};
 

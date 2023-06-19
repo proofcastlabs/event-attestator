@@ -51,7 +51,7 @@ pub fn maybe_account_for_fees<D: DatabaseInterface>(state: EosState<D>) -> Resul
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

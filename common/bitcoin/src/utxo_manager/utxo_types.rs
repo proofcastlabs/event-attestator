@@ -1,10 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::{
-    blockdata::transaction::TxIn as BtcUtxo,
-    hash_types::Txid,
-    hashes::{sha256d, Hash},
-};
 use common::{
     errors::AppError,
     traits::Serdable,
@@ -15,6 +10,11 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::TxIn as BtcUtxo,
+        hash_types::Txid,
+        hashes::{sha256d, Hash},
+    },
     btc_utils::{deserialize_btc_utxo, serialize_btc_utxo},
     deposit_address_info::DepositAddressInfoJson,
 };
@@ -173,7 +173,7 @@ impl BtcUtxoAndValueJson {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::{get_sample_p2sh_utxo_and_value, get_sample_utxo_and_values};

@@ -1,4 +1,3 @@
-use bitcoin::{hashes::Hash, network::constants::Network as BtcNetwork, BlockHash};
 use common::{
     constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
     errors::AppError,
@@ -8,7 +7,12 @@ use common::{
 };
 use common_chain_ids::BtcChainId;
 
+#[cfg(feature = "ltc")]
+use crate::bitcoin_crate_alias::network::constants::Network as BtcNetwork;
+#[cfg(not(feature = "ltc"))]
+use crate::bitcoin_crate_alias::Network as BtcNetwork;
 use crate::{
+    bitcoin_crate_alias::{hashes::Hash, BlockHash},
     btc_block::BtcBlockInDbFormat,
     btc_types::BtcPubKeySlice,
     btc_utils::{convert_btc_address_to_bytes, convert_bytes_to_btc_address, convert_bytes_to_btc_pub_key_slice},
@@ -99,6 +103,7 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
         )
     }
 
+    #[cfg(not(feature = "ltc"))]
     pub fn get_btc_network_from_db(&self) -> Result<BtcNetwork> {
         self.db
             .get(self.get_btc_network_key(), MIN_DATA_SENSITIVITY_LEVEL)
@@ -106,6 +111,25 @@ impl<'a, D: DatabaseInterface> BtcDbUtils<'a, D> {
             .map(|chain_id| chain_id.to_btc_network())
     }
 
+    #[cfg(feature = "ltc")]
+    pub fn get_btc_network_from_db(&self) -> Result<BtcNetwork> {
+        // NOTE: We don't support any other Litecoin networks, and thus use this value.
+        Ok(BtcNetwork::Bitcoin)
+    }
+
+    #[cfg(feature = "ltc")]
+    pub fn put_btc_network_in_db(&self, network: BtcNetwork) -> Result<()> {
+        // FIXME should not be allowed to change once set!
+        info!("✔ Adding BTC '{}' network to database...", network);
+        self.get_db().put(
+            self.get_btc_network_key(),
+            // NOTE: We only support Litecoin mainnet
+            BtcChainId::Bitcoin.to_bytes(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
+    #[cfg(not(feature = "ltc"))]
     pub fn put_btc_network_in_db(&self, network: BtcNetwork) -> Result<()> {
         // FIXME should not be allowed to change once set!
         info!("✔ Adding BTC '{}' network to database...", network);
@@ -369,7 +393,7 @@ pub fn end_btc_db_transaction<D: DatabaseInterface>(state: BtcState<D>) -> Resul
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use common::test_utils::get_test_database;
 

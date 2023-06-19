@@ -1,6 +1,5 @@
 use std::str::FromStr;
 
-use bitcoin::{blockdata::transaction::Transaction as BtcTransaction, util::address::Address as BtcAddress};
 use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
@@ -31,7 +30,13 @@ use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use serde::{Deserialize, Serialize};
 
-use crate::utils::convert_wei_to_satoshis;
+use crate::{
+    bitcoin_crate_alias::{
+        blockdata::transaction::Transaction as BtcTransaction,
+        util::address::Address as BtcAddress,
+    },
+    utils::convert_wei_to_satoshis,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize, Constructor)]
 pub struct BtcOnEthBtcTxInfo {

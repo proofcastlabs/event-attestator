@@ -2,20 +2,25 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.0.2"
+version = "1.1.0"
 readme = "README.md"
 rust-version = "1.56"
 name = "safe_addresses"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
+[features]
+ltc = ["litecoin"]
+default = ["bitcoin"]
+
 [dependencies]
 log = { workspace = true }
-bitcoin = { workspace = true }
 eos-chain = { workspace = true }
 lazy_static = { workspace = true }
 rust-algorand = { workspace = true }
 ethereum-types = { workspace = true }
+bitcoin = { workspace = true, optional = true }
+litecoin = { workspace = true, optional = true }
 
 common = { workspace = true }
 

@@ -1,18 +1,10 @@
 use std::str::FromStr;
 
-pub use bitcoin::{
-    blockdata::{
-        block::{Block as BtcBlock, BlockHeader as BtcBlockHeader},
-        transaction::Transaction as BtcTransaction,
-    },
-    consensus::encode::deserialize as btc_deserialize,
-    hashes::sha256d,
-    util::address::Address as BtcAddress,
-};
 use common::{errors::AppError, traits::DatabaseInterface, types::Result};
 use serde::Deserialize;
 
 use crate::{
+    bitcoin_crate_alias::blockdata::{block::Block as BtcBlock, transaction::Transaction as BtcTransaction},
     btc_block::{BtcBlockAndId, BtcBlockJson},
     btc_utils::convert_hex_tx_to_btc_transaction,
     deposit_address_info::DepositAddressInfoJsonList,
@@ -105,7 +97,7 @@ impl FromStr for BtcSubmissionMaterial {
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "ltc")))]
 mod tests {
     use super::*;
     use crate::test_utils::{get_sample_btc_block_n, get_sample_btc_submission_material_json_string};

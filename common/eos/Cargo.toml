@@ -10,7 +10,9 @@ keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
+ltc = ["litecoin"]
 non-validating = []
+default = ["bitcoin"]
 
 [dependencies]
 hex = { workspace = true }
@@ -18,7 +20,6 @@ log = { workspace = true }
 paste = { workspace = true }
 serde = { workspace = true }
 chrono = { workspace = true }
-bitcoin = { workspace = true }
 rustc-hex = { workspace = true }
 eos-chain = { workspace = true }
 secp256k1 = { workspace = true }
@@ -27,6 +28,8 @@ lazy_static = { workspace = true }
 derive_more = { workspace = true }
 tiny-keccak = { workspace = true }
 function_name = { workspace = true }
+bitcoin = { workspace = true, optional = true }
+litecoin = { workspace = true, optional = true }
 
 common = { workspace = true }
 common_chain_ids = { workspace = true }

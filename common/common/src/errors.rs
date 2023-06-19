@@ -43,6 +43,10 @@ quick_error! {
             from()
             display("✘ Base58 error: {}", err)
         }
+        LitecoinBase58Error(err: litecoin::util::base58::Error) {
+            from()
+            display("litecoin base58 error: {}", err)
+        }
         SerdeJsonError(err: serde_json::Error) {
             from()
             display("✘ Serde-Json error: {}", err)
@@ -87,9 +91,17 @@ quick_error! {
             from()
             display("✘ Bitcoin error: {}", err)
         }
+        LitecoinEncodeError(err: litecoin::consensus::encode::Error) {
+            from()
+            display("litecoin encoding error: {}", err)
+        }
         BitcoinAddressError(err: bitcoin::util::address::Error) {
             from()
             display("✘ Bitcoin address error: {}", err)
+        }
+        LitecoinAddressError(err: litecoin::util::address::Error) {
+            from()
+            display("litecoin address error: {}", err)
         }
         BitcoinScriptError(err: bitcoin::blockdata::script::Error) {
             from()
@@ -98,7 +110,16 @@ quick_error! {
         BitcoinKeyError(err: bitcoin::util::key::Error) {
             from()
             display("✘ Bitcoin key error: {}", err)
-        }        EosPrimitivesNamesError(err: eos_chain::ParseNameError) {
+        }
+        LitecoinKeyError(err: litecoin::util::key::Error) {
+            from()
+            display("litecoin key error: {}", err)
+        }
+        LitecoinError(err: litecoin::Error) {
+            from()
+            display("litecoin error: {}", err)
+        }
+        EosPrimitivesNamesError(err: eos_chain::ParseNameError) {
             from()
             display("✘ EOS chain names error: {}", err)
         }

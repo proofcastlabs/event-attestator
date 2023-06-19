@@ -1,6 +1,5 @@
 use std::time::{SystemTime, UNIX_EPOCH};
 
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     traits::{DatabaseInterface, Serdable},
     types::Result,
@@ -9,7 +8,10 @@ use common_btc::{get_hex_tx_from_signed_btc_tx, BtcDbUtils, BtcTransactions};
 use common_eth::{EthDbUtilsExt, EthState};
 use serde::{Deserialize, Serialize};
 
-use crate::eth::btc_tx_info::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos};
+use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
+    eth::btc_tx_info::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos},
+};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct BtcTxInfo {

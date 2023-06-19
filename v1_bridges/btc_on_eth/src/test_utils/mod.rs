@@ -1,13 +1,13 @@
 #![cfg(test)]
 use std::{fs::read_to_string, path::Path, str::FromStr};
 
-use bitcoin::{hashes::Hash, Txid};
 use common::types::Result;
 use common_btc::{BtcBlockAndId, MINIMUM_REQUIRED_SATOSHIS};
 use common_eth::{EthLog, EthReceipt, EthSubmissionMaterial};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 
 use crate::{
+    bitcoin_crate_alias::{hashes::Hash, Txid},
     btc::{BtcOnEthEthTxInfo, BtcOnEthEthTxInfos},
     eth::{BtcOnEthBtcTxInfo, BtcOnEthBtcTxInfos},
     utils::convert_satoshis_to_wei,

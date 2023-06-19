@@ -1,4 +1,3 @@
-use bitcoin::blockdata::transaction::Transaction as BtcTransaction;
 use common::{
     traits::{DatabaseInterface, Serdable},
     types::Result,
@@ -13,7 +12,10 @@ use common_btc::{
 };
 use common_eth::EthState;
 
-use crate::eth::btc_tx_info::BtcOnEthBtcTxInfos;
+use crate::{
+    bitcoin_crate_alias::blockdata::transaction::Transaction as BtcTransaction,
+    eth::btc_tx_info::BtcOnEthBtcTxInfos,
+};
 
 pub fn extract_change_utxo_from_btc_tx_and_save_in_db<D: DatabaseInterface>(
     db: &D,
