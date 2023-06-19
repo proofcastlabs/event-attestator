@@ -1130,7 +1130,7 @@ dependencies = [
 
 [[package]]
 name = "ethereum"
-version = "6.10.3"
+version = "6.11.0"
 dependencies = [
  "chain_ids",
  "common",
