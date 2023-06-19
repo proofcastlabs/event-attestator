@@ -1,5 +1,4 @@
 [package]
-name = "perc20-on-eos"
 edition = "2021"
 version = "2.1.2"
 rust-version = "1.56"
