@@ -35,7 +35,7 @@ impl IntOnEvmIntTxInfos {
 
     fn is_log_int_on_evm_redeem(log: &EthLog, dictionary: &EthEvmTokenDictionary) -> Result<bool> {
         let token_is_supported = dictionary.is_evm_token_supported(&log.address);
-        let log_contains_topic = Self::log_contains_topic(&log);
+        let log_contains_topic = Self::log_contains_topic(log);
         debug!("✔ Log is supported: {}", token_is_supported);
         debug!("✔ Log has correct topic: {}", log_contains_topic);
         Ok(token_is_supported && log_contains_topic)

@@ -52,8 +52,8 @@ impl IntOnEvmIntTxInfos {
                     // This core will filter for some v1 events in order to facilitate migration from v1 to v2
                     // of some legacy bridges which do not have upgradeable smart contracts.
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
-                    let origin_chain_id = Self::get_origin_chain_id(&log, &event_params)?;
-                    let destination_chain_id = Self::get_destination_chain_id(&log, &event_params)?;
+                    let origin_chain_id = Self::get_origin_chain_id(log, &event_params)?;
+                    let destination_chain_id = Self::get_destination_chain_id(log, &event_params)?;
                     let tx_info = IntOnEvmIntTxInfo {
                         origin_chain_id,
                         destination_chain_id,
