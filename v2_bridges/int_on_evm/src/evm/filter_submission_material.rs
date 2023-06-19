@@ -17,6 +17,49 @@ use crate::{
     evm::int_tx_info::IntOnEvmIntTxInfos,
 };
 
+#[derive(Debug, Default)]
+pub struct RelevantLogs {
+    logs: EthLogs,
+    burn_logs: EthLogs,
+}
+
+impl RelevantLogs {
+    pub fn logs(&self) -> EthLogs {
+        self.logs.clone()
+    }
+
+    pub fn burn_logs(&self) -> EthLogs {
+        self.burn_logs.clone()
+    }
+
+    fn new(all_logs: &EthLogs) -> Result<Self> {
+        let (burn_logs, logs) = all_logs.iter().fold((vec![], vec![]), |mut tuple, log| {
+            if log.topics[0] == *ERC_777_BURN_EVENT_TOPIC {
+                tuple.0.push(log.clone())
+            } else {
+                tuple.1.push(log.clone())
+            };
+            tuple
+        });
+
+        let n_logs = logs.len();
+        let n_burn_logs = burn_logs.len();
+
+        if n_logs != n_burn_logs {
+            return Err(format!("relevant logs ({n_logs}) does not match number of burn logs {n_burn_logs}").into());
+        }
+
+        Ok(Self {
+            logs: EthLogs::new(logs),
+            burn_logs: EthLogs::new(burn_logs),
+        })
+    }
+
+    fn len(&self) -> usize {
+        self.logs.len()
+    }
+}
+
 impl IntOnEvmIntTxInfos {
     fn log_contains_topic(log: &EthLog) -> bool {
         debug!("checking log contains relevant topic...");
