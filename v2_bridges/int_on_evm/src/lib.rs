@@ -13,6 +13,7 @@ mod get_enclave_state;
 mod get_latest_block_numbers;
 mod int;
 mod test_utils;
+mod v1_addresses;
 
 pub use common_database_utils::{debug_get_key_from_db, debug_set_key_in_db_to_value};
 pub use common_debug_signers::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer};

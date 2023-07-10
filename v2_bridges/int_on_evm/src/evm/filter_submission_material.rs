@@ -16,10 +16,7 @@ use common_eth::{
 };
 use ethereum_types::U256;
 
-use crate::{
-    constants::{PLTC_ADDRESS, PTLOS_ADDRESS},
-    evm::int_tx_info::IntOnEvmIntTxInfos,
-};
+use crate::{evm::int_tx_info::IntOnEvmIntTxInfos, v1_addresses::V1Addresses};
 
 #[derive(Debug, Default)]
 pub struct RelevantLogs {
@@ -98,14 +95,12 @@ impl RelevantLogs {
 impl IntOnEvmIntTxInfos {
     fn log_contains_topic(log: &EthLog) -> bool {
         debug!("checking log contains relevant topic...");
+
         if log.topics[0] == *ERC_777_BURN_EVENT_TOPIC {
+            debug!("burn event detected");
             true
-        } else if log.address == *PTLOS_ADDRESS {
-            warn!("pTLOS redeem detected - checking for v1 event topics");
-            log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
-                || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
-        } else if log.address == *PLTC_ADDRESS {
-            warn!("pLTC redeem detected - checking for v1 event topics");
+        } else if let Ok(a) = V1Addresses::try_from(&log.address) {
+            warn!("v1 {a} redeem detected - checking for v1 event topics");
             log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA)
                 || log.contains_topic(&ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA)
         } else {
