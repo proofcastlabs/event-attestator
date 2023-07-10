@@ -4,18 +4,16 @@ use common_metadata::MetadataChainId;
 use ethereum_types::Address as EthAddress;
 
 use crate::{
-    constants::{PLTC_ADDRESS, PTLOS_ADDRESS},
     evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos},
+    v1_addresses::V1Addresses,
 };
 
 impl IntOnEvmIntTxInfos {
     fn get_destination_chain_id(log: &EthLog, event_params: &Erc777RedeemEvent) -> Result<MetadataChainId> {
-        if log.address == *PTLOS_ADDRESS {
-            warn!("pTelos peg out detected, defaulting to TELOS mainnet as destination chain ID");
-            Ok(MetadataChainId::TelosMainnet)
-        } else if log.address == *PLTC_ADDRESS {
-            warn!("pLTC peg out detected, defaulting to LTC mainnet as destination chain ID");
-            Ok(MetadataChainId::LitecoinMainnet)
+        if let Ok(a) = V1Addresses::try_from(&log.address) {
+            let id = a.to_destination_chain_id();
+            warn!("{a} peg out detected, defaulting to {id} as destination chain ID");
+            Ok(id)
         } else {
             // NOTE This will error for legacy events that are not explicitly handled above, because
             // there will be no destination chain ID in the event log.
@@ -24,12 +22,10 @@ impl IntOnEvmIntTxInfos {
     }
 
     fn get_origin_chain_id(log: &EthLog, event_params: &Erc777RedeemEvent) -> Result<MetadataChainId> {
-        if log.address == *PTLOS_ADDRESS {
-            warn!("pTelos peg out detected, defaulting to ETH mainnet as origin chain ID");
-            Ok(MetadataChainId::EthereumMainnet)
-        } else if log.address == *PLTC_ADDRESS {
-            warn!("pLTC peg out detected, defaulting to ETH mainnet as origin chain ID");
-            Ok(MetadataChainId::EthereumMainnet)
+        if let Ok(a) = V1Addresses::try_from(&log.address) {
+            let id = a.to_origin_chain_id();
+            warn!("{a} peg out detected, defaulting to {id} as origin chain ID");
+            Ok(id)
         } else {
             // NOTE This will error for legacy events that are not explicitly handled above, because
             // there will be no destination chain ID in the event log.
