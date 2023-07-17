@@ -97,6 +97,19 @@ impl IntOnEosIntTxInfo {
                     // the eos addresses in the dictionary. That would however require hard coding
                     // addresses which is less than ideal.
                     match origin_chain_id {
+                        EosChainId::TelosMainnet => {
+                            match eos_address.as_ref() {
+                                "eth.ptokens" => {
+                                    warn!("pWETH on TELOS v1 redeem action detected, using ETH mainnet as destination chain ID");
+                                    Ok(MetadataChainId::EthereumMainnet)
+                                },
+                                "usdt.ptokens" => {
+                                    warn!("pUSDT on TELOS v1 redeem action detected, using ETH mainnet as destination chain ID");
+                                    Ok(MetadataChainId::EthereumMainnet)
+                                },
+                                _ => Err(format!("cannot handle TELOS v1 redeem action from address: {eos_address}").into()),
+                            }
+                        },
                         EosChainId::UltraMainnet => {
                             // NOTE: Ultra currently has some restrictions meaning `redeem2` actions cannot be used
                             // when upgrading from a v1 bridge. Instead, we listen for _both_ v1 and v2 actions in
