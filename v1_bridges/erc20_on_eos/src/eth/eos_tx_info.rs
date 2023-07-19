@@ -183,7 +183,11 @@ pub struct Erc20OnEosEosTxInfos(pub Vec<Erc20OnEosEosTxInfo>);
 
 impl Erc20OnEosEosTxInfos {
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self)?)
+        if self.is_empty() {
+            Ok(vec![])
+        } else {
+            Ok(serde_json::to_vec(&self)?)
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
@@ -482,6 +486,16 @@ mod tests {
             user_data,
             EthChainId::Mainnet,
         )
+    }
+
+    #[test]
+    fn should_serde_empty_eth_tx_info_correctly() {
+        let info = Erc20OnEosEosTxInfos::default();
+        let result = info.to_bytes().unwrap();
+        let expected_result: Bytes = vec![];
+        assert_eq!(result, expected_result);
+        let result_2 = Erc20OnEosEosTxInfos::from_bytes(&result).unwrap();
+        assert_eq!(result_2, info);
     }
 
     #[test]

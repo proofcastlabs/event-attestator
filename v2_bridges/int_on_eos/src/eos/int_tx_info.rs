@@ -15,7 +15,11 @@ pub struct IntOnEosIntTxInfos(pub Vec<IntOnEosIntTxInfo>);
 
 impl IntOnEosIntTxInfos {
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(self)?)
+        if self.is_empty() {
+            Ok(vec![])
+        } else {
+            Ok(serde_json::to_vec(self)?)
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
@@ -61,5 +65,20 @@ impl IntOnEosIntTxInfos {
                 .map(|info| info.global_sequence)
                 .collect::<Vec<GlobalSequence>>(),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_serde_empty_int_tx_info_correctly() {
+        let info = IntOnEosIntTxInfos::default();
+        let result = info.to_bytes().unwrap();
+        let expected_result: Bytes = vec![];
+        assert_eq!(result, expected_result);
+        let result_2 = IntOnEosIntTxInfos::from_bytes(&result).unwrap();
+        assert_eq!(result_2, info);
     }
 }

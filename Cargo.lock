@@ -326,7 +326,7 @@ checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 
 [[package]]
 name = "btc_on_eos"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -908,7 +908,7 @@ dependencies = [
 
 [[package]]
 name = "eos_on_eth"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "chain_ids",
  "common",
@@ -935,7 +935,7 @@ dependencies = [
 
 [[package]]
 name = "eos_on_int"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "chain_ids",
  "common",
@@ -971,7 +971,7 @@ dependencies = [
 
 [[package]]
 name = "erc20_on_eos"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "chain_ids",
  "common",
@@ -1873,7 +1873,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_eos"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "chain_ids",
  "common",
