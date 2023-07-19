@@ -264,7 +264,11 @@ pub struct EosOnEthEthTxInfos(pub Vec<EosOnEthEthTxInfo>);
 
 impl EosOnEthEthTxInfos {
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self)?)
+        if self.is_empty() {
+            Ok(vec![])
+        } else {
+            Ok(serde_json::to_vec(&self)?)
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
@@ -491,6 +495,16 @@ mod tests {
 
     fn get_sample_eos_on_eth_eos_tx_infos() -> EosOnEthEthTxInfos {
         EosOnEthEthTxInfos::new(vec![get_sample_eos_on_eth_eos_tx_info()])
+    }
+
+    #[test]
+    fn should_serde_empty_eos_tx_info_correctly() {
+        let info = EosOnEthEthTxInfos::default();
+        let result = info.to_bytes().unwrap();
+        let expected_result: Bytes = vec![];
+        assert_eq!(result, expected_result);
+        let result_2 = EosOnEthEthTxInfos::from_bytes(&result).unwrap();
+        assert_eq!(result_2, info);
     }
 
     #[test]
