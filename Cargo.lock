@@ -935,7 +935,7 @@ dependencies = [
 
 [[package]]
 name = "eos_on_int"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "chain_ids",
  "common",
