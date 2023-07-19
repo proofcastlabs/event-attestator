@@ -15,7 +15,11 @@ pub struct IntOnEosEosTxInfos(pub Vec<IntOnEosEosTxInfo>);
 
 impl IntOnEosEosTxInfos {
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(self)?)
+        if self.is_empty() {
+            Ok(vec![])
+        } else {
+            Ok(serde_json::to_vec(self)?)
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
@@ -76,5 +80,20 @@ IntOnEosEosTxInfo: {{
             self.destination_chain_id,
             convert_bytes_to_string(&self.user_data),
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_serde_empty_eos_tx_info_correctly() {
+        let info = IntOnEosEosTxInfos::default();
+        let result = info.to_bytes().unwrap();
+        let expected_result: Bytes = vec![];
+        assert_eq!(result, expected_result);
+        let result_2 = IntOnEosEosTxInfos::from_bytes(&result).unwrap();
+        assert_eq!(result_2, info);
     }
 }
