@@ -908,7 +908,7 @@ dependencies = [
 
 [[package]]
 name = "eos_on_eth"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "chain_ids",
  "common",
