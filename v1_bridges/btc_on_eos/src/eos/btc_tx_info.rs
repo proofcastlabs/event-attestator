@@ -229,7 +229,7 @@ mod tests {
     use crate::test_utils::{get_sample_btc_tx_info, get_sample_btc_tx_infos, get_sample_eos_submission_material_n};
 
     #[test]
-    fn should_serde_empty_tx_info_correctly() {
+    fn should_serde_empty_btc_tx_info_correctly() {
         let info = BtcOnEosBtcTxInfos::default();
         let result = info.to_bytes().unwrap();
         let expected_result: Bytes = vec![];

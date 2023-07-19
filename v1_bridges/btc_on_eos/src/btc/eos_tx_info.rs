@@ -89,7 +89,11 @@ impl BtcOnEosEosTxInfos {
     }
 
     pub fn to_bytes(&self) -> Result<Bytes> {
-        Ok(serde_json::to_vec(&self)?)
+        if self.is_empty() {
+            Ok(vec![])
+        } else {
+            Ok(serde_json::to_vec(&self)?)
+        }
     }
 
     pub fn from_bytes(bytes: &[Byte]) -> Result<Self> {
@@ -304,6 +308,16 @@ mod tests {
 
     use super::*;
     use crate::test_utils::get_sample_btc_on_eos_eos_tx_infos;
+
+    #[test]
+    fn should_serde_empty_eos_tx_info_correctly() {
+        let info = BtcOnEosEosTxInfos::default();
+        let result = info.to_bytes().unwrap();
+        let expected_result: Bytes = vec![];
+        assert_eq!(result, expected_result);
+        let result_2 = BtcOnEosEosTxInfos::from_bytes(&result).unwrap();
+        assert_eq!(result_2, info);
+    }
 
     #[test]
     fn should_filter_eos_tx_infos() {
