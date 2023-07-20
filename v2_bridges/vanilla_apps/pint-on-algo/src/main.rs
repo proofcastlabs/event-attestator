@@ -196,7 +196,8 @@ fn program() -> anyhow::Result<String> {
             )?)
         },
         CliArgs {
-            cmd_optInToAsset: true, ..
+            cmd_debugOptInToAsset: true,
+            ..
         } => {
             info!("✔ Getting asset opt-in transaction...");
             Ok(debug_opt_in_to_asset(
@@ -207,7 +208,8 @@ fn program() -> anyhow::Result<String> {
             )?)
         },
         CliArgs {
-            cmd_optInToApp: true, ..
+            cmd_debugOptInToApp: true,
+            ..
         } => {
             info!("✔ Getting application opt-in transaction...");
             Ok(debug_opt_in_to_application(

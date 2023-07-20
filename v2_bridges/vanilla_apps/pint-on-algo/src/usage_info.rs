@@ -15,8 +15,6 @@ Usage:  pint-on-algo [--help]
         pint-on-algo [--version]
         pint-on-algo getEnclaveState
         pint-on-algo getLatestBlockNumbers
-        pint-on-algo optInToApp <appId> <firstValid>
-        pint-on-algo optInToAsset <assetId> <firstValid>
         pint-on-algo submitIntBlock (<blockJson> | --file=<path>)
         pint-on-algo submitIntBlocks (<blockJson> | --file=<path>)
         pint-on-algo submitAlgoBlock (<blockJson> | --file=<path>)
@@ -30,11 +28,13 @@ Usage:  pint-on-algo [--help]
         pint-on-algo debugSetAlgoAccountNonce <nonce> [--sig=<hex>]
         pint-on-algo debugSetAlgoAccountNonce <nonce> [--sig=<hex>]
         pint-on-algo debugAddSupportedToken <evmAddress> [--sig=<hex>]
-        pint-on-algo debugSetKeyInDbToValue <key> <value> [--sig=<hex>]
         pint-on-algo debugRemoveDebugSigner <evmAddress> [--sig=<hex>]
+        pint-on-algo debugSetKeyInDbToValue <key> <value> [--sig=<hex>]
+        pint-on-algo debugOptInToApp <appId> <firstValid> [--sig=<hex>]
         pint-on-algo debugAddDebugSigner <name> <evmAddress> [--sig=<hex>]
         pint-on-algo debugRemoveDictionaryEntry <evmAddress> [--sig=<hex>]
         pint-on-algo debugAddDebugSigners <debugSignersJson> [--sig=<hex>]
+        pint-on-algo debugOptInToAsset <assetId> <firstValid> [--sig=<hex>]
         pint-on-algo debugReprocessIntBlock (<blockJson> | --file=<path>) [--sig=<hex>]
         pint-on-algo debugReprocessAlgoBlock (<blockJson> | --file=<path>) [--sig=<hex>]
         pint-on-algo debugAddDictionaryEntry (<entryJson> | --file=<path>) [--sig=<hex>]
@@ -89,8 +89,12 @@ Commands:
     debugResetIntChain                  ❍ Resets the INT chain in the encrypted database using the supplied block
                                           as a new starting point.
 
-    optInToAsset                        ❍ Returns a transaction which allows the enclave ALGO address to receive an
+    debugOptInToAsset                   ❍ Returns a transaction which allows the enclave ALGO address to receive an
                                           asset with the given asset ID.
+
+    debugOptInToApp                     ❍ Returns a transaction which allows the enclave ALGO address to interact
+                                          with the given app.
+
 
     getLatestBlockNumbers               ❍ Returns the current lastest INT & ALGO block numbers from the enclave.
 
