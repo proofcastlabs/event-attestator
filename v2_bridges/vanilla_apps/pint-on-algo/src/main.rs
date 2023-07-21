@@ -318,7 +318,7 @@ fn program() -> anyhow::Result<String> {
                 &cli_args.flag_genesisId,
                 cli_args.flag_fee,
                 cli_args.flag_confs,
-                cli_args.arg_appId,
+                cli_args.flag_appId,
             )?)
         },
         CliArgs {

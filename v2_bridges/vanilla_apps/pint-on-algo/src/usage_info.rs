@@ -19,7 +19,7 @@ Usage:  pint-on-algo [--help]
         pint-on-algo submitIntBlocks (<blockJson> | --file=<path>)
         pint-on-algo submitAlgoBlock (<blockJson> | --file=<path>)
         pint-on-algo encodeAlgoNoteMetadata <metadataChainId> <destinationAddress> [--userData=<hex>]
-        pint-on-algo initializeAlgo (<blockJson> | --file=<path>) [--fee=<u64>] [--confs=<uint>] [--genesisId=<string>]
+        pint-on-algo initializeAlgo (<blockJson> | --file=<path>) [--fee=<u64>] [--confs=<uint>] [--genesisId=<str>] [--appId=<uint>]
         pint-on-algo initializeInt (<vaultAddress> | --vaultAddress=<vaultAddress>) (<routerAddress> | --routerAddress=<routerAddress>) (<blockJson> | --file=<path>) [--chainId=<uint>] [--gasPrice=<uint>] [--confs=<uint>]
         pint-on-algo debugGetAllDbKeys [--sig=<hex>]
         pint-on-algo debugGetKeyFromDb <key> [--sig=<hex>]
@@ -195,8 +195,6 @@ Options:
 
     --fee=<u64>                         ❍ The fee to us for Algorand transactions [default: 1000]
 
-    --genesisId=<string>                ❍ The genesis ID of the network to create Algorand txs for [default: mainnet-v1.0]
-
     --confs=<u64>                       ❍ The number of confirmations required before signing transactions. This affects
 
     --vaultAddress=<hex>                ❍ The INT address of the ERC20 vault smart-contract.
@@ -212,4 +210,6 @@ Options:
     --note=<hex>                        ❍ An optional note to add to Algo transaction [default: 0x]
 
     --sig=<hex>                         ❍ A signature over the encoded debug command you want to run, in hex format.
+
+    --appId=<uint>                      ❍ The ID of an Algorand application.
 ";
