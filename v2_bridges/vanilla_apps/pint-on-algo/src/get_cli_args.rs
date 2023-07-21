@@ -4,6 +4,7 @@ use int_on_algo::CORE_TYPE;
 make_cli_args_struct!(
     CORE_TYPE;
     flag_fee => u64,
+    flag_appId => u64,
     flag_confs => u64,
     flag_note => String,
     flag_chainId => u64,
