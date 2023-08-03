@@ -121,10 +121,18 @@ mod tests {
     }
 
     #[test]
-    fn should_default_to_safe_address_if_btc_address_malformed() {
+    fn should_default_to_safe_btc_address_if_btc_address_malformed() {
         let s = "not an good adddress";
         let expected_result = SAFE_BTC_ADDRESS.clone();
         let result = safely_convert_str_to_btc_address(s);
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_default_to_safe_ltc_address_if_btc_address_malformed() {
+        let s = "not an good adddress";
+        let expected_result = SAFE_LTC_ADDRESS.clone();
+        let result = safely_convert_str_to_ltc_address(s);
         assert_eq!(result, expected_result);
     }
 
