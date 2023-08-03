@@ -182,7 +182,7 @@ impl MetadataAddress {
             Err(err) => Err(format!("error converting bytes to utf8 in `MetadataAddress`: {}", err).into()),
             Ok(ltc_address_str) => match LtcAddress::from_str(ltc_address_str) {
                 Ok(_) => Self::new(ltc_address_str, &MetadataChainId::LitecoinMainnet),
-                Err(err) => Err(format!("Error converting bytes to BTC address in `MetadataAddress`: {}", err).into()),
+                Err(err) => Err(format!("Error converting bytes to LTC address in `MetadataAddress`: {}", err).into()),
             },
         }
     }
