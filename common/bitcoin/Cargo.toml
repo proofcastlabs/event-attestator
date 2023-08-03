@@ -11,8 +11,8 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
 non-validating = []
+ltc = ["litecoin"]
 default = ["bitcoin"]
-ltc = ["litecoin","common_safe_addresses/ltc"]
 
 [dependencies]
 hex = { workspace = true }
