@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "6.12.0"
+version = "6.13.0"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -330,7 +330,7 @@ version = "1.0.2"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -358,7 +358,7 @@ version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -387,7 +387,7 @@ version = "1.0.1"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -1259,7 +1259,7 @@ version = "6.10.3"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "common",
  "derive_more",
  "hex",
@@ -2141,6 +2141,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 name = "metadata"
 version = "6.11.0"
 dependencies = [
+ "bitcoin 0.29.0",
  "bitcoin 0.29.2",
  "chain_ids",
  "common",
