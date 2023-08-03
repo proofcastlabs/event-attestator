@@ -2,7 +2,7 @@
 use std::str::from_utf8;
 use std::str::FromStr;
 
-use bitcoin::util::address::Address as BtcAddress;
+use bitcoin::Address as BtcAddress;
 #[cfg(test)]
 use common::types::Byte;
 use common::{types::Bytes, utils::strip_hex_prefix, Result};
@@ -11,9 +11,12 @@ use common_safe_addresses::{
     safely_convert_str_to_btc_address,
     safely_convert_str_to_eos_address,
     safely_convert_str_to_eth_address,
+    safely_convert_str_to_ltc_address,
 };
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
+#[cfg(test)]
+use litecoin::Address as LtcAddress;
 use rust_algorand::{AlgorandAddress, AlgorandAppId};
 use serde::{Deserialize, Serialize};
 
@@ -27,14 +30,20 @@ pub struct MetadataAddress {
 
 impl MetadataAddress {
     pub fn new(address: &str, metadata_chain_id: &MetadataChainId) -> Result<Self> {
-        let address = match metadata_chain_id.to_protocol_id() {
+        let parsed_address = match metadata_chain_id.to_protocol_id() {
+            MetadataProtocolId::Bitcoin => {
+                // NOTE: We don't differentiate the MetadataProtocolId for these two chains...
+                if metadata_chain_id == &MetadataChainId::LitecoinMainnet {
+                    info!("✔ Getting `MetadataAddress` for a LTC address...");
+                    safely_convert_str_to_ltc_address(address).to_string()
+                } else {
+                    info!("✔ Getting `MetadataAddress` for a BTC address...");
+                    safely_convert_str_to_btc_address(address).to_string()
+                }
+            },
             MetadataProtocolId::Ethereum => {
                 info!("✔ Getting `MetadataAddress` for an ETH address...");
                 format!("0x{}", hex::encode(safely_convert_str_to_eth_address(address)))
-            },
-            MetadataProtocolId::Bitcoin => {
-                info!("✔ Getting `MetadataAddress` for a BTC address...");
-                safely_convert_str_to_btc_address(address).to_string()
             },
             MetadataProtocolId::Eos => {
                 info!("✔ Getting `MetadataAddress` for an EOS address...");
@@ -52,7 +61,7 @@ impl MetadataAddress {
             },
         };
         let metadata_address = Self {
-            address,
+            address: parsed_address,
             metadata_chain_id: *metadata_chain_id,
         };
         info!("✔ Successfully parsed `metadata_address`: {:?}", metadata_address);
@@ -124,9 +133,15 @@ impl MetadataAddress {
     fn from_bytes(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
         match metadata_chain_id.to_protocol_id() {
             MetadataProtocolId::Eos => Self::from_bytes_for_eos(bytes, metadata_chain_id),
-            MetadataProtocolId::Bitcoin => Self::from_bytes_for_btc(bytes, metadata_chain_id),
             MetadataProtocolId::Ethereum => Self::from_bytes_for_eth(bytes, metadata_chain_id),
             MetadataProtocolId::Algorand => Self::from_bytes_for_algo(bytes, metadata_chain_id),
+            MetadataProtocolId::Bitcoin => {
+                if metadata_chain_id == &MetadataChainId::LitecoinMainnet {
+                    Self::from_bytes_for_ltc(bytes)
+                } else {
+                    Self::from_bytes_for_btc(bytes, metadata_chain_id)
+                }
+            },
         }
     }
 
@@ -151,11 +166,22 @@ impl MetadataAddress {
     }
 
     fn from_bytes_for_btc(bytes: &[Byte], metadata_chain_id: &MetadataChainId) -> Result<Self> {
-        info!("✔ Attempting to create `MetadataAddress` from bytes for EOS...");
+        info!("✔ Attempting to create `MetadataAddress` from bytes for BTC...");
         match from_utf8(bytes) {
             Err(err) => Err(format!("Error converting bytes to utf8 in `MetadataAddress`: {}", err).into()),
             Ok(btc_address_str) => match BtcAddress::from_str(btc_address_str) {
-                Ok(ref btc_address) => Self::new_from_btc_address(btc_address, metadata_chain_id),
+                Ok(ref a) => Self::new_from_btc_address(a, metadata_chain_id),
+                Err(err) => Err(format!("Error converting bytes to BTC address in `MetadataAddress`: {}", err).into()),
+            },
+        }
+    }
+
+    fn from_bytes_for_ltc(bytes: &[Byte]) -> Result<Self> {
+        info!("attempting to create `MetadataAddress` from bytes for LTC...");
+        match from_utf8(bytes) {
+            Err(err) => Err(format!("error converting bytes to utf8 in `MetadataAddress`: {}", err).into()),
+            Ok(ltc_address_str) => match LtcAddress::from_str(ltc_address_str) {
+                Ok(_) => Self::new(ltc_address_str, &MetadataChainId::LitecoinMainnet),
                 Err(err) => Err(format!("Error converting bytes to BTC address in `MetadataAddress`: {}", err).into()),
             },
         }
@@ -259,5 +285,35 @@ mod tests {
         let bytes = metadata_address.to_bytes().unwrap();
         let result = MetadataAddress::from_bytes(&bytes, &metadata_chain_id).unwrap();
         assert_eq!(result, metadata_address);
+    }
+
+    fn get_sample_ltc_address<'a>() -> &'a str {
+        "ltc1qwhpua5f58j3jj6w5t2v4wjlfyndx3ql8ex6a5r"
+    }
+
+    #[test]
+    fn ltc_address_should_pass_validation() {
+        let ltc_address = get_sample_ltc_address();
+        let metadata_chain_id = MetadataChainId::LitecoinMainnet;
+        let result = MetadataAddress::new(ltc_address, &metadata_chain_id).unwrap();
+        let expected_result = MetadataAddress {
+            metadata_chain_id,
+            address: ltc_address.to_string(),
+        };
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_do_ltc_address_bytes_roundtrip() {
+        let ltc_address = get_sample_ltc_address();
+        let id = MetadataChainId::LitecoinMainnet;
+        let a = MetadataAddress::new(ltc_address, &id).unwrap();
+        let bs = a.to_bytes().unwrap();
+        let result = MetadataAddress::from_bytes(&bs, &id).unwrap();
+        let expected_result = MetadataAddress {
+            metadata_chain_id: id,
+            address: ltc_address.to_string(),
+        };
+        assert_eq!(result, expected_result);
     }
 }
