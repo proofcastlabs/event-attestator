@@ -6,33 +6,24 @@ extern crate log;
 
 use std::str::FromStr;
 
-#[cfg(not(feature = "ltc"))]
-use bitcoin as bitcoin_crate_alias;
+use bitcoin::Address as BtcAddress;
 use common::utils::convert_hex_to_eth_address;
 use eos_chain::AccountName as EosAddress;
 use ethereum_types::Address as EthAddress;
-// NOTE: This means we can (relatively) easily make this LTC based instead of BTC.
-#[cfg(feature = "ltc")]
-use litecoin as bitcoin_crate_alias;
+use litecoin::Address as LtcAddress;
 use rust_algorand::AlgorandAddress;
-
-use crate::bitcoin_crate_alias::Address as BtcAddress;
 
 pub const SAFE_EOS_ADDRESS_STR: &str = "safu.ptokens";
 pub const SAFE_EVM_ADDRESS_STR: &str = SAFE_ETH_ADDRESS_STR;
-
-#[cfg(feature = "ltc")]
-pub const SAFE_BTC_ADDRESS_STR: &str = "LYjG4bw9KuikboQqiowXseebzkQu6Ah7pk"; // gitmp01
-
-#[cfg(not(feature = "ltc"))]
+pub const SAFE_LTC_ADDRESS_STR: &str = "LYjG4bw9KuikboQqiowXseebzkQu6Ah7pk";
 pub const SAFE_BTC_ADDRESS_STR: &str = "136CTERaocm8dLbEtzCaFtJJX9jfFhnChK";
-
 pub const SAFE_ETH_ADDRESS_STR: &str = "0x71A440EE9Fa7F99FB9a697e96eC7839B8A1643B8";
 pub const SAFE_ALGO_ADDRESS_STR: &str = "2U3SCPKBJXMBXG2RJFXJ6DS5ZKJBW4DUH55OE6VPRJVWZWGZVOABRZCCTI";
 
 lazy_static! {
     pub static ref SAFE_EOS_ADDRESS: EosAddress = EosAddress::from_str(SAFE_EOS_ADDRESS_STR).unwrap();
     pub static ref SAFE_BTC_ADDRESS: BtcAddress = BtcAddress::from_str(SAFE_BTC_ADDRESS_STR).unwrap();
+    pub static ref SAFE_LTC_ADDRESS: LtcAddress = LtcAddress::from_str(SAFE_LTC_ADDRESS_STR).unwrap();
     pub static ref SAFE_ETH_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_ETH_ADDRESS_STR).unwrap();
     pub static ref SAFE_EVM_ADDRESS: EthAddress = convert_hex_to_eth_address(SAFE_EVM_ADDRESS_STR).unwrap();
     pub static ref SAFE_ALGO_ADDRESS: AlgorandAddress = AlgorandAddress::from_str(SAFE_ALGO_ADDRESS_STR).unwrap();
@@ -56,6 +47,17 @@ pub fn safely_convert_str_to_btc_address(s: &str) -> BtcAddress {
         Err(_) => {
             info!("✘ '{s}' is not a valid BTC address - defaulting to safe BTC address!");
             SAFE_BTC_ADDRESS.clone()
+        },
+    }
+}
+
+pub fn safely_convert_str_to_ltc_address(s: &str) -> LtcAddress {
+    info!("✔ Safely converting str to LTC address...");
+    match LtcAddress::from_str(s) {
+        Ok(address) => address,
+        Err(_) => {
+            info!("✘ '{s}' is not a valid LTC address - defaulting to safe LTC address!");
+            SAFE_LTC_ADDRESS.clone()
         },
     }
 }
@@ -103,7 +105,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(feature = "ltc", ignore)]
     fn should_safely_convert_btc_str_to_btc_address() {
         let s = "bc1qwqdg6squsna38e46795at95yu9atm8azzmyvckulcc7kytlcckxswvvzej";
         let expected_result = BtcAddress::from_str(s).unwrap();
@@ -112,11 +113,10 @@ mod tests {
     }
 
     #[test]
-    #[cfg_attr(not(feature = "ltc"), ignore)]
     fn should_safely_convert_ltc_str_to_ltc_address() {
         let s = "LNUuFferCYjeJNBGV1Y2cKS7T5XCCptpt8";
-        let expected_result = BtcAddress::from_str(s).unwrap();
-        let result = safely_convert_str_to_btc_address(s);
+        let expected_result = LtcAddress::from_str(s).unwrap();
+        let result = safely_convert_str_to_ltc_address(s);
         assert_eq!(result, expected_result);
     }
 
