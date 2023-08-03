@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.0.1"
+version = "1.0.2"
 name = "btc_on_eth"
 readme = "README.md"
 rust-version = "1.56"
@@ -16,7 +16,7 @@ disable-fees = ["common_fees/disable-fees"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eth/non-validating","common_btc/non-validating"]
 # NOTE: Turns this into an `ltc-on-int` core.
-ltc = ["litecoin", "common_btc/ltc", "common_safe_addresses/ltc", "common_fees/ltc", "non-validating"]
+ltc = ["litecoin", "common_btc/ltc", "common_fees/ltc", "non-validating"]
 
 [dependencies]
 hex = { workspace = true }
