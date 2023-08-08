@@ -3,7 +3,7 @@ license = "MIT"
 publish = false
 name = "bitcoin"
 edition = "2021"
-version = "6.12.0"
+version = "6.13.0"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -11,8 +11,8 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
 [features]
 non-validating = []
+ltc = ["litecoin"]
 default = ["bitcoin"]
-ltc = ["litecoin","common_safe_addresses/ltc"]
 
 [dependencies]
 hex = { workspace = true }

@@ -4,8 +4,10 @@ use std::str::FromStr;
 use common::types::{Byte, Bytes, Result};
 use common_chain_ids::BtcChainId;
 use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId};
-
-use crate::btc_utils::convert_str_to_btc_address_or_safe_address;
+#[cfg(not(feature = "ltc"))]
+use common_safe_addresses::safely_convert_str_to_btc_address;
+#[cfg(feature = "ltc")]
+use common_safe_addresses::safely_convert_str_to_ltc_address;
 
 pub trait ToMetadata {
     fn get_user_data(&self) -> Option<Bytes>;
@@ -58,7 +60,7 @@ pub trait ToMetadata {
         Ok(Some(Metadata::new(
             user_data,
             &MetadataAddress::new_from_btc_address(
-                &convert_str_to_btc_address_or_safe_address(&self.get_originating_tx_address())?,
+                &safely_convert_str_to_btc_address(&self.get_originating_tx_address()),
                 &MetadataChainId::from_str(&btc_chain_id.to_string())?,
             )?,
         )))
@@ -70,7 +72,7 @@ pub trait ToMetadata {
         let ma = &MetadataAddress {
             // NOTE: We only support litecoin mainnet
             metadata_chain_id: MetadataChainId::LitecoinMainnet,
-            address: convert_str_to_btc_address_or_safe_address(&self.get_originating_tx_address())?.to_string(),
+            address: safely_convert_str_to_ltc_address(&self.get_originating_tx_address()).to_string(),
         };
         Ok(Some(Metadata::new(user_data, ma)))
     }

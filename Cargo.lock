@@ -212,7 +212,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "6.12.0"
+version = "6.13.0"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -326,11 +326,11 @@ checksum = "771fe0050b883fcc3ea2359b1a96bcfbc090b7116eae7c3c512c7a083fdf23d3"
 
 [[package]]
 name = "btc_on_eos"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -354,11 +354,11 @@ dependencies = [
 
 [[package]]
 name = "btc_on_eth"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -383,11 +383,11 @@ dependencies = [
 
 [[package]]
 name = "btc_on_int"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "chain_ids",
  "common",
  "database_utils",
@@ -1259,7 +1259,7 @@ version = "6.10.3"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.12.0",
+ "bitcoin 6.13.0",
  "common",
  "derive_more",
  "hex",
@@ -2139,8 +2139,9 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "metadata"
-version = "6.11.0"
+version = "6.12.0"
 dependencies = [
+ "bitcoin 0.29.0",
  "bitcoin 0.29.2",
  "chain_ids",
  "common",
@@ -3125,7 +3126,7 @@ checksum = "f91339c0467de62360649f8d3e185ca8de4224ff281f66000de5eb2a77a79041"
 
 [[package]]
 name = "safe_addresses"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",

@@ -18,7 +18,7 @@ use common_eth::{
     EthSubmissionMaterial,
     ERC777_REDEEM_EVENT_TOPIC_V2,
 };
-use common_safe_addresses::safely_convert_str_to_btc_address;
+use common_safe_addresses::{safely_convert_str_to_btc_address, safely_convert_str_to_ltc_address};
 use ethereum_types::Address as EthAddress;
 
 use crate::{
@@ -75,15 +75,21 @@ impl BtcOnIntBtcTxInfos {
                 })
                 .map(|log| {
                     let event_params = Erc777RedeemEvent::from_eth_log(log)?;
+
+                    let recipient = if cfg!(feature = "ltc") {
+                        safely_convert_str_to_ltc_address(&event_params.underlying_asset_recipient).to_string()
+                    } else {
+                        safely_convert_str_to_btc_address(&event_params.underlying_asset_recipient).to_string()
+                    };
+
                     Ok(BtcOnIntBtcTxInfo {
+                        recipient,
                         to: EthAddress::zero(), // NOTE: Because this is a redeem, the token is burnt.
                         from: event_params.redeemer,
                         amount_in_wei: event_params.value,
                         token_address: *erc777_smart_contract_address,
                         originating_tx_hash: receipt.transaction_hash,
                         amount_in_satoshis: convert_wei_to_satoshis(event_params.value),
-                        recipient: safely_convert_str_to_btc_address(&event_params.underlying_asset_recipient)
-                            .to_string(),
                     })
                 })
                 .collect::<Result<Vec<BtcOnIntBtcTxInfo>>>()?,

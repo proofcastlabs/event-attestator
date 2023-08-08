@@ -3,7 +3,7 @@ license = "MIT"
 publish = false
 edition = "2021"
 name = "metadata"
-version = "6.11.0"
+version = "6.12.0"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["defi", "crypto"]
@@ -29,6 +29,7 @@ common_chain_ids = { workspace = true }
 common_safe_addresses = { workspace = true }
 
 [dev-dependencies]
+litecoin = { workspace = true }
 serde_json = { workspace = true }
 simple_logger = { workspace = true }
 
