@@ -99,6 +99,10 @@ impl IntOnEosIntTxInfo {
                     match origin_chain_id {
                         EosChainId::TelosMainnet => {
                             match eos_address.as_ref() {
+                                "btc.ptokens" => {
+                                    warn!("pBTC on TELOS v1 redeem action detected, using BTC mainnet as destination chain ID");
+                                    Ok(MetadataChainId::BitcoinMainnet)
+                                },
                                 "eth.ptokens" => {
                                     warn!("pWETH on TELOS v1 redeem action detected, using ETH mainnet as destination chain ID");
                                     Ok(MetadataChainId::EthereumMainnet)
