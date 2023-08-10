@@ -35,6 +35,7 @@ pub use self::{
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
     },
+    weth::WethDepositEvents,
 };
 
 #[cfg(test)]
