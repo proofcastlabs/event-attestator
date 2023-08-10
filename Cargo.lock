@@ -383,7 +383,7 @@ dependencies = [
 
 [[package]]
 name = "btc_on_int"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -935,7 +935,7 @@ dependencies = [
 
 [[package]]
 name = "eos_on_int"
-version = "1.0.3"
+version = "1.1.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -1023,7 +1023,7 @@ dependencies = [
 
 [[package]]
 name = "erc20_on_int"
-version = "1.0.2"
+version = "1.1.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -1130,7 +1130,7 @@ dependencies = [
 
 [[package]]
 name = "ethereum"
-version = "6.11.1"
+version = "6.12.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -1846,7 +1846,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_algo"
-version = "1.0.3"
+version = "1.1.0"
 dependencies = [
  "algorand",
  "chain_ids",
@@ -1900,7 +1900,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_evm"
-version = "1.5.0"
+version = "1.6.0"
 dependencies = [
  "chain_ids",
  "common",

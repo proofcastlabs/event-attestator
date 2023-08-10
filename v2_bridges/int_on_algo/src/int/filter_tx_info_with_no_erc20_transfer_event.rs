@@ -1,6 +1,6 @@
 use crate::int::algo_tx_info::{IntOnAlgoAlgoTxInfo, IntOnAlgoAlgoTxInfos};
 
-impl_to_erc20_token_event!(
+impl_to_relevant_events!(
     IntOnAlgoAlgoTxInfo,
     native_token_amount,
     vault_address,

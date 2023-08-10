@@ -1,4 +1,19 @@
 #[macro_export]
+macro_rules! make_topics {
+    ($($name:ident => $hex:expr),* $(,)?) => {
+        lazy_static! {
+            $(
+                pub static ref $name: ethereum_types::H256 = {
+                    ethereum_types::H256::from_slice(&hex::decode($hex)
+                        .expect(&format!("invalid hex in `{}`!", stringify!($name))),
+                    )
+                };
+            )*
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! impl_to_erc20_token_event {
     ($path:path, $value:ident, $to:ident, $from:ident, $token_address:ident) => {
         use $crate::{Erc20TokenTransferEvent, ToErc20TokenTransferEvent};
@@ -8,6 +23,27 @@ macro_rules! impl_to_erc20_token_event {
                 Erc20TokenTransferEvent::new(self.$value, self.$to, self.$from, self.$token_address)
             }
         }
+    };
+}
+
+#[macro_export]
+macro_rules! impl_to_weth_deposit_event {
+    ($path:path, $value:ident, $to:ident) => {
+        use $crate::{ToWethDepositEvent, WethDepositEvent};
+
+        impl ToWethDepositEvent for $path {
+            fn to_weth_deposit_event(&self) -> WethDepositEvent {
+                WethDepositEvent::new(self.$value, self.$to)
+            }
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! impl_to_relevant_events {
+    ($path:path, $value:ident, $to:ident, $from:ident, $token_address:ident) => {
+        impl_to_weth_deposit_event!($path, $value, $to);
+        impl_to_erc20_token_event!($path, $value, $to, $from, $token_address);
     };
 }
 
@@ -36,12 +72,14 @@ macro_rules! make_erc20_token_event_filterer {
                     Ok(state)
                 } else {
                     let tx_infos = [< $tx_infos_field:camel >]::from_bytes(&state.tx_infos)?;
+                    let cid = state.$db_utils.get_eth_chain_id_from_db()?;
                     state
                         .$db_utils
                         .get_eth_canon_block_from_db()
                         .map(|submission_material| {
                             Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
                                 &submission_material,
+                                &cid,
                                 &tx_infos,
                             )
                         })
@@ -59,11 +97,13 @@ macro_rules! make_erc20_token_event_filterer {
                 // is like a submission with 0 confs, ∴ we need to check the _current_ submission material,
                 // not the canon block material!
                 let tx_infos = [< $tx_infos_field:camel >]::from_bytes(&state.tx_infos)?;
+                let cid = state.$db_utils.get_eth_chain_id_from_db()?;
                 state
                     .get_eth_submission_material()
                     .map(|submission_material| {
                         Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
                             submission_material,
+                            &cid,
                             &tx_infos,
                         )
                     })

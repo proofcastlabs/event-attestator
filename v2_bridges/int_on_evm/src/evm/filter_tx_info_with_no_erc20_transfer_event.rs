@@ -1,6 +1,6 @@
 use crate::evm::int_tx_info::{IntOnEvmIntTxInfo, IntOnEvmIntTxInfos};
 
-impl_to_erc20_token_event!(
+impl_to_relevant_events!(
     IntOnEvmIntTxInfo,
     host_token_amount,
     vault_address,

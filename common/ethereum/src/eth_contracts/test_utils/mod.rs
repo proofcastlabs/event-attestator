@@ -10,14 +10,15 @@ fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result
         "src/eth_contracts/test_utils/{}-submission-material-{}.json",
         chain_type, n
     );
-    match Path::new(&path).exists() {
-        true => Ok(read_to_string(path)?),
-        false => Err(format!(
+    if Path::new(&path).exists() {
+        Ok(read_to_string(path)?)
+    } else {
+        Err(format!(
             "✘ Cannot find sample {} submission material #{} file!",
             chain_type.to_uppercase(),
             n
         )
-        .into()),
+        .into())
     }
 }
 
@@ -47,6 +48,10 @@ pub fn get_sample_evm_private_key() -> EthPrivateKey {
 
 pub fn get_sample_erc20_vault_log_with_user_data() -> EthLog {
     get_eth_submission_material_n(1).receipts[91].logs[3].clone()
+}
+
+pub fn get_sample_submission_material_with_weth_deposit() -> EthSubmissionMaterial {
+    EthSubmissionMaterial::from_str(&get_sample_submission_material_string_n("eth", 2).unwrap()).unwrap()
 }
 
 mod tests {

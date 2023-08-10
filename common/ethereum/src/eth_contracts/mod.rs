@@ -2,6 +2,7 @@ mod erc20_token;
 mod erc20_vault;
 mod erc777_proxy;
 mod erc777_token;
+mod weth;
 
 pub use self::{
     erc20_token::{Erc20TokenTransferEvent, Erc20TokenTransferEvents, ToErc20TokenTransferEvent},
@@ -32,9 +33,9 @@ pub use self::{
         ERC777_REDEEM_EVENT_TOPIC_V2,
         ERC_777_BURN_EVENT_TOPIC,
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-        ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
     },
+    weth::{ToWethDepositEvent, WethDepositEvent, WethDepositEvents},
 };
 
 #[cfg(test)]

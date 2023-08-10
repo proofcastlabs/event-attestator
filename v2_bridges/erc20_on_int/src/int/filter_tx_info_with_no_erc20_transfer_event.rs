@@ -1,6 +1,6 @@
 use crate::int::eth_tx_info::{Erc20OnIntEthTxInfo, Erc20OnIntEthTxInfos};
 
-impl_to_erc20_token_event!(
+impl_to_relevant_events!(
     Erc20OnIntEthTxInfo,
     host_token_amount,
     token_recipient,

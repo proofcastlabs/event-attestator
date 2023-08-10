@@ -1,6 +1,6 @@
 use crate::int::eos_tx_info::{IntOnEosEosTxInfo, IntOnEosEosTxInfos};
 
-impl_to_erc20_token_event!(
+impl_to_relevant_events!(
     IntOnEosEosTxInfo,
     token_amount,
     vault_address,
