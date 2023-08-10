@@ -88,6 +88,7 @@ impl From<&EthReceipt> for WethDepositEvents {
             receipt
             .logs
             .iter()
+            .filter(|log| log.is_from_one_of_addresses(WethAddresses::default().into()))
             .filter(|log| log.contains_topic(&WETH_DEPOSIT_TOPIC))
             .map(WethDepositEvent::try_from)
             .filter_map(Result::ok) // NOTE: Because we've filtered above, we can safely ignore errors here

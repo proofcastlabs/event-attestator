@@ -89,6 +89,10 @@ impl EthLog {
     pub fn is_from_address_and_contains_topic(&self, address: &EthAddress, topic: &EthHash) -> bool {
         self.is_from_address(address) && self.contains_topic(topic)
     }
+
+    pub fn is_from_one_of_addresses(&self, addresses: Vec<EthAddress>) -> bool {
+        addresses.iter().any(|a| self.is_from_address(a))
+    }
 }
 
 impl Encodable for EthLog {
