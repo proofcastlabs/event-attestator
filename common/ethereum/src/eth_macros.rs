@@ -27,6 +27,19 @@ macro_rules! impl_to_erc20_token_event {
 }
 
 #[macro_export]
+macro_rules! impl_to_weth_deposit_event {
+    ($path:path, $value:ident, $to:ident) => {
+        use $crate::{ToWethDepositEvent, WethDepositEvent};
+
+        impl ToWethDepositEvent for $path {
+            fn to_weth_deposit_event(&self) -> WethDepositEvent {
+                WethDepositEvent::new(self.$value, self.$to)
+            }
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! make_erc20_token_event_filterer {
     ($state:ty, $db_utils:ident, $tx_infos_field:ident) => {
         use paste;
