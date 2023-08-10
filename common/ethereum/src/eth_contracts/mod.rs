@@ -2,6 +2,7 @@ mod erc20_token;
 mod erc20_vault;
 mod erc777_proxy;
 mod erc777_token;
+mod weth;
 
 pub use self::{
     erc20_token::{Erc20TokenTransferEvent, Erc20TokenTransferEvents, ToErc20TokenTransferEvent},
