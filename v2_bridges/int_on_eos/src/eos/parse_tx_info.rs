@@ -73,6 +73,48 @@ impl IntOnEosIntTxInfo {
             .and_then(|eos_asset| dictionary_entry.convert_eos_asset_to_eth_amount(&eos_asset))
     }
 
+    fn get_destination_chain_id_from_v1_action(
+        origin_chain_id: &EosChainId,
+        eos_address: &str,
+    ) -> Result<MetadataChainId> {
+        // NOTE: For some tokens we watch for legacy `redeem` actions as well as `redeem2` actions.
+        // If we encounter the former, we need to be aware of it in order to determine its
+        // destination chain ID, since the action itself does not contain that info.
+        debug!("maybe getting destination chain id for v1 action...");
+        match origin_chain_id {
+            EosChainId::TelosMainnet => {
+                let (token, cid): (&str, MetadataChainId) = match eos_address {
+                    "btc.ptokens" => ("pBTC", MetadataChainId::BitcoinMainnet),
+                    "eth.ptokens" => ("pWETH", MetadataChainId::EthereumMainnet),
+                    "usdt.ptokens" => ("pUSDT", MetadataChainId::EthereumMainnet),
+                    "usdc.ptokens" => ("pUSDC", MetadataChainId::EthereumMainnet),
+                    _ => {
+                        return Err(
+                            format!("have no case for TELOS v1 redeem action from address: {eos_address}").into(),
+                        )
+                    },
+                };
+                warn!("{token} on TELOS v1 redeem action detected, using {cid} as destination chain ID");
+                Ok(cid)
+            },
+            EosChainId::UltraMainnet => {
+                // NOTE: We only ever supported ULTRA on ETH mainnet.
+                warn!("ULTRA v1 redeem detected, defaulting to ETH mainnet as destination chain ID");
+                Ok(MetadataChainId::EthereumMainnet)
+            },
+            EosChainId::EosMainnet => {
+                let (token, cid): (&str, MetadataChainId) = match eos_address {
+                    "wmbt.ptokens" => ("pWOMBAT", MetadataChainId::EthereumMainnet),
+                    "btc.ptokens" => ("pBTC", MetadataChainId::BitcoinMainnet),
+                    _ => return Err(format!("cannot handle EOS v1 redeem action from address: {eos_address}").into()),
+                };
+                warn!("{token} on EOS v1 redeem action detected, using {cid} as destination chain ID");
+                Ok(cid)
+            },
+            _ => Err(format!("have no handling for v1 redeem actions from origin chain: {origin_chain_id}").into()),
+        }
+    }
+
     pub fn from_action_proof(
         proof: &EosActionProof,
         dictionary: &EosEthTokenDictionary,
@@ -93,49 +135,7 @@ impl IntOnEosIntTxInfo {
                 let destination_chain_id = if proof.is_v2_redeem() {
                     Self::get_destination_chain_id_from_proof(proof)
                 } else {
-                    // NOTE: If in future we need more granular control here, we can also match on
-                    // the eos addresses in the dictionary. That would however require hard coding
-                    // addresses which is less than ideal.
-                    match origin_chain_id {
-                        EosChainId::TelosMainnet => {
-                            match eos_address.as_ref() {
-                                "btc.ptokens" => {
-                                    warn!("pBTC on TELOS v1 redeem action detected, using BTC mainnet as destination chain ID");
-                                    Ok(MetadataChainId::BitcoinMainnet)
-                                },
-                                "eth.ptokens" => {
-                                    warn!("pWETH on TELOS v1 redeem action detected, using ETH mainnet as destination chain ID");
-                                    Ok(MetadataChainId::EthereumMainnet)
-                                },
-                                "usdt.ptokens" => {
-                                    warn!("pUSDT on TELOS v1 redeem action detected, using ETH mainnet as destination chain ID");
-                                    Ok(MetadataChainId::EthereumMainnet)
-                                },
-                                _ => Err(format!("cannot handle TELOS v1 redeem action from address: {eos_address}").into()),
-                            }
-                        },
-                        EosChainId::UltraMainnet => {
-                            // NOTE: Ultra currently has some restrictions meaning `redeem2` actions cannot be used
-                            // when upgrading from a v1 bridge. Instead, we listen for _both_ v1 and v2 actions in
-                            // here, and in the case of the former, we default to ETH mainnet as the destination.
-                            warn!("ULTRA v1 redeem detected, defaulting to ETH mainnet as destination chain ID");
-                            Ok(MetadataChainId::EthereumMainnet)
-                        },
-                        EosChainId::EosMainnet => {
-                            match eos_address.as_ref() {
-                                "wmbt.ptokens" => {
-                                    warn!("pWOMBAT on EOS v1 redeem action detected, using ETH mainnet as destination chain ID");
-                                    Ok(MetadataChainId::EthereumMainnet)
-                                },
-                                "btc.ptokens" => {
-                                    warn!("pBTC on EOS v1 redeem action detected, using BTC mainnet as destination chain ID");
-                                    Ok(MetadataChainId::BitcoinMainnet)
-                                },
-                                _ => Err(format!("cannot handle EOS v1 redeem action from address: {eos_address}").into()),
-                            }
-                        },
-                        _ => Err(format!("cannot handle v1 redeem action from origin chain: {origin_chain_id}").into()),
-                    }
+                    Self::get_destination_chain_id_from_v1_action(origin_chain_id, &eos_address)
                 }?;
 
                 info!("✔ Converting action proof to `erc20-on-eos` redeem info...");
