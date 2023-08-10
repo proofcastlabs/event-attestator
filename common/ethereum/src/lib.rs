@@ -99,6 +99,8 @@ pub use self::{
         Erc777RedeemEvent,
         SupportedTopics,
         ToErc20TokenTransferEvent,
+        ToWethDepositEvent,
+        WethDepositEvent,
         WethDepositEvents,
         ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
         ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC,

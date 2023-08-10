@@ -40,6 +40,14 @@ macro_rules! impl_to_weth_deposit_event {
 }
 
 #[macro_export]
+macro_rules! impl_to_relevant_events {
+    ($path:path, $value:ident, $to:ident, $from:ident, $token_address:ident) => {
+        impl_to_weth_deposit_event!($path, $value, $to);
+        impl_to_erc20_token_event!($path, $value, $to, $from, $token_address);
+    };
+}
+
+#[macro_export]
 macro_rules! make_erc20_token_event_filterer {
     ($state:ty, $db_utils:ident, $tx_infos_field:ident) => {
         use paste;
