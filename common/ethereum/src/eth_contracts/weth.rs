@@ -5,14 +5,7 @@ use ethereum_types::{Address as EthAddress, U256};
 use strum::IntoEnumIterator;
 use strum_macros::EnumIter;
 
-use crate::{
-    convert_h256_to_eth_address,
-    convert_hex_to_eth_address,
-    EthLog,
-    EthLogExt,
-    EthReceipt,
-    EthSubmissionMaterial,
-};
+use crate::{convert_h256_to_eth_address, convert_hex_to_eth_address, EthLog, EthReceipt, EthSubmissionMaterial};
 
 #[derive(Debug, Clone, EnumIter)]
 enum WethAddresses {
@@ -55,12 +48,12 @@ impl TryFrom<&EthChainId> for WethAddresses {
 }
 
 #[derive(Clone, Debug, Default, Deref)]
-struct WethDepositEvents(Vec<WethDepositEvent>);
+pub struct WethDepositEvents(Vec<WethDepositEvent>);
 
 crate::make_topics!(WETH_DEPOSIT_TOPIC => "e1fffcc4923d04b559f4d29a8bfc6cda04eb5b0d3c460751c2402c5c5cc9109c");
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Constructor)]
-struct WethDepositEvent {
+pub struct WethDepositEvent {
     wad: U256,
     to: EthAddress,
 }
@@ -82,24 +75,30 @@ impl TryFrom<&EthLog> for WethDepositEvent {
     }
 }
 
-impl From<&EthReceipt> for WethDepositEvents {
-    fn from(receipt: &EthReceipt) -> Self {
-        Self(
+impl WethDepositEvents {
+    fn from_receipt(receipt: &EthReceipt, cid: &EthChainId) -> Result<Self, AppError> {
+        let weth_address = WethAddresses::try_from(cid)?.into();
+        Ok(Self(
             receipt
             .logs
             .iter()
-            .filter(|log| log.is_from_one_of_addresses(WethAddresses::default().into()))
-            .filter(|log| log.contains_topic(&WETH_DEPOSIT_TOPIC))
+            .filter(|log| log.is_from_address_and_contains_topic(&weth_address, &WETH_DEPOSIT_TOPIC))
             .map(WethDepositEvent::try_from)
             .filter_map(Result::ok) // NOTE: Because we've filtered above, we can safely ignore errors here
             .collect(),
-        )
+        ))
     }
-}
 
-impl From<&EthSubmissionMaterial> for WethDepositEvents {
-    fn from(m: &EthSubmissionMaterial) -> Self {
-        Self(m.receipts.iter().map(|r| Self::from(r).0).collect::<Vec<_>>().concat())
+    pub fn from_submission_material(m: &EthSubmissionMaterial, cid: &EthChainId) -> Self {
+        Self(
+            m.receipts
+                .iter()
+                // NOTE we don't care about errors here, they must just mean it's not a WETH deposit
+                .filter_map(|r| WethDepositEvents::from_receipt(r, cid).ok())
+                .map(|x| x.0)
+                .collect::<Vec<_>>()
+                .concat(),
+        )
     }
 }
 
@@ -111,7 +110,8 @@ mod tests {
     #[test]
     fn should_get_weth_deposit_events_from_eth_submission_material() {
         let m = get_sample_submission_material_with_weth_deposit();
-        let r = WethDepositEvents::from(&m);
+        let cid = EthChainId::Mainnet;
+        let r = WethDepositEvents::from_submission_material(&m, &cid);
         let n = r.len();
         let expected_n = 28;
         assert_eq!(n, expected_n);
