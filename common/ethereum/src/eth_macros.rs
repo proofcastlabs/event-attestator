@@ -64,12 +64,14 @@ macro_rules! make_erc20_token_event_filterer {
                     Ok(state)
                 } else {
                     let tx_infos = [< $tx_infos_field:camel >]::from_bytes(&state.tx_infos)?;
+                    let cid = state.$db_utils.get_eth_chain_id_from_db()?;
                     state
                         .$db_utils
                         .get_eth_canon_block_from_db()
                         .map(|submission_material| {
                             Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
                                 &submission_material,
+                                &cid,
                                 &tx_infos,
                             )
                         })
@@ -87,11 +89,13 @@ macro_rules! make_erc20_token_event_filterer {
                 // is like a submission with 0 confs, ∴ we need to check the _current_ submission material,
                 // not the canon block material!
                 let tx_infos = [< $tx_infos_field:camel >]::from_bytes(&state.tx_infos)?;
+                let cid = state.$db_utils.get_eth_chain_id_from_db()?;
                 state
                     .get_eth_submission_material()
                     .map(|submission_material| {
                         Erc20TokenTransferEvents::filter_if_no_transfer_event_in_submission_material(
                             submission_material,
+                            &cid,
                             &tx_infos,
                         )
                     })
