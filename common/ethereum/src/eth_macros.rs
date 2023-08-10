@@ -1,4 +1,19 @@
 #[macro_export]
+macro_rules! make_topics {
+    ($($name:ident => $hex:expr),* $(,)?) => {
+        lazy_static! {
+            $(
+                pub static ref $name: ethereum_types::H256 = {
+                    ethereum_types::H256::from_slice(&hex::decode($hex)
+                        .expect(&format!("invalid hex in `{}`!", stringify!($name))),
+                    )
+                };
+            )*
+        }
+    };
+}
+
+#[macro_export]
 macro_rules! impl_to_erc20_token_event {
     ($path:path, $value:ident, $to:ident, $from:ident, $token_address:ident) => {
         use $crate::{Erc20TokenTransferEvent, ToErc20TokenTransferEvent};

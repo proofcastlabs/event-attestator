@@ -2,7 +2,7 @@ use common::types::{Bytes, Result};
 use common_metadata::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES};
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use ethereum_types::{Address as EthAddress, U256};
 use strum_macros::EnumIter;
 
 use crate::{
@@ -15,35 +15,11 @@ const ERC20_VAULT_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"nam
 // NOTE: Separate from the above ABI ∵ `ethabi` crate can't handle overloaded functions.
 const ERC20_VAULT_PEGOUT_WITH_USER_DATA_ABI: &str = "[{\"inputs\":[{\"internalType\":\"address\",\"name\":\"_tokenRecipient\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"_tokenAddress\",\"type\":\"address\"},{\"internalType\":\"uint256\",\"name\":\"_tokenAmount\",\"type\":\"uint256\"},{\"internalType\":\"bytes\",\"name\":\"_userData\",\"type\":\"bytes\"}],\"name\":\"pegOut\",\"outputs\":[{\"internalType\":\"bool\",\"name\":\"\",\"type\":\"bool\"}],\"stateMutability\":\"nonpayable\",\"type\":\"function\",\"signature\":\"0x22965469\"}]";
 
-pub const ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX: &str =
-    "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36";
-
-pub const ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX: &str =
-    "d45bf0460398ad3b27d2bd85144872898591943b81eca880e34fca0a229aa0dc";
-
-pub const ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX: &str =
-    "c03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb";
-
-lazy_static! {
-    pub static ref ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC_HEX)
-                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC`!"),
-        )
-    };
-    pub static ref ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC_HEX)
-                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC`!"),
-        )
-    };
-    pub static ref ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX)
-                .expect("✘ Invalid hex in `ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2_HEX`!"),
-        )
-    };
-}
+crate::make_topics!(
+    ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2 => "c03be660a5421fb17c93895da9db564bd4485d475f0d8b3175f7d55ed421bebb",
+    ERC20_VAULT_PEG_IN_EVENT_WITH_USER_DATA_TOPIC => "d45bf0460398ad3b27d2bd85144872898591943b81eca880e34fca0a229aa0dc",
+    ERC20_VAULT_PEG_IN_EVENT_WITHOUT_USER_DATA_TOPIC => "42877668473c4cba073df41397388516dc85c3bbae14b33603513924cec55e36",
+);
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 enum ERC20VaultSupportedTopics {

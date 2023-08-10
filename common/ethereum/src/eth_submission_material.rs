@@ -415,7 +415,7 @@ mod tests {
             get_sample_eth_submission_material_string,
             SAMPLE_RECEIPT_INDEX,
         },
-        ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
+        ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
     };
 
     #[test]
@@ -497,9 +497,7 @@ mod tests {
         let block_and_receipts = get_sample_eth_submission_material_n(6).unwrap();
         let num_receipts_before = block_and_receipts.receipts.len();
         let address = EthAddress::from_slice(&hex::decode("74630cfbc4066726107a4efe73956e219bbb46ab").unwrap());
-        let topics = vec![EthHash::from_slice(
-            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX).unwrap(),
-        )];
+        let topics = vec![*ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA];
         let result = block_and_receipts
             .get_receipts_containing_log_from_address_and_with_topics(&address, &topics)
             .unwrap();

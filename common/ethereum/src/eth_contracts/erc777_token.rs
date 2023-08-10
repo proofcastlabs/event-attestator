@@ -8,7 +8,7 @@ use common::{
 use common_metadata::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES};
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use ethereum_types::{Address as EthAddress, U256};
 use strum_macros::EnumIter;
 
 use crate::{
@@ -32,41 +32,12 @@ const ERC777_MINT_WITH_NO_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"
 
 const ERC777_MINT_WITH_DATA_ABI: &str = "[{\"constant\":false,\"inputs\":[{\"name\":\"recipient\",\"type\":\"address\"},{\"name\":\"value\",\"type\":\"uint256\"},{\"name\":\"userData\",\"type\":\"bytes\"},{\"name\":\"operatorData\",\"type\":\"bytes\"}],\"name\":\"mint\",\"outputs\":[{\"name\":\"\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 
-pub const ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX: &str =
-    "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65";
-
-const ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX: &str =
-    "4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68";
-
-const ERC777_REDEEM_EVENT_TOPIC_V2_HEX: &str = "dd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31";
-
-const ERC_777_BURN_EVENT_TOPIC_HEX: &str = "a78a9be3a7b862d26933ad85fb11d80ef66b8f972d7cbba06621d583943a4098";
-
-lazy_static! {
-    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX)
-                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA_HEX`"),
-        )
-    };
-    pub static ref ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX)
-                .expect("✘ Invalid hex in `ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX`"),
-        )
-    };
-    pub static ref ERC777_REDEEM_EVENT_TOPIC_V2: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC777_REDEEM_EVENT_TOPIC_V2_HEX)
-                .expect("✘ Invalid hex in `ERC777_REDEEM_EVENT_TOPIC_V2_HEX`"),
-        )
-    };
-    pub static ref ERC_777_BURN_EVENT_TOPIC: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC_777_BURN_EVENT_TOPIC_HEX).expect("✘ Invalid hex in `ERC_777_BURN_EVENT_TOPIC_HEX`"),
-        )
-    };
-}
+crate::make_topics!(
+    ERC_777_BURN_EVENT_TOPIC => "a78a9be3a7b862d26933ad85fb11d80ef66b8f972d7cbba06621d583943a4098",
+    ERC777_REDEEM_EVENT_TOPIC_V2 => "dd56da0e6e7b301867b3632876d707f60c7cbf4b06f9ae191c67ea016cc5bf31",
+    ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA => "4599e9bf0d45c505e011d0e11f473510f083a4fdc45e3f795d58bb5379dbad68",
+    ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA => "78e6c3f67f57c26578f2487b930b70d844bcc8dd8f4d629fb4af81252ab5aa65",
+);
 
 #[derive(Clone, Debug, PartialEq, Eq, EnumIter)]
 enum ERC777SupportedTopics {

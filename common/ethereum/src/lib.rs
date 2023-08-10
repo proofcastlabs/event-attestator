@@ -105,7 +105,6 @@ pub use self::{
         ERC777_REDEEM_EVENT_TOPIC_V2,
         ERC_777_BURN_EVENT_TOPIC,
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
-        ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA_HEX,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
     },
     eth_crypto::{get_signed_minting_tx, EthPrivateKey, EthPublicKey, EthSignature, EthTransaction, EthTransactions},

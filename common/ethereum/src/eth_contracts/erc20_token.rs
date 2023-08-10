@@ -3,7 +3,7 @@ use std::fmt;
 use common::types::Result;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
-use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
+use ethereum_types::{Address as EthAddress, U256};
 
 use crate::{
     eth_log::EthLogExt,
@@ -12,20 +12,15 @@ use crate::{
     eth_utils::{convert_eth_address_to_string, convert_hex_to_eth_address},
 };
 
-const ERC20_TOKEN_TRANSFER_EVENT_TOPIC_HEX: &str = "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef";
+crate::make_topics!(ERC20_TOKEN_TRANSFER_EVENT_TOPIC => "ddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef");
 
 lazy_static! {
-    // TODO macro for these!! (Since they're in other contract mods too!)
-    static ref ERC20_TOKEN_TRANSFER_EVENT_TOPIC: EthHash = {
-        EthHash::from_slice(
-            &hex::decode(ERC20_TOKEN_TRANSFER_EVENT_TOPIC_HEX)
-                .expect("✘ Invalid hex in `ERC20_TOKEN_TRANSFER_EVENT_TOPIC_HEX`!"),
-        )
-    };
-    static ref PNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD")
-        .expect("Invalid ETH address hex for `PNT_TOKEN_ADDRESS_ON_ETH`!");
-    static ref ETHPNT_TOKEN_ADDRESS_ON_ETH: EthAddress = convert_hex_to_eth_address("0xf4ea6b892853413bd9d9f1a5d3a620a0ba39c5b2")
-        .expect("Invalid ETH address hex for `ETHPNT_TOKEN_ADDRESS_ON_ETH`!");
+    static ref PNT_TOKEN_ADDRESS_ON_ETH: EthAddress =
+        convert_hex_to_eth_address("0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD")
+            .expect("Invalid ETH address hex for `PNT_TOKEN_ADDRESS_ON_ETH`!");
+    static ref ETHPNT_TOKEN_ADDRESS_ON_ETH: EthAddress =
+        convert_hex_to_eth_address("0xf4ea6b892853413bd9d9f1a5d3a620a0ba39c5b2")
+            .expect("Invalid ETH address hex for `ETHPNT_TOKEN_ADDRESS_ON_ETH`!");
 }
 
 pub trait ToErc20TokenTransferEvent {
