@@ -8,6 +8,10 @@ use serde_json::Value as JsonValue;
 
 use crate::{EthPrivateKey, ETH_ADDRESS_SIZE_IN_BYTES};
 
+pub fn convert_h256_to_eth_address(h: &H256) -> EthAddress {
+    EthAddress::from_slice(&h[ETH_HASH_LENGTH - ETH_ADDRESS_SIZE_IN_BYTES..])
+}
+
 pub fn get_random_eth_address() -> EthAddress {
     EthPrivateKey::generate_random().unwrap().to_public_key().to_address()
 }
