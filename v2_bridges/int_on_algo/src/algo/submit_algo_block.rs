@@ -129,6 +129,7 @@ mod tests {
     use crate::{
         maybe_initialize_algo_core,
         test_utils::{
+            get_sample_algo_batch_submission_string,
             get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out,
             get_sample_contiguous_algo_submission_json_strings_for_application_call_peg_out,
             get_sample_contiguous_algo_submission_json_strings_for_asset_transfer_peg_out_1,
@@ -642,6 +643,147 @@ mod tests {
 
         // NOTE: Submit the next block to the core, which will result in a signed transaction.
         let output = submit_algo_block_to_core(&db, &algo_submission_material[2]).unwrap();
+        let expected_result_json = json!({
+            "algo_latest_block_number": 21530959,
+            "int_signed_transactions":[{
+                "_id":"pint-on-algo-int-0",
+                "broadcast":false,
+                "int_tx_hash":"0x3cda08a19d9d4867eddf97282ddf1b8ab3c54c0d96be1f68dd99da1911a2a6b4",
+                "int_tx_amount":"1000000000000000000",
+                "int_account_nonce":0,
+                "int_tx_recipient":"0xc8D59c57B8C58Eac1622C7A639E10bF8B1E3DF9D",
+                "witnessed_timestamp":1654865303,
+                "host_token_address":"714666072",
+                "originating_tx_hash":"VCW6DXNYMRANYVXS2KXYXPW5IKQFGIETGZI5EKEZSVGHXPHDBNWQ",
+                "originating_address":"E644GKJQW2YOJACA6DFT4OCHNQE6SJVC7K2ORLGZWFBAKRTAM44M63VHGA",
+                "destination_chain_id":"0x00f34368",
+                "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
+                "int_signed_tx":"f9032b808504a817c8008306ddd094e0806ce04978224e27c6bb10e27fd30a7785ae9d80b902c422965469000000000000000000000000ec1700a39972482d5db20e73bb3ffe6829b0c1020000000000000000000000004262d1f878d191fbc66dca73bad57309916b14120000000000000000000000000000000000000000000000000de0b6b3a7640000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002200300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010003c38e6700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003a45363434474b4a515732594f4a41434136444654344f43484e514536534a5643374b324f524c475a574642414b5254414d34344d363356484741000000000000000000000000000000000000000000000000000000000000000000000000002a30786338643539633537623863353865616331363232633761363339653130626638623165336466396400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002aa0ed94e2e30206a9755acc7f48f432dd82d2f8cae56095bb5af45bda7a5ea8a08ca02b8874159698d0bfbac7fb3a761e52f0cb6726a5a2f881e518e5ea7a168dc64c",
+                "int_latest_block_number":12221813,
+                "broadcast_tx_hash":null,
+                "broadcast_timestamp":null
+            },{
+                "_id":"pint-on-algo-int-1",
+                "broadcast":false,
+                "int_tx_hash":"0xc10fb6b53e0ae32495045759548b89933e52de8521bb7ac34a5f6ce789aab017",
+                "int_tx_amount":"500000000000000000",
+                "int_account_nonce":1,
+                "int_tx_recipient":"0xc8D59c57B8C58Eac1622C7A639E10bF8B1E3DF9D",
+                "witnessed_timestamp":1654865303,
+                "host_token_address":"714666072",
+                "originating_tx_hash":"VCW6DXNYMRANYVXS2KXYXPW5IKQFGIETGZI5EKEZSVGHXPHDBNWQ",
+                "originating_address":"E644GKJQW2YOJACA6DFT4OCHNQE6SJVC7K2ORLGZWFBAKRTAM44M63VHGA",
+                "destination_chain_id":"0x00f34368",
+                "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
+                "int_signed_tx":"f9032b018504a817c8008306ddd094e0806ce04978224e27c6bb10e27fd30a7785ae9d80b902c422965469000000000000000000000000ec1700a39972482d5db20e73bb3ffe6829b0c1020000000000000000000000004262d1f878d191fbc66dca73bad57309916b141200000000000000000000000000000000000000000000000006f05b59d3b20000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002200300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010003c38e6700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003a45363434474b4a515732594f4a41434136444654344f43484e514536534a5643374b324f524c475a574642414b5254414d34344d363356484741000000000000000000000000000000000000000000000000000000000000000000000000002a30786338643539633537623863353865616331363232633761363339653130626638623165336466396400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002aa0be435d9f04ec861dc6e19cf71437d8198f682313a8bcc26aee4f1a4bd4746acfa073aac0e2df515122acf925c5528c0c748468394606dd7e91e96fb1a14a821507",
+                "int_latest_block_number":12221813,
+                "broadcast_tx_hash":null,
+                "broadcast_timestamp":null
+            },{
+                "_id":"pint-on-algo-int-2",
+                "broadcast":false,
+                "int_tx_hash":"0x99769d20ae179547fe8dcb98067df166890179ddfe527c0f6b924951cfc4c101",
+                "int_tx_amount":"300000000000000000",
+                "int_account_nonce":2,
+                "int_tx_recipient":
+                    "0xc8D59c57B8C58Eac1622C7A639E10bF8B1E3DF9D",
+                    "witnessed_timestamp":1654865303,
+                    "host_token_address":"714666072",
+                    "originating_tx_hash":"VCW6DXNYMRANYVXS2KXYXPW5IKQFGIETGZI5EKEZSVGHXPHDBNWQ",
+                    "originating_address":"E644GKJQW2YOJACA6DFT4OCHNQE6SJVC7K2ORLGZWFBAKRTAM44M63VHGA",
+                    "destination_chain_id":"0x00f34368",
+                    "native_token_address":"0x4262d1f878d191fbc66dca73bad57309916b1412",
+                    "int_signed_tx":"f9032b028504a817c8008306ddd094e0806ce04978224e27c6bb10e27fd30a7785ae9d80b902c422965469000000000000000000000000ec1700a39972482d5db20e73bb3ffe6829b0c1020000000000000000000000004262d1f878d191fbc66dca73bad57309916b14120000000000000000000000000000000000000000000000000429d069189e0000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002200300000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000010003c38e6700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000012000f3436800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000018000000000000000000000000000000000000000000000000000000000000001e000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000003a45363434474b4a515732594f4a41434136444654344f43484e514536534a5643374b324f524c475a574642414b5254414d34344d363356484741000000000000000000000000000000000000000000000000000000000000000000000000002a30786338643539633537623863353865616331363232633761363339653130626638623165336466396400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002aa0a6aead1c76514b73b25e3e36972d74a4c4b5fbf1e33ebf1b0f5a648e01411a51a00519c1a7c3d6d5ea1fc053c0ff73702893f56cb4ce7a3a724bfe09205208313d",
+                    "int_latest_block_number":12221813,
+                    "broadcast_tx_hash":null,
+                    "broadcast_timestamp":null
+            }]
+        });
+        let expected_result = AlgoOutput::from_str(&expected_result_json.to_string()).unwrap();
+        let result = AlgoOutput::from_str(&output).unwrap();
+        assert_output(&result, &expected_result);
+    }
+
+    #[test]
+    #[serial]
+    fn should_batch_submit_algo_blocks_to_core() {
+        let db = get_test_database();
+        let int_submission_material = get_sample_contiguous_int_submission_json_strings_for_algo_address_peg_in();
+        let algo_submission_material =
+            get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out();
+        let int_init_block = int_submission_material[0].clone();
+        let algo_init_block = algo_submission_material[0].clone();
+        let router_address = get_sample_router_address();
+        let vault_address = get_sample_vault_address();
+        let int_confirmations = 0;
+        let algo_confirmations = 1;
+        let gas_price = 20_000_000_000;
+        let algo_fee = 1000;
+        let app_id = 1337;
+
+        // NOTE: Initialize the INT side of the core...
+        let is_native = true;
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &int_init_block,
+            &EthChainId::Ropsten,
+            gas_price,
+            int_confirmations,
+            EthState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::IntOnAlgo,
+            is_native,
+        )
+        .unwrap();
+
+        // NOTE: Initialize the ALGO side of the core...
+        maybe_initialize_algo_core(
+            &db,
+            &algo_init_block,
+            &AlgorandGenesisId::Mainnet.to_string(),
+            algo_fee,
+            algo_confirmations,
+            app_id,
+        )
+        .unwrap();
+
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let int_address = convert_hex_to_eth_address("0x49B9d619E3402de8867A8113C7bc204653F5DB4c").unwrap();
+        let int_private_key = EthPrivateKey::from_slice(
+            &hex::decode("e87a3a4b16ffc44c78d53f633157f0c08dc085a33483c2cbae78aa5892247e4c").unwrap(),
+        )
+        .unwrap();
+        let eth_db_utils = EthDbUtils::new(&db);
+        eth_db_utils
+            .put_eth_address_in_db(&eth_db_utils.get_eth_address_key(), &int_address)
+            .unwrap();
+        eth_db_utils.put_eth_private_key_in_db(&int_private_key).unwrap();
+        assert_eq!(eth_db_utils.get_public_eth_address_from_db().unwrap(), int_address);
+        assert_eq!(eth_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
+
+        // NOTE: Overwrite the ALGO address since it's generated randomly above...
+        let algo_db_utils = AlgoDbUtils::new(&db);
+        let algo_address =
+            AlgorandAddress::from_str("N4F4VB7GYZWL2RRTMQVMBKM5GKTKDTOHVB5PHGQYFB6XSXR3MRYIVOPTWE").unwrap();
+        db.put(
+            get_prefixed_db_key("algo_redeem_address_key").to_vec(),
+            algo_address.to_bytes(),
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+        .unwrap();
+        assert_eq!(algo_db_utils.get_redeem_address().unwrap(), algo_address);
+
+        // NOTE Save the token dictionary into the db...
+        EvmAlgoTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_evm_algo_dictionary_entry_1(), &db)
+            .unwrap();
+
+        // NOTE: Create the submission material for a batch submission
+        let batch_submission_material = get_sample_algo_batch_submission_string();
+
+        // NOTE: Submit the next two blocks to the core, which will result in a signed transaction.
+        let output = submit_algo_blocks_to_core(&db, &batch_submission_material).unwrap();
+
         let expected_result_json = json!({
             "algo_latest_block_number": 21530959,
             "int_signed_transactions":[{
