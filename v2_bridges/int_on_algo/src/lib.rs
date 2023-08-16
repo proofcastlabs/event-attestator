@@ -24,7 +24,7 @@ pub use common_eth_debug::{
 };
 
 pub use self::{
-    algo::{maybe_initialize_algo_core, submit_algo_block_to_core},
+    algo::{maybe_initialize_algo_core, submit_algo_block_to_core, submit_algo_blocks_to_core},
     constants::CORE_TYPE,
     debug_functions::{
         debug_add_dictionary_entry,

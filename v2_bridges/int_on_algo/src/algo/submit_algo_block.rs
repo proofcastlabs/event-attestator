@@ -14,6 +14,7 @@ use common_algo::{
     remove_all_txs_from_submission_material_in_state,
     AlgoState,
     AlgoSubmissionMaterial,
+    AlgoSubmissionMaterials,
 };
 
 use crate::{
@@ -80,6 +81,22 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
         .and_then(|output| {
             db.end_transaction()?;
             Ok(output.to_string())
+        })
+}
+
+/// # Submit ALGO Blocks to Core
+///
+/// Submit multiple ALGO blocks to the core.
+pub fn submit_algo_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> Result<String> {
+    info!("batch submitting ALGO blocks to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| AlgoSubmissionMaterials::from_str(blocks))
+        .and_then(|ms| ms.iter().map(|m| submit_algo_block(db, m)).collect::<Result<Vec<_>>>())
+        .map(AlgoOutput::from)
+        .and_then(|outputs| {
+            db.end_transaction()?;
+            Ok(outputs.to_string())
         })
 }
 
