@@ -1,18 +1,19 @@
+use std::str::FromStr;
+
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_algo::{
     add_latest_algo_submission_material_to_db_and_return_state,
     check_parent_of_algo_block_in_state_exists,
     check_submitted_block_is_subsequent_and_return_state,
-    end_algo_db_transaction_and_return_state,
     maybe_remove_old_algo_tail_submission_material_and_return_state,
     maybe_remove_txs_from_algo_canon_submission_material_and_return_state,
     maybe_update_algo_canon_block_hash_and_return_state,
     maybe_update_algo_linker_hash_and_return_state,
     maybe_update_algo_tail_block_hash_and_return_state,
     maybe_update_latest_block_with_expired_participants_and_return_state,
-    parse_algo_submission_material_and_put_in_state,
     remove_all_txs_from_submission_material_in_state,
     AlgoState,
+    AlgoSubmissionMaterial,
 };
 
 use crate::{
@@ -25,7 +26,7 @@ use crate::{
             divert_tx_infos_to_safe_address_if_destination_is_zero_address,
         },
         filter_zero_value_tx_infos::filter_out_zero_value_tx_infos_from_state,
-        get_algo_output::get_algo_output,
+        get_algo_output::{get_algo_output, AlgoOutput},
         get_relevant_txs::get_relevant_asset_txs_from_submission_material_and_add_to_state,
         maybe_increment_eth_account_nonce_and_return_algo_state,
         parse_tx_info::maybe_parse_tx_info_from_canon_block_and_add_to_state,
@@ -35,18 +36,9 @@ use crate::{
     token_dictionary::get_evm_algo_token_dictionary_and_add_to_algo_state,
 };
 
-/// Submit Algo Block To Core
-///
-/// The main submission pipeline. Submitting an Algorand block to the enclave will - if that block is
-/// valid & subsequent to the enclave's current latest block - advanced the piece of the ALGO
-/// blockchain held by the enclave in it's encrypted database. Should the submitted block
-/// contain pertinent transactions to the redeem addres  the enclave is watching, an INT
-/// transaction will be signed & returned to the caller.
-pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
-    info!("✔ Submitting ALGO block to core...");
-    db.start_transaction()
-        .and_then(|_| CoreType::check_is_initialized(db))
-        .and_then(|_| parse_algo_submission_material_and_put_in_state(block_json_string, AlgoState::init(db)))
+fn submit_algo_block<D: DatabaseInterface>(db: &D, m: &AlgoSubmissionMaterial) -> Result<AlgoOutput> {
+    AlgoState::init(db)
+        .add_algo_submission_material(m)
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
@@ -69,8 +61,26 @@ pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string
         .and_then(maybe_increment_eth_account_nonce_and_return_algo_state)
         .and_then(maybe_remove_old_algo_tail_submission_material_and_return_state)
         .and_then(maybe_remove_txs_from_algo_canon_submission_material_and_return_state)
-        .and_then(end_algo_db_transaction_and_return_state)
         .and_then(get_algo_output)
+}
+
+/// Submit Algo Block To Core
+///
+/// The main submission pipeline. Submitting an Algorand block to the enclave will - if that block is
+/// valid & subsequent to the enclave's current latest block - advanced the piece of the ALGO
+/// blockchain held by the enclave in it's encrypted database. Should the submitted block
+/// contain pertinent transactions to the redeem addres  the enclave is watching, an INT
+/// transaction will be signed & returned to the caller.
+pub fn submit_algo_block_to_core<D: DatabaseInterface>(db: &D, block_json_string: &str) -> Result<String> {
+    info!("submitting ALGO block to core...");
+    CoreType::check_is_initialized(db)
+        .and_then(|_| db.start_transaction())
+        .and_then(|_| AlgoSubmissionMaterial::from_str(block_json_string))
+        .and_then(|ref m| submit_algo_block(db, m))
+        .and_then(|output| {
+            db.end_transaction()?;
+            Ok(output.to_string())
+        })
 }
 
 #[cfg(test)]
@@ -100,7 +110,6 @@ mod tests {
 
     use super::*;
     use crate::{
-        algo::get_algo_output::AlgoOutput,
         maybe_initialize_algo_core,
         test_utils::{
             get_sample_contiguous_algo_submission_json_strings_for_application_call_multi_peg_out,

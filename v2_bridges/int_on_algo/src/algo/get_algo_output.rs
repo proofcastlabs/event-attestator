@@ -130,7 +130,7 @@ pub fn get_int_signed_tx_info_from_algo_txs(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<String> {
+pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoOutput> {
     info!("✔ Getting ALGO output...");
     let signed_txs = state.eth_signed_txs;
     let tx_infos = IntOnAlgoIntTxInfos::from_bytes(&state.tx_infos)?;
@@ -147,5 +147,5 @@ pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<Stri
             )?
         },
     };
-    Ok(output.to_string())
+    Ok(output)
 }
