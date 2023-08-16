@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.1.0"
+version = "1.2.0"
 name = "int_on_algo"
 readme = "README.md"
 rust-version = "1.56"
@@ -38,6 +38,7 @@ common_database_utils = { workspace = true }
 
 [dev-dependencies]
 serial_test = { workspace = true }
+simple_logger = { workspace = true }
 
 [lib]
 doctest = false
