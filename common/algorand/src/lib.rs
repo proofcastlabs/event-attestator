@@ -43,7 +43,11 @@ pub use self::{
     algo_relevant_asset_txs::AlgoRelevantAssetTxs,
     algo_signed_group_txs::{AlgoSignedGroupTx, AlgoSignedGroupTxs},
     algo_state::AlgoState,
-    algo_submission_material::{parse_algo_submission_material_and_put_in_state, AlgoSubmissionMaterial, AlgoSubmissionMaterials},
+    algo_submission_material::{
+        parse_algo_submission_material_and_put_in_state,
+        AlgoSubmissionMaterial,
+        AlgoSubmissionMaterials,
+    },
     algo_user_data::AlgoUserData,
     check_parent_exists::check_parent_of_algo_block_in_state_exists,
     check_submitted_block_is_subsequent::check_submitted_block_is_subsequent_and_return_state,
