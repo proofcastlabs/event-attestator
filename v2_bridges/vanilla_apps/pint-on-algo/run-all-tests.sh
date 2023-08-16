@@ -4,10 +4,13 @@ cd $(dirname -- $0)
 
 . ./scripts/get-binary-name.sh
 
-echo [+] Running all \'$(getBinaryName)\' tests...
+echo running all \'$(getBinaryName)\' tests...
 
-./scripts/test-adding-debug-signer.sh
-./scripts/test-core-initialization.sh
-./scripts/test-native-block-submission.sh
-./scripts/test-adding-multiple-debug-signers.sh
-./scripts/test-native-multiple-block-submission.sh
+array=( $(find ./scripts -name "test-*.sh" -o -name "*-test.sh -print0") )
+
+for t in "${array[@]}"
+do
+  echo running test script: \'$t\'...
+  $t
+done
+
