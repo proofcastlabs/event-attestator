@@ -5,6 +5,7 @@ use common::{
     traits::DatabaseInterface,
     types::{Byte, Bytes, Result},
 };
+use derive_more::{Constructor, Deref};
 use rust_algorand::{
     AlgorandAddress,
     AlgorandBlock,
@@ -16,6 +17,22 @@ use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 use crate::AlgoState;
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
+pub struct AlgoSubmissionMaterials(Vec<AlgoSubmissionMaterial>);
+
+impl FromStr for AlgoSubmissionMaterials {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        Ok(Self::new(
+            AlgoSubmissionMaterialJsons::from_str(s)?
+                .iter()
+                .map(AlgoSubmissionMaterial::from_json)
+                .collect::<Result<Vec<_>>>()?,
+        ))
+    }
+}
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct AlgoSubmissionMaterial {
@@ -89,6 +106,24 @@ impl Display for AlgoSubmissionMaterial {
             Ok(json_struct) => write!(f, "{}", json!(json_struct)),
             Err(error) => write!(f, "Could not convert AlgorandBlock to json!: {}", error),
         }
+    }
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Deref, Constructor)]
+pub struct AlgoSubmissionMaterialJsons(Vec<AlgoSubmissionMaterialJson>);
+
+impl FromStr for AlgoSubmissionMaterialJsons {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        #[derive(Deserialize, Deref)]
+        struct Temp(Vec<String>);
+        let t: Temp = serde_json::from_str(s)?;
+        Ok(Self::new(
+            t.iter()
+                .map(|s| AlgoSubmissionMaterialJson::from_str(s))
+                .collect::<Result<Vec<AlgoSubmissionMaterialJson>>>()?,
+        ))
     }
 }
 
