@@ -316,11 +316,14 @@ impl<'a, D: DatabaseInterface> AlgoDbUtils<'a, D> {
 
     pub fn put_algo_submission_material_in_db(&self, submission_material: &AlgoSubmissionMaterial) -> Result<()> {
         info!("✔ Putting ALGO block in db...");
-        self.get_db().put(
-            submission_material.block.hash()?.to_bytes(),
-            submission_material.to_bytes()?,
-            MIN_DATA_SENSITIVITY_LEVEL,
-        )
+        let h = submission_material.block.hash()?;
+        let k = h.to_bytes();
+        if self.get_db().get(k.clone(), MIN_DATA_SENSITIVITY_LEVEL).is_ok() {
+            Err(Self::get_no_overwrite_error(&format!("block with hash {h}")).into())
+        } else {
+            self.get_db()
+                .put(k, submission_material.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+        }
     }
 
     fn get_submission_material_from_db(&self, hash: &AlgorandHash) -> Result<AlgoSubmissionMaterial> {
@@ -708,7 +711,7 @@ mod tests {
             .put_latest_submission_material_in_db(&latest_submission_material)
             .unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
-        submission_materials
+        submission_materials[..submission_materials.len() - 1]
             .iter()
             .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let result = db_utils
@@ -730,7 +733,7 @@ mod tests {
             .put_latest_submission_material_in_db(&submission_material)
             .unwrap();
         db_utils.put_canon_to_tip_length_in_db(canon_to_tip_length).unwrap();
-        submission_materials
+        submission_materials[..submission_materials.len() - 1]
             .iter()
             .for_each(|material| db_utils.put_algo_submission_material_in_db(material).unwrap());
         let result = db_utils
