@@ -4,7 +4,6 @@ use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_algo::{
     add_latest_algo_submission_material_to_db_and_return_state,
     check_parent_of_algo_block_in_state_exists,
-    check_submitted_block_is_subsequent_and_return_state,
     maybe_remove_old_algo_tail_submission_material_and_return_state,
     maybe_remove_txs_from_algo_canon_submission_material_and_return_state,
     maybe_update_algo_canon_block_hash_and_return_state,
@@ -43,7 +42,6 @@ fn submit_algo_block<D: DatabaseInterface>(db: &D, m: &AlgoSubmissionMaterial) -
         .and_then(get_evm_algo_token_dictionary_and_add_to_algo_state)
         .and_then(maybe_update_latest_block_with_expired_participants_and_return_state)
         .and_then(check_parent_of_algo_block_in_state_exists)
-        .and_then(check_submitted_block_is_subsequent_and_return_state)
         .and_then(get_relevant_asset_txs_from_submission_material_and_add_to_state)
         .and_then(filter_out_invalid_txs_and_update_in_state)
         .and_then(remove_all_txs_from_submission_material_in_state)
