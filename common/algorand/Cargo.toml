@@ -36,7 +36,7 @@ common_debug_signers = { workspace = true }
 common_safe_addresses = { workspace = true }
 
 [dev-dependencies]
-simple_logger = "2.0.0"
+simple_logger = { workspace = true }
 
 [lib]
 doctest = false
