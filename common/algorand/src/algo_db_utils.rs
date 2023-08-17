@@ -106,6 +106,18 @@ macro_rules! create_special_hash_setters_and_getters {
                             .and_then(|_| self.[< put_ $hash_type _block_hash_in_db>](&block_hash))
                     }
 
+                    pub fn[<update_ $hash_type _submission_material_in_db>](
+                        &self,
+                        submission_material: &AlgoSubmissionMaterial
+                    ) -> Result<()> {
+                        let hash = submission_material.block.hash()?;
+                        // NOTE: The updater skips the check for the material already being in the db
+                        info!("updating {} submission material in db under hash: {}!", $hash_type, hash.to_base_32());
+                        self.get_db()
+                            .put(hash.to_bytes(), submission_material.to_bytes()?, MIN_DATA_SENSITIVITY_LEVEL)
+                            .and_then(|_| self.[< put_ $hash_type _block_hash_in_db>](&hash))
+                    }
+
                     pub fn [< get_ $hash_type _block_number >](&self) -> Result<u64> {
                         self
                             .[<get_ $hash_type _submission_material>]()
@@ -132,6 +144,43 @@ macro_rules! create_special_hash_setters_and_getters {
                         db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material).unwrap();
                         let result = db_utils.[<get_ $hash_type _submission_material>]().unwrap();
                         assert_eq!(result, submission_material);
+                    }
+
+                    #[test]
+                    fn [< should_not_put_duplicate_ $hash_type _subsmission_material_in_db >]() {
+                        let db = get_test_database();
+                        let db_utils = AlgoDbUtils::new(&db);
+                        let submission_material = get_sample_submission_material_n(0);
+                        let hash = submission_material.block.hash().unwrap();
+                        db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material).unwrap();
+                        let expected_err = format!("Cannot overwrite ALGO block with hash {hash} in db - one already exists!");
+                        match db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material) {
+                            Ok(_) => panic!("should not have succeeded"),
+                            Err(AppError::Custom(err)) => assert_eq!(err, expected_err),
+                            _ => panic!("wrong error received"),
+                        }
+                    }
+
+                    #[test]
+                    fn [< should_update_ $hash_type _subsmission_material_in_db >]() {
+                        // NOTE: We can _never_ overwrite the gensis hash!
+                        if stringify!($hash_type) != stringify!("genesis") {
+                            let db = get_test_database();
+                            let db_utils = AlgoDbUtils::new(&db);
+                            let submission_material = get_sample_submission_material_n(0);
+                            let hash = submission_material.block.hash().unwrap();
+                            db_utils.[<put_ $hash_type _submission_material_in_db>](&submission_material).unwrap();
+                            let mut material_from_db = db_utils.[<get_ $hash_type _submission_material>]().unwrap();
+                            assert!(material_from_db.block.transactions.is_some());
+                            let mut new_material = submission_material.clone();
+                            new_material.block.transactions = None;
+                            assert_ne!(submission_material, new_material);
+                            assert_eq!(submission_material.block.hash().unwrap(), new_material.block.hash().unwrap());
+                            let r = db_utils.[<update_ $hash_type _submission_material_in_db>](&new_material);
+                            assert!(r.is_ok());
+                            material_from_db = db_utils.[<get_ $hash_type _submission_material>]().unwrap();
+                            assert!(material_from_db.block.transactions.is_none());
+                        }
                     }
 
                     #[test]
