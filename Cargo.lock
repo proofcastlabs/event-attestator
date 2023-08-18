@@ -806,7 +806,6 @@ dependencies = [
 name = "common"
 version = "6.11.0"
 dependencies = [
- "base64 0.13.1",
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
  "chrono",
@@ -4514,6 +4513,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
+ "base64 0.21.2",
  "bounded-vec-deque",
  "chain_ids",
  "clap",
