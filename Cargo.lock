@@ -4594,7 +4594,6 @@ dependencies = [
  "mongodb",
  "paste",
  "reqwest",
- "rocksdb_database",
  "sentinel-lib",
  "serde",
  "serde_derive",
