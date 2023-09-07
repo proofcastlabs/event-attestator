@@ -4718,6 +4718,7 @@ dependencies = [
  "derive_more",
  "jni",
  "log",
+ "metadata",
  "sentinel-lib",
  "thiserror",
 ]
