@@ -70,10 +70,10 @@ mod tests {
         let anchor_block_hash = anchor_submission_material.block.hash().unwrap();
         let tail_submission_material = submission_materials[num_submission_materials - 1].clone();
         db_utils
-            .put_tail_submission_material_in_db(&tail_submission_material)
+            .put_tail_block_hash_in_db(&tail_submission_material.block.hash().unwrap())
             .unwrap();
         db_utils
-            .put_anchor_submission_material_in_db(&anchor_submission_material)
+            .put_anchor_block_hash_in_db(&anchor_submission_material.block.hash().unwrap())
             .unwrap();
         recursively_remove_parent_submission_materials_if_not_anchor_block(
             &db_utils,

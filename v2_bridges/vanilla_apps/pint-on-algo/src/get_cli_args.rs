@@ -37,6 +37,7 @@ make_cli_args_struct!(
     cmd_getEnclaveState => bool,
     cmd_submitAlgoBlock => bool,
     cmd_debugOptInToApp => bool,
+    cmd_submitAlgoBlocks => bool,
     cmd_debugOptInToAsset => bool,
     cmd_debugResetIntChain => bool,
     cmd_debugResetAlgoChain => bool,

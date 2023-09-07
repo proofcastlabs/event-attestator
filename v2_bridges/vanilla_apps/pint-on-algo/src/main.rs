@@ -44,6 +44,7 @@ use int_on_algo::{
     maybe_initialize_algo_core,
     maybe_initialize_int_core,
     submit_algo_block_to_core,
+    submit_algo_blocks_to_core,
     submit_int_block_to_core,
     submit_int_blocks_to_core,
 };
@@ -258,6 +259,13 @@ fn program() -> anyhow::Result<String> {
         } => {
             info!("✔ Submitting ALGO block to core...");
             Ok(submit_algo_block_to_core(&db, &cli_args.arg_blockJson)?)
+        },
+        CliArgs {
+            cmd_submitAlgoBlocks: true,
+            ..
+        } => {
+            info!("✔ Submitting ALGO blocks to core...");
+            Ok(submit_algo_blocks_to_core(&db, &cli_args.arg_blockJson)?)
         },
         CliArgs {
             cmd_debugReprocessAlgoBlock: true,

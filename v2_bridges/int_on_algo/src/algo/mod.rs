@@ -27,4 +27,7 @@ pub(super) use self::{
     int_tx_info::IntOnAlgoIntTxInfos,
     validate_relevant_txs::filter_out_invalid_txs_and_update_in_state,
 };
-pub use self::{initialize_algo_core::maybe_initialize_algo_core, submit_algo_block::submit_algo_block_to_core};
+pub use self::{
+    initialize_algo_core::maybe_initialize_algo_core,
+    submit_algo_block::{submit_algo_block_to_core, submit_algo_blocks_to_core},
+};

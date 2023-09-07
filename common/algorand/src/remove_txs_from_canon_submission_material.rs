@@ -10,7 +10,7 @@ pub fn maybe_remove_txs_from_algo_canon_submission_material_and_return_state<D: 
         .algo_db_utils
         .get_canon_submission_material()
         .map(|material| material.remove_txs())
-        .map(|material| state.algo_db_utils.put_canon_submission_material_in_db(&material))
+        .map(|material| state.algo_db_utils.update_canon_submission_material_in_db(&material))
         .and(Ok(state))
 }
 

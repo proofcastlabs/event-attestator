@@ -66,7 +66,8 @@ write_algo_paths_and_getter_fxn!(
     9 => "src/test_utils/algo-block-17962555.json",
     10 => "src/test_utils/algo-block-29285128.json",
     11 => "src/test_utils/algo-block-29285129.json",
-    12 => "src/test_utils/algo-block-29285130.json"
+    12 => "src/test_utils/algo-block-29285130.json",
+    13 => "src/test_utils/sample-algo-batch-submission.json"
 );
 
 pub fn get_sample_vault_address() -> EthAddress {
@@ -128,6 +129,10 @@ pub fn get_sample_contiguous_algo_submission_json_strings_for_application_call_m
         read_to_string(get_algo_path_n(7).unwrap()).unwrap(),
         read_to_string(get_algo_path_n(8).unwrap()).unwrap(),
     ]
+}
+
+pub fn get_sample_algo_batch_submission_string() -> String {
+    read_to_string(get_algo_path_n(13).unwrap()).unwrap()
 }
 
 pub fn get_sample_evm_algo_dictionary_entry_1() -> EvmAlgoTokenDictionaryEntry {

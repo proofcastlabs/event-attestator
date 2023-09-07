@@ -26,6 +26,25 @@ impl Display for AlgoOutput {
     }
 }
 
+impl From<Vec<AlgoOutput>> for AlgoOutput {
+    fn from(v: Vec<AlgoOutput>) -> Self {
+        let len = v.len();
+        if len == 0 {
+            Self::default()
+        } else {
+            Self {
+                // NOTE: During a batch submision we only want the last submission's latest number
+                algo_latest_block_number: v[len - 1].algo_latest_block_number,
+                int_signed_transactions: v
+                    .iter()
+                    .map(|x| x.int_signed_transactions.clone())
+                    .collect::<Vec<Vec<_>>>()
+                    .concat(),
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct IntTxOutput {
     pub _id: String,
@@ -130,7 +149,7 @@ pub fn get_int_signed_tx_info_from_algo_txs(
         .collect::<Result<Vec<_>>>()
 }
 
-pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<String> {
+pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<AlgoOutput> {
     info!("✔ Getting ALGO output...");
     let signed_txs = state.eth_signed_txs;
     let tx_infos = IntOnAlgoIntTxInfos::from_bytes(&state.tx_infos)?;
@@ -147,5 +166,5 @@ pub fn get_algo_output<D: DatabaseInterface>(state: AlgoState<D>) -> Result<Stri
             )?
         },
     };
-    Ok(output.to_string())
+    Ok(output)
 }

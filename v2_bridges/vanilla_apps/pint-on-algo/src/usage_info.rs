@@ -18,6 +18,7 @@ Usage:  pint-on-algo [--help]
         pint-on-algo submitIntBlock (<blockJson> | --file=<path>)
         pint-on-algo submitIntBlocks (<blockJson> | --file=<path>)
         pint-on-algo submitAlgoBlock (<blockJson> | --file=<path>)
+        pint-on-algo submitAlgoBlocks (<blockJson> | --file=<path>)
         pint-on-algo encodeAlgoNoteMetadata <metadataChainId> <destinationAddress> [--userData=<hex>]
         pint-on-algo initializeAlgo (<blockJson> | --file=<path>) [--fee=<u64>] [--confs=<uint>] [--genesisId=<str>] [--appId=<uint>]
         pint-on-algo initializeInt (<vaultAddress> | --vaultAddress=<vaultAddress>) (<routerAddress> | --routerAddress=<routerAddress>) (<blockJson> | --file=<path>) [--chainId=<uint>] [--gasPrice=<uint>] [--confs=<uint>]
@@ -115,6 +116,8 @@ Commands:
                                           }
 
     submitIntBlocks                     ❍ Submit multiple INT blocks to the enclave.
+
+    submitAlgoBlocks                    ❍ Submit multiple ALGO blocks to the enclave.
 
     initializeInt                       ❍ Initialize the enclave with the first trusted INT block. Ensure the block has
                                           NO transactions relevant to the pToken in it, because they'll be ignored by

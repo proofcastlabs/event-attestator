@@ -7,7 +7,7 @@ use paste::paste;
 use crate::AlgoSubmissionMaterial;
 
 macro_rules! write_paths_and_getter_fxn {
-    ( $( $num:expr => $path:expr ),* ) => {
+    ( $( $num:expr => $path:expr ),* $(,)?) => {
         paste! {
             $(const [<SAMPLE_BLOCK_ $num>]: &str = $path;)*
 
@@ -39,7 +39,7 @@ write_paths_and_getter_fxn!(
     8  => "src/test_utils/algo_submission_material-17962563.json",
     9  => "src/test_utils/algo_submission_material-17962564.json",
     10 => "src/test_utils/algo_submission_material-17962565.json",
-    11 => "src/test_utils/algo_submission_material-21511367.json"
+    11 => "src/test_utils/algo_submission_material-21511367.json",
 );
 
 pub fn get_sample_contiguous_submission_material() -> Vec<AlgoSubmissionMaterial> {
@@ -57,6 +57,10 @@ pub fn get_sample_submission_material_str_n(n: usize) -> String {
 
 pub fn get_sample_submission_material_n(n: usize) -> AlgoSubmissionMaterial {
     AlgoSubmissionMaterial::from_str(&get_sample_submission_material_str_n(n)).unwrap()
+}
+
+pub fn get_sample_batch_submission_material() -> String {
+    read_to_string("src/test_utils/sample-algo-batch-submission.json").unwrap()
 }
 
 mod tests {
