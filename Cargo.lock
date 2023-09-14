@@ -4602,7 +4602,6 @@ dependencies = [
  "lazy_static",
  "log",
  "metadata",
- "mongodb",
  "paste",
  "reqwest",
  "sentinel-lib",
