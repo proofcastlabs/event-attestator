@@ -4668,7 +4668,6 @@ dependencies = [
  "ethereum",
  "ethereum-types 0.12.1",
  "ethereum_debug",
- "ethers-core",
  "flexi_logger",
  "futures",
  "futures-retry",
