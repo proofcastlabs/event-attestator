@@ -3055,6 +3055,7 @@ dependencies = [
  "simple_logger",
  "strum 0.22.0",
  "strum_macros 0.24.3",
+ "thiserror",
 ]
 
 [[package]]
