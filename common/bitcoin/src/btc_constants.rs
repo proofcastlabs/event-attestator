@@ -24,6 +24,7 @@ pub const BTC_TX_VERSION: i32 = 1;
 pub const MAX_NUM_OUTPUTS: usize = 2;
 pub const BTC_NUM_DECIMALS: usize = 8;
 pub const BTC_PUB_KEY_SLICE_LENGTH: usize = 33;
+pub(crate) const BTC_FEE_HARDCAP: u64 = 500_000; // NOTE: 0.005 btc
 pub const BTC_TX_LOCK_TIME: PackedLockTime = PackedLockTime::ZERO;
 pub const DEFAULT_BTC_SEQUENCE: Sequence = Sequence(4_294_967_295); // NOTE: 0xFFFFFFFF
 pub const BTC_CORE_IS_INITIALIZED_JSON: &str = "{btc_enclave_initialized:true}";

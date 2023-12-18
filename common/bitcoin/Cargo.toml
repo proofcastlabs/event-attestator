@@ -15,6 +15,7 @@ ltc = ["litecoin"]
 default = ["bitcoin"]
 
 [dependencies]
+thiserror = "1.0.51"
 hex = { workspace = true }
 log = { workspace = true }
 paste = { workspace = true }

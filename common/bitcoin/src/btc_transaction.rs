@@ -5,7 +5,7 @@ use crate::{
         blockdata::transaction::{Transaction as BtcTransaction, TxIn as BtcUtxo},
         Sighash,
     },
-    btc_constants::{BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
+    btc_constants::{BTC_FEE_HARDCAP, BTC_TX_LOCK_TIME, BTC_TX_VERSION, DUST_AMOUNT},
     btc_recipients_and_amounts::BtcRecipientsAndAmounts,
     btc_utils::{
         create_new_pay_to_pub_key_hash_output,
@@ -15,6 +15,7 @@ use crate::{
     },
     deposit_address_info::DepositAddressInfo,
     utxo_manager::BtcUtxosAndValues,
+    BitcoinError,
     BtcPrivateKey,
 };
 
@@ -44,6 +45,11 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
         lock_time: BTC_TX_LOCK_TIME,
     };
     let fee = zero_change_tx.size() as u64 * sats_per_byte;
+
+    if fee > BTC_FEE_HARDCAP {
+        return Err(BitcoinError::FeeHardCapExceeded(BTC_FEE_HARDCAP).to_string().into());
+    };
+
     let utxo_total = utxos_and_values.sum();
     info!("✔ UTXO(s) total:  {}", utxo_total);
     info!("✔ Outgoing total: {}", total_to_spend);
@@ -141,6 +147,8 @@ pub fn create_signed_raw_btc_tx_for_n_input_n_outputs(
 
 #[cfg(all(test, not(feature = "ltc")))]
 mod tests {
+    use common::AppError;
+
     use super::*;
     use crate::{
         btc_recipients_and_amounts::BtcRecipientAndAmount,
@@ -234,5 +242,32 @@ mod tests {
         let result_hex = get_hex_tx_from_signed_btc_tx(&final_signed_tx);
         assert_eq!(result_hex, expected_result);
         assert_eq!(tx_id, expected_tx_id);
+    }
+
+    #[test]
+    fn should_error_if_fee_hard_cap_is_exceeded() {
+        let utxos_and_values = BtcUtxosAndValues::new(vec![
+            get_sample_p2pkh_utxo_and_value_n(3).unwrap(),
+            get_sample_p2pkh_utxo_and_value_n(4).unwrap(),
+        ]);
+        let sats_per_byte = 3000;
+        let btc_private_key = get_sample_btc_private_key();
+        let remainder_btc_address = SAMPLE_TARGET_BTC_ADDRESS;
+        let recipient_addresses_and_amounts = BtcRecipientsAndAmounts::new(vec![
+            BtcRecipientAndAmount::new("mudzxCq9aCQ4Una9MmayvJVCF1Tj9fypiM", 666).unwrap(),
+            BtcRecipientAndAmount::new("mu1FFNnoiMytR5tKGXp6M1XhUZFQd3Mc8n", 1337).unwrap(),
+        ]);
+        let expected_error = format!("btc fee hard cap of {BTC_FEE_HARDCAP} exceeded");
+        match create_signed_raw_btc_tx_for_n_input_n_outputs(
+            sats_per_byte,
+            recipient_addresses_and_amounts,
+            remainder_btc_address,
+            &btc_private_key,
+            utxos_and_values,
+        ) {
+            Ok(_) => panic!("should not have succeeded!"),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_error),
+            Err(e) => panic!("wrong error received: {e}"),
+        }
     }
 }
