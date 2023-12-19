@@ -3,7 +3,7 @@ license = "MIT"
 publish = false
 name = "bitcoin"
 edition = "2021"
-version = "6.13.0"
+version = "6.14.0"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -15,6 +15,7 @@ ltc = ["litecoin"]
 default = ["bitcoin"]
 
 [dependencies]
+thiserror = "1.0.51"
 hex = { workspace = true }
 log = { workspace = true }
 paste = { workspace = true }

@@ -21,6 +21,7 @@ mod btc_utils;
 mod check_btc_parent_exists;
 mod core_initialization;
 mod deposit_address_info;
+mod error;
 mod extract_utxos_from_p2pkh_txs;
 mod extract_utxos_from_p2sh_txs;
 mod extract_utxos_from_txs;
@@ -94,6 +95,7 @@ pub use self::{
         DepositAddressInfoVersion,
         DepositInfoHashMap,
     },
+    error::BitcoinError,
     extract_utxos_from_p2pkh_txs::{
         extract_utxos_from_p2pkh_tx,
         extract_utxos_from_p2pkh_txs,
