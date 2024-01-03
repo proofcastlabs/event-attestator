@@ -49,7 +49,7 @@ lazy_static! {
     static ref LOG_PATH: String = {
         // NOTE This allows a user to change the default log path via an env var upon building.
 
-        const DEFAULT_LOG_PATH: &str = "logs/";
+        const DEFAULT_LOG_PATH: &str = "./logs/";
         option_env!("LOG_PATH").unwrap_or_else(|| DEFAULT_LOG_PATH).to_string()
     };
 

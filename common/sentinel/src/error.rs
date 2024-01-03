@@ -24,6 +24,9 @@ impl From<SentinelError> for CommonError {
 
 #[derive(Error, Debug)]
 pub enum SentinelError {
+    #[error("file logger error: {0}")]
+    FileLogger(#[from] common_file_logger::LoggerError),
+
     #[error("quicknode rpc methods not available")]
     QuicknodeNotAvailable,
 
