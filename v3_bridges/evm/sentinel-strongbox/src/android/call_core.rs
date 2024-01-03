@@ -1,5 +1,6 @@
 use std::panic;
 
+#[cfg(feature = "file-logger")]
 use common_file_logger::init_logger;
 use common_sentinel::{SentinelError, WebSocketMessagesEncodable, WebSocketMessagesError};
 use jni::{
@@ -10,6 +11,7 @@ use jni::{
 
 use super::{handle_websocket_message, JavaPointer, State};
 
+#[cfg(feature = "file-logger")]
 fn call_core_inner(
     env: &JNIEnv<'_>,
     strongbox_java_class: JObject,
@@ -18,6 +20,18 @@ fn call_core_inner(
 ) -> Result<*mut JavaPointer, SentinelError> {
     init_logger()?;
 
+    State::new(env, strongbox_java_class, db_java_class, input)
+        .and_then(handle_websocket_message)
+        .and_then(|state| state.to_response())
+}
+
+#[cfg(not(feature = "file-logger"))]
+fn call_core_inner(
+    env: &JNIEnv<'_>,
+    strongbox_java_class: JObject,
+    db_java_class: JObject,
+    input: JString,
+) -> Result<*mut JavaPointer, SentinelError> {
     State::new(env, strongbox_java_class, db_java_class, input)
         .and_then(handle_websocket_message)
         .and_then(|state| state.to_response())

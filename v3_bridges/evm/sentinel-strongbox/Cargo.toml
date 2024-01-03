@@ -6,6 +6,7 @@ authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
 description = "The android/strongbox library for a pTokens EVM sentinel"
 
 [features]
+file-logger = ["common_file_logger"] # Enables file logging
 non-validating = ["common_sentinel/non-validating"] # NOTE: Disables block & recepit validation
 
 [lib]
@@ -29,5 +30,5 @@ common = { workspace = true }
 common_eth = { workspace = true }
 common_sentinel = { workspace = true }
 common_metadata = { workspace = true }
-common_file_logger = { workspace = true }
+common_file_logger = { workspace = true, optional = true }
 common_debug_signers = { package = "debug_signers", path = "../../../common/debug_signers", features = [ "no-safe-debug-signers", "skip-db-transactions" ] }
