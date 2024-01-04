@@ -10,10 +10,10 @@ use crate::{
     eos_utils::convert_hex_to_checksum256,
 };
 
-pub type CanonicalLeft = Bytes;
-pub type CanonicalRight = Bytes;
-pub type Sha256Hash = bitcoin::hashes::sha256::Hash;
-pub type CanonicalPair = (CanonicalLeft, CanonicalRight);
+type CanonicalLeft = Bytes;
+type CanonicalRight = Bytes;
+type Sha256Hash = bitcoin::hashes::sha256::Hash;
+type CanonicalPair = (CanonicalLeft, CanonicalRight);
 
 fn set_first_bit_of_byte_to_zero(mut byte: Byte) -> Byte {
     byte &= 0b0111_1111;
@@ -70,7 +70,7 @@ fn make_and_hash_canonical_pair(l: &[Byte], r: &[Byte]) -> Bytes {
     hash_canonical_pair(make_canonical_pair(l, r)).to_vec()
 }
 
-pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
+pub(crate) fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
     let mut node = hex::decode(merkle_proof[0].clone())?;
     let leaves = merkle_proof[..merkle_proof.len() - 1]
         .iter()
@@ -90,13 +90,13 @@ pub fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub struct IncremerkleJson {
+pub(crate) struct IncremerkleJson {
     node_count: u64,
     active_nodes: Vec<String>,
 }
 
 impl IncremerkleJson {
-    pub fn from_incremerkle(incremerkle: &Incremerkle) -> Self {
+    fn from_incremerkle(incremerkle: &Incremerkle) -> Self {
         IncremerkleJson {
             node_count: incremerkle.node_count,
             active_nodes: incremerkle
@@ -107,7 +107,7 @@ impl IncremerkleJson {
         }
     }
 
-    pub fn to_incremerkle(&self) -> Result<Incremerkle> {
+    pub(crate) fn to_incremerkle(&self) -> Result<Incremerkle> {
         Ok(Incremerkle {
             node_count: self.node_count,
             active_nodes: self
@@ -128,7 +128,7 @@ pub struct Incremerkle {
 
 // NOTE: Ibid
 impl Incremerkle {
-    pub fn to_json(&self) -> IncremerkleJson {
+    pub(crate) fn to_json(&self) -> IncremerkleJson {
         IncremerkleJson::from_incremerkle(self)
     }
 
@@ -144,7 +144,7 @@ impl Incremerkle {
         canonical_r
     }
 
-    pub fn make_canonical_pair(l: &Checksum256, r: &Checksum256) -> (Checksum256, Checksum256) {
+    fn make_canonical_pair(l: &Checksum256, r: &Checksum256) -> (Checksum256, Checksum256) {
         (Self::make_canonical_left(l), Self::make_canonical_right(r))
     }
 
@@ -204,14 +204,14 @@ impl Incremerkle {
         Ok(Self::count_leading_zeroes_of_a_power_of_2(implied_count)? + 1)
     }
 
-    pub fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
+    pub(crate) fn new(node_count: u64, active_nodes: Vec<Checksum256>) -> Self {
         Incremerkle {
             node_count,
             active_nodes,
         }
     }
 
-    pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
+    pub(crate) fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
         let mut partial = false;
         let max_depth = Self::calculate_max_depth(self.node_count + 1)?;
         let mut current_depth = max_depth - 1;
@@ -253,7 +253,7 @@ impl Incremerkle {
         Ok(self.active_nodes[self.active_nodes.len() - 1])
     }
 
-    pub fn get_root(&self) -> Checksum256 {
+    pub(crate) fn get_root(&self) -> Checksum256 {
         if self.node_count > 0 {
             self.active_nodes[self.active_nodes.len() - 1]
         } else {
@@ -303,7 +303,7 @@ mod tests {
         make_canonical_pair(&get_expected_digest_bytes_1(), &get_expected_digest_bytes_2())
     }
 
-    pub fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
+    pub(crate) fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
         if leaves.is_empty() {
             return vec![0x00];
         }
