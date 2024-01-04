@@ -35,11 +35,9 @@ mod filter_action_proofs;
 mod get_action_digest;
 mod get_active_schedule;
 mod get_enabled_protocol_features;
-mod get_eos_incremerkle;
 mod get_processed_actions_list;
 mod increment_eos_account_nonce;
 mod protocol_features;
-mod save_incremerkle;
 mod save_latest_block_id;
 mod save_latest_block_num;
 mod validate_producer_slot;
@@ -116,10 +114,8 @@ pub use self::{
     },
     get_active_schedule::get_active_schedule_from_db_and_add_to_state,
     get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-    get_eos_incremerkle::get_incremerkle_and_add_to_state,
     get_processed_actions_list::get_processed_actions_list,
     increment_eos_account_nonce::increment_eos_account_nonce,
-    save_incremerkle::save_incremerkle_from_state_to_db,
     save_latest_block_id::save_latest_block_id_to_db,
     save_latest_block_num::save_latest_block_num_to_db,
     validate_producer_slot::validate_producer_slot_of_block_in_state,

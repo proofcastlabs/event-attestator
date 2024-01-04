@@ -1,5 +1,6 @@
 use common::{
     errors::AppError,
+    traits::DatabaseInterface,
     types::{Byte, Bytes, NoneError, Result},
 };
 use eos_chain::Checksum256;
@@ -8,6 +9,8 @@ use serde::{Deserialize, Serialize};
 use crate::{
     bitcoin_crate_alias::hashes::{sha256, Hash},
     eos_utils::convert_hex_to_checksum256,
+    EosDbUtils,
+    EosState,
 };
 
 type Sha256Hash = bitcoin::hashes::sha256::Hash;
@@ -43,15 +46,31 @@ impl IncremerkleJson {
     }
 }
 
-// NOTE: Courtesy of: https://github.com/bifrost-codes/rust-eos/
 #[derive(Clone, Default, Debug, PartialEq, Eq)]
 pub struct Incremerkle {
     node_count: u64,
     active_nodes: Vec<Checksum256>,
 }
 
-// NOTE: Ibid
 impl Incremerkle {
+    pub fn get_incremerkle_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+        info!("getting eos incremerkle from db...");
+        Self::get_from_db(&state.eos_db_utils).map(|i| state.add_incremerkle(i))
+    }
+
+    pub fn save_incremerkle_from_state_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+        info!("saving incremerkle from state to db...");
+        state.incremerkle.put_in_db(&state.eos_db_utils).and(Ok(state))
+    }
+
+    fn get_from_db<D: DatabaseInterface>(db_utils: &EosDbUtils<D>) -> Result<Self> {
+        db_utils.get_incremerkle_from_db()
+    }
+
+    fn put_in_db<D: DatabaseInterface>(&self, db_utils: &EosDbUtils<D>) -> Result<()> {
+        db_utils.put_incremerkle_in_db(self)
+    }
+
     pub(crate) fn to_json(&self) -> IncremerkleJson {
         IncremerkleJson::from_incremerkle(self)
     }
@@ -72,6 +91,7 @@ impl Incremerkle {
         (Self::make_canonical_left(l), Self::make_canonical_right(r))
     }
 
+    // NOTE: Some logic in here courtesy of: https://github.com/bifrost-codes/rust-eos/
     // NOTE: Given a power-of-2 (assumed to be correct) return the number of leading zeros.
     //
     // This is a classic count-leading-zeros in parallel without the necessary
@@ -183,28 +203,6 @@ impl Incremerkle {
         } else {
             Default::default()
         }
-    }
-
-    fn set_first_bit_of_byte_to_zero(mut byte: Byte) -> Byte {
-        byte &= 0b0111_1111;
-        byte
-    }
-
-    fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
-        byte |= 0b1000_0000;
-        byte
-    }
-
-    fn set_first_bit_of_hash_to_one(hash: &Checksum256) -> Checksum256 {
-        let mut new_hash = hash.clone();
-        new_hash.0[0] = Self::set_first_bit_of_byte_to_one(hash.0[0]);
-        Checksum256::new(new_hash.into())
-    }
-
-    fn set_first_bit_of_hash_to_zero(hash: &Checksum256) -> Checksum256 {
-        let mut new_hash = hash.clone();
-        new_hash.0[0] = Self::set_first_bit_of_byte_to_zero(hash.0[0]);
-        Checksum256::new(new_hash.into())
     }
 
     fn is_canonical_left(hash: &Checksum256) -> bool {
@@ -326,48 +324,6 @@ mod tests {
             leaves.resize(leaves.len() / 2, vec![0x00]);
         }
         leaves[0].clone()
-    }
-
-    #[test]
-    fn should_set_first_bit_of_byte_to_zero() {
-        let byte = 0b1011_1011;
-        let expected_result = 0b0011_1011;
-        let result = Incremerkle::set_first_bit_of_byte_to_zero(byte);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_set_first_bit_of_byte_to_one() {
-        let byte = 0b0011_0011;
-        let expected_result = 0b1011_0011;
-        let result = Incremerkle::set_first_bit_of_byte_to_one(byte);
-        assert_eq!(result, expected_result);
-    }
-
-    #[test]
-    fn should_set_first_bit_of_hash_to_one() {
-        let hash = get_expected_digest_2();
-        let result = Incremerkle::set_first_bit_of_hash_to_one(&hash);
-        for i in 0..hash.0.len() {
-            if i == 0 {
-                assert_eq!(result.0[i], get_expected_first_byte_2());
-            } else {
-                assert_eq!(result.0[i], hash.0[i]);
-            }
-        }
-    }
-
-    #[test]
-    fn should_set_first_bit_of_hash_to_zero() {
-        let hash = get_expected_digest_1();
-        let result = Incremerkle::set_first_bit_of_hash_to_zero(&hash);
-        for i in 0..hash.0.len() {
-            if i == 0 {
-                assert_eq!(result.0[i], get_expected_first_byte_1());
-            } else {
-                assert_eq!(result.0[i], hash.0[i]);
-            }
-        }
     }
 
     #[test]
