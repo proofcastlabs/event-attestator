@@ -1,9 +1,11 @@
 use bitcoin::hashes::sha256::Hash as Sha256Hash;
 use common::{
+    constants::MIN_DATA_SENSITIVITY_LEVEL,
     errors::AppError,
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
 };
+use derive_more::{Constructor, Deref, DerefMut};
 use eos_chain::Checksum256;
 use serde::{Deserialize, Serialize};
 
@@ -14,6 +16,55 @@ use crate::{
     EosState,
 };
 
+const MAX_NUM_INCREMERKLES: usize = 10;
+
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor, Deref, DerefMut)]
+pub struct Incremerkles(Vec<Incremerkle>);
+
+impl Incremerkles {
+    fn empty() -> Self {
+        Self::default()
+    }
+
+    fn get_from_db<D: DatabaseInterface>(db_utils: &EosDbUtils<D>) -> Result<Self> {
+        debug!("getting EOS incremerkles from db...");
+        db_utils
+            .get_db()
+            .get(db_utils.get_eos_incremerkle_key(), MIN_DATA_SENSITIVITY_LEVEL)
+            .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
+    }
+
+    fn put_in_db<D: DatabaseInterface>(&self, db_utils: &EosDbUtils<D>) -> Result<()> {
+        debug!("putting EOS incremerkles in db...");
+        db_utils.get_db().put(
+            db_utils.get_eos_incremerkle_key(),
+            serde_json::to_vec(&self)?,
+            MIN_DATA_SENSITIVITY_LEVEL,
+        )
+    }
+
+    fn add(&mut self, incremerkle: Incremerkle) {
+        if incremerkle.block_num() > self.latest_block_num() || self.is_empty() {
+            info!("adding new incremerkle to list");
+            self.insert(0, incremerkle);
+            self.truncate(MAX_NUM_INCREMERKLES);
+        }
+        warn!("not adding incremerkle to list because its block num is behind chain tip")
+    }
+
+    fn block_nums(&self) -> Vec<u64> {
+        self.iter().map(|i| i.block_num()).collect()
+    }
+
+    fn latest_block_num(&self) -> u64 {
+        if self.is_empty() {
+            warn!("no incremerkles to get latest block number from");
+            0
+        } else {
+            self.0[0].block_num()
+        }
+    }
+}
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Incremerkle {
@@ -22,6 +73,14 @@ pub struct Incremerkle {
 }
 
 impl Incremerkle {
+    fn block_num(&self) -> u64 {
+        self.node_count()
+    }
+
+    fn node_count(&self) -> u64 {
+        self.node_count
+    }
+
     pub fn get_incremerkle_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
         info!("getting eos incremerkle from db...");
         Self::get_from_db(&state.eos_db_utils).map(|i| state.add_incremerkle(i))
@@ -565,5 +624,51 @@ mod tests {
         incremerkle.put_in_db(&eos_db_utils).unwrap();
         let incremerkle_from_db = Incremerkle::get_from_db(&eos_db_utils).unwrap();
         assert_eq!(incremerkle_from_db, incremerkle);
+    }
+
+    #[test]
+    fn should_only_allow_max_num_incremerkles() {
+        let mut incremerkles = Incremerkles::empty();
+        for i in 0..MAX_NUM_INCREMERKLES + 10 {
+            incremerkles.add(Incremerkle::new(i as u64, vec![]));
+            assert_eq!(incremerkles.latest_block_num(), i as u64);
+            if i < MAX_NUM_INCREMERKLES {
+                assert_eq!(incremerkles.len(), i + 1)
+            } else {
+                assert_eq!(incremerkles.len(), MAX_NUM_INCREMERKLES)
+            }
+        }
+    }
+
+    #[test]
+    fn should_put_and_get_incremerkles_in_db() {
+        let mut incremerkles = Incremerkles::empty();
+        for i in 0..MAX_NUM_INCREMERKLES {
+            incremerkles.add(Incremerkle::new(i as u64, vec![]));
+        }
+        let db = get_test_database();
+        let db_utils = EosDbUtils::new(&db);
+        incremerkles.put_in_db(&db_utils).unwrap();
+        let incremerkles_from_db = Incremerkles::get_from_db(&db_utils).unwrap();
+        assert_eq!(incremerkles, incremerkles_from_db);
+        assert_eq!(incremerkles.block_nums(), incremerkles_from_db.block_nums());
+    }
+
+    #[test]
+    fn should_only_add_subsequent_incremerkles() {
+        let mut incremerkles = Incremerkles::empty();
+        assert_eq!(incremerkles.len(), 0);
+        let i1 = Incremerkle::new(1, vec![]);
+        let i2 = Incremerkle::new(2, vec![]);
+        let i3 = Incremerkle::new(3, vec![]);
+        incremerkles.add(i2);
+        assert_eq!(incremerkles.len(), 1);
+        assert_eq!(incremerkles.latest_block_num(), 2);
+        incremerkles.add(i3);
+        assert_eq!(incremerkles.len(), 2);
+        assert_eq!(incremerkles.latest_block_num(), 3);
+        incremerkles.add(i1);
+        assert_eq!(incremerkles.len(), 2);
+        assert_eq!(incremerkles.latest_block_num(), 3);
     }
 }
