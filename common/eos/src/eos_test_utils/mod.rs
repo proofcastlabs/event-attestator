@@ -17,7 +17,7 @@ use crate::{
     eos_action_receipt::{AuthSequence, EosActionReceipt},
     eos_block_header::EosBlockHeaderV2,
     eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
-    eos_merkle_utils::Incremerkle,
+    eos_incremerkle::Incremerkle,
     eos_producer_schedule::{
         EosProducerScheduleJsonV1,
         EosProducerScheduleJsonV2,

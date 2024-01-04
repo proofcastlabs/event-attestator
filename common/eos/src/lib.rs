@@ -22,7 +22,7 @@ mod eos_enclave_state;
 mod eos_extension;
 mod eos_global_sequences;
 mod eos_hash;
-mod eos_merkle_utils;
+mod eos_incremerkle;
 mod eos_producer_key;
 mod eos_producer_schedule;
 mod eos_state;

@@ -9,7 +9,7 @@ use eos_chain::{AccountName as EosAccountName, ActionName as EosActionName, Chec
 use crate::{
     eos_action_proofs::{EosActionProof, EosActionProofs},
     eos_constants::{PEGIN_ACTION_NAME, REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
-    eos_merkle_utils::verify_merkle_proof,
+    eos_incremerkle::verify_merkle_proof,
     get_action_digest::get_action_digest,
     EosState,
 };

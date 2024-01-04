@@ -11,7 +11,7 @@ use eos_chain::{AccountName as EosAccountName, Checksum256};
 
 use crate::{
     eos_crypto::eos_public_key::EosPublicKey,
-    eos_merkle_utils::{Incremerkle, IncremerkleJson},
+    eos_incremerkle::{Incremerkle, IncremerkleJson},
     eos_producer_schedule::EosProducerScheduleV2,
     eos_types::EosKnownSchedules,
     eos_utils::{convert_hex_to_checksum256, get_eos_schedule_db_key},

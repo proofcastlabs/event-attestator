@@ -1,7 +1,7 @@
 use common::{traits::DatabaseInterface, types::Result};
 use eos_chain::Checksum256;
 
-use crate::{eos_merkle_utils::Incremerkle, EosState};
+use crate::{eos_incremerkle::Incremerkle, EosState};
 
 pub fn append_block_ids_to_incremerkle(mut incremerkle: Incremerkle, block_ids: &[Checksum256]) -> Result<Incremerkle> {
     block_ids.iter().for_each(|id| {

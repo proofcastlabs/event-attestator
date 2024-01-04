@@ -185,7 +185,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        eos_merkle_utils::Incremerkle,
+        eos_incremerkle::Incremerkle,
         eos_test_utils::{
             get_init_and_subsequent_blocks_json_n,
             get_sample_eos_submission_material_json_n,

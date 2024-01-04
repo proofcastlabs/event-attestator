@@ -11,7 +11,7 @@ use crate::{
     eos_block_header::EosBlockHeaderV2,
     eos_database_utils::EosDbUtils,
     eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
-    eos_merkle_utils::Incremerkle,
+    eos_incremerkle::Incremerkle,
     eos_producer_schedule::EosProducerScheduleV2,
     eos_submission_material::EosSubmissionMaterial,
     eos_types::Checksum256s,
