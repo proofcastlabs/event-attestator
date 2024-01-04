@@ -13,98 +13,6 @@ use crate::{
 type Sha256Hash = bitcoin::hashes::sha256::Hash;
 type CanonicalPair = (Checksum256, Checksum256);
 
-fn set_first_bit_of_byte_to_zero(mut byte: Byte) -> Byte {
-    byte &= 0b0111_1111;
-    byte
-}
-
-fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
-    byte |= 0b1000_0000;
-    byte
-}
-
-fn set_first_bit_of_hash_to_one(hash: &Checksum256) -> Checksum256 {
-    let mut new_hash = hash.clone();
-    new_hash.0[0] = set_first_bit_of_byte_to_one(hash.0[0]);
-    Checksum256::new(new_hash.into())
-}
-
-fn set_first_bit_of_hash_to_zero(hash: &Checksum256) -> Checksum256 {
-    let mut new_hash = hash.clone();
-    new_hash.0[0] = set_first_bit_of_byte_to_zero(hash.0[0]);
-    Checksum256::new(new_hash.into())
-}
-
-fn make_canonical_left(hash: &Checksum256) -> Checksum256 {
-    set_first_bit_of_hash_to_zero(hash)
-}
-
-fn make_canonical_right(hash: &Checksum256) -> Checksum256 {
-    set_first_bit_of_hash_to_one(hash)
-}
-
-fn is_canonical_left(hash: &Checksum256) -> bool {
-    hash.0[0] & 0b1000_0000 == 0
-}
-
-fn is_canonical_right(hash: &Checksum256) -> bool {
-    !is_canonical_left(hash)
-}
-
-fn make_canonical_pair(l: &Checksum256, r: &Checksum256) -> CanonicalPair {
-    (make_canonical_left(l), make_canonical_right(r))
-}
-
-fn concatenate_canonical_pair(pair: (Checksum256, Checksum256)) -> Bytes {
-    [pair.0 .0, pair.1 .0].concat()
-}
-
-fn hash_canonical_pair(pair: CanonicalPair) -> Sha256Hash {
-    sha256::Hash::hash(&concatenate_canonical_pair(pair))
-}
-
-fn make_and_hash_canonical_pair(l: &Checksum256, r: &Checksum256) -> Result<Checksum256> {
-    bytes_to_checksum(&hash_canonical_pair(make_canonical_pair(l, r)).to_vec())
-}
-
-fn hex_to_checksum(hex: &str) -> Result<Checksum256> {
-    bytes_to_checksum(&hex::decode(hex)?)
-}
-
-fn bytes_to_checksum(bs: &[Byte]) -> Result<Checksum256> {
-    const NUM_BYTES: usize = 32;
-    if bs.len() > NUM_BYTES {
-        Err("not enough bytes to convert hex to eos checksum256".into())
-    } else {
-        let mut a = [0u8; NUM_BYTES];
-        for i in 0..NUM_BYTES {
-            a[i] = bs[i];
-        }
-        Ok(Checksum256::new(a))
-    }
-}
-
-pub(crate) fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
-    let mut node = hex_to_checksum(&merkle_proof[0])?;
-    let leaves = merkle_proof[..merkle_proof.len() - 1]
-        .iter()
-        .map(|h| hex_to_checksum(h))
-        .collect::<Result<Vec<Checksum256>>>()?;
-    for leaf in leaves.iter().skip(1) {
-        if is_canonical_right(leaf) {
-            node = make_and_hash_canonical_pair(&node, leaf)?;
-        } else {
-            node = make_and_hash_canonical_pair(leaf, &node)?;
-        }
-    }
-    let last_str = match merkle_proof.last() {
-        Some(s) => s.to_string(),
-        _ => "".to_string(),
-    };
-    let last = hex_to_checksum(&last_str)?;
-    Ok(node == last)
-}
-
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub(crate) struct IncremerkleJson {
     node_count: u64,
@@ -276,6 +184,86 @@ impl Incremerkle {
             Default::default()
         }
     }
+
+    fn set_first_bit_of_byte_to_zero(mut byte: Byte) -> Byte {
+        byte &= 0b0111_1111;
+        byte
+    }
+
+    fn set_first_bit_of_byte_to_one(mut byte: Byte) -> Byte {
+        byte |= 0b1000_0000;
+        byte
+    }
+
+    fn set_first_bit_of_hash_to_one(hash: &Checksum256) -> Checksum256 {
+        let mut new_hash = hash.clone();
+        new_hash.0[0] = Self::set_first_bit_of_byte_to_one(hash.0[0]);
+        Checksum256::new(new_hash.into())
+    }
+
+    fn set_first_bit_of_hash_to_zero(hash: &Checksum256) -> Checksum256 {
+        let mut new_hash = hash.clone();
+        new_hash.0[0] = Self::set_first_bit_of_byte_to_zero(hash.0[0]);
+        Checksum256::new(new_hash.into())
+    }
+
+    fn is_canonical_left(hash: &Checksum256) -> bool {
+        hash.0[0] & 0b1000_0000 == 0
+    }
+
+    fn is_canonical_right(hash: &Checksum256) -> bool {
+        !Self::is_canonical_left(hash)
+    }
+
+    fn concatenate_canonical_pair(pair: (Checksum256, Checksum256)) -> Bytes {
+        [pair.0 .0, pair.1 .0].concat()
+    }
+
+    fn hash_canonical_pair(pair: CanonicalPair) -> Sha256Hash {
+        sha256::Hash::hash(&Self::concatenate_canonical_pair(pair))
+    }
+
+    fn make_and_hash_canonical_pair(l: &Checksum256, r: &Checksum256) -> Result<Checksum256> {
+        Self::bytes_to_checksum(&Self::hash_canonical_pair(Self::make_canonical_pair(l, r)).to_vec())
+    }
+
+    fn hex_to_checksum(hex: &str) -> Result<Checksum256> {
+        Self::bytes_to_checksum(&hex::decode(hex)?)
+    }
+
+    fn bytes_to_checksum(bs: &[Byte]) -> Result<Checksum256> {
+        const NUM_BYTES: usize = 32;
+        if bs.len() > NUM_BYTES {
+            Err("not enough bytes to convert hex to eos checksum256".into())
+        } else {
+            let mut a = [0u8; NUM_BYTES];
+            for i in 0..NUM_BYTES {
+                a[i] = bs[i];
+            }
+            Ok(Checksum256::new(a))
+        }
+    }
+
+    pub(crate) fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
+        let mut node = Self::hex_to_checksum(&merkle_proof[0])?;
+        let leaves = merkle_proof[..merkle_proof.len() - 1]
+            .iter()
+            .map(|h| Self::hex_to_checksum(h))
+            .collect::<Result<Vec<Checksum256>>>()?;
+        for leaf in leaves.iter().skip(1) {
+            if Self::is_canonical_right(leaf) {
+                node = Self::make_and_hash_canonical_pair(&node, leaf)?;
+            } else {
+                node = Self::make_and_hash_canonical_pair(leaf, &node)?;
+            }
+        }
+        let last_str = match merkle_proof.last() {
+            Some(s) => s.to_string(),
+            _ => "".to_string(),
+        };
+        let last = Self::hex_to_checksum(&last_str)?;
+        Ok(node == last)
+    }
 }
 
 #[cfg(test)]
@@ -299,20 +287,12 @@ mod tests {
         "122cd09d66ca7df007a35bd9c9be5484833f1a69ad0c8527c3e2a56b6955e761"
     }
 
-    fn get_expected_digest_bytes_1() -> Bytes {
-        hex::decode(get_expected_digest_hex_1()).unwrap()
-    }
-
-    fn get_expected_digest_bytes_2() -> Bytes {
-        hex::decode(get_expected_digest_hex_2()).unwrap()
-    }
-
     fn get_expected_digest_1() -> Checksum256 {
-        hex_to_checksum(get_expected_digest_hex_1()).unwrap()
+        Incremerkle::hex_to_checksum(get_expected_digest_hex_1()).unwrap()
     }
 
     fn get_expected_digest_2() -> Checksum256 {
-        hex_to_checksum(get_expected_digest_hex_2()).unwrap()
+        Incremerkle::hex_to_checksum(get_expected_digest_hex_2()).unwrap()
     }
 
     fn get_expected_first_byte_1() -> Byte {
@@ -324,7 +304,7 @@ mod tests {
     }
 
     fn get_sample_canonical_pair() -> (Checksum256, Checksum256) {
-        make_canonical_pair(&get_expected_digest_1(), &get_expected_digest_2())
+        Incremerkle::make_canonical_pair(&get_expected_digest_1(), &get_expected_digest_2())
     }
 
     pub(crate) fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
@@ -337,9 +317,9 @@ mod tests {
                 leaves.push(last);
             }
             for i in 0..(leaves.len() / 2) {
-                leaves[i] = hash_canonical_pair(make_canonical_pair(
-                    &bytes_to_checksum(&leaves[2 * i]).unwrap(),
-                    &bytes_to_checksum(&leaves[(2 * i) + 1]).unwrap(),
+                leaves[i] = Incremerkle::hash_canonical_pair(Incremerkle::make_canonical_pair(
+                    &Incremerkle::bytes_to_checksum(&leaves[2 * i]).unwrap(),
+                    &Incremerkle::bytes_to_checksum(&leaves[(2 * i) + 1]).unwrap(),
                 ))
                 .to_vec();
             }
@@ -352,7 +332,7 @@ mod tests {
     fn should_set_first_bit_of_byte_to_zero() {
         let byte = 0b1011_1011;
         let expected_result = 0b0011_1011;
-        let result = set_first_bit_of_byte_to_zero(byte);
+        let result = Incremerkle::set_first_bit_of_byte_to_zero(byte);
         assert_eq!(result, expected_result);
     }
 
@@ -360,14 +340,14 @@ mod tests {
     fn should_set_first_bit_of_byte_to_one() {
         let byte = 0b0011_0011;
         let expected_result = 0b1011_0011;
-        let result = set_first_bit_of_byte_to_one(byte);
+        let result = Incremerkle::set_first_bit_of_byte_to_one(byte);
         assert_eq!(result, expected_result);
     }
 
     #[test]
     fn should_set_first_bit_of_hash_to_one() {
         let hash = get_expected_digest_2();
-        let result = set_first_bit_of_hash_to_one(&hash);
+        let result = Incremerkle::set_first_bit_of_hash_to_one(&hash);
         for i in 0..hash.0.len() {
             if i == 0 {
                 assert_eq!(result.0[i], get_expected_first_byte_2());
@@ -380,7 +360,7 @@ mod tests {
     #[test]
     fn should_set_first_bit_of_hash_to_zero() {
         let hash = get_expected_digest_1();
-        let result = set_first_bit_of_hash_to_zero(&hash);
+        let result = Incremerkle::set_first_bit_of_hash_to_zero(&hash);
         for i in 0..hash.0.len() {
             if i == 0 {
                 assert_eq!(result.0[i], get_expected_first_byte_1());
@@ -393,7 +373,7 @@ mod tests {
     #[test]
     fn should_make_hash_canonical_right() {
         let hash = get_expected_digest_2();
-        let result = make_canonical_right(&hash);
+        let result = Incremerkle::make_canonical_right(&hash);
         for i in 0..hash.0.len() {
             if i == 0 {
                 assert_eq!(result.0[i], get_expected_first_byte_2());
@@ -406,7 +386,7 @@ mod tests {
     #[test]
     fn should_make_hash_canonical_left() {
         let hash = get_expected_digest_1();
-        let result = make_canonical_left(&hash);
+        let result = Incremerkle::make_canonical_left(&hash);
         for i in 0..hash.0.len() {
             if i == 0 {
                 assert_eq!(result.0[i], get_expected_first_byte_1());
@@ -419,9 +399,9 @@ mod tests {
     #[test]
     fn canonical_left_hash_should_be_canonical_left() {
         let hash = get_expected_digest_1();
-        let canonical_left_hash = make_canonical_left(&hash);
-        let is_left = is_canonical_left(&canonical_left_hash);
-        let is_right = is_canonical_right(&canonical_left_hash);
+        let canonical_left_hash = Incremerkle::make_canonical_left(&hash);
+        let is_left = Incremerkle::is_canonical_left(&canonical_left_hash);
+        let is_right = Incremerkle::is_canonical_right(&canonical_left_hash);
         assert!(is_left);
         assert!(!is_right);
     }
@@ -429,9 +409,9 @@ mod tests {
     #[test]
     fn canonical_right_hash_should_be_canonical_right() {
         let hash = get_expected_digest_2();
-        let canonical_right_hash = make_canonical_right(&hash);
-        let is_left = is_canonical_left(&canonical_right_hash);
-        let is_right = is_canonical_right(&canonical_right_hash);
+        let canonical_right_hash = Incremerkle::make_canonical_right(&hash);
+        let is_left = Incremerkle::is_canonical_left(&canonical_right_hash);
+        let is_right = Incremerkle::is_canonical_right(&canonical_right_hash);
         assert!(!is_left);
         assert!(is_right);
     }
@@ -462,7 +442,7 @@ mod tests {
     fn should_make_canonical_pair() {
         let digest_1 = get_expected_digest_1();
         let digest_2 = get_expected_digest_2();
-        let (left, right) = make_canonical_pair(&digest_1, &digest_2);
+        let (left, right) = Incremerkle::make_canonical_pair(&digest_1, &digest_2);
 
         for i in 0..left.0.len() {
             if i == 0 {
@@ -484,7 +464,7 @@ mod tests {
     fn should_hash_canonical_pair() {
         let expected_result = "a26284468e89fe4a5cce763ca3b3d3d37d5fcb35f289c63f0558487ec57ace28";
         let canonical_pair = get_sample_canonical_pair();
-        let result = hash_canonical_pair(canonical_pair);
+        let result = Incremerkle::hash_canonical_pair(canonical_pair);
         assert_eq!(result.to_string(), expected_result);
     }
 
@@ -633,7 +613,7 @@ mod tests {
             .enumerate()
             .map(|(_, i)| get_sample_eos_submission_material_n(i + 1))
             .map(|submission_material| submission_material.action_proofs[0].action_proof.clone())
-            .for_each(|merkle_proof| assert!(verify_merkle_proof(&merkle_proof).unwrap()));
+            .for_each(|merkle_proof| assert!(Incremerkle::verify_merkle_proof(&merkle_proof).unwrap()));
     }
 
     #[test]

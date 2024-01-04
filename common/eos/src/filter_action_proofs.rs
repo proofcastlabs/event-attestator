@@ -9,7 +9,7 @@ use eos_chain::{AccountName as EosAccountName, ActionName as EosActionName, Chec
 use crate::{
     eos_action_proofs::{EosActionProof, EosActionProofs},
     eos_constants::{PEGIN_ACTION_NAME, REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
-    eos_incremerkle::verify_merkle_proof,
+    eos_incremerkle::Incremerkle,
     get_action_digest::get_action_digest,
     EosState,
 };
@@ -73,7 +73,7 @@ pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[EosActionPr
     let filtered = action_proofs
         .iter()
         .map(|proof_data| proof_data.action_proof.as_slice())
-        .map(verify_merkle_proof)
+        .map(Incremerkle::verify_merkle_proof)
         .collect::<Result<Vec<bool>>>()?
         .into_iter()
         .zip(action_proofs.iter())
