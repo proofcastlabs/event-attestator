@@ -1,7 +1,8 @@
+use bitcoin::hashes::sha256::Hash as Sha256Hash;
 use common::{
     errors::AppError,
     traits::DatabaseInterface,
-    types::{Byte, Bytes, NoneError, Result},
+    types::{Bytes, NoneError, Result},
 };
 use eos_chain::Checksum256;
 use serde::{Deserialize, Serialize};
@@ -13,40 +14,8 @@ use crate::{
     EosState,
 };
 
-type Sha256Hash = bitcoin::hashes::sha256::Hash;
-type CanonicalPair = (Checksum256, Checksum256);
 
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-pub(crate) struct IncremerkleJson {
-    node_count: u64,
-    active_nodes: Vec<String>,
-}
-
-impl IncremerkleJson {
-    fn from_incremerkle(incremerkle: &Incremerkle) -> Self {
-        IncremerkleJson {
-            node_count: incremerkle.node_count,
-            active_nodes: incremerkle
-                .active_nodes
-                .iter()
-                .map(|checksum| checksum.to_string())
-                .collect::<Vec<String>>(),
-        }
-    }
-
-    pub(crate) fn to_incremerkle(&self) -> Result<Incremerkle> {
-        Ok(Incremerkle {
-            node_count: self.node_count,
-            active_nodes: self
-                .active_nodes
-                .iter()
-                .map(convert_hex_to_checksum256)
-                .collect::<Result<Vec<Checksum256>>>()?,
-        })
-    }
-}
-
-#[derive(Clone, Default, Debug, PartialEq, Eq)]
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Incremerkle {
     node_count: u64,
     active_nodes: Vec<Checksum256>,
@@ -69,10 +38,6 @@ impl Incremerkle {
 
     fn put_in_db<D: DatabaseInterface>(&self, db_utils: &EosDbUtils<D>) -> Result<()> {
         db_utils.put_incremerkle_in_db(self)
-    }
-
-    pub(crate) fn to_json(&self) -> IncremerkleJson {
-        IncremerkleJson::from_incremerkle(self)
     }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
@@ -217,36 +182,21 @@ impl Incremerkle {
         [pair.0 .0, pair.1 .0].concat()
     }
 
-    fn hash_canonical_pair(pair: CanonicalPair) -> Sha256Hash {
+    fn hash_canonical_pair(pair: (Checksum256, Checksum256)) -> Sha256Hash {
         sha256::Hash::hash(&Self::concatenate_canonical_pair(pair))
     }
 
     fn make_and_hash_canonical_pair(l: &Checksum256, r: &Checksum256) -> Result<Checksum256> {
-        Self::bytes_to_checksum(&Self::hash_canonical_pair(Self::make_canonical_pair(l, r)).to_vec())
-    }
-
-    fn hex_to_checksum(hex: &str) -> Result<Checksum256> {
-        Self::bytes_to_checksum(&hex::decode(hex)?)
-    }
-
-    fn bytes_to_checksum(bs: &[Byte]) -> Result<Checksum256> {
-        const NUM_BYTES: usize = 32;
-        if bs.len() > NUM_BYTES {
-            Err("not enough bytes to convert hex to eos checksum256".into())
-        } else {
-            let mut a = [0u8; NUM_BYTES];
-            for i in 0..NUM_BYTES {
-                a[i] = bs[i];
-            }
-            Ok(Checksum256::new(a))
-        }
+        convert_hex_to_checksum256(hex::encode(
+            &Self::hash_canonical_pair(Self::make_canonical_pair(l, r)).to_vec(),
+        ))
     }
 
     pub(crate) fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
-        let mut node = Self::hex_to_checksum(&merkle_proof[0])?;
+        let mut node = convert_hex_to_checksum256(&merkle_proof[0])?;
         let leaves = merkle_proof[..merkle_proof.len() - 1]
             .iter()
-            .map(|h| Self::hex_to_checksum(h))
+            .map(|h| convert_hex_to_checksum256(h))
             .collect::<Result<Vec<Checksum256>>>()?;
         for leaf in leaves.iter().skip(1) {
             if Self::is_canonical_right(leaf) {
@@ -259,7 +209,7 @@ impl Incremerkle {
             Some(s) => s.to_string(),
             _ => "".to_string(),
         };
-        let last = Self::hex_to_checksum(&last_str)?;
+        let last = convert_hex_to_checksum256(&last_str)?;
         Ok(node == last)
     }
 }
@@ -269,6 +219,7 @@ mod tests {
     #![allow(clippy::needless_range_loop)]
     use std::str::FromStr;
 
+    use common::{test_utils::get_test_database, types::Byte};
     use eos_chain::{AccountName, Action, ActionName, PermissionLevel, PermissionName, SerializeData};
 
     use super::*;
@@ -286,11 +237,11 @@ mod tests {
     }
 
     fn get_expected_digest_1() -> Checksum256 {
-        Incremerkle::hex_to_checksum(get_expected_digest_hex_1()).unwrap()
+        convert_hex_to_checksum256(get_expected_digest_hex_1()).unwrap()
     }
 
     fn get_expected_digest_2() -> Checksum256 {
-        Incremerkle::hex_to_checksum(get_expected_digest_hex_2()).unwrap()
+        convert_hex_to_checksum256(get_expected_digest_hex_2()).unwrap()
     }
 
     fn get_expected_first_byte_1() -> Byte {
@@ -316,8 +267,8 @@ mod tests {
             }
             for i in 0..(leaves.len() / 2) {
                 leaves[i] = Incremerkle::hash_canonical_pair(Incremerkle::make_canonical_pair(
-                    &Incremerkle::bytes_to_checksum(&leaves[2 * i]).unwrap(),
-                    &Incremerkle::bytes_to_checksum(&leaves[(2 * i) + 1]).unwrap(),
+                    &convert_hex_to_checksum256(&hex::encode(&leaves[2 * i])).unwrap(),
+                    &convert_hex_to_checksum256(&hex::encode(&leaves[(2 * i) + 1])).unwrap(),
                 ))
                 .to_vec();
             }
@@ -584,23 +535,6 @@ mod tests {
     }
 
     #[test]
-    fn should_convert_from_incremerkle_to_json_and_back() {
-        let expected_incremerkle_root = "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
-        let submission_material = get_sample_eos_submission_material_n(5);
-        let active_nodes = submission_material.interim_block_ids.clone();
-        let node_count: u64 = submission_material.block_header.block_num().into();
-        let incremerkle = Incremerkle::new(node_count, active_nodes);
-        let json = IncremerkleJson::from_incremerkle(&incremerkle);
-        assert_eq!(json.node_count, incremerkle.node_count);
-        assert_eq!(json.active_nodes.len(), incremerkle.active_nodes.len());
-        let result = json.to_incremerkle().unwrap();
-        assert_eq!(result.node_count, incremerkle.node_count);
-        assert_eq!(result.active_nodes.len(), incremerkle.active_nodes.len());
-        let result_root = hex::encode(incremerkle.get_root().to_bytes());
-        assert_eq!(result_root, expected_incremerkle_root);
-    }
-
-    #[test]
     fn should_count_leading_zeroes_of_powers_of_2() {
         let num_digits_in_u64: u32 = 64;
         let mut results: Vec<u32> = vec![];
@@ -615,5 +549,21 @@ mod tests {
             .iter()
             .zip(expected_results.iter())
             .for_each(|(result, expected_result)| assert_eq!(result, expected_result))
+    }
+
+    #[test]
+    fn should_put_and_get_incremerkle_in_db() {
+        let db = get_test_database();
+        let eos_db_utils = EosDbUtils::new(&db);
+        let expected_incremerkle_root = "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
+        let submission_material = get_sample_eos_submission_material_n(5);
+        let active_nodes = submission_material.interim_block_ids.clone();
+        let node_count: u64 = submission_material.block_header.block_num().into();
+        let incremerkle = Incremerkle::new(node_count, active_nodes);
+        let incremerkle_root = hex::encode(incremerkle.get_root().to_bytes());
+        assert_eq!(incremerkle_root, expected_incremerkle_root);
+        incremerkle.put_in_db(&eos_db_utils).unwrap();
+        let incremerkle_from_db = Incremerkle::get_from_db(&eos_db_utils).unwrap();
+        assert_eq!(incremerkle_from_db, incremerkle);
     }
 }
