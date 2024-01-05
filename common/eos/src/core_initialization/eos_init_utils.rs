@@ -14,7 +14,7 @@ use crate::{
     eos_crypto::eos_private_key::EosPrivateKey,
     eos_database_utils::EosDbUtils,
     eos_global_sequences::ProcessedGlobalSequences,
-    eos_incremerkle::Incremerkle,
+    eos_incremerkle::{Incremerkle, Incremerkles},
     eos_producer_schedule::EosProducerScheduleV2,
     eos_submission_material::EosSubmissionMaterial,
     eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules},
@@ -144,23 +144,29 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
 
 pub fn generate_and_put_incremerkle_in_db<D: DatabaseInterface>(
     db_utils: &EosDbUtils<D>,
-    blockroot_merkle: &[String],
+    init_json: &EosInitJson,
 ) -> Result<()> {
-    info!("✔ Generating and putting incremerkle in db...");
-    db_utils.put_incremerkle_in_db(&Incremerkle::new(
-        db_utils.get_latest_eos_block_number()? - 1,
-        blockroot_merkle
+    info!("generating and putting new incremerkles in db...");
+
+    let incremerkle = Incremerkle::new(
+        init_json.block.block_num,
+        init_json
+            .blockroot_merkle
             .iter()
             .map(convert_hex_to_checksum256)
             .collect::<Result<Checksum256s>>()?,
-    ))
+    );
+
+    let incremerkles = Incremerkles::new(vec![incremerkle]);
+    incremerkles.put_in_db(db_utils)?;
+    Ok(())
 }
 
 pub fn generate_and_put_incremerkle_in_db_and_return_state<'a, D: DatabaseInterface>(
-    blockroot_merkle: &[String],
+    init_json: &EosInitJson,
     state: EosState<'a, D>,
 ) -> Result<EosState<'a, D>> {
-    generate_and_put_incremerkle_in_db(&state.eos_db_utils, blockroot_merkle).and(Ok(state))
+    generate_and_put_incremerkle_in_db(&state.eos_db_utils, init_json).and(Ok(state))
 }
 
 pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(
