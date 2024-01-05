@@ -1,4 +1,3 @@
-use bitcoin::hashes::sha256::Hash as Sha256Hash;
 use common::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     errors::AppError,
@@ -41,6 +40,22 @@ impl Incremerkles {
             serde_json::to_vec(&self)?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
+    }
+
+    pub(crate) fn add_block_ids(&mut self, block_ids: Vec<Checksum256>) -> Result<()> {
+        todo!("validate that it's subsequent etc");
+
+        // NOTE: Here we get the laatest incremerkle we have and append the new block ids to it,
+        // before adding this new incremerkle to the list. This way we keep up to MAX_NUM_INCREMERKLES
+        // previous incremerkles around. We need those past one when on rare occasions the EOS node
+        // returns an action for a block that's _behind_ the chain tip. If we didn't keep some
+        // older incremerkles around, we would never be able to validate such submissions.
+        let mut incremerkle = self.get(0).cloned().unwrap_or_default();
+        for id in block_ids.iter() {
+            incremerkle.append(*id)?;
+        }
+        self.add(incremerkle);
+        Ok(())
     }
 
     fn add(&mut self, incremerkle: Incremerkle) {
@@ -111,7 +126,7 @@ impl Incremerkle {
         canonical_r
     }
 
-    fn make_canonical_pair(l: &Checksum256, r: &Checksum256) -> (Checksum256, Checksum256) {
+    pub(crate) fn make_canonical_pair(l: &Checksum256, r: &Checksum256) -> (Checksum256, Checksum256) {
         (Self::make_canonical_left(l), Self::make_canonical_right(r))
     }
 
@@ -229,47 +244,12 @@ impl Incremerkle {
         }
     }
 
-    fn is_canonical_left(hash: &Checksum256) -> bool {
+    pub(crate) fn is_canonical_left(hash: &Checksum256) -> bool {
         hash.0[0] & 0b1000_0000 == 0
     }
 
-    fn is_canonical_right(hash: &Checksum256) -> bool {
+    pub(crate) fn is_canonical_right(hash: &Checksum256) -> bool {
         !Self::is_canonical_left(hash)
-    }
-
-    fn concatenate_canonical_pair(pair: (Checksum256, Checksum256)) -> Bytes {
-        [pair.0 .0, pair.1 .0].concat()
-    }
-
-    fn hash_canonical_pair(pair: (Checksum256, Checksum256)) -> Sha256Hash {
-        sha256::Hash::hash(&Self::concatenate_canonical_pair(pair))
-    }
-
-    fn make_and_hash_canonical_pair(l: &Checksum256, r: &Checksum256) -> Result<Checksum256> {
-        convert_hex_to_checksum256(hex::encode(
-            &Self::hash_canonical_pair(Self::make_canonical_pair(l, r)).to_vec(),
-        ))
-    }
-
-    pub(crate) fn verify_merkle_proof(merkle_proof: &[String]) -> Result<bool> {
-        let mut node = convert_hex_to_checksum256(&merkle_proof[0])?;
-        let leaves = merkle_proof[..merkle_proof.len() - 1]
-            .iter()
-            .map(|h| convert_hex_to_checksum256(h))
-            .collect::<Result<Vec<Checksum256>>>()?;
-        for leaf in leaves.iter().skip(1) {
-            if Self::is_canonical_right(leaf) {
-                node = Self::make_and_hash_canonical_pair(&node, leaf)?;
-            } else {
-                node = Self::make_and_hash_canonical_pair(leaf, &node)?;
-            }
-        }
-        let last_str = match merkle_proof.last() {
-            Some(s) => s.to_string(),
-            _ => "".to_string(),
-        };
-        let last = convert_hex_to_checksum256(&last_str)?;
-        Ok(node == last)
     }
 }
 
@@ -285,6 +265,7 @@ mod tests {
     use crate::{
         eos_action_receipt::{AuthSequence, EosActionReceipt},
         eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n},
+        MerkleProof,
     };
 
     fn get_expected_digest_hex_1() -> &'static str {
@@ -311,10 +292,6 @@ mod tests {
         0b1001_0010
     }
 
-    fn get_sample_canonical_pair() -> (Checksum256, Checksum256) {
-        Incremerkle::make_canonical_pair(&get_expected_digest_1(), &get_expected_digest_2())
-    }
-
     pub(crate) fn get_merkle_digest(mut leaves: Vec<Bytes>) -> Bytes {
         if leaves.is_empty() {
             return vec![0x00];
@@ -325,7 +302,7 @@ mod tests {
                 leaves.push(last);
             }
             for i in 0..(leaves.len() / 2) {
-                leaves[i] = Incremerkle::hash_canonical_pair(Incremerkle::make_canonical_pair(
+                leaves[i] = MerkleProof::hash_canonical_pair(Incremerkle::make_canonical_pair(
                     &convert_hex_to_checksum256(&hex::encode(&leaves[2 * i])).unwrap(),
                     &convert_hex_to_checksum256(&hex::encode(&leaves[(2 * i) + 1])).unwrap(),
                 ))
@@ -402,36 +379,6 @@ mod tests {
         let serialized_action = action.to_serialize_data().unwrap();
         let result = sha256::Hash::hash(&serialized_action).to_vec();
         assert_eq!(result, get_expected_digest_1().0.to_vec());
-    }
-
-    #[test]
-    fn should_make_canonical_pair() {
-        let digest_1 = get_expected_digest_1();
-        let digest_2 = get_expected_digest_2();
-        let (left, right) = Incremerkle::make_canonical_pair(&digest_1, &digest_2);
-
-        for i in 0..left.0.len() {
-            if i == 0 {
-                assert_eq!(left.0[i], get_expected_first_byte_1());
-            } else {
-                assert_eq!(left.0[i], digest_1.0[i]);
-            }
-        }
-        for i in 0..right.0.len() {
-            if i == 0 {
-                assert_eq!(right.0[i], get_expected_first_byte_2());
-            } else {
-                assert_eq!(right.0[i], digest_2.0[i]);
-            }
-        }
-    }
-
-    #[test]
-    fn should_hash_canonical_pair() {
-        let expected_result = "a26284468e89fe4a5cce763ca3b3d3d37d5fcb35f289c63f0558487ec57ace28";
-        let canonical_pair = get_sample_canonical_pair();
-        let result = Incremerkle::hash_canonical_pair(canonical_pair);
-        assert_eq!(result.to_string(), expected_result);
     }
 
     #[test]
@@ -569,17 +516,6 @@ mod tests {
         let expected_result = "8b4e5e5d3e7587065896d0076d65c72e03c11a9159d414eb3a2363b59108116a";
         let result = get_merkle_digest(digests);
         assert_eq!(hex::encode(result), expected_result);
-    }
-
-    #[test]
-    fn should_verify_merkle_proofs() {
-        let num_proofs = 4;
-        [0, num_proofs - 1]
-            .iter()
-            .enumerate()
-            .map(|(_, i)| get_sample_eos_submission_material_n(i + 1))
-            .map(|submission_material| submission_material.action_proofs[0].action_proof.clone())
-            .for_each(|merkle_proof| assert!(Incremerkle::verify_merkle_proof(&merkle_proof).unwrap()));
     }
 
     #[test]

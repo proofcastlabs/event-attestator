@@ -23,6 +23,7 @@ mod eos_extension;
 mod eos_global_sequences;
 mod eos_hash;
 mod eos_incremerkle;
+mod eos_merkle_proof;
 mod eos_producer_key;
 mod eos_producer_schedule;
 mod eos_state;
@@ -121,6 +122,7 @@ pub use self::{
     validate_producer_slot::validate_producer_slot_of_block_in_state,
     validate_signature::validate_block_header_signature,
 };
+use self::{eos_incremerkle::Incremerkle, eos_merkle_proof::MerkleProof};
 
 #[macro_use]
 extern crate common;
