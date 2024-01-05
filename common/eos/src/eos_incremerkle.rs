@@ -15,6 +15,24 @@ use crate::{
     EosState,
 };
 
+// NOTE: The light client for EOS doesn't not keep blocks - they are too frequent and too numerous
+// for efficient use in TEEs.
+//
+// Instead, we provide as the first trusted block from the node which contains all the
+// information to construct a merkle tree with the correct merkle root which is that block's ID.
+//
+// Going forward from that, we can submit a later, non-subsequent block, along with _all_ the block
+// ID's between it and the previous one.
+//
+// Those IDs are then added to the incremerkle, whose root after those additions should now equal the
+// currently-being-submitted block's ID. This is how we verify that that later block is indeed chained
+// to the previous block, without having had to have seen every block in between.
+//
+// This does mean however that we can no no longer handle forks, because the incremerkle can never
+// go backwards. And thus instead of keeping just the one incremerkle - that of the chain tip - we
+// keep up to some X incremerkles around. This means we have a choice of incremerkle from which we can
+// verifiy a new submission.
+
 const MAX_NUM_INCREMERKLES: usize = 10;
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize, Constructor, Deref, DerefMut)]
@@ -42,14 +60,9 @@ impl Incremerkles {
         )
     }
 
-    pub(crate) fn add_block_ids(&mut self, block_ids: Vec<Checksum256>) -> Result<()> {
+    fn add_block_ids(&mut self, block_ids: Vec<Checksum256>) -> Result<()> {
         todo!("validate that it's subsequent etc");
 
-        // NOTE: Here we get the laatest incremerkle we have and append the new block ids to it,
-        // before adding this new incremerkle to the list. This way we keep up to MAX_NUM_INCREMERKLES
-        // previous incremerkles around. We need those past one when on rare occasions the EOS node
-        // returns an action for a block that's _behind_ the chain tip. If we didn't keep some
-        // older incremerkles around, we would never be able to validate such submissions.
         let mut incremerkle = self.get(0).cloned().unwrap_or_default();
         for id in block_ids.iter() {
             incremerkle.append(*id)?;
