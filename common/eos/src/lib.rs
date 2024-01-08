@@ -5,7 +5,6 @@ use bitcoin as bitcoin_crate_alias;
 use litecoin as bitcoin_crate_alias;
 
 mod add_schedule;
-mod append_interim_block_ids;
 mod core_initialization;
 mod disable_protocol_feature;
 mod enable_protocol_feature;
@@ -45,9 +44,7 @@ mod validate_producer_slot;
 mod validate_signature;
 
 pub use self::{
-    eos_incremerkle::Incremerkles,
     add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
-    append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
     core_initialization::{
         initialize_eos_core_inner,
         maybe_initialize_eos_core_with_eos_account_and_symbol,
@@ -88,6 +85,7 @@ pub use self::{
         GlobalSequences,
         ProcessedGlobalSequences,
     },
+    eos_incremerkle::Incremerkles,
     eos_state::EosState,
     eos_submission_material::{
         parse_submission_material_and_add_to_state,

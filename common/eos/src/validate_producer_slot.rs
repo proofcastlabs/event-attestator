@@ -8,33 +8,32 @@ use crate::{
 };
 
 fn get_producer_index(num_producers: u64, block_timestamp: u64) -> u64 {
-    debug!("  Num producers: {}", num_producers);
-    debug!("Block timestamp: {}", block_timestamp);
+    debug!("  num producers: {}", num_producers);
+    debug!("block timestamp: {}", block_timestamp);
     (block_timestamp % (num_producers * PRODUCER_REPS)) / PRODUCER_REPS
 }
 
 fn validate_producer_slot(schedule: &EosProducerScheduleV2, block: &EosBlockHeaderV2) -> Result<()> {
     let index = get_producer_index(schedule.producers.len() as u64, block.timestamp.as_u32() as u64) as usize;
-    match block.producer == schedule.producers[index].producer_name {
-        true => Ok(()),
-        _ => {
-            debug!(" Calculated index: {}", index);
-            debug!("Expected producer: {}", block.producer.to_string());
-            debug!(
-                "  Actual producer: {}",
-                schedule.producers[index].producer_name.to_string()
-            );
-            Err("✘ Producer slot not valid!".into())
-        },
+    if block.producer == schedule.producers[index].producer_name {
+        Ok(())
+    } else {
+        debug!(" calculated index: {index}");
+        debug!("expected producer: {}", block.producer.to_string());
+        debug!(
+            "  actual producer: {}",
+            schedule.producers[index].producer_name.to_string()
+        );
+        Err("producer slot not valid!".into())
     }
 }
 
 pub fn validate_producer_slot_of_block_in_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     if cfg!(feature = "non-validating") {
-        info!("✔ Skipping producer slot validation!");
+        info!("skipping producer slot validation!");
         Ok(state)
     } else {
-        info!("✔ Validating slot of producer of block...");
+        info!("validating slot of producer of block...");
         validate_producer_slot(state.get_active_schedule()?, state.get_eos_block_header()?).and(Ok(state))
     }
 }
