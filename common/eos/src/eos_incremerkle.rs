@@ -13,7 +13,6 @@ use crate::{
     eos_utils::convert_hex_to_checksum256,
     EosDbUtils,
     EosState,
-    EosSubmissionMaterial,
 };
 
 // NOTE: The light client for EOS doesn't not keep blocks - they are too frequent and too numerous
@@ -40,6 +39,12 @@ const MAX_NUM_INCREMERKLES: usize = 10;
 pub struct Incremerkles(Vec<Incremerkle>);
 
 impl Incremerkles {
+    pub fn latest_block_id(&self) -> Result<Checksum256> {
+        info!("getting latest block id from incremerkles...");
+        self.get_incremerkle_at_index(0)
+            .map(|incremerkle| incremerkle.get_root())
+    }
+
     fn empty() -> Self {
         Self::default()
     }
@@ -61,7 +66,7 @@ impl Incremerkles {
         )
     }
 
-    fn add_block_ids_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+    pub fn add_block_ids_and_return_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
         state
             .incremerkles
             .add_block_ids(
