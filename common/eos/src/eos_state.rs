@@ -11,7 +11,7 @@ use crate::{
     eos_block_header::EosBlockHeaderV2,
     eos_database_utils::EosDbUtils,
     eos_global_sequences::{GlobalSequences, ProcessedGlobalSequences},
-    eos_incremerkle::Incremerkle,
+    eos_incremerkle::Incremerkles,
     eos_producer_schedule::EosProducerScheduleV2,
     eos_submission_material::EosSubmissionMaterial,
     eos_types::Checksum256s,
@@ -30,7 +30,7 @@ pub struct EosState<'a, D: DatabaseInterface> {
     pub tx_infos: Bytes,
     pub eth_signed_txs: Bytes,
     pub block_num: Option<u64>,
-    pub incremerkle: Incremerkle,
+    pub incremerkles: Incremerkles,
     pub producer_signature: String,
     pub btc_utxos_and_values: Bytes,
     global_sequences: GlobalSequences,
@@ -59,9 +59,9 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
             btc_utxos_and_values: vec![],
             btc_on_eos_signed_txs: vec![],
             eos_eth_token_dictionary: None,
-            producer_signature: String::new(),
-            incremerkle: Incremerkle::default(),
             eos_db_utils: EosDbUtils::new(db),
+            producer_signature: String::new(),
+            incremerkles: Incremerkles::default(),
             global_sequences: GlobalSequences::default(),
             enabled_protocol_features: EnabledFeatures::init(),
             processed_tx_ids: ProcessedGlobalSequences::new(vec![]),
@@ -102,8 +102,8 @@ impl<'a, D: DatabaseInterface> EosState<'a, D> {
         self
     }
 
-    pub fn add_incremerkle(mut self, incremerkle: Incremerkle) -> EosState<'a, D> {
-        self.incremerkle = incremerkle;
+    pub fn add_incremerkles(mut self, incremerkles: Incremerkles) -> EosState<'a, D> {
+        self.incremerkles = incremerkles;
         self
     }
 

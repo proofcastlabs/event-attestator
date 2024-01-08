@@ -45,6 +45,7 @@ mod validate_producer_slot;
 mod validate_signature;
 
 pub use self::{
+    eos_incremerkle::Incremerkles,
     add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
     append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
     core_initialization::{

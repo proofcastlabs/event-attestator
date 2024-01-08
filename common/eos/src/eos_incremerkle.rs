@@ -51,7 +51,7 @@ impl Incremerkles {
             .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
     }
 
-    fn put_in_db<D: DatabaseInterface>(&self, db_utils: &EosDbUtils<D>) -> Result<()> {
+    pub(crate) fn put_in_db<D: DatabaseInterface>(&self, db_utils: &EosDbUtils<D>) -> Result<()> {
         debug!("putting EOS incremerkles in db...");
         db_utils.get_db().put(
             db_utils.get_eos_incremerkle_key(),
@@ -92,6 +92,17 @@ impl Incremerkles {
             self.0[0].block_num()
         }
     }
+
+    pub fn get_from_db_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+        info!("getting eos incremerkle from db...");
+        Self::get_from_db(&state.eos_db_utils).map(|i| state.add_incremerkles(i))
+    }
+
+    pub fn save_from_state_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
+        info!("saving incremerkles from state to db...");
+        state.incremerkles.put_in_db(&state.eos_db_utils).and(Ok(state))
+    }
+
 }
 
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -107,16 +118,6 @@ impl Incremerkle {
 
     fn node_count(&self) -> u64 {
         self.node_count
-    }
-
-    pub fn get_incremerkle_and_add_to_state<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-        info!("getting eos incremerkle from db...");
-        Self::get_from_db(&state.eos_db_utils).map(|i| state.add_incremerkle(i))
-    }
-
-    pub fn save_incremerkle_from_state_to_db<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
-        info!("saving incremerkle from state to db...");
-        state.incremerkle.put_in_db(&state.eos_db_utils).and(Ok(state))
     }
 
     fn get_from_db<D: DatabaseInterface>(db_utils: &EosDbUtils<D>) -> Result<Self> {

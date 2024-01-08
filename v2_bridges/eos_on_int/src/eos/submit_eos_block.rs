@@ -4,7 +4,7 @@ use common_eos::{
     end_eos_db_transaction_and_return_state,
     get_active_schedule_from_db_and_add_to_state,
     get_enabled_protocol_features_and_add_to_state,
-    get_incremerkle_and_add_to_state,
+    Incremerkles,
     get_processed_global_sequences_and_add_to_state,
     maybe_add_global_sequences_to_processed_list_and_return_state,
     maybe_add_new_eos_schedule_to_db_and_return_state,
@@ -50,7 +50,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(get_incremerkle_and_add_to_state)
+        .and_then(Incremerkles::get_from_db_and_add_to_state)
         .and_then(append_interim_block_ids_to_incremerkle_in_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(|state| state.get_eos_eth_token_dictionary_and_add_to_state())
