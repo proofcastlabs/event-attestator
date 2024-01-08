@@ -72,6 +72,27 @@ impl Incremerkles {
             .map(|i| state.add_incremerkles(i))
     }
 
+    pub(crate) fn get_incremerkle_for_block_number(&self, block_num: u64) -> Result<Incremerkle> {
+        info!("getting incremerkle for block num {block_num}...");
+        self.get_incremerkle_index_for_block_num(block_num)
+            .and_then(|idx| self.get_incremerkle_at_index(idx))
+    }
+
+    fn get_incremerkle_at_index(&self, idx: usize) -> Result<Incremerkle> {
+        info!("getting incremerkle at index: {idx}...");
+        self.get(idx)
+            .cloned()
+            .ok_or_else(|| format!("no incremerkle at index {idx}").into())
+    }
+
+    fn get_incremerkle_index_for_block_num(&self, block_num: u64) -> Result<usize> {
+        info!("getting incremerkle index for block num {block_num}...");
+        self.block_nums()
+            .iter()
+            .position(|x| *x == block_num)
+            .ok_or_else(|| format!("no incremerkle found for block num {block_num}").into())
+    }
+
     // TODO Make more efficient my taking &mut self, however that makes using the above
     // state-version of this more difficult to manage for the caller.
     fn add_block_ids<D: DatabaseInterface>(
@@ -84,38 +105,35 @@ impl Incremerkles {
         let mut mutable_self = self.clone();
 
         let num_ids = ids.len() + 1; // NOTE: Because the submitted block itself's ID counts here too.
-        let incremerkle_block_num = if block_num > num_ids { block_num - num_ids } else { 0 };
+        let incremerkle_block_num = if block_num > num_ids {
+            (block_num - num_ids) as u64
+        } else {
+            0
+        };
 
         debug!("              num ids: {num_ids}");
         debug!("    sub mat block num: {block_num}");
         debug!("incremerkle block num: {incremerkle_block_num}");
 
-        match mutable_self
-            .block_nums()
-            .iter()
-            .position(|x| *x == incremerkle_block_num as u64)
-        {
-            None => Err(format!("no incremerkle found for block num {incremerkle_block_num}").into()),
-            Some(idx) => {
-                let mut incremerkle = mutable_self.get(idx).cloned().unwrap_or_default();
+        let idx = self.get_incremerkle_index_for_block_num(incremerkle_block_num)?;
+        let mut incremerkle = mutable_self.get_incremerkle_at_index(idx)?;
 
-                for id in ids.iter() {
-                    incremerkle.append(*id)?;
-                }
-
-                if idx == 0 {
-                    // NOTE: This adds the new incremerkle to the front of the incremerkles, and
-                    // removes the oldest one, then saves the structure back to the db.
-                    mutable_self.add(incremerkle);
-                    mutable_self.put_in_db(eos_db_utils)?;
-                } else {
-                    // NOTE: This just replaces the incermerkle in question in the Incremerkles vec
-                    // without persisting the changes in the db.
-                    let _ = std::mem::replace(&mut mutable_self[idx], incremerkle);
-                }
-                Ok(mutable_self)
-            },
+        for id in ids.iter() {
+            incremerkle.append(*id)?;
         }
+
+        if idx == 0 {
+            // NOTE: This adds the new incremerkle to the front of the incremerkles, and
+            // removes the oldest one, then saves the structure back to the db.
+            mutable_self.add(incremerkle);
+            mutable_self.put_in_db(eos_db_utils)?;
+        } else {
+            // NOTE: This just replaces the incermerkle in question in the Incremerkles vec
+            // without persisting the changes in the db.
+            let _ = std::mem::replace(&mut mutable_self[idx], incremerkle);
+        }
+
+        Ok(mutable_self)
     }
 
     fn add(&mut self, incremerkle: Incremerkle) {
