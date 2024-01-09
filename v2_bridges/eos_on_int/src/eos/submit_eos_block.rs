@@ -1,10 +1,8 @@
 use common::{traits::DatabaseInterface, types::Result, CoreType};
 use common_eos::{
-    append_interim_block_ids_to_incremerkle_in_state,
     end_eos_db_transaction_and_return_state,
     get_active_schedule_from_db_and_add_to_state,
     get_enabled_protocol_features_and_add_to_state,
-    Incremerkles,
     get_processed_global_sequences_and_add_to_state,
     maybe_add_global_sequences_to_processed_list_and_return_state,
     maybe_add_new_eos_schedule_to_db_and_return_state,
@@ -16,12 +14,10 @@ use common_eos::{
     maybe_filter_out_proofs_with_wrong_action_mroot,
     maybe_filter_proofs_for_v1_peg_in_actions,
     parse_submission_material_and_add_to_state,
-    save_incremerkle_from_state_to_db,
-    save_latest_block_id_to_db,
-    save_latest_block_num_to_db,
     validate_block_header_signature,
     validate_producer_slot_of_block_in_state,
     EosState,
+    Incremerkles,
 };
 
 use crate::eos::{
@@ -51,7 +47,7 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(get_enabled_protocol_features_and_add_to_state)
         .and_then(Incremerkles::get_from_db_and_add_to_state)
-        .and_then(append_interim_block_ids_to_incremerkle_in_state)
+        .and_then(Incremerkles::add_block_ids_and_return_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(|state| state.get_eos_eth_token_dictionary_and_add_to_state())
         .and_then(validate_producer_slot_of_block_in_state)
@@ -74,9 +70,6 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_zero_address)
         .and_then(maybe_sign_int_txs_and_add_to_state)
         .and_then(maybe_increment_int_nonce_in_db_and_return_eos_state)
-        .and_then(save_latest_block_id_to_db)
-        .and_then(save_latest_block_num_to_db)
-        .and_then(save_incremerkle_from_state_to_db)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
 }
@@ -171,10 +164,20 @@ mod tests {
         let processed_glob_sequences_before = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert!(processed_glob_sequences_before.is_empty());
 
+        let mut incremerkles = Incremerkles::get_from_db(&common_eos::EosDbUtils::new(&db)).unwrap();
+        assert_eq!(incremerkles.len(), 1);
+        assert_eq!(incremerkles.latest_block_num(), 222275383);
+
         // NOTE: Submit the block with the peg in in it...
         let output =
             EosOutput::from_str(&submit_eos_block_to_core(&db, &get_sample_eos_submission_material_string()).unwrap())
                 .unwrap();
+
+        // NOTE We should now have two incremerkles stored in the db
+        incremerkles = Incremerkles::get_from_db(&common_eos::EosDbUtils::new(&db)).unwrap();
+        assert_eq!(incremerkles.len(), 2);
+        assert_eq!(incremerkles.latest_block_num(), 222279899);
+
         let expected_output = EosOutput::from_str(&json!({
             "eos_latest_block_number":222279899,
             "int_signed_transactions":[{

@@ -38,3 +38,6 @@ common_safe_addresses = { workspace = true }
 
 [lib]
 doctest = false
+
+[dev-dependencies]
+simple_logger = { workspace = true }

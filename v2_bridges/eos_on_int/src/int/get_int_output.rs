@@ -8,7 +8,7 @@ use common::{
     types::Result,
 };
 use common_chain_ids::EosChainId;
-use common_eos::{EosDbUtils, EosSignedTransaction, EosSignedTransactions};
+use common_eos::{EosDbUtils, EosSignedTransaction, EosSignedTransactions, Incremerkles};
 use common_eth::{EthDbUtilsExt, EthState};
 use common_metadata::MetadataChainId;
 
@@ -97,7 +97,7 @@ pub fn get_int_output<D: DatabaseInterface>(state: EthState<D>) -> Result<IntOut
                         eos_tx,
                         &tx_infos[i],
                         start_nonce + i as u64,
-                        eos_db_utils.get_latest_eos_block_number()?,
+                        Incremerkles::get_from_db(&EosDbUtils::new(state.db))?.latest_block_num(),
                         &eos_db_utils.get_eos_chain_id_from_db()?,
                     )
                 })

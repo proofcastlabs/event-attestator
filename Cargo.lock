@@ -1388,6 +1388,7 @@ dependencies = [
  "safe_addresses",
  "serde",
  "serde_json",
+ "simple_logger",
  "tiny-keccak 2.0.2",
 ]
 
