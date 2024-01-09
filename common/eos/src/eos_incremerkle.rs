@@ -159,7 +159,7 @@ impl Incremerkles {
         self.iter().skip(1).map(|i| i.block_num()).collect()
     }
 
-    fn latest_block_num(&self) -> u64 {
+    pub fn latest_block_num(&self) -> u64 {
         if self.is_empty() {
             warn!("no incremerkles to get latest block number from");
             0
