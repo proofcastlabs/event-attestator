@@ -146,7 +146,10 @@ pub fn generate_and_put_incremerkle_in_db<D: DatabaseInterface>(
     db_utils: &EosDbUtils<D>,
     init_json: &EosInitJson,
 ) -> Result<()> {
-    info!("generating and putting new incremerkles in db...");
+    info!(
+        "generating and putting new incremerkle in db for block num {}...",
+        init_json.block.block_num
+    );
 
     let incremerkle = Incremerkle::new(
         init_json.block.block_num,
@@ -182,13 +185,6 @@ pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(
         .and_then(|_| {
             db_utils.put_eos_last_seen_block_id_in_db(&convert_hex_to_checksum256(block_json.block_id.clone())?)
         })
-}
-
-pub fn put_eos_latest_block_info_in_db_and_return_state<'a, D: DatabaseInterface>(
-    block_json: &EosBlockHeaderJson,
-    state: EosState<'a, D>,
-) -> Result<EosState<'a, D>> {
-    put_eos_latest_block_info_in_db(&state.eos_db_utils, block_json).and(Ok(state))
 }
 
 pub fn put_eos_known_schedule_in_db_and_return_state<'a, D: DatabaseInterface>(

@@ -2,18 +2,13 @@ use common::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
     errors::AppError,
     traits::DatabaseInterface,
-    types::{Bytes, NoneError, Result},
+    types::{NoneError, Result},
 };
 use derive_more::{Constructor, Deref, DerefMut};
 use eos_chain::Checksum256;
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    bitcoin_crate_alias::hashes::{sha256, Hash},
-    eos_utils::convert_hex_to_checksum256,
-    EosDbUtils,
-    EosState,
-};
+use crate::{EosDbUtils, EosState};
 
 // NOTE: The light client for EOS doesn't not keep blocks - they are too frequent and too numerous
 // for efficient use in TEEs.
@@ -43,10 +38,6 @@ impl Incremerkles {
         info!("getting latest block id from incremerkles...");
         self.get_incremerkle_at_index(0)
             .map(|incremerkle| incremerkle.get_root())
-    }
-
-    fn empty() -> Self {
-        Self::default()
     }
 
     pub fn get_from_db<D: DatabaseInterface>(db_utils: &EosDbUtils<D>) -> Result<Self> {
@@ -109,7 +100,7 @@ impl Incremerkles {
         info!("adding block ids to incremerkle...");
         let mut mutable_self = self.clone();
 
-        let num_ids = ids.len() + 1; // NOTE: Because the submitted block itself's ID counts here too.
+        let num_ids = ids.len();
         let incremerkle_block_num = if block_num > num_ids {
             (block_num - num_ids) as u64
         } else {
@@ -192,14 +183,6 @@ impl Incremerkle {
 
     fn node_count(&self) -> u64 {
         self.node_count
-    }
-
-    fn get_from_db<D: DatabaseInterface>(db_utils: &EosDbUtils<D>) -> Result<Self> {
-        db_utils.get_incremerkle_from_db()
-    }
-
-    fn put_in_db<D: DatabaseInterface>(&self, db_utils: &EosDbUtils<D>) -> Result<()> {
-        db_utils.put_incremerkle_in_db(self)
     }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
@@ -346,13 +329,18 @@ mod tests {
     #![allow(clippy::needless_range_loop)]
     use std::str::FromStr;
 
-    use common::{test_utils::get_test_database, types::Byte};
+    use common::{
+        test_utils::get_test_database,
+        types::{Byte, Bytes},
+    };
     use eos_chain::{AccountName, Action, ActionName, PermissionLevel, PermissionName, SerializeData};
 
     use super::*;
     use crate::{
+        bitcoin_crate_alias::hashes::{sha256, Hash},
         eos_action_receipt::{AuthSequence, EosActionReceipt},
         eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n},
+        eos_utils::convert_hex_to_checksum256,
         MerkleProof,
     };
 
@@ -635,24 +623,8 @@ mod tests {
     }
 
     #[test]
-    fn should_put_and_get_incremerkle_in_db() {
-        let db = get_test_database();
-        let eos_db_utils = EosDbUtils::new(&db);
-        let expected_incremerkle_root = "1894edef851c070852f55a4dc8fc50ea8f2eafc67d8daad767e4f985dfe54071";
-        let submission_material = get_sample_eos_submission_material_n(5);
-        let active_nodes = submission_material.interim_block_ids.clone();
-        let node_count: u64 = submission_material.block_header.block_num().into();
-        let incremerkle = Incremerkle::new(node_count, active_nodes);
-        let incremerkle_root = hex::encode(incremerkle.get_root().to_bytes());
-        assert_eq!(incremerkle_root, expected_incremerkle_root);
-        incremerkle.put_in_db(&eos_db_utils).unwrap();
-        let incremerkle_from_db = Incremerkle::get_from_db(&eos_db_utils).unwrap();
-        assert_eq!(incremerkle_from_db, incremerkle);
-    }
-
-    #[test]
     fn should_only_allow_max_num_incremerkles() {
-        let mut incremerkles = Incremerkles::empty();
+        let mut incremerkles = Incremerkles::default();
         for i in 0..MAX_NUM_INCREMERKLES + 10 {
             incremerkles.add(Incremerkle::new(i as u64, vec![]));
             assert_eq!(incremerkles.latest_block_num(), i as u64);
@@ -666,7 +638,7 @@ mod tests {
 
     #[test]
     fn should_put_and_get_incremerkles_in_db() {
-        let mut incremerkles = Incremerkles::empty();
+        let mut incremerkles = Incremerkles::default();
         for i in 0..MAX_NUM_INCREMERKLES {
             incremerkles.add(Incremerkle::new(i as u64, vec![]));
         }
@@ -680,7 +652,7 @@ mod tests {
 
     #[test]
     fn should_only_add_subsequent_incremerkles() {
-        let mut incremerkles = Incremerkles::empty();
+        let mut incremerkles = Incremerkles::default();
         assert_eq!(incremerkles.len(), 0);
         let i1 = Incremerkle::new(1, vec![]);
         let i2 = Incremerkle::new(2, vec![]);
