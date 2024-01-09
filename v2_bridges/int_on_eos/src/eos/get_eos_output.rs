@@ -85,7 +85,7 @@ pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String
     info!("✔ Getting EOS output json...");
     let int_signed_txs = state.eth_signed_txs;
     let output = serde_json::to_string(&EosOutput {
-        eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
+        eos_latest_block_number: state.incremerkles.latest_block_num(),
         int_signed_transactions: if int_signed_txs.is_empty() {
             vec![]
         } else {
