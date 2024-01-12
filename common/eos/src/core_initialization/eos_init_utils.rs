@@ -121,14 +121,15 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
         info!("✔ Skipping EOS init block validation check!");
         Ok(state)
     } else {
-        info!("✔ Checking block validation passes...");
+        info!("checking block validation passes...");
         check_block_signature_is_valid(
-            state
-                .enabled_protocol_features
-                .is_enabled(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.as_ref()),
-            state
-                .eos_db_utils
-                .get_incremerkle_from_db()?
+            state.enabled_protocol_features.is_enabled(
+                hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)
+                    .unwrap_or_default()
+                    .as_ref(),
+            ),
+            Incremerkles::get_from_db(&EosDbUtils::new(state.db))?
+                .get_incremerkle_for_block_number(block_json.block_num)?
                 .get_root()
                 .to_bytes()
                 .as_ref(),
