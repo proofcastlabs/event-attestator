@@ -65,7 +65,7 @@ impl TryFrom<&EthLog> for Actor {
     type Error = ActorsError;
 
     fn try_from(l: &EthLog) -> Result<Self, Self::Error> {
-        let first_topic = l.topics.get(0).cloned();
+        let first_topic = l.topics.first().cloned();
         let expected_topic = Some(*CANCELLED_USER_OP_TOPIC);
 
         if first_topic != expected_topic {

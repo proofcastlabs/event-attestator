@@ -147,8 +147,8 @@ impl EthLogs {
     pub fn filter_for_those_from_address_containing_topic(&self, address: &EthAddress, topic: &EthHash) -> Self {
         EthLogs::new(
             self.iter()
-                .cloned()
                 .filter(|log| log.is_from_address_and_contains_topic(address, topic))
+                .cloned()
                 .collect(),
         )
     }

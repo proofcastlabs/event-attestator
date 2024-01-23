@@ -13,7 +13,7 @@ impl RpcCalls {
     ) -> Result<WebSocketMessagesEncodable, SentinelError> {
         Self::check_core_is_connected(core_cxn)?;
         let epoch = 0; // TODO/FIXME Take an epoch as an argument and only purge prior epochs
-        let msg = WebSocketMessagesEncodable::PurgeUserOps(epoch, params.get(0).into());
+        let msg = WebSocketMessagesEncodable::PurgeUserOps(epoch, params.first().into());
         call_core(STRONGBOX_TIMEOUT, websocket_tx.clone(), msg).await
     }
 }

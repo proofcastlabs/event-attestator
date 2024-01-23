@@ -84,8 +84,7 @@ impl TryFrom<&Chain> for SyncStatus {
 
     fn try_from(c: &Chain) -> Result<Self, Self::Error> {
         // NOTE: Due to forks, there's always the possibility of > 1 block at any point in the chain
-        let latest_block_data: Vec<ChainBlockData> =
-            c.get_latest_block_data().map(|x| x.to_vec()).unwrap_or_else(Vec::new);
+        let latest_block_data: Vec<ChainBlockData> = c.get_latest_block_data().map(|x| x.to_vec()).unwrap_or_default();
         let h = if latest_block_data.is_empty() {
             EthHash::zero()
         } else {

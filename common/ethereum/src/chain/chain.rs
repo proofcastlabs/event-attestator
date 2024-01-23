@@ -110,7 +110,7 @@ impl Chain {
     }
 
     pub fn get_latest_block_data(&self) -> Option<&Vec<ChainBlockData>> {
-        self.chain.get(0)
+        self.chain.front()
     }
 
     pub fn get_tail_block_data(&self) -> Option<&Vec<ChainBlockData>> {
