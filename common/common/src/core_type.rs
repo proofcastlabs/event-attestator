@@ -11,6 +11,8 @@ use crate::{
     types::{Bytes, Result},
 };
 
+// NOTE: CoreType is no longer use for v3 cores, which no longer follow the native/host paradigm
+
 lazy_static! {
     pub static ref CORE_IS_INITIALIZED_MARKER: Bytes = vec![1u8];
     pub static ref HOST_CORE_IS_INITIALIZED_DB_KEY: [u8; 32] =
@@ -204,7 +206,7 @@ mod tests {
             "erc20-on-int",
             "erc20-on-evm",
             "v3-evm-on-int",
-            "v3-int-on-evm",
+            "v3-strongbox",
         ];
         CoreType::iter()
             .zip(expected_results.iter())
@@ -214,7 +216,7 @@ mod tests {
     #[test]
     fn should_get_native_symbol_from_core_type() {
         let expected_results = vec![
-            "BTC", "BTC", "INT", "INT", "EOS", "BTC", "EOS", "INT", "ERC20", "ERC20", "ERC20", "EVM", "INT",
+            "BTC", "BTC", "INT", "INT", "EOS", "BTC", "EOS", "INT", "ERC20", "ERC20", "ERC20", "EVM", "V3",
         ];
         CoreType::iter()
             .zip(expected_results.iter())
@@ -224,7 +226,7 @@ mod tests {
     #[test]
     fn should_get_host_symbol_from_core_type() {
         let expected_results = vec![
-            "ETH", "INT", "EOS", "EVM", "INT", "EOS", "ETH", "ALGO", "EOS", "INT", "EVM", "INT", "EVM",
+            "ETH", "INT", "EOS", "EVM", "INT", "EOS", "ETH", "ALGO", "EOS", "INT", "EVM", "INT",
         ];
         CoreType::iter()
             .zip(expected_results.iter())
