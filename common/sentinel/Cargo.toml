@@ -10,7 +10,7 @@ doctest = false
 
 [features]
 non-validating = ["common_eth/non-validating"] # NOTE: Disables block & recepit validation
-test-eth-rpc = [] # NOTE: Means the RPC fxns can only be tested if this feature is enabled
+test-eth-rpc = [] # NOTE: RPC fxns can only be tested if this feature is enabled
 
 [dependencies]
 rs_merkle = "1.4.1"

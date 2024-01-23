@@ -31,4 +31,4 @@ common_eth = { workspace = true }
 common_sentinel = { workspace = true }
 common_metadata = { workspace = true }
 common_file_logger = { workspace = true, optional = true }
-common_debug_signers = { package = "debug_signers", path = "../../../common/debug_signers", features = [ "no-safe-debug-signers", "skip-db-transactions" ] }
+common_debug_signers = { package = "debug_signers", path = "../../common/debug_signers", features = [ "no-safe-debug-signers", "skip-db-transactions" ] }
