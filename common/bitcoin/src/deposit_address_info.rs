@@ -98,6 +98,7 @@ impl DepositAddressInfoJson {
         Ok(serde_json::to_string(self)?)
     }
 
+    #[allow(clippy::should_implement_trait)]
     #[cfg(all(test, not(feature = "ltc")))]
     pub fn from_str(json_string: &str) -> Result<Self> {
         Ok(serde_json::from_str(json_string)?)

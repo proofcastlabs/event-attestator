@@ -1383,7 +1383,7 @@ mod tests {
     #[test]
     fn db_keys_should_have_no_collisions() {
         let db = get_test_database();
-        let mut keys = vec![
+        let mut keys = [
             EthDbUtils::new(&db).get_all_as_hex_strings(),
             EvmDbUtils::new(&db).get_all_as_hex_strings(),
         ]

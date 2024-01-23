@@ -35,5 +35,5 @@ pub fn get_sample_challenge() -> Challenge {
     let sub_mat = get_sample_sub_mat_with_challenge_pending_event_2();
     let pnetwork_hub = EthAddress::from_str("0xf28910cc8f21e9314ed50627c11de36bc0b7338f").unwrap();
     let sentinel_address = EthAddress::from_str("0x73659A0f105905121EDbF44Fb476B97c785688EC").unwrap();
-    Challenges::from_sub_mat(&sub_mat, &pnetwork_hub, &sentinel_address).unwrap()[0].clone()
+    Challenges::from_sub_mat(&sub_mat, &pnetwork_hub, &sentinel_address).unwrap()[0]
 }

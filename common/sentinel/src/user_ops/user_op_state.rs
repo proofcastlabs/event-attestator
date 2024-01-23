@@ -409,6 +409,6 @@ mod tests {
         assert_ne!(a, b);
         assert!(a.is_same_state_as(b));
         assert!(a <= b);
-        assert!(!(a > b));
+        assert!(a <= b);
     }
 }

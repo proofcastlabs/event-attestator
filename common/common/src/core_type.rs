@@ -225,7 +225,7 @@ mod tests {
 
     #[test]
     fn should_get_host_symbol_from_core_type() {
-        let expected_results = vec![
+        let expected_results = [
             "ETH", "INT", "EOS", "EVM", "INT", "EOS", "ETH", "ALGO", "EOS", "INT", "EVM", "INT",
         ];
         CoreType::iter()

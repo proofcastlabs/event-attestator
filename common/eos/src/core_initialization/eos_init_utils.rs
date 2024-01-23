@@ -307,7 +307,7 @@ mod tests {
 
     #[test]
     fn should_validate_jungle_3_init_blocks() {
-        vec![0; NUM_J3_INIT_SAMPLES].iter().enumerate().for_each(|(i, _)| {
+        [0; NUM_J3_INIT_SAMPLES].iter().enumerate().for_each(|(i, _)| {
             println!("Validating jungle 3 init block #{}...", i + 1);
             get_j3_init_json_n(i + 1).unwrap().validate();
         });
@@ -315,7 +315,7 @@ mod tests {
 
     #[test]
     fn should_validate_mainnet_init_blocks() {
-        vec![0; NUM_MAINNET_INIT_SAMPLES].iter().enumerate().for_each(|(i, _)| {
+        [0; NUM_MAINNET_INIT_SAMPLES].iter().enumerate().for_each(|(i, _)| {
             println!("Validating mainnet init block #{}...", i + i);
             get_mainnet_init_json_n(i + 1).unwrap().validate();
         });

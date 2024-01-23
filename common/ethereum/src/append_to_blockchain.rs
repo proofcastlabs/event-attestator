@@ -96,10 +96,10 @@ mod tests {
         let mut hashes = db_utils.get_special_hashes();
         let mut expected_hashes = SpecialHashes {
             linker: genesis_hash,
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[0].clone(),
-            latest: block_hashes[0].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[0],
+            latest: block_hashes[0],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
@@ -110,10 +110,10 @@ mod tests {
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
             linker: genesis_hash,
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[0].clone(),
-            latest: block_hashes[1].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[0],
+            latest: block_hashes[1],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
@@ -126,10 +126,10 @@ mod tests {
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
             linker: genesis_hash,
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[end_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[end_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
@@ -138,10 +138,10 @@ mod tests {
         last_submitted_block_idx += 1;
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
             linker: EthHash::from_slice(&db_utils.get_eth_ptoken_genesis_hash_key()),
         };
         assert_eq!(hashes, expected_hashes);
@@ -204,10 +204,10 @@ mod tests {
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
             linker: genesis_hash, // FIXME should have changed?
-            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
@@ -218,14 +218,14 @@ mod tests {
         let mut expected_linker_hash = calculate_linker_hash(
             blocks[0].get_block_hash().unwrap(), // Block to link to...
             blocks[0].get_block_hash().unwrap(), // Anchor block hash...
-            genesis_hash.clone(),                // Current linker hash
+            genesis_hash,                        // Current linker hash
         );
         expected_hashes = SpecialHashes {
             linker: expected_linker_hash,
-            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
@@ -242,10 +242,10 @@ mod tests {
         );
         expected_hashes = SpecialHashes {
             linker: expected_linker_hash,
-            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 

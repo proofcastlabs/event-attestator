@@ -18,7 +18,6 @@ use common_eos::{
 use common_eth::{EthDbUtils, EthDbUtilsExt, EthTransactions};
 use common_eth_debug::check_custom_nonce;
 use function_name::named;
-pub use serde_json::json;
 
 use crate::{
     constants::CORE_TYPE,

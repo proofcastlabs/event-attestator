@@ -309,10 +309,11 @@ mod tests {
 
         // NOTE: Now, if we add some latest block info for the origin chain, but make it appear out
         // of sync, we should still get no cancellable ops;
-        let mut bsc_latest_block_info = LatestBlockInfo::default();
-        bsc_latest_block_info.network_id = origin_network_id;
-        bsc_latest_block_info.block_timestamp =
-            enqueued_timestamp - (60 * 60/* NOTE: an hour _behind_ the enqueued time */);
+        let mut bsc_latest_block_info = LatestBlockInfo {
+            network_id: origin_network_id,
+            block_timestamp: enqueued_timestamp - (60 * 60/* NOTE: an hour _behind_ the enqueued time */),
+            ..Default::default()
+        };
         let mut bsc_latest_block_infos = LatestBlockInfos::new(vec![bsc_latest_block_info.clone()]);
         let r2 = CancellableUserOps::get(&db_utils, bsc_latest_block_infos).unwrap();
         assert!(r2.is_empty());
@@ -376,19 +377,17 @@ mod tests {
         let latest_block_infos = LatestBlockInfos::default();
         let r1 = CancellableUserOps::get(&db_utils, latest_block_infos).unwrap();
         assert!(r1.is_empty());
-        let mut bsc_latest_block_info = LatestBlockInfo::default();
-        bsc_latest_block_info.network_id = origin_network_id;
-        bsc_latest_block_info.block_timestamp =
-            enqueued_timestamp + (60 * 60/* NOTE: an hour _beyond_ the enqueued time */);
+        let bsc_latest_block_info = LatestBlockInfo {
+            network_id: origin_network_id,
+            block_timestamp: enqueued_timestamp + (60 * 60/* NOTE: an hour _beyond_ the enqueued time */),
+            ..Default::default()
+        };
         let bsc_latest_block_infos = LatestBlockInfos::new(vec![bsc_latest_block_info.clone()]);
         let r2 = CancellableUserOps::get(&db_utils, bsc_latest_block_infos).unwrap();
         assert_eq!(r2.len(), 2);
         assert_eq!(r2[0].op().uid().unwrap(), uid);
         assert_eq!(r2[1].op().uid().unwrap(), uid);
-        let cancellation_network_ids = r2
-            .iter()
-            .map(|x| x.state().network_id().clone())
-            .collect::<Vec<NetworkId>>();
+        let cancellation_network_ids = r2.iter().map(|x| x.state().network_id()).collect::<Vec<NetworkId>>();
         assert!(cancellation_network_ids.contains(&eth_network_id));
         assert!(cancellation_network_ids.contains(&polygon_network_id));
     }

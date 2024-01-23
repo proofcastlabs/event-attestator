@@ -264,10 +264,10 @@ mod tests {
         });
 
         // NOTE: Test adding a challenge
-        let new_challenge = get_n_random_challenges(1)[0].clone();
+        let new_challenge = get_n_random_challenges(1)[0];
         let new_challenge_hash = new_challenge.hash().unwrap();
-        list_from_db.add_challenge(&db_utils, new_challenge.clone()).unwrap();
-        expected_list.push(ChallengesListEntry::try_from(new_challenge.clone()).unwrap());
+        list_from_db.add_challenge(&db_utils, new_challenge).unwrap();
+        expected_list.push(ChallengesListEntry::try_from(new_challenge).unwrap());
         list_from_db = ChallengesList::get(&db_utils);
         assert_eq!(list_from_db, expected_list);
         assert_eq!(
@@ -277,7 +277,7 @@ mod tests {
 
         // Test removing a challenge
         let idx = 2;
-        let challenge_to_remove = challenges[idx].clone();
+        let challenge_to_remove = challenges[idx];
         let challenge_to_remove_hash = challenge_to_remove.hash().unwrap();
         expected_list.swap_remove(idx);
         ChallengesList::get(&db_utils)

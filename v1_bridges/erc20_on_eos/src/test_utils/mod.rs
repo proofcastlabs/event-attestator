@@ -13,10 +13,8 @@ use serde_json::json;
 
 use crate::eth::{Erc20OnEosEosTxInfo, Erc20OnEosEosTxInfos};
 
-pub fn get_sample_eos_submission_material_n(num: usize) -> EosSubmissionMaterial {
-    let s = match num {
-        _ => "src/test_utils/mainnet-submission-material-with-perc20-redeem.json",
-    };
+pub fn get_sample_eos_submission_material_n(_num: usize) -> EosSubmissionMaterial {
+    let s = "src/test_utils/mainnet-submission-material-with-perc20-redeem.json";
     EosSubmissionMaterial::from_str(&read_to_string(Path::new(s)).unwrap()).unwrap()
 }
 

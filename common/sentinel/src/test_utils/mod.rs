@@ -12,7 +12,7 @@ const ENV_VAR: &str = "TEST_ENDPOINT";
 pub async fn get_test_ws_client() -> WsClient {
     dotenv().ok();
     let url = env::var(ENV_VAR)
-        .map_err(|_| SentinelError::Custom(format!("Please set env var '{ENV_VAR}' to a working endpoint!").into()))
+        .map_err(|_| SentinelError::Custom(format!("Please set env var '{ENV_VAR}' to a working endpoint!")))
         .unwrap();
 
     get_rpc_client(&url).await.unwrap()
@@ -22,7 +22,7 @@ pub async fn get_test_endpoints() -> Endpoints {
     dotenv().ok();
     let sleep_time = 500;
     let url = env::var(ENV_VAR)
-        .map_err(|_| SentinelError::Custom(format!("Please set env var '{ENV_VAR}' to a working endpoint!").into()))
+        .map_err(|_| SentinelError::Custom(format!("Please set env var '{ENV_VAR}' to a working endpoint!")))
         .unwrap();
     let urls = vec![url];
     Endpoints::new(sleep_time, NetworkId::default(), urls)

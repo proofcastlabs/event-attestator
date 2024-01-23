@@ -39,7 +39,7 @@ dependencies = [
 
 [[package]]
 name = "algorand"
-version = "6.12.0"
+version = "6.12.1"
 dependencies = [
  "common",
  "debug_signers",
@@ -402,7 +402,7 @@ dependencies = [
 
 [[package]]
 name = "bitcoin"
-version = "6.14.0"
+version = "6.14.1"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -545,7 +545,7 @@ version = "1.0.3"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.14.0",
+ "bitcoin 6.14.1",
  "chain_ids",
  "common",
  "database_utils",
@@ -573,7 +573,7 @@ version = "1.0.2"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.14.0",
+ "bitcoin 6.14.1",
  "chain_ids",
  "common",
  "database_utils",
@@ -602,7 +602,7 @@ version = "1.1.0"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.14.0",
+ "bitcoin 6.14.1",
  "chain_ids",
  "common",
  "database_utils",
@@ -1024,7 +1024,7 @@ checksum = "c2e66c9d817f1720209181c316d28635c050fa304f9c79e47a520882661b7308"
 
 [[package]]
 name = "database_utils"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "common",
  "debug_signers",
@@ -1270,7 +1270,7 @@ dependencies = [
 
 [[package]]
 name = "eos"
-version = "6.11.1"
+version = "6.11.2"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
@@ -1790,7 +1790,7 @@ version = "6.10.3"
 dependencies = [
  "bitcoin 0.29.0",
  "bitcoin 0.29.2",
- "bitcoin 6.14.0",
+ "bitcoin 6.14.1",
  "common",
  "derive_more",
  "hex",
@@ -2476,7 +2476,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_algo"
-version = "1.2.0"
+version = "1.2.1"
 dependencies = [
  "algorand",
  "chain_ids",

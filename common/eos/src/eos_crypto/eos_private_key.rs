@@ -43,7 +43,7 @@ impl EosPrivateKey {
     }
 
     fn get_checksummed_bytes(&self) -> Bytes {
-        let prefixed_bytes = vec![vec![0x80], self.to_bytes()].concat();
+        let prefixed_bytes = [vec![0x80], self.to_bytes()].concat();
         let hash = sha256d::Hash::hash(&prefixed_bytes).to_vec();
         [prefixed_bytes, hash[..4].to_vec()].concat()
     }

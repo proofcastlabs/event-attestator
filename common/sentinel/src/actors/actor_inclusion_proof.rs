@@ -185,7 +185,7 @@ impl Actors {
 
     #[cfg(test)]
     fn root(&self) -> Hash {
-        self.as_merkle_tree().root().unwrap_or_default().into()
+        self.as_merkle_tree().root().unwrap_or_default()
     }
 
     fn get_inclusion_proof_for_idx(&self, idx: usize) -> Result<ActorInclusionProof, ActorsError> {
@@ -274,7 +274,7 @@ mod tests {
     #[test]
     fn should_get_actors_inclusion_proof_by_actor() {
         let actors = get_sample_actors();
-        let actor = actors.actors()[1].clone();
+        let actor = actors.actors()[1];
         let proof = actors.get_inclusion_proof_for_actor(&actor).unwrap();
         let expected_proof = get_expected_proof();
         assert_eq!(proof, expected_proof);

@@ -68,43 +68,40 @@ impl UserOp {
     #[allow(unused)]
     pub fn to_tuple_string(&self) -> Result<String, SentinelError> {
         let ss = vec![
+            format!("0x{}", hex::encode(self.user_op_log.origin_block_hash()?.as_bytes())),
             format!(
                 "0x{}",
-                hex::encode(&self.user_op_log.origin_block_hash()?.as_bytes().to_vec())
+                hex::encode(self.user_op_log.origin_transaction_hash()?.as_bytes())
             ),
-            format!(
-                "0x{}",
-                hex::encode(&self.user_op_log.origin_transaction_hash()?.as_bytes().to_vec())
-            ),
-            format!("0x{}", hex::encode(&self.user_op_log.options_mask.as_bytes().to_vec())),
+            format!("0x{}", hex::encode(self.user_op_log.options_mask.as_bytes())),
             self.user_op_log.nonce.to_string(),
             self.user_op_log.underlying_asset_decimals.to_string(),
             self.user_op_log.asset_amount.to_string(),
             self.user_op_log.user_data_protocol_fee_asset_amount.to_string(),
             self.user_op_log.network_fee_asset_amount.to_string(),
             self.user_op_log.forward_network_fee_asset_amount.to_string(),
-            format!("0x{}", hex::encode(&self.user_op_log.underlying_asset_token_address)),
+            format!("0x{}", hex::encode(self.user_op_log.underlying_asset_token_address)),
             format!(
                 "0x{}",
-                hex::encode(&self.user_op_log.origin_network_id.to_bytes_4()?.to_vec())
+                hex::encode(self.user_op_log.origin_network_id.to_bytes_4()?.to_vec())
             ),
             format!(
                 "0x{}",
-                hex::encode(&self.user_op_log.destination_network_id.to_bytes_4()?.to_vec())
+                hex::encode(self.user_op_log.destination_network_id.to_bytes_4()?.to_vec())
             ),
             format!(
                 "0x{}",
-                hex::encode(&self.user_op_log.forward_destination_network_id.to_bytes_4()?.to_vec())
+                hex::encode(self.user_op_log.forward_destination_network_id.to_bytes_4()?.to_vec())
             ),
             format!(
                 "0x{}",
-                hex::encode(&self.user_op_log.underlying_asset_network_id.to_bytes_4()?.to_vec())
+                hex::encode(self.user_op_log.underlying_asset_network_id.to_bytes_4()?.to_vec())
             ),
             self.user_op_log.origin_account.to_string(),
             self.user_op_log.destination_account.to_string(),
             self.user_op_log.underlying_asset_name.to_string(),
             self.user_op_log.underlying_asset_symbol.to_string(),
-            format!("0x{}", hex::encode(&self.user_op_log.user_data.clone())),
+            format!("0x{}", hex::encode(self.user_op_log.user_data.clone())),
             self.user_op_log.is_for_protocol.to_string(),
         ];
         Ok("".to_string())

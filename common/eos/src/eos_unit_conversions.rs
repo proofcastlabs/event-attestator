@@ -15,7 +15,7 @@ mod tests {
 
     #[test]
     fn should_convert_eos_asset_to_u64() {
-        let expected_results = vec![
+        let expected_results = [
             123456789123456789_u64,
             12345678912345678_u64,
             1234567891234567_u64,

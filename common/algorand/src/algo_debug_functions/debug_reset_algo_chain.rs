@@ -44,7 +44,7 @@ fn delete_all_algo_submision_material<D: DatabaseInterface>(algo_db_utils: &Algo
 }
 
 fn delete_all_relevant_db_keys<D: DatabaseInterface>(algo_db_utils: &AlgoDbUtils<D>) -> Result<()> {
-    vec![
+    [
         algo_db_utils.get_algo_linker_block_hash_key(),
         algo_db_utils.get_algo_canon_block_hash_key(),
         algo_db_utils.get_algo_tail_block_hash_key(),

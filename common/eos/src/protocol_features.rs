@@ -283,9 +283,7 @@ mod tests {
 
     #[test]
     fn check_available_features_should_error_if_feature_is_unavailable() {
-        let non_available_feature_hash = vec![0u8; 64]
-            .iter()
-            .fold(String::new(), |e, acc| format!("{}{}", e, acc));
+        let non_available_feature_hash = [0u8; 64].iter().fold(String::new(), |e, acc| format!("{}{}", e, acc));
         let features = vec![ProtocolFeature::new(
             "NON_AVAILABLE_FEATURE",
             &non_available_feature_hash,

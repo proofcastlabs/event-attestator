@@ -441,7 +441,7 @@ mod tests {
         let expected_fee = U256::from_dec_str("3342500000").unwrap();
         let dictionary = get_sample_eos_eth_token_dictionary();
         let result = infos.get_fees(&dictionary).unwrap();
-        let expected_addresses = vec![
+        let expected_addresses = [
             EthAddress::from_slice(&hex::decode("32ef9e9a622736399db5ee78a68b258dadbb4353").unwrap()),
             EthAddress::from_slice(&hex::decode("32ef9e9a622736399db5ee78a68b258dadbb4353").unwrap()),
         ];

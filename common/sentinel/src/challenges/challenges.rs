@@ -86,7 +86,7 @@ mod tests {
         let sentinel_address = EthAddress::from_str("0x73659A0f105905121EDbF44Fb476B97c785688EC").unwrap();
         let challenges = Challenges::from_sub_mat(&sub_mat, &pnetwork_hub, &sentinel_address).unwrap();
         assert_eq!(challenges.len(), 1);
-        let challenge = challenges[0].clone();
+        let challenge = challenges[0];
         let expected_challenge = Challenge::new(
             U256::from(10),
             Actor::new(

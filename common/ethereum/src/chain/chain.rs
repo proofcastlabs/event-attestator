@@ -864,7 +864,7 @@ mod tests {
         }
 
         // NOTE: Now assert that blocks that re no longer in our chain were deleted.
-        let expected_deleted_block_hashes = vec![
+        let expected_deleted_block_hashes = [
             Chain::block_hash(&sub_mats[0]).unwrap(),
             Chain::block_hash(&sub_mats[1]).unwrap(),
         ];

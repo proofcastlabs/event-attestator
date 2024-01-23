@@ -351,7 +351,7 @@ mod tests {
             let r = block.is_valid(id);
             // NOTE: Newer blocks need `base_fee_per_gas` which defaults to none, and thus we
             // error. Older blocks will not error though, but should return Ok(false).
-            assert!(!r.is_ok() || matches!(r, Ok(false)))
+            assert!(r.is_err() || matches!(r, Ok(false)))
         });
     }
 }

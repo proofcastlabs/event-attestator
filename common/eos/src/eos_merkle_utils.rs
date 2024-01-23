@@ -599,7 +599,7 @@ mod tests {
     #[test]
     fn should_verify_merkle_proofs() {
         let num_proofs = 4;
-        vec![0, num_proofs - 1]
+        [0, num_proofs - 1]
             .iter()
             .enumerate()
             .map(|(_, i)| get_sample_eos_submission_material_n(i + 1))

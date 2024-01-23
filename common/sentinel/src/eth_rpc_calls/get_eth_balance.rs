@@ -80,7 +80,7 @@ mod tests {
     #[cfg_attr(not(feature = "test-eth-rpc"), ignore)]
     async fn should_get_eth_balance() {
         let ws_client = get_test_ws_client().await;
-        let result = get_eth_balance(&ws_client, &*ADDRESS, DEFAULT_SLEEP_TIME, NetworkId::default()).await;
+        let result = get_eth_balance(&ws_client, &ADDRESS, DEFAULT_SLEEP_TIME, NetworkId::default()).await;
         assert!(result.is_ok());
     }
 
@@ -88,7 +88,7 @@ mod tests {
     #[cfg_attr(not(feature = "test-eth-rpc"), ignore)]
     async fn should_get_eth_balance_inner() {
         let ws_client = get_test_ws_client().await;
-        let result = get_eth_balance_inner(&ws_client, &*ADDRESS).await;
+        let result = get_eth_balance_inner(&ws_client, &ADDRESS).await;
         assert!(result.is_ok());
     }
 }

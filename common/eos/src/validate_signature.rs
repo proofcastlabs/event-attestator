@@ -319,7 +319,7 @@ mod tests {
         let submission_material_num = 9;
         let submission_material = get_sample_eos_submission_material_n(submission_material_num);
         let submission_material_json = get_sample_eos_submission_material_json_n(submission_material_num);
-        let blockroot_merkle = vec![
+        let blockroot_merkle = [
             "0faf171fd0e46c146d51c83e2d5364344221db22b5ad400fa54c0842b55eb8ce",
             "ad3514ed548a8292590d1725782206cde321fe58bca92b1660fe9608dd96ad6d",
             "abe96721b9ec88313bbf3149efd0af60760ae461410f8b8d012f3022d4a7d017",

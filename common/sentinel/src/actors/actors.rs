@@ -29,6 +29,11 @@ impl Actors {
     }
 
     #[cfg(test)]
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    #[cfg(test)]
     pub fn default_with_actors(actors: Vec<Actor>) -> Self {
         Self {
             actors,
