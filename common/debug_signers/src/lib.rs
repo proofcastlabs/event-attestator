@@ -10,7 +10,14 @@ mod test_utils;
 mod validate_debug_command_signature;
 
 pub use self::{
-    debug_functions::{debug_add_debug_signer, debug_add_multiple_debug_signers, debug_remove_debug_signer},
+    debug_functions::{
+        debug_add_debug_signer,
+        debug_add_debug_signer_with_options,
+        debug_add_multiple_debug_signers,
+        debug_add_multiple_debug_signers_with_options,
+        debug_remove_debug_signer,
+        debug_remove_debug_signer_with_options,
+    },
     debug_signatories::{DebugSignatories, DEBUG_SIGNATORIES_DB_KEY, SAFE_DEBUG_SIGNATORIES},
     debug_signatory::DebugSignatory,
     debug_signature::DebugSignature,

@@ -47,15 +47,15 @@ impl FromStr for DebugSignerJson {
     }
 }
 
-/// Debug Add Multiple Debug Signers
+/// Debug Add Multiple Debug Signers With Options
 ///
 /// Adds new debug signatories to the list. Since this is a debug function, it requires a valid
 /// signature from an address in the list of debug signatories. But because this list begins life
 /// empty, we have a chicken and egg scenario. And so to solve this, if the addition is the _first_
 /// one, we instead require a signature from the `SAFE_ETH_ADDRESS` in order to validate the
-/// command. This requirement can be disabled with a passed in boolean.
+/// command. This requirement can be disabled with a passed in boolean, as can the use of db txs.
 #[named]
-pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
+pub fn debug_add_multiple_debug_signers_with_options<D: DatabaseInterface>(
     db: &D,
     debug_signers_json: &str,
     core_type: &CoreType,
@@ -75,7 +75,9 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
             let debug_command_hash = convert_hex_to_h256(&get_debug_command_hash!(
                 function_name!(),
                 debug_signers_json,
-                core_type
+                core_type,
+                &use_safe_debug_signers,
+                &use_db_tx
             )()?)?;
             let signature = EthSignature::from_str(signature_str)?;
 
@@ -112,6 +114,19 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
             })
             .to_string()
         })
+}
+
+/// Debug Add Multiple Debug Signers
+///
+/// NOTE: This is for backwards compatibility with existing v1 and v2 bridges, which by default
+/// assumed the use db txs
+pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
+    db: &D,
+    debug_signers_json: &str,
+    core_type: &CoreType,
+    signature_str: &str,
+) -> Result<String> {
+    debug_add_multiple_debug_signers_with_options(db, debug_signers_json, core_type, signature_str, true, true)
 }
 
 #[cfg(test)]
