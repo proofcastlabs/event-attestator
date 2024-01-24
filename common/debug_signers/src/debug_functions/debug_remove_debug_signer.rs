@@ -2,7 +2,6 @@ use std::str::FromStr;
 
 use common::{core_type::CoreType, traits::DatabaseInterface, types::Result};
 use common_eth::{convert_hex_to_eth_address, convert_hex_to_h256, EthSignature};
-use function_name::named;
 use serde_json::json;
 
 use crate::DebugSignatories;
@@ -12,7 +11,6 @@ use crate::DebugSignatories;
 /// Removes a debug signatory from the list. Requires a valid signature from an existing debug
 /// signatory in order to do so. If the supplied eth address is not in the list of debug
 /// debug_signatories, nothing is removed. Can optionally use db txs.
-#[named]
 pub fn debug_remove_debug_signer_with_options<D: DatabaseInterface>(
     db: &D,
     eth_address_str: &str,
@@ -29,10 +27,9 @@ pub fn debug_remove_debug_signer_with_options<D: DatabaseInterface>(
             let signature = EthSignature::from_str(signature_str)?;
             let eth_address = convert_hex_to_eth_address(eth_address_str)?;
             let debug_command_hash = convert_hex_to_h256(&get_debug_command_hash!(
-                function_name!(),
+                "debug_remove_debug_signer", // NOTE: Can't use fxn name else it would be backwards compatible
                 eth_address_str,
-                core_type,
-                &use_db_tx
+                core_type
             )()?)?;
             debug_signatories
                 .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)

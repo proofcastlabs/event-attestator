@@ -3,7 +3,6 @@ use std::str::FromStr;
 use common::{core_type::CoreType, errors::AppError, traits::DatabaseInterface, types::Result};
 use common_eth::{convert_hex_to_eth_address, convert_hex_to_h256, EthSignature};
 use derive_more::Deref;
-use function_name::named;
 use serde::Deserialize;
 use serde_json::json;
 
@@ -33,7 +32,6 @@ impl FromStr for DebugSignersJson {
 }
 
 #[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
 struct DebugSignerJson {
     name: String,
     eth_address: String,
@@ -54,7 +52,6 @@ impl FromStr for DebugSignerJson {
 /// empty, we have a chicken and egg scenario. And so to solve this, if the addition is the _first_
 /// one, we instead require a signature from the `SAFE_ETH_ADDRESS` in order to validate the
 /// command. This requirement can be disabled with a passed in boolean, as can the use of db txs.
-#[named]
 pub fn debug_add_multiple_debug_signers_with_options<D: DatabaseInterface>(
     db: &D,
     debug_signers_json: &str,
@@ -73,11 +70,10 @@ pub fn debug_add_multiple_debug_signers_with_options<D: DatabaseInterface>(
     DebugSignatories::get_from_db(db)
         .and_then(|debug_signatories| {
             let debug_command_hash = convert_hex_to_h256(&get_debug_command_hash!(
-                function_name!(),
+                "debug_add_multiple_debug_signers", /* NOTE: Cannot use function name else it wouldn't be backwards
+                                                     * compatible */
                 debug_signers_json,
-                core_type,
-                &use_safe_debug_signers,
-                &use_db_tx
+                core_type
             )()?)?;
             let signature = EthSignature::from_str(signature_str)?;
 

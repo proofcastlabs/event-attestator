@@ -1045,7 +1045,6 @@ dependencies = [
  "eip-712",
  "ethereum",
  "ethereum-types 0.12.1",
- "function_name",
  "hex",
  "lazy_static",
  "log",
