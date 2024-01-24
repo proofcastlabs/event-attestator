@@ -1038,7 +1038,7 @@ dependencies = [
 
 [[package]]
 name = "debug_signers"
-version = "6.10.2"
+version = "6.11.0"
 dependencies = [
  "common",
  "derive_more",
