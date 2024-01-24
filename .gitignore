@@ -3,4 +3,12 @@
 temp*/
 build/
 target/
+**/.temp.json
 *.log
+*sub-mat*.json
+!**/test_utils/*sub-mat*.json
+**/*database*/*
+*.log
+*.gz
+*.env
+/server

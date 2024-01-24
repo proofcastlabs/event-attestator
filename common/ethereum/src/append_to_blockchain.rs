@@ -15,19 +15,25 @@ use crate::{
 /// Append to blockchain
 ///
 /// A helper function that takes the db utils as an argument and appends the passed in submission
-/// material to the chain in the database, if and only if it's subsequent.
+/// material to the chain in the database, if and only if it's valid & subsequent.
 ///
 /// WARN: No checks are done on the receipt's validity, since at this point they'll likely have
 /// bene truncated down to only pertinent ones in order to save space in the database.
 pub fn append_to_blockchain<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
     db_utils: &E,
     sub_mat: &EthSubMat,
+    validate: bool,
 ) -> Result<()> {
     let n = sub_mat.get_block_number()?;
     let chain_id = db_utils.get_eth_chain_id_from_db()?;
     let confs = db_utils.get_eth_canon_to_tip_length_from_db()?;
-
-    if sub_mat.block_header_is_valid(&chain_id) {
+    let header_is_valid = if validate {
+        sub_mat.block_header_is_valid(&chain_id)
+    } else {
+        warn!("Block header validation is disabled!");
+        true
+    };
+    if header_is_valid {
         info!("Adding block {n} to chain in db...");
         check_for_parent_of_block(db_utils, sub_mat)
             .and_then(|_| add_block_and_receipts_to_db_if_not_extant(db_utils, sub_mat))
@@ -44,7 +50,7 @@ pub fn append_to_blockchain<D: DatabaseInterface, E: EthDbUtilsExt<D>>(
 
 #[cfg(test)]
 mod tests {
-    use common::{errors::AppError, test_utils::get_test_database};
+    use common::{errors::AppError, test_utils::get_test_database, BlockAlreadyInDbError, BridgeSide};
     use common_chain_ids::EthChainId;
     use ethereum_types::H256 as EthHash;
 
@@ -90,87 +96,96 @@ mod tests {
         let mut hashes = db_utils.get_special_hashes();
         let mut expected_hashes = SpecialHashes {
             linker: genesis_hash,
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[0].clone(),
-            latest: block_hashes[0].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[0],
+            latest: block_hashes[0],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
-        use simple_logger;
-        simple_logger::init().unwrap();
-
         // Now add a block...
-        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx]).unwrap();
+        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx], true).unwrap();
         last_submitted_block_idx += 1;
 
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
             linker: genesis_hash,
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[0].clone(),
-            latest: block_hashes[1].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[0],
+            latest: block_hashes[1],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
         // Now let's add enough blocks to pull the canon away from the tail...
         let end_idx = confs + 1;
         (last_submitted_block_idx..=end_idx).for_each(|i| {
-            append_to_blockchain(&db_utils, &blocks[i]).unwrap();
+            append_to_blockchain(&db_utils, &blocks[i], true).unwrap();
             last_submitted_block_idx = i;
         });
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
             linker: genesis_hash,
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[end_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[end_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
         // And another block...
-        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 1]).unwrap();
+        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 1], true).unwrap();
         last_submitted_block_idx += 1;
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
-            tail: block_hashes[0].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[0],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
             linker: EthHash::from_slice(&db_utils.get_eth_ptoken_genesis_hash_key()),
         };
         assert_eq!(hashes, expected_hashes);
 
         // Now let's check that we can't add a block that's _past_ the next one...
-        match append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 2]) {
+        match append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 2], true) {
             Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Json(e)) => {
-                let n = blocks[last_submitted_block_idx + 2].get_block_number().unwrap();
-                let s = e.to_string();
-                let expected_err = format!("ETH block #{n} rejected");
-                assert!(s.contains(&expected_err))
+            Err(AppError::NoParentError(e)) => {
+                let n = blocks[last_submitted_block_idx + 2]
+                    .get_block_number()
+                    .unwrap()
+                    .as_u64();
+                assert_eq!(e.block_num, n)
             },
             Err(e) => panic!("Wrong error received: {e}!"),
         }
 
         // Or that we can't add the same block again...
-        match append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx]) {
+        match append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx], true) {
             Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Custom(s)) => {
-                let expected_err = "Rejected - it's already in the db";
-                assert!(s.contains(&expected_err))
+            Err(AppError::BlockAlreadyInDbError(e)) => {
+                let expected_err = BlockAlreadyInDbError::new(
+                    blocks[last_submitted_block_idx].get_block_number().unwrap().as_u64(),
+                    "✘ Block Rejected - it's already in the db!".to_string(),
+                    BridgeSide::Native,
+                );
+                assert_eq!(e, expected_err)
             },
             Err(e) => panic!("Wrong error received: {e}!"),
         }
 
         // Or a previous one...
-        match append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx - 1]) {
+        match append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx - 1], true) {
             Ok(_) => panic!("Should not have succeeded!"),
-            Err(AppError::Custom(s)) => {
-                let expected_err = "Rejected - it's already in the db";
-                assert!(s.contains(&expected_err))
+            Err(AppError::BlockAlreadyInDbError(e)) => {
+                let expected_err = BlockAlreadyInDbError::new(
+                    blocks[last_submitted_block_idx - 1]
+                        .get_block_number()
+                        .unwrap()
+                        .as_u64(),
+                    "✘ Block Rejected - it's already in the db!".to_string(),
+                    BridgeSide::Native,
+                );
+                assert_eq!(e, expected_err)
             },
             Err(e) => panic!("Wrong error received: {e}!"),
         }
@@ -183,41 +198,41 @@ mod tests {
 
         // Now let's add enough blocks to start moving the tail away from the anchor...
         (last_submitted_block_idx + 1..=(ETH_TAIL_LENGTH as usize + confs)).for_each(|i| {
-            append_to_blockchain(&db_utils, &blocks[i]).unwrap();
+            append_to_blockchain(&db_utils, &blocks[i], true).unwrap();
             last_submitted_block_idx = i;
         });
         hashes = db_utils.get_special_hashes();
         expected_hashes = SpecialHashes {
             linker: genesis_hash, // FIXME should have changed?
-            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
         // Another block should start the linker hash changing...
-        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 1]).unwrap();
+        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 1], true).unwrap();
         last_submitted_block_idx += 1;
         hashes = db_utils.get_special_hashes();
         let mut expected_linker_hash = calculate_linker_hash(
             blocks[0].get_block_hash().unwrap(), // Block to link to...
             blocks[0].get_block_hash().unwrap(), // Anchor block hash...
-            genesis_hash.clone(),                // Current linker hash
+            genesis_hash,                        // Current linker hash
         );
         expected_hashes = SpecialHashes {
             linker: expected_linker_hash,
-            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 
         // And a final block should mean old blocks beyond the tail are now being removed (this
         // didn't happen with the previous submission because the one block older than the tail was
         // in fact the anchor block, which will never be removed.
-        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 1]).unwrap();
+        append_to_blockchain(&db_utils, &blocks[last_submitted_block_idx + 1], true).unwrap();
         last_submitted_block_idx += 1;
         hashes = db_utils.get_special_hashes();
         expected_linker_hash = calculate_linker_hash(
@@ -227,10 +242,10 @@ mod tests {
         );
         expected_hashes = SpecialHashes {
             linker: expected_linker_hash,
-            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize].clone(),
-            canon: block_hashes[last_submitted_block_idx - confs].clone(),
-            latest: block_hashes[last_submitted_block_idx].clone(),
-            anchor: block_hashes[0].clone(),
+            tail: block_hashes[last_submitted_block_idx - confs - ETH_TAIL_LENGTH as usize],
+            canon: block_hashes[last_submitted_block_idx - confs],
+            latest: block_hashes[last_submitted_block_idx],
+            anchor: block_hashes[0],
         };
         assert_eq!(hashes, expected_hashes);
 

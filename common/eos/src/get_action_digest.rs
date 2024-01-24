@@ -28,7 +28,7 @@ pub fn get_action_digest(action: &EosAction, action_has_return_value: bool) -> R
             // If we support the action return data too, we'll need to include it and its length here.
             vec![0x00]
         ].concat()).to_vec();
-        let digest = sha256::Hash::hash(&vec![hash_1, hash_2].concat()).to_vec();
+        let digest = sha256::Hash::hash(&[hash_1, hash_2].concat()).to_vec();
         debug!("Action digest: 0x{}", hex::encode(&digest));
         Ok(digest)
     }

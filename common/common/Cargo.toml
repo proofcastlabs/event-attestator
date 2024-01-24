@@ -3,7 +3,7 @@ name = "common"
 license = "MIT"
 publish = false
 edition = "2021"
-version = "6.10.3"
+version = "6.11.1"
 readme = "README.md"
 rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
@@ -20,7 +20,6 @@ strum = { workspace = true }
 serde = { workspace = true }
 docopt = { workspace = true }
 chrono = { workspace = true }
-base64 = { workspace = true }
 ethabi = { workspace = true }
 bitcoin = { workspace = true }
 eip-712 = { workspace = true }
@@ -28,6 +27,7 @@ litecoin = { workspace = true }
 eos-chain = { workspace = true }
 secp256k1 = { workspace = true }
 rustc-hex = { workspace = true }
+thiserror = { workspace = true }
 rmp-serde = { workspace = true }
 serde_json = { workspace = true }
 lazy_static = { workspace = true }

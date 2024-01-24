@@ -1,4 +1,4 @@
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 
 use common::{
     errors::AppError,
@@ -13,7 +13,7 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{EthBlock, EthBlockJson, EthReceipt, EthReceiptJson, EthReceipts, EthState};
 
-#[derive(Clone, Debug, PartialEq, Eq, Deref, DerefMut, Constructor, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Default, Deref, DerefMut, Constructor, Deserialize, Serialize)]
 pub struct EthSubmissionMaterials(Vec<EthSubmissionMaterial>);
 
 impl FromStr for EthSubmissionMaterials {
@@ -30,6 +30,39 @@ impl FromStr for EthSubmissionMaterials {
                 .map(EthSubmissionMaterial::from_json)
                 .collect::<Result<Vec<_>>>()?,
         ))
+    }
+}
+
+impl EthSubmissionMaterials {
+    pub fn get_last_block_timestamp(&self) -> Result<Duration> {
+        debug!("Getting last block timestamp from batch...");
+        let len = self.len();
+        match len {
+            0 => Err(AppError::Custom(
+                "no submission material to get block timestamp from".into(),
+            )),
+            _ => Ok(self[len - 1].get_timestamp()),
+        }
+    }
+
+    pub fn get_first_block_num(&self) -> Result<u64> {
+        debug!("Getting first block number from batch...");
+        match self.len() {
+            0 => Err(AppError::Custom(
+                "no submission material to get block number from".into(),
+            )),
+            _ => Ok(self[0].get_block_number()?.as_u64()),
+        }
+    }
+
+    pub fn get_last_block_num(&self) -> Result<u64> {
+        debug!("Getting last block number from batch...");
+        match self.len() {
+            0 => Err(AppError::Custom(
+                "no submission material to get block number from".into(),
+            )),
+            n => Ok(self[n - 1].get_block_number()?.as_u64()),
+        }
     }
 }
 
@@ -51,7 +84,7 @@ impl FromStr for EthSubmissionMaterial {
     }
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Eq, Deserialize, Serialize)]
 pub struct EthSubmissionMaterial {
     pub block: Option<EthBlock>,
     pub receipts: EthReceipts,
@@ -62,12 +95,53 @@ pub struct EthSubmissionMaterial {
     pub parent_hash: Option<EthHash>,
     pub receipts_root: Option<EthHash>,
     pub algo_first_valid_round: Option<u64>,
+    pub timestamp: Option<U256>,
+}
+
+impl PartialEq for EthSubmissionMaterial {
+    // NOTE:The timestamp field was added later and this API change broke a lot of tests, so as a
+    // quick solution we impl `PartialEq` manually, omitting the new timestmap field.
+    //
+    // The reason reason this timestamp field was added is because v3 Sentinels need to know what
+    // the latest block timestamp they have for various reasons. However, due to constraints in
+    // TEEs, once a block has been submitted to a sentinel and validated, the submission material
+    // is made as small as possible by removing the block itself and any non-pertinent receipts.
+    // These leaves the TEEE-constrained database as light as possible. Howwever this also means we
+    // lose access to the block timestamps, and so they're added to this struct upon creation.
+    fn eq(&self, other: &Self) -> bool {
+        self.hash == other.hash
+            && self.block == other.block
+            && self.receipts == other.receipts
+            && self.parent_hash == other.parent_hash
+            && self.block_number == other.block_number
+            && self.receipts_root == other.receipts_root
+            && self.eos_ref_block_num == other.eos_ref_block_num
+            && self.eos_ref_block_prefix == other.eos_ref_block_prefix
+            && self.algo_first_valid_round == other.algo_first_valid_round
+        // NOTE: We omit the timestamp!
+    }
 }
 
 impl EthSubmissionMaterial {
+    pub fn timestamp(&self) -> Duration {
+        self.get_timestamp()
+    }
+
+    pub fn get_timestamp(&self) -> Duration {
+        let seconds = if let Some(ref b) = self.block {
+            b.get_timestamp().as_u64()
+        } else if let Some(t) = self.timestamp {
+            t.as_u64()
+        } else {
+            warn!("no timestamp in submission material, defaulting to zero");
+            0
+        };
+        Duration::from_secs(seconds)
+    }
+
     pub fn add_block(mut self, block: EthBlock) -> Result<Self> {
         if self.block.is_none() {
-            info!("Adding bloc to ETH submission material...");
+            debug!("adding block to ETH submission material...");
             self.hash = Some(block.hash);
             self.block_number = Some(block.number);
             self.parent_hash = Some(block.parent_hash);
@@ -81,7 +155,7 @@ impl EthSubmissionMaterial {
 
     pub fn add_receipts(mut self, receipts: EthReceipts) -> Result<Self> {
         if self.receipts.is_empty() {
-            info!("[+] Adding receipts to ETH submission material!");
+            debug!("adding receipts to ETH submission material!");
             self.receipts = receipts;
             Ok(self)
         } else {
@@ -110,6 +184,7 @@ impl EthSubmissionMaterial {
             eos_ref_block_num,
             eos_ref_block_prefix,
             hash: Some(block.hash),
+            timestamp: Some(block.timestamp),
             block_number: Some(block.number),
             parent_hash: Some(block.parent_hash),
             receipts_root: Some(block.receipts_root),
@@ -211,10 +286,14 @@ impl EthSubmissionMaterial {
             Some(ref block_json) => Some(EthBlock::from_json(block_json)?),
             None => None,
         };
+
+        let timestamp = block.as_ref().map(|b| b.timestamp);
+
         let receipts = EthReceipts::from_jsons(&json.receipts.clone())?;
         match block {
             Some(block) => Ok(EthSubmissionMaterial {
                 receipts,
+                timestamp,
                 hash: Some(block.hash),
                 block_number: Some(block.number),
                 parent_hash: Some(block.parent_hash),
@@ -236,6 +315,7 @@ impl EthSubmissionMaterial {
                 };
                 Ok(EthSubmissionMaterial {
                     receipts,
+                    timestamp,
                     block: None,
                     hash: json.hash,
                     parent_hash: json.parent_hash,
@@ -256,10 +336,10 @@ impl EthSubmissionMaterial {
 
     fn contains_log_from_addresses(&self, addresses: &[EthAddress]) -> bool {
         if addresses.is_empty() {
-            info!("NOT Checking ETH sub mat for logs from addresses because none passed in!");
+            debug!("nOT Checking ETH sub mat for logs from addresses because none passed in!");
             false
         } else {
-            info!("Checking ETH sub mat for logs from addresses: {addresses:?}...");
+            debug!("checking ETH sub mat for logs from addresses: {addresses:?}...");
             for receipt in self.receipts.iter() {
                 for log in receipt.logs.iter() {
                     let needle = log.address;
@@ -269,17 +349,17 @@ impl EthSubmissionMaterial {
                     }
                 }
             }
-            info!("Eth sub mat has NO logs from given addresses!");
+            debug!("eth sub mat has NO logs from given addresses!");
             false
         }
     }
 
     pub fn remove_receipts_if_no_logs_from_addresses(self, addresses: &[EthAddress]) -> Self {
         if self.contains_log_from_addresses(addresses) {
-            info!("NOT removing receipts from ETH sub mat because they contain pertinent logs!");
+            debug!("NOT removing receipts from ETH sub mat because they contain pertinent logs!");
             self
         } else {
-            info!("REMOVING receipts from ETH sub mat because they do NOT contain pertinent logs!");
+            debug!("REMOVING receipts from ETH sub mat because they do NOT contain pertinent logs!");
             let mut mutable_self = self;
             mutable_self.receipts = EthReceipts::new(vec![]);
             mutable_self
@@ -413,6 +493,7 @@ mod tests {
             get_sample_eth_submission_material,
             get_sample_eth_submission_material_n,
             get_sample_eth_submission_material_string,
+            get_sample_eth_submission_materials,
             SAMPLE_RECEIPT_INDEX,
         },
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
@@ -610,5 +691,63 @@ mod tests {
         let addresses = vec![convert_hex_to_eth_address("0x37e1abc100676acbd5c581a9d60d914a10d08dd5").unwrap()];
         let result = sub_mat.remove_receipts_if_no_logs_from_addresses(&addresses);
         assert_eq!(result.receipts.len(), num_receipts_before);
+    }
+
+    #[test]
+    fn should_fail_to_get_first_block_num_in_empty_batch() {
+        let expected_err = "no submission material to get block number from".to_string();
+        let sub_mats = EthSubmissionMaterials::default();
+        match sub_mats.get_first_block_num() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_err),
+            Err(e) => panic!("Wrong error received: {e}"),
+        }
+    }
+
+    #[test]
+    fn should_fail_to_get_last_block_num_in_empty_batch() {
+        let expected_err = "no submission material to get block number from".to_string();
+        let sub_mats = EthSubmissionMaterials::default();
+        match sub_mats.get_last_block_num() {
+            Ok(_) => panic!("Should not have succeeded!"),
+            Err(AppError::Custom(e)) => assert_eq!(e, expected_err),
+            Err(e) => panic!("Wrong error received: {e}"),
+        }
+    }
+
+    #[test]
+    fn should_get_first_block_num_of_sub_mats() {
+        let sub_mats = get_sample_eth_submission_materials();
+        assert_eq!(sub_mats.len(), 21);
+        let expected_result = 8065750;
+        let result = sub_mats.get_first_block_num().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_last_block_num_of_sub_mats() {
+        let sub_mats = get_sample_eth_submission_materials();
+        assert_eq!(sub_mats.len(), 21);
+        let expected_result = 8065770;
+        let result = sub_mats.get_last_block_num().unwrap();
+        assert_eq!(result, expected_result);
+    }
+
+    #[test]
+    fn should_get_timestamp_from_submission_material() {
+        let sub_mat = get_sample_eth_submission_material();
+        let result = sub_mat.get_timestamp();
+        let expected_result = Duration::from_secs(1567871882);
+        assert_eq!(result, expected_result)
+    }
+
+    #[test]
+    fn should_get_correct_timestamp_if_no_block_in_submission_material() {
+        let mut sub_mat = get_sample_eth_submission_material();
+        sub_mat.block = None;
+        assert_eq!(sub_mat.block, None);
+        let result = sub_mat.get_timestamp();
+        let expected_result = Duration::from_secs(1567871882);
+        assert_eq!(result, expected_result)
     }
 }

@@ -17,7 +17,6 @@ use common_eos::{
 };
 use common_fees::FeeDatabaseUtils;
 use function_name::named;
-pub use serde_json::json;
 
 use crate::{
     constants::CORE_TYPE,

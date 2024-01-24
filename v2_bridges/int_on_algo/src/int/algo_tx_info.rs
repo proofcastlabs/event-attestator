@@ -204,9 +204,6 @@ mod tests {
 
     #[test]
     fn should_serde_tx_info_to_and_from_bytes() {
-        let mut info = IntOnAlgoAlgoTxInfo::default();
-        info.destination_address = Some(AlgorandAddress::create_random().unwrap());
-        info.destination_app_id = Some(AlgorandAppId(1337));
         let infos = IntOnAlgoAlgoTxInfos::new(vec![IntOnAlgoAlgoTxInfo::default()]);
         let bytes = infos.to_bytes().unwrap();
         let result = IntOnAlgoAlgoTxInfos::from_bytes(&bytes).unwrap();

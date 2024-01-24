@@ -1,4 +1,5 @@
 use common::{types::Result, utils::strip_hex_prefix};
+use derive_getters::Getters;
 use ethereum_types::{Bloom, U256};
 use serde::{Deserialize, Serialize};
 
@@ -49,6 +50,7 @@ impl EthSubmissionMaterial {
             eos_ref_block_prefix: None,
             algo_first_valid_round: None,
             receipts: EthReceipts(vec![]),
+            timestamp: Some(block.timestamp),
             block_number: Some(block.number),
             parent_hash: Some(block.parent_hash),
             receipts_root: Some(block.receipts_root),
@@ -93,9 +95,9 @@ impl EthBlock {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Getters)]
 #[serde(rename_all = "camelCase")]
-struct EthReceiptJsonFromRpc {
+pub struct EthReceiptJsonFromRpc {
     v: String,
     r: String,
     s: String,

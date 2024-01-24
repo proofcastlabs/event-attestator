@@ -1,0 +1,34 @@
+[package]
+edition = "2021"
+version = "0.1.0"
+name = "sentinel-strongbox"
+authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
+description = "The android/strongbox library for a pTokens EVM sentinel"
+
+[features]
+file-logger = ["common_file_logger"] # Enables file logging
+non-validating = ["common_sentinel/non-validating"] # NOTE: Disables block & recepit validation
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+android_logger = "0.13.3"
+hex = { workspace = true }
+jni = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true }
+thiserror = { workspace = true }
+serde_json = { workspace= true }
+tiny-keccak = { workspace = true }
+derive_more = { workspace = true }
+function_name = { workspace = true }
+ethereum-types = { workspace = true }
+derive-getters = { workspace = true }
+
+common = { workspace = true }
+common_eth = { workspace = true }
+common_sentinel = { workspace = true }
+common_metadata = { workspace = true }
+common_debug_signers = { workspace = true }
+common_file_logger = { workspace = true, optional = true }

@@ -15,7 +15,6 @@ use common_eth::{
     EthState,
 };
 use function_name::named;
-pub use serde_json::json;
 
 use crate::{
     constants::CORE_TYPE,

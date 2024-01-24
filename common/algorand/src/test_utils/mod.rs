@@ -43,7 +43,7 @@ write_paths_and_getter_fxn!(
 );
 
 pub fn get_sample_contiguous_submission_material() -> Vec<AlgoSubmissionMaterial> {
-    let result = vec![0u8; 11];
+    let result = [0u8; 11];
     result
         .iter()
         .enumerate()

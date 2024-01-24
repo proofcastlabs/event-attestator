@@ -205,6 +205,14 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         !self.get_is_for_evm()
     }
 
+    fn get_symbol(&self) -> &str {
+        if self.get_is_for_eth() {
+            "ETH"
+        } else {
+            "EVM"
+        }
+    }
+
     fn delete_block_by_block_hash(&self, block: &EthSubmissionMaterial) -> Result<()> {
         let key = self.normalize_key(block.get_block_hash()?.as_bytes().to_vec());
         debug!("Deleting block by blockhash under key: 0x{}", hex::encode(&key));
@@ -255,7 +263,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     }
 
     fn put_eth_latest_block_hash_in_db(&self, eth_hash: &EthHash) -> Result<()> {
-        info!("✔ Putting ETH latest block hash in db...");
+        info!("putting {} latest block hash in db...", self.get_symbol());
         self.put_special_eth_hash_in_db("latest", eth_hash)
     }
 
@@ -318,6 +326,14 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         info!("✔ Getting latest ETH block number from db...");
         match self.get_special_eth_block_from_db("latest") {
             Ok(result) => Ok(result.get_block_number()?.as_usize()),
+            Err(e) => Err(e),
+        }
+    }
+
+    fn get_latest_eth_block_timestamp(&self) -> Result<u64> {
+        info!("getting latest {} block number from db...", self.get_symbol());
+        match self.get_special_eth_block_from_db("latest") {
+            Ok(result) => Ok(result.get_timestamp().as_secs()),
             Err(e) => Err(e),
         }
     }
@@ -416,7 +432,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     }
 
     fn maybe_get_parent_eth_submission_material(&self, block_hash: &EthHash) -> Option<EthSubmissionMaterial> {
-        debug!("✔ Maybe getting parent ETH block from db...");
+        trace!("✔ Maybe getting parent ETH block from db...");
         self.maybe_get_nth_ancestor_eth_submission_material(block_hash, 1)
             .ok()?
     }
@@ -426,19 +442,25 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
         block_hash: &EthHash,
         n: u64,
     ) -> Result<Option<EthSubmissionMaterial>> {
-        debug!("✔ Getting {}th ancestor ETH block from db...", n);
-        match self.maybe_get_eth_submission_material_from_db(block_hash) {
-            None => Ok(None),
-            Some(block_and_receipts) => match n {
-                0 => Ok(Some(block_and_receipts)),
-                _ => self.maybe_get_nth_ancestor_eth_submission_material(&block_and_receipts.get_parent_hash()?, n - 1),
-            },
+        trace!("getting {}th ancestor ETH block from db...", n);
+        let mut sub_mat = self.maybe_get_eth_submission_material_from_db(block_hash);
+        let mut num = n;
+
+        while let Some(m) = sub_mat {
+            if num == 0 {
+                return Ok(Some(m));
+            } else {
+                sub_mat = self.maybe_get_eth_submission_material_from_db(&m.get_parent_hash()?);
+                num -= 1
+            }
         }
+
+        Ok(None)
     }
 
     fn maybe_get_eth_submission_material_from_db(&self, block_hash: &EthHash) -> Option<EthSubmissionMaterial> {
         let key = self.normalize_key(convert_h256_to_bytes(*block_hash));
-        debug!(
+        trace!(
             "✔ Maybe getting ETH block and receipts from db under hash: {}",
             hex::encode(&key)
         );
@@ -446,7 +468,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
             Err(_) => None,
             Ok(bytes) => match EthSubmissionMaterial::from_bytes(&bytes) {
                 Ok(block_and_receipts) => {
-                    debug!("✔ Decoded eth block and receipts from db!");
+                    trace!("✔ Decoded eth block and receipts from db!");
                     Some(block_and_receipts)
                 },
                 Err(_) => {
@@ -458,7 +480,7 @@ pub trait EthDbUtilsExt<D: DatabaseInterface> {
     }
 
     fn reverse_endianess(bytes: Bytes) -> Bytes {
-        debug!("Reversing endianess of bytes: 0x{}", hex::encode(&bytes));
+        trace!("Reversing endianess of bytes: 0x{}", hex::encode(&bytes));
         // NOTE: We switch the endianness of the block hash for EVM bridges
         // to avoid DB collisions w/ ETH<->ETH bridges.
         let mut reversed_bytes = bytes;
@@ -1361,7 +1383,7 @@ mod tests {
     #[test]
     fn db_keys_should_have_no_collisions() {
         let db = get_test_database();
-        let mut keys = vec![
+        let mut keys = [
             EthDbUtils::new(&db).get_all_as_hex_strings(),
             EvmDbUtils::new(&db).get_all_as_hex_strings(),
         ]

@@ -13,26 +13,36 @@
 //! if running multiple instances on one machine.
 
 pub use crate::{
-    core_type::CoreType,
-    errors::AppError,
+    block_already_in_db_error::BlockAlreadyInDbError,
+    bridge_side::BridgeSide,
+    constants::{MAX_DATA_SENSITIVITY_LEVEL, MIN_DATA_SENSITIVITY_LEVEL},
+    core_type::{CoreType, V3CoreType},
+    errors::{AppError, AppError as CommonError},
+    no_parent_error::NoParentError,
+    test_utils::get_test_database,
     traits::DatabaseInterface,
-    types::{Bytes, Result},
-    utils::get_core_version,
+    types::{Byte, Bytes, Result},
+    utils::{get_core_version, get_prefixed_db_key, strip_hex_prefix},
 };
 
 // FIXME Sort out the pub mods
 #[macro_use]
 pub mod macros;
 pub mod address;
+mod block_already_in_db_error;
+mod bridge_side;
 pub mod constants;
 pub mod core_type;
 pub mod crypto_utils;
 pub mod dictionaries;
 pub mod errors;
+mod no_parent_error;
 pub mod test_utils;
 pub mod traits;
 pub mod types;
 pub mod utils;
+
+pub use crypto_utils::{keccak_hash_bytes, sha256_hash_bytes};
 
 #[cfg(test)]
 extern crate simple_logger;
@@ -40,7 +50,5 @@ extern crate simple_logger;
 extern crate log;
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate quick_error;
 #[macro_use]
 extern crate paste;

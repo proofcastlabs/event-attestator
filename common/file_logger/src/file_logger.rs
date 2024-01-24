@@ -49,7 +49,7 @@ lazy_static! {
     static ref LOG_PATH: String = {
         // NOTE This allows a user to change the default log path via an env var upon building.
 
-        const DEFAULT_LOG_PATH: &str = "logs/";
+        const DEFAULT_LOG_PATH: &str = "./logs/";
         option_env!("LOG_PATH").unwrap_or_else(|| DEFAULT_LOG_PATH).to_string()
     };
 
@@ -60,7 +60,7 @@ lazy_static! {
         const DEFAULT_LOG_LEVEL: &str = "info";
         let log_level = option_env!("LOG_LEVEL").unwrap_or_else(|| DEFAULT_LOG_LEVEL).to_lowercase();
 
-        let log_levels = vec!["info", "warn", "debug", "error", "trace"];
+        let log_levels = ["info", "warn", "debug", "error", "trace"];
         if log_levels.contains(&log_level.as_ref()) {
             log_level
         } else {

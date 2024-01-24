@@ -20,7 +20,6 @@ use common_debug_signers::validate_debug_command_signature;
 use common_eos::{EosDbUtils, EosPrivateKey, EosSignedTransactions};
 use common_fees::FeeDatabaseUtils;
 use function_name::named;
-pub use serde_json::json;
 
 use crate::{
     btc::{

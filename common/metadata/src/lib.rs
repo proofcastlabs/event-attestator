@@ -17,7 +17,7 @@ use serde::{Deserialize, Serialize};
 pub use self::{
     eos_metadata::EosMetadata,
     metadata_address::MetadataAddress,
-    metadata_chain_id::{MetadataChainId, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
+    metadata_chain_id::{MetadataChainId, MetadataChainIdError, METADATA_CHAIN_ID_NUMBER_OF_BYTES},
     metadata_protocol_id::MetadataProtocolId,
     metadata_traits::{ToMetadata, ToMetadataChainId},
     metadata_version::MetadataVersion,
@@ -27,7 +27,7 @@ pub use self::{
 /// [
 ///     uint8 versionByte,
 ///     bytes userData,
-///     bytes4 originProtocol <bytes1 originProtocolId + bytes3 keccak256(originChainId)[:3]>,
+///     bytes4 originProtocol <bytes1 originProtocolId + bytes3 keccak256(originChainId)\[:3\]>,
 ///     origin sender
 /// ]
 ///

@@ -52,7 +52,7 @@ mod tests {
             "0.00000001 SAM",
             "0.00000000 SAM",
         ];
-        vec![
+        [
             123456789123456789_u64,
             12345678912345678_u64,
             1234567891234567_u64,
@@ -81,13 +81,13 @@ mod tests {
 
     #[test]
     fn should_get_x_num_zeroes_string() {
-        let vec = vec![0u8; 10];
+        let vec = [0u8; 10];
         let results = vec
             .iter()
             .enumerate()
             .map(|(i, _)| get_x_num_zeroes_string(i))
             .collect::<Vec<String>>();
-        let expected_results = vec![
+        let expected_results = [
             "",
             "0",
             "00",

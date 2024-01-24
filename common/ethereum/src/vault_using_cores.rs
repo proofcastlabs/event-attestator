@@ -1,4 +1,4 @@
-use common::{traits::DatabaseInterface, types::Result};
+use common::{traits::DatabaseInterface, types::Result, CoreType, V3CoreType};
 use ethereum_types::Address as EthAddress;
 use strum_macros::EnumIter;
 
@@ -12,17 +12,37 @@ pub enum VaultUsingCores {
     Erc20OnEvm,
     Erc20OnInt,
     IntOnEos,
+    V3(V3CoreType),
 }
 
 impl VaultUsingCores {
+    pub fn from_core_type(core_type: &CoreType) -> Result<Self> {
+        match core_type {
+            CoreType::IntOnEos => Ok(Self::IntOnEos),
+            CoreType::IntOnEvm => Ok(Self::IntOnEvm),
+            CoreType::IntOnAlgo => Ok(Self::IntOnAlgo),
+            CoreType::Erc20OnEos => Ok(Self::Erc20OnEos),
+            CoreType::Erc20OnEvm => Ok(Self::Erc20OnEvm),
+            CoreType::Erc20OnInt => Ok(Self::Erc20OnInt),
+            CoreType::V3(v3_core_type) => match v3_core_type {
+                V3CoreType::EvmOnInt => Ok(Self::V3(V3CoreType::EvmOnInt)),
+                V3CoreType::IntOnEvm => Ok(Self::V3(V3CoreType::IntOnEvm)),
+            },
+            _ => Err(format!("Core type '{core_type}' does not appear to be a vault using core").into()),
+        }
+    }
+
     pub fn get_vault_contract<D: DatabaseInterface, E: EthDbUtilsExt<D>>(&self, db_utils: &E) -> Result<EthAddress> {
+        debug!("Getting vault contract for vault: '{self:?}'");
         match self {
             Self::IntOnAlgo => db_utils.get_int_on_algo_smart_contract_address(),
-            Self::IntOnEvm => db_utils.get_int_on_evm_smart_contract_address_from_db(),
             Self::IntOnEos => db_utils.get_int_on_eos_smart_contract_address_from_db(),
             Self::Erc20OnEos => db_utils.get_erc20_on_eos_smart_contract_address_from_db(),
-            Self::Erc20OnEvm => db_utils.get_erc20_on_evm_smart_contract_address_from_db(),
             Self::Erc20OnInt => db_utils.get_erc20_on_int_smart_contract_address_from_db(),
+            Self::IntOnEvm | Self::V3(V3CoreType::IntOnEvm) => db_utils.get_int_on_evm_smart_contract_address_from_db(),
+            Self::Erc20OnEvm | Self::V3(V3CoreType::EvmOnInt) => {
+                db_utils.get_erc20_on_evm_smart_contract_address_from_db()
+            },
         }
     }
 
@@ -31,13 +51,18 @@ impl VaultUsingCores {
         db_utils: &E,
         address: &EthAddress,
     ) -> Result<()> {
+        debug!("Putting vault contract in db for vault: '{self:?}'");
         match self {
             Self::IntOnEos => db_utils.put_int_on_eos_smart_contract_address_in_db(address),
-            Self::IntOnEvm => db_utils.put_int_on_evm_smart_contract_address_in_db(address),
             Self::IntOnAlgo => db_utils.put_int_on_algo_smart_contract_address_in_db(address),
             Self::Erc20OnEos => db_utils.put_erc20_on_eos_smart_contract_address_in_db(address),
-            Self::Erc20OnEvm => db_utils.put_erc20_on_evm_smart_contract_address_in_db(address),
             Self::Erc20OnInt => db_utils.put_erc20_on_int_smart_contract_address_in_db(address),
+            Self::IntOnEvm | Self::V3(V3CoreType::IntOnEvm) => {
+                db_utils.put_int_on_evm_smart_contract_address_in_db(address)
+            },
+            Self::Erc20OnEvm | Self::V3(V3CoreType::EvmOnInt) => {
+                db_utils.put_erc20_on_evm_smart_contract_address_in_db(address)
+            },
         }
     }
 

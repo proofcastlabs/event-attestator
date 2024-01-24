@@ -112,7 +112,7 @@ mod tests {
             algo_safe_address: ALGO_SAFE_ADDRESS.to_string(),
             algo_linker_hash: AlgorandHash::default().to_string(),
             algo_genesis_hash: AlgorandHash::from_genesis_id(genesis_id).unwrap().to_string(),
-            algo_core_is_validating: if cfg!(feature = "non-validating") { false } else { true },
+            algo_core_is_validating: !cfg!(feature = "non-validating"),
             // NOTE: The redeem address is generated randomly on initialization!
             algo_address: db_utils
                 .get_algo_private_key()

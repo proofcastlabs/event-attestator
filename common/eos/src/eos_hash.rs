@@ -30,9 +30,7 @@ macro_rules! impl_hash {
 
         impl Clone for $name {
             fn clone(&self) -> Self {
-                let mut result = Self::default();
-                result.copy_from_slice(&self.0);
-                result
+                *self
             }
         }
 

@@ -2,8 +2,10 @@ mod add_block_and_receipts_to_db;
 mod any_sender;
 mod append_to_blockchain;
 mod calculate_linker_hash;
+mod chain;
 mod check_parent_exists;
 mod core_initialization;
+mod default_block_parameter;
 mod eip_1559;
 mod eth_block;
 mod eth_block_from_json_rpc;
@@ -46,11 +48,14 @@ pub use self::{
     },
     any_sender::{RelayTransaction, RelayTransactions},
     append_to_blockchain::append_to_blockchain,
+    chain::{Chain, ChainBlockData, ChainDbUtils, ChainError, ChainState, NoParentError},
     check_parent_exists::{check_for_parent_of_eth_block_in_state, check_for_parent_of_evm_block_in_state},
     core_initialization::{
         add_eth_block_to_db_and_return_state,
         add_evm_block_to_db_and_return_state,
         generate_and_store_eos_on_eth_contract_address,
+        init_v3_host_core,
+        init_v3_native_core,
         initialize_eth_core_with_no_contract_tx,
         initialize_eth_core_with_router_contract_and_return_state,
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,
@@ -68,8 +73,9 @@ pub use self::{
         set_evm_latest_block_hash_and_return_state,
         EthInitializationOutput,
     },
+    default_block_parameter::DefaultBlockParameter,
     eth_block::{EthBlock, EthBlockJson},
-    eth_block_from_json_rpc::EthBlockJsonFromRpc,
+    eth_block_from_json_rpc::{EthBlockJsonFromRpc, EthReceiptJsonFromRpc},
     eth_constants::{
         ETH_ADDRESS_SIZE_IN_BYTES,
         ETH_CORE_IS_INITIALIZED_JSON,
@@ -88,6 +94,7 @@ pub use self::{
         encode_erc20_vault_set_weth_unwrapper_address_fxn_data,
         encode_erc777_mint_fxn_maybe_with_data,
         encode_erc777_mint_with_no_data_fxn,
+        encode_fxn_call,
         encode_mint_by_proxy_tx_data,
         get_signed_erc777_change_pnetwork_tx,
         get_signed_erc777_proxy_change_pnetwork_by_proxy_tx,
@@ -110,10 +117,26 @@ pub use self::{
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
     },
-    eth_crypto::{get_signed_minting_tx, EthPrivateKey, EthPublicKey, EthSignature, EthTransaction, EthTransactions},
+    eth_crypto::{
+        get_signed_minting_tx,
+        EthPrivateKey,
+        EthPublicKey,
+        EthSignature,
+        EthTransaction,
+        EthTransactions,
+        ETH_SIGNATURE_NUM_BYTES,
+    },
     eth_database_transactions::{end_eth_db_transaction_and_return_state, start_eth_db_transaction_and_return_state},
-    eth_database_utils::{EthDatabaseKeysJson, EthDbUtils, EthDbUtilsExt, EvmDatabaseKeysJson, EvmDbUtils},
-    eth_enclave_state::{EthEnclaveState, EvmEnclaveState},
+    eth_database_utils::{
+        EthDatabaseKeysJson,
+        EthDbUtils,
+        EthDbUtils as NativeDbUtils,
+        EthDbUtilsExt,
+        EvmDatabaseKeysJson,
+        EvmDbUtils,
+        EvmDbUtils as HostDbUtils,
+    },
+    eth_enclave_state::{EthEnclaveState, EvmEnclaveState, HostCoreState, NativeCoreState},
     eth_log::{EthLog, EthLogExt, EthLogs},
     eth_message_signer::{
         sign_ascii_msg_with_eth_key_with_no_prefix,
@@ -144,8 +167,10 @@ pub use self::{
         convert_h256_to_string,
         convert_hex_strings_to_eth_addresses,
         convert_hex_strings_to_h256s,
+        convert_hex_to_bytes,
         convert_hex_to_eth_address,
         convert_hex_to_h256,
+        decode_prefixed_hex,
         get_eth_address_from_str,
         get_random_eth_address,
     },
