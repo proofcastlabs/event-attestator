@@ -14,13 +14,14 @@ pub fn get_debug_signature_info<D: DatabaseInterface>(
     core_type: &CoreType,
     debug_command_hash_str: &str,
     use_safe_debug_signers: bool,
+    use_db_tx: bool,
 ) -> Result<JsonValue> {
-    if !cfg!(feature = "skip-db-transactions") {
+    if use_db_tx {
         db.start_transaction()?
     };
 
     DebugSignatories::get_from_db(db).and_then(|debug_signatories| {
-        if !cfg!(feature = "skip-db-transactions") {
+        if use_db_tx {
             db.end_transaction()?
         };
         let debug_command_hash = convert_hex_to_h256(debug_command_hash_str)?;

@@ -61,11 +61,12 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
     core_type: &CoreType,
     signature_str: &str,
     use_safe_debug_signers: bool,
+    use_db_tx: bool,
 ) -> Result<String> {
     info!("adding multiple debug signer to list...");
     let debug_signatories_to_add = DebugSignersJson::from_str(debug_signers_json)?.to_debug_signatories()?;
 
-    if !cfg!(feature = "skip-db-transactions") {
+    if use_db_tx {
         db.start_transaction()?
     };
 
@@ -103,13 +104,7 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
                     })
             }
         })
-        .and_then(|_| {
-            if !cfg!(feature = "skip-db-transactions") {
-                db.end_transaction()
-            } else {
-                Ok(())
-            }
-        })
+        .and_then(|_| if use_db_tx { db.end_transaction() } else { Ok(()) })
         .map(|_| {
             json!({
                 "debugAddMultiDebugSignersSuccess":true,

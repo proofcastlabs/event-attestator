@@ -9,10 +9,6 @@ name = "debug_signers"
 keywords = ["defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
-[features]
-# NOTE: This is to allow a sentinel to use this library with fxns in this library causing issues w/r/t db transactions.
-skip-db-transactions = []
-
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }

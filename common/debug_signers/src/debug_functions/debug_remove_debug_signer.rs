@@ -18,8 +18,9 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
     eth_address_str: &str,
     core_type: &CoreType,
     signature_str: &str,
+    use_db_tx: bool,
 ) -> Result<String> {
-    if !cfg!(feature = "skip-db-transactions") {
+    if use_db_tx {
         db.start_transaction()?
     };
 
@@ -34,12 +35,6 @@ pub fn debug_remove_debug_signer<D: DatabaseInterface>(
                 .and_then(|_| DebugSignatories::get_from_db(db))
                 .and_then(|debug_signatories| debug_signatories.remove_and_update_in_db(db, &eth_address))
         })
-        .and_then(|_| {
-            if !cfg!(feature = "skip-db-transactions") {
-                db.end_transaction()
-            } else {
-                Ok(())
-            }
-        })
-        .map(|_| json!({"debug_remove_signatory_success":true, "eth_address": eth_address_str}).to_string())
+        .and_then(|_| if use_db_tx { db.end_transaction() } else { Ok(()) })
+        .map(|_| json!({"debugRemoveSignatorySuccess":true, "ethAddress": eth_address_str}).to_string())
 }

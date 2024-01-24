@@ -22,10 +22,11 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
     core_type: &CoreType,
     signature_str: &str,
     use_safe_debug_signers: bool,
+    use_db_tx: bool,
 ) -> Result<String> {
     info!("✔ Adding debug signer to list...");
     let eth_address = convert_hex_to_eth_address(eth_address_str)?;
-    if !cfg!(feature = "skip-db-transactions") {
+    if use_db_tx {
         db.start_transaction()?
     };
 
@@ -63,12 +64,6 @@ pub fn debug_add_debug_signer<D: DatabaseInterface>(
                     .and_then(|debug_signatories| debug_signatories.add_and_update_in_db(db, &debug_signatory_to_add))
             }
         })
-        .and_then(|_| {
-            if !cfg!(feature = "skip-db-transactions") {
-                db.end_transaction()
-            } else {
-                Ok(())
-            }
-        })
+        .and_then(|_| if use_db_tx { db.end_transaction() } else { Ok(()) })
         .map(|_| json!({"debugAddSignatorySuccess":true, "ethAddress": eth_address_str}).to_string())
 }
