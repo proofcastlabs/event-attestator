@@ -133,10 +133,10 @@ mod tests {
         json!([
             {
                 "name": "address1",
-                "ethAddress": "0xea674fdde714fd979de3edf0f56aa9716b898ec8",
+                "eth_address": "0xea674fdde714fd979de3edf0f56aa9716b898ec8",
             },{
                 "name": "address2",
-                "ethAddress": "0xb522f30ba03188d37893504d435beed000925485",
+                "eth_address": "0xb522f30ba03188d37893504d435beed000925485",
             }
         ])
         .to_string()
