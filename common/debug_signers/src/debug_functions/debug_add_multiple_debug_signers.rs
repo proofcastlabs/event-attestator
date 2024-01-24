@@ -7,9 +7,7 @@ use function_name::named;
 use serde::Deserialize;
 use serde_json::json;
 
-#[cfg(not(feature = "no-safe-debug-signers"))]
-use crate::SAFE_DEBUG_SIGNATORIES;
-use crate::{DebugSignatories, DebugSignatory};
+use crate::{DebugSignatories, DebugSignatory, SAFE_DEBUG_SIGNATORIES};
 
 #[derive(Deserialize, Deref)]
 struct DebugSignersJson(Vec<DebugSignerJson>);
@@ -35,6 +33,7 @@ impl FromStr for DebugSignersJson {
 }
 
 #[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
 struct DebugSignerJson {
     name: String,
     eth_address: String,
@@ -54,16 +53,16 @@ impl FromStr for DebugSignerJson {
 /// signature from an address in the list of debug signatories. But because this list begins life
 /// empty, we have a chicken and egg scenario. And so to solve this, if the addition is the _first_
 /// one, we instead require a signature from the `SAFE_ETH_ADDRESS` in order to validate the
-/// command.
+/// command. This requirement can be disabled with a passed in boolean.
 #[named]
-#[cfg(not(feature = "no-safe-debug-signers"))]
 pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
     db: &D,
     debug_signers_json: &str,
     core_type: &CoreType,
     signature_str: &str,
+    use_safe_debug_signers: bool,
 ) -> Result<String> {
-    info!("✔ Adding debug signer to list...");
+    info!("adding multiple debug signer to list...");
     let debug_signatories_to_add = DebugSignersJson::from_str(debug_signers_json)?.to_debug_signatories()?;
 
     if !cfg!(feature = "skip-db-transactions") {
@@ -80,10 +79,21 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
             let signature = EthSignature::from_str(signature_str)?;
 
             if debug_signatories.is_empty() {
-                info!("✔ Validating debug signers addition using the safe address...");
-                SAFE_DEBUG_SIGNATORIES
-                    .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                    .and_then(|_| debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add))
+                let msg = "validating debug signers addition using the safe address...";
+                if use_safe_debug_signers {
+                    debug!("{msg}");
+                    SAFE_DEBUG_SIGNATORIES
+                        .maybe_validate_signature_and_increment_nonce_in_db(
+                            db,
+                            core_type,
+                            &debug_command_hash,
+                            &signature,
+                        )
+                        .and_then(|_| debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add))
+                } else {
+                    debug!("not {msg}");
+                    debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add)
+                }
             } else {
                 debug_signatories
                     .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
@@ -102,67 +112,8 @@ pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
         })
         .map(|_| {
             json!({
-                "debug_add_multi_debug_signers_success":true,
-                "signers_added": debug_signatories_to_add,
-            })
-            .to_string()
-        })
-}
-
-/// Debug Add Multiple Debug Signers
-///
-/// Adds new debug signatories to the list. Since this is a debug function, it requires a valid
-/// signature from an address in the list of debug signatories. But because this list begins life
-/// empty, we have a chicken and egg scenario. And so to solve this, if the addition is the _first_
-/// one, we instead require a signature from the `SAFE_ETH_ADDRESS` in order to validate the
-/// command.
-#[named]
-#[cfg(feature = "no-safe-debug-signers")]
-pub fn debug_add_multiple_debug_signers<D: DatabaseInterface>(
-    db: &D,
-    debug_signers_json: &str,
-    core_type: &CoreType,
-    signature_str: &str,
-) -> Result<String> {
-    info!("✔ Adding debug signer to list...");
-    let debug_signatories_to_add = DebugSignersJson::from_str(debug_signers_json)?.to_debug_signatories()?;
-
-    if !cfg!(feature = "skip-db-transactions") {
-        db.start_transaction()?
-    };
-
-    DebugSignatories::get_from_db(db)
-        .and_then(|debug_signatories| {
-            let debug_command_hash = convert_hex_to_h256(&get_debug_command_hash!(
-                function_name!(),
-                debug_signers_json,
-                core_type
-            )()?)?;
-            let signature = EthSignature::from_str(signature_str)?;
-
-            if debug_signatories.is_empty() {
-                info!("adding multiple debug signers to empty list without validating command signature...");
-                debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add)
-            } else {
-                debug_signatories
-                    .maybe_validate_signature_and_increment_nonce_in_db(db, core_type, &debug_command_hash, &signature)
-                    .and_then(|_| DebugSignatories::get_from_db(db))
-                    .and_then(|debug_signatories| {
-                        debug_signatories.add_multi_and_update_in_db(db, &debug_signatories_to_add)
-                    })
-            }
-        })
-        .and_then(|_| {
-            if !cfg!(feature = "skip-db-transactions") {
-                db.end_transaction()
-            } else {
-                Ok(())
-            }
-        })
-        .map(|_| {
-            json!({
-                "debug_add_multi_debug_signers_success":true,
-                "signers_added": debug_signatories_to_add,
+                "debugAddMultiDebugSignersSuccess":true,
+                "signersAdded": debug_signatories_to_add,
             })
             .to_string()
         })
@@ -176,10 +127,10 @@ mod tests {
         json!([
             {
                 "name": "address1",
-                "eth_address": "0xea674fdde714fd979de3edf0f56aa9716b898ec8",
+                "ethAddress": "0xea674fdde714fd979de3edf0f56aa9716b898ec8",
             },{
                 "name": "address2",
-                "eth_address": "0xb522f30ba03188d37893504d435beed000925485",
+                "ethAddress": "0xb522f30ba03188d37893504d435beed000925485",
             }
         ])
         .to_string()

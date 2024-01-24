@@ -18,7 +18,6 @@ lazy_static! {
     pub static ref DEBUG_SIGNATORIES_DB_KEY: [u8; 32] = common::utils::get_prefixed_db_key("debug_signatories_db_key");
 }
 
-#[cfg(not(feature = "no-safe-debug-signers"))]
 lazy_static! {
     pub static ref SAFE_DEBUG_SIGNATORIES: DebugSignatories =
         DebugSignatories::new(vec![DebugSignatory::new("safe_address", &SAFE_ETH_ADDRESS)]);
