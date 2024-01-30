@@ -10,8 +10,9 @@ use strum_macros::EnumIter;
 #[derive(Clone, Debug, EnumIter, Eq, PartialEq, Serialize, Deserialize)]
 pub enum EthReceiptType {
     Legacy,
-    EIP2718,
-    EIP2930,
+    EIP2718, // NOTE: New tx type that's an envelope for future ones: https://eips.ethereum.org/EIPS/eip-2718
+    EIP2930, // NOTE: Optional access lists: https://eips.ethereum.org/EIPS/eip-2930
+    EIP4844, // NOTE: Dencun-fork blob-carrying txs: https://eips.ethereum.org/EIPS/eip-4844
     ArbitrumRetryTxType,
     ArbitrumLegacyTxType,
     ArbitrumDepositTxType,
@@ -27,6 +28,7 @@ impl EthReceiptType {
             0x00 => Self::Legacy,
             0x01 => Self::EIP2930,
             0x02 => Self::EIP2718,
+            0x03 => Self::EIP4844,
             0x68 => Self::ArbitrumRetryTxType,
             0x64 => Self::ArbitrumDepositTxType,
             0x65 => Self::ArbitrumUnsignedTxType,
@@ -43,6 +45,7 @@ impl EthReceiptType {
             Self::Legacy => 0x00,
             Self::EIP2930 => 0x01,
             Self::EIP2718 => 0x02,
+            Self::EIP4844 => 0x03,
             Self::ArbitrumRetryTxType => 0x68,
             Self::ArbitrumLegacyTxType => 0x78,
             Self::ArbitrumDepositTxType => 0x64,
@@ -64,6 +67,7 @@ impl fmt::Display for EthReceiptType {
             Self::Legacy => "0x0",
             Self::EIP2930 => "0x1",
             Self::EIP2718 => "0x2",
+            Self::EIP4844 => "0x3",
             Self::ArbitrumRetryTxType => "0x68",
             Self::ArbitrumLegacyTxType => "0x78",
             Self::ArbitrumDepositTxType => "0x64",
@@ -98,10 +102,13 @@ impl FromStr for EthReceiptType {
 
 #[cfg(test)]
 mod tests {
+    use std::fs::read_to_string;
+
     use common::types::Bytes;
     use strum::IntoEnumIterator;
 
     use super::*;
+    use crate::EthSubmissionMaterial;
 
     #[test]
     fn should_make_receipt_types_byte_roundtrip() {
@@ -114,5 +121,12 @@ mod tests {
             .map(EthReceiptType::from_byte)
             .collect::<Vec<EthReceiptType>>();
         assert_eq!(results, expected_results);
+    }
+
+    #[test]
+    fn should_parse_submission_material_with_eip4844_receipt_type() {
+        let p = "src/test_utils/goerli-sub-mat-with-eip-4844-receipt-type.json";
+        let r = EthSubmissionMaterial::from_str(&read_to_string(p).unwrap());
+        assert!(r.is_ok());
     }
 }
