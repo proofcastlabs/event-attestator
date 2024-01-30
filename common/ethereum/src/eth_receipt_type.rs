@@ -10,9 +10,10 @@ use strum_macros::EnumIter;
 #[derive(Clone, Debug, EnumIter, Eq, PartialEq, Serialize, Deserialize)]
 pub enum EthReceiptType {
     Legacy,
-    EIP2718, // NOTE: New tx type that's an envelope for future ones: https://eips.ethereum.org/EIPS/eip-2718
     EIP2930, // NOTE: Optional access lists: https://eips.ethereum.org/EIPS/eip-2930
+    EIP1559, // NOTE: New tx pricing mechanism: https://eips.ethereum.org/EIPS/eip-1559
     EIP4844, // NOTE: Dencun-fork blob-carrying txs: https://eips.ethereum.org/EIPS/eip-4844
+    EIP2718, // NOTE: The original EIP introducing new tx envelopes: https://eips.ethereum.org/EIPS/eip-2718
     ArbitrumRetryTxType,
     ArbitrumLegacyTxType,
     ArbitrumDepositTxType,
@@ -27,7 +28,7 @@ impl EthReceiptType {
         match byte {
             0x00 => Self::Legacy,
             0x01 => Self::EIP2930,
-            0x02 => Self::EIP2718,
+            0x02 => Self::EIP1559,
             0x03 => Self::EIP4844,
             0x68 => Self::ArbitrumRetryTxType,
             0x64 => Self::ArbitrumDepositTxType,
@@ -44,7 +45,6 @@ impl EthReceiptType {
         match self {
             Self::Legacy => 0x00,
             Self::EIP2930 => 0x01,
-            Self::EIP2718 => 0x02,
             Self::EIP4844 => 0x03,
             Self::ArbitrumRetryTxType => 0x68,
             Self::ArbitrumLegacyTxType => 0x78,
@@ -53,6 +53,10 @@ impl EthReceiptType {
             Self::ArbitrumContractTxType => 0x66,
             Self::ArbitrumInternalTxType => 0x6a,
             Self::ArbitrumSubmitRetryableTxType => 0x69,
+            // NOTE: This is to remain backwards compatible where an earlier bug caused
+            // some submission materail to have a type "EIP2718" when it should in fact
+            // have been "0x2" or "EIP1559".
+            Self::EIP1559 | Self::EIP2718 => 0x02,
         }
     }
 
@@ -66,11 +70,11 @@ impl fmt::Display for EthReceiptType {
         let s = match self {
             Self::Legacy => "0x0",
             Self::EIP2930 => "0x1",
-            Self::EIP2718 => "0x2",
             Self::EIP4844 => "0x3",
             Self::ArbitrumRetryTxType => "0x68",
             Self::ArbitrumLegacyTxType => "0x78",
             Self::ArbitrumDepositTxType => "0x64",
+            Self::EIP1559 | Self::EIP2718 => "0x2", // NOTE: Ibid
             Self::ArbitrumUnsignedTxType => "0x65",
             Self::ArbitrumContractTxType => "0x66",
             Self::ArbitrumInternalTxType => "0x6a",
@@ -87,7 +91,8 @@ impl FromStr for EthReceiptType {
         match s {
             "0x0" | "0" => Ok(Self::Legacy),
             "EIP2930" | "0x1" | "1" => Ok(Self::EIP2930),
-            "EIP2718" | "0x2" | "2" => Ok(Self::EIP2718),
+            "EIP4844" | "0x3" | "3" => Ok(Self::EIP4844),
+            "EIP1559" | "EIP2718" | "0x2" | "2" => Ok(Self::EIP1559), // NOTE: Ibid
             "ArbitrumRetryTxType" | "0x68" | "68" => Ok(Self::ArbitrumRetryTxType),
             "ArbitrumLegacyTxType" | "0x78" | "78" => Ok(Self::ArbitrumLegacyTxType),
             "ArbitrumDepositTxType" | "0x64" | "64" => Ok(Self::ArbitrumDepositTxType),
@@ -112,8 +117,13 @@ mod tests {
 
     #[test]
     fn should_make_receipt_types_byte_roundtrip() {
-        let expected_results = EthReceiptType::iter().collect::<Vec<EthReceiptType>>();
+        let expected_results = EthReceiptType::iter()
+            // NOTE: We remove the following due to bug explained in notes above
+            .filter(|x| x != &EthReceiptType::EIP2718)
+            .collect::<Vec<EthReceiptType>>();
         let bytes = EthReceiptType::iter()
+            // NOTE: Ibid
+            .filter(|x| x != &EthReceiptType::EIP2718)
             .map(|receipt_type| receipt_type.to_byte())
             .collect::<Bytes>();
         let results = bytes
