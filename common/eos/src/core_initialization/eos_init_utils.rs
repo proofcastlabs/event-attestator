@@ -4,6 +4,7 @@ use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
+    AppError,
 };
 use common_chain_ids::EosChainId;
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,14 @@ pub struct EosInitJson {
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionaryJson>,
     pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
+}
+
+impl FromStr for EosInitJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        EosInitJson::from_json_string(s)
+    }
 }
 
 impl EosInitJson {

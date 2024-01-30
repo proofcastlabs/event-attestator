@@ -271,7 +271,6 @@ mod tests {
     #[ignore] // TODO: Fix this test
     #[test]
     fn should_validate_mainnet_block_with_new_producers() {
-        // simple_logger::init().unwrap();
         let submission_material_num = 8;
         let submission_material = get_sample_eos_submission_material_n(submission_material_num);
         let submission_material_json = get_sample_eos_submission_material_json_n(submission_material_num);
