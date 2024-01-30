@@ -546,7 +546,7 @@ mod tests {
     #[test]
     fn should_get_receipt_type_from_non_legacy_receipt() {
         let receipt = get_eip1559_non_legacy_receipt();
-        let expected_result = EthReceiptType::EIP2718;
+        let expected_result = EthReceiptType::EIP1559;
         let result = receipt.get_receipt_type().unwrap();
         assert_eq!(result, expected_result);
     }
