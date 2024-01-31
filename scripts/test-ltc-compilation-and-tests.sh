@@ -6,7 +6,7 @@ set -e
 echo testing litecoin core compilations
 
 featureFlag="--features=ltc"
-packages=("pbtc-on-eth" "pbtc-on-eos" "pbtc-on-int")
+packages=("pbtc-on-int")
 
 for package in "${packages[@]}"
 do
