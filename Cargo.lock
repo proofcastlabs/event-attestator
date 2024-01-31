@@ -1297,6 +1297,7 @@ dependencies = [
  "debug_signers",
  "derive_more",
  "eos-chain",
+ "ethereum-types 0.12.1",
  "function_name",
  "hex",
  "lazy_static",

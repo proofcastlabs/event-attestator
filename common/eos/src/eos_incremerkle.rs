@@ -1,6 +1,7 @@
+use std::fmt;
+
 use common::{
     constants::MIN_DATA_SENSITIVITY_LEVEL,
-    errors::AppError,
     traits::DatabaseInterface,
     types::{NoneError, Result},
 };
@@ -137,8 +138,9 @@ impl Incremerkles {
             info!("adding new incremerkle to list");
             self.insert(0, incremerkle);
             self.truncate(MAX_NUM_INCREMERKLES);
+        } else {
+            warn!("not adding incremerkle to list because its block num is behind chain tip")
         }
-        warn!("not adding incremerkle to list because its block num is behind chain tip")
     }
 
     fn block_nums(&self) -> Vec<u64> {
@@ -170,12 +172,52 @@ impl Incremerkles {
     }
 }
 
+impl fmt::Display for Incremerkles {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let js = self.iter().map(IncremerkleJson::from).collect::<Vec<_>>();
+        write!(f, "{}", serde_json::json!(js))
+    }
+}
+
 #[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Incremerkle {
     node_count: u64,
     active_nodes: Vec<Checksum256>,
 }
 
+#[derive(Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+struct IncremerkleJson {
+    node_count: u64,
+    active_nodes: Vec<String>,
+    active_node_sides: Vec<String>,
+}
+
+impl From<&Incremerkle> for IncremerkleJson {
+    fn from(i: &Incremerkle) -> Self {
+        Self {
+            node_count: i.node_count,
+            active_nodes: i
+                .active_nodes
+                .iter()
+                .map(|c| hex::encode(c.as_bytes()))
+                .collect::<Vec<String>>(),
+            active_node_sides: i
+                .active_nodes
+                .iter()
+                .map(|c| if Incremerkle::is_canonical_left(c) { "l" } else { "r" }.to_string())
+                .collect::<Vec<String>>(),
+        }
+    }
+}
+
+impl fmt::Display for Incremerkle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", serde_json::json!(IncremerkleJson::from(self)))
+    }
+}
+
+// NOTE: A lot of this comes from: https://github.com/EOSIO/eos/blob/11d35f0f934402321853119d36caeb7022813743/libraries/chain/include/eosio/chain/incremental_merkle.hpp#L95
 impl Incremerkle {
     fn block_num(&self) -> u64 {
         self.node_count()
@@ -186,15 +228,15 @@ impl Incremerkle {
     }
 
     fn make_canonical_left(val: &Checksum256) -> Checksum256 {
-        let mut canonical_l: Checksum256 = *val;
-        canonical_l.set_hash0(canonical_l.hash0() & 0xFFFF_FFFF_FFFF_FF7F_u64);
-        canonical_l
+        let mut r = *val;
+        r.0[0] &= 0x7f;
+        r
     }
 
     fn make_canonical_right(val: &Checksum256) -> Checksum256 {
-        let mut canonical_r: Checksum256 = *val;
-        canonical_r.set_hash0(canonical_r.hash0() | 0x0000_0000_0000_0080_u64);
-        canonical_r
+        let mut r = *val;
+        r.0[0] |= 0x80;
+        r
     }
 
     pub(crate) fn make_canonical_pair(l: &Checksum256, r: &Checksum256) -> (Checksum256, Checksum256) {
@@ -214,11 +256,9 @@ impl Incremerkle {
     // @param value - a power-of-2 (unchecked)
     // @return the number of leading zeros
     fn count_leading_zeroes_of_a_power_of_2(value: u64) -> Result<usize> {
-        /*
         if value > 9223372036854775808 {
-            Err(format!("Cannot count leading zeres of {} without overflowing!", value).into())
+            return Err(format!("Cannot count leading zeres of {} without overflowing!", value).into());
         };
-        */
         let mut leading_zeroes: usize = 64;
         if value != 0 {
             leading_zeroes -= 1;
@@ -265,7 +305,7 @@ impl Incremerkle {
         }
     }
 
-    pub(crate) fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
+    pub fn append(&mut self, digest: Checksum256) -> Result<Checksum256> {
         let mut partial = false;
         let max_depth = Self::calculate_max_depth(self.node_count + 1)?;
         let mut current_depth = max_depth - 1;
@@ -275,35 +315,51 @@ impl Incremerkle {
         let mut updated_active_nodes: Vec<Checksum256> = Vec::with_capacity(max_depth);
 
         while current_depth > 0 {
-            if (index & 0x1) == 0 {
+            if index % 2 == 0 {
+                // we are collapsing from a "left" value and an implied "right" creating a partial node
+
+                // we only need to append this node if it is fully-realized and by definition
+                // if we have encountered a partial node during collapse this cannot be
+                // fully-realized
                 if !partial {
                     updated_active_nodes.push(top);
                 }
 
+                // calculate the partially realized node value by implying the "right" value is identical
+                // to the "left" value
                 top = Checksum256::hash(Self::make_canonical_pair(&top, &top))?;
                 partial = true;
             } else {
-                let left_value = active_iter
-                    .next()
-                    .ok_or_else(|| AppError::Custom("✘ Incremerkle error!".into()))?;
+                // we are collapsing from a "right" value and an fully-realized "left"
 
+                // pull a "left" value from the previous active nodes
+                let left_value = active_iter.next().unwrap();
+
+                // if the "right" value is a partial node we will need to copy the "left" as future appends still need
+                // it otherwise, it can be dropped from the set of active nodes as we are collapsing a
+                // fully-realized node
                 if partial {
                     updated_active_nodes.push(*left_value);
                 }
 
+                // calculate the node
                 top = Checksum256::hash(Self::make_canonical_pair(left_value, &top))?;
             }
 
+            // move up a level in the tree
             current_depth -= 1;
-            index >>= 1;
+            //index = index >> 1;
+            index /= 2;
         }
 
+        // append the top of the collapsed tree (aka the root of the merkle)
         updated_active_nodes.push(top);
 
+        // store the new active_nodes
         self.active_nodes = updated_active_nodes;
 
+        // update the node count
         self.node_count += 1;
-
         Ok(self.active_nodes[self.active_nodes.len() - 1])
     }
 
@@ -315,12 +371,12 @@ impl Incremerkle {
         }
     }
 
-    pub(crate) fn is_canonical_left(hash: &Checksum256) -> bool {
-        hash.0[0] & 0b1000_0000 == 0
+    pub fn is_canonical_left(val: &Checksum256) -> bool {
+        (val.hash0() & 0x0000000000000080u64) == 0
     }
 
-    pub(crate) fn is_canonical_right(hash: &Checksum256) -> bool {
-        !Self::is_canonical_left(hash)
+    pub fn is_canonical_right(val: &Checksum256) -> bool {
+        (val.hash0() & 0x0000000000000080u64) != 0
     }
 }
 
@@ -338,9 +394,11 @@ mod tests {
     use super::*;
     use crate::{
         bitcoin_crate_alias::hashes::{sha256, Hash},
+        core_initialization::EosInitJson,
         eos_action_receipt::{AuthSequence, EosActionReceipt},
         eos_test_utils::{get_sample_action_digests, get_sample_eos_submission_material_n},
         eos_utils::convert_hex_to_checksum256,
+        EosSubmissionMaterial,
         MerkleProof,
     };
 
@@ -382,6 +440,8 @@ mod tests {
                     &convert_hex_to_checksum256(&hex::encode(&leaves[2 * i])).unwrap(),
                     &convert_hex_to_checksum256(&hex::encode(&leaves[(2 * i) + 1])).unwrap(),
                 ))
+                .unwrap()
+                .as_bytes()
                 .to_vec();
             }
             leaves.resize(leaves.len() / 2, vec![0x00]);
@@ -666,5 +726,70 @@ mod tests {
         incremerkles.add(i1);
         assert_eq!(incremerkles.len(), 2);
         assert_eq!(incremerkles.latest_block_num(), 3);
+    }
+
+    #[test]
+    #[ignore] // TODO This failing test shows the bug in the incremerkle impl.
+    fn should_calculate_correct_merkle_root() {
+        // NOTE: An "init" block from the eos node includes the full blockroot merkle for that
+        // block, which - as per the spec - includes the root as the last element in the
+        // incremerkle's active node list
+        let init_block_1 = EosInitJson::from_str(&crate::eos_test_utils::get_init_block_352283689()).unwrap();
+        let init_block_1_num = init_block_1.block.block_num;
+        // NOTE: So now, when we validate this block, we do so using the above root, and thus if
+        // this passes without error, we know the correct signing key was recovered and thus the
+        // merkle root is correct at this point.
+        init_block_1.validate();
+        assert_eq!(init_block_1_num, 352283689);
+
+        let init_block_2 = EosInitJson::from_str(&crate::eos_test_utils::get_init_block_352283690()).unwrap();
+        let init_block_2_num = init_block_2.block.block_num;
+        // NOTE: See above. Now we have two subsequent blocks whose merkle roots we know and are
+        // verifiably correct.
+        init_block_2.validate();
+        assert_eq!(init_block_2_num, init_block_1_num + 1);
+
+        let mut incremerkle_1 = Incremerkle::new(
+            init_block_1.block.block_num,
+            init_block_1
+                .blockroot_merkle
+                .iter()
+                .map(|x| convert_hex_to_checksum256(x).unwrap())
+                .collect::<Vec<_>>()
+                .clone(),
+        );
+        let mroot_1 = incremerkle_1.get_root();
+        let expected_mroot_1 =
+            Checksum256::from_str("e0797a3e5bc13e5c1ed92093ae686b88d8d800678cca1a80fa5466a285792143").unwrap();
+        assert_eq!(mroot_1, expected_mroot_1);
+
+        let incremerkle_2 = Incremerkle::new(
+            init_block_2.block.block_num,
+            init_block_2
+                .blockroot_merkle
+                .iter()
+                .map(|x| convert_hex_to_checksum256(x).unwrap())
+                .collect::<Vec<_>>()
+                .clone(),
+        );
+        let mroot_2 = incremerkle_2.get_root();
+        let expected_mroot_2 =
+            Checksum256::from_str("3e529c17df12ed8c7ccd90bca419a5cbb0609b7fecd15afd8f4a3d1491130775").unwrap();
+        assert_eq!(mroot_2, expected_mroot_2);
+
+        // NOTE: So now we _know_ the above two merkle roots are correct. We also know that due to
+        // the way the incremerkle works, if we take the block ID of the second block and append it
+        // to the first incremerkle, the root should be updated to the second root above.
+        let second_block_id = EosSubmissionMaterial::parse_eos_block_header_from_json(&init_block_2.block)
+            .unwrap()
+            .id()
+            .unwrap();
+        let expected_second_block_id =
+            Checksum256::from_str("14ff6c2a6731de810dd516112096aead0c3da4dd13854843b4b4d0f788239bcd").unwrap();
+        assert_eq!(second_block_id, expected_second_block_id);
+
+        incremerkle_1.append(second_block_id).unwrap();
+        let new_root = incremerkle_1.get_root();
+        assert_eq!(new_root, expected_mroot_2);
     }
 }

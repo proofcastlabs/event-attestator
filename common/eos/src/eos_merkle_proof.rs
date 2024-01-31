@@ -1,12 +1,8 @@
-use common::{AppError, Bytes};
+use common::AppError;
 use derive_more::{Constructor, Deref};
 use eos_chain::Checksum256;
 
-use crate::{
-    bitcoin_crate_alias::hashes::{sha256, sha256::Hash as Sha256Hash, Hash},
-    eos_utils::convert_hex_to_checksum256,
-    Incremerkle,
-};
+use crate::{eos_incremerkle::Incremerkle, eos_utils::convert_hex_to_checksum256};
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Constructor, Deref)]
 pub(crate) struct MerkleProof(Vec<String>);
@@ -18,25 +14,19 @@ impl From<Vec<String>> for MerkleProof {
 }
 
 impl MerkleProof {
-    fn concatenate_canonical_pair(pair: (Checksum256, Checksum256)) -> Bytes {
-        [pair.0 .0, pair.1 .0].concat()
-    }
-
-    pub(crate) fn hash_canonical_pair(pair: (Checksum256, Checksum256)) -> Sha256Hash {
-        sha256::Hash::hash(&Self::concatenate_canonical_pair(pair))
+    pub(crate) fn hash_canonical_pair(pair: (Checksum256, Checksum256)) -> Result<Checksum256, AppError> {
+        Ok(Checksum256::hash(pair)?)
     }
 
     fn make_and_hash_canonical_pair(l: &Checksum256, r: &Checksum256) -> Result<Checksum256, AppError> {
-        convert_hex_to_checksum256(hex::encode(
-            &Self::hash_canonical_pair(Incremerkle::make_canonical_pair(l, r)).to_vec(),
-        ))
+        Self::hash_canonical_pair(Incremerkle::make_canonical_pair(l, r))
     }
 
     pub(crate) fn verify(&self) -> Result<bool, AppError> {
         let mut node = convert_hex_to_checksum256(&self[0])?;
         let leaves = self[..self.len() - 1]
             .iter()
-            .map(|h| convert_hex_to_checksum256(h))
+            .map(convert_hex_to_checksum256)
             .collect::<Result<Vec<Checksum256>, AppError>>()?;
         for leaf in leaves.iter().skip(1) {
             if Incremerkle::is_canonical_right(leaf) {
@@ -49,7 +39,7 @@ impl MerkleProof {
             Some(s) => s.to_string(),
             _ => "".to_string(),
         };
-        let last = convert_hex_to_checksum256(&last_str)?;
+        let last = convert_hex_to_checksum256(last_str)?;
         Ok(node == last)
     }
 }
@@ -115,7 +105,7 @@ mod tests {
     fn should_hash_canonical_pair() {
         let expected_result = "a26284468e89fe4a5cce763ca3b3d3d37d5fcb35f289c63f0558487ec57ace28";
         let canonical_pair = get_sample_canonical_pair();
-        let result = MerkleProof::hash_canonical_pair(canonical_pair);
+        let result = MerkleProof::hash_canonical_pair(canonical_pair).unwrap();
         assert_eq!(result.to_string(), expected_result);
     }
 

@@ -389,3 +389,11 @@ pub fn serialize_block_header_v2(header: &EosBlockHeaderV2) -> Result<Bytes> {
     header.write(&mut data, &mut 0)?;
     Ok(data)
 }
+
+pub fn get_init_block_352283689() -> String {
+    read_to_string("src/eos_test_utils/eos-init-block-352283689.json").unwrap()
+}
+
+pub fn get_init_block_352283690() -> String {
+    read_to_string("src/eos_test_utils/eos-init-block-352283690.json").unwrap()
+}

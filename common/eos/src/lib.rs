@@ -41,6 +41,7 @@ mod protocol_features;
 mod validate_producer_slot;
 mod validate_signature;
 
+use self::eos_merkle_proof::MerkleProof;
 pub use self::{
     add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
     core_initialization::{
@@ -117,7 +118,6 @@ pub use self::{
     validate_producer_slot::validate_producer_slot_of_block_in_state,
     validate_signature::validate_block_header_signature,
 };
-use self::{eos_incremerkle::Incremerkle, eos_merkle_proof::MerkleProof};
 
 #[macro_use]
 extern crate common;
