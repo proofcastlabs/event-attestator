@@ -52,9 +52,12 @@ impl EosSubmissionMaterial {
     }
 
     fn convert_timestamp_string_to_block_timestamp(timestamp: &str) -> Result<BlockTimestamp> {
-        let timestamp_format = "%Y-%m-%dT%H:%M:%S%.3f";
+        // NOTE: The parser requires a timezone in the string, which EOS timestamps lack.
+        let timezone = "+0000";
+        let timestamp_format = "%Y-%m-%dT%H:%M:%S%.3f %z";
         Ok(BlockTimestamp::from(TimePoint::from_unix_nano_seconds(
-            Utc.datetime_from_str(timestamp, timestamp_format)?.timestamp_millis() * 1_000_000,
+            DateTime::parse_from_str(&format!("{timestamp} {timezone}"), timestamp_format)?.timestamp_millis()
+                * 1_000_000,
         )))
     }
 
