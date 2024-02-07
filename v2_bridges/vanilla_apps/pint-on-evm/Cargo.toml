@@ -1,5 +1,5 @@
 [package]
-version = "2.1.1"
+version = "2.1.2"
 edition = "2021"
 name = "pint-on-evm"
 rust-version = "1.56"
@@ -12,6 +12,10 @@ rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
 non-validating = ["int_on_evm/non-validating"]
+# NOTE: Normally the peg-in event coming from the interim chain will have origin details pertaining _to_
+# that interim chain. With this feature enabled, we instead look for the original minting action on the
+# interim chain (if extant) and gather originating tx details from that instead.
+include-origin-tx-details = ["int_on_evm/include-origin-tx-details"]
 
 [dependencies]
 log = { workspace = true }
