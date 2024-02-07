@@ -15,7 +15,7 @@ non-validating = ["common_eth/non-validating"]
 
 # NOTE: Normally the peg-in event coming from the interim chain will have origin details pertaining _to_
 # that interim chain. With this feature enabled, we instead look for the original minting action on the
-#interim chain (if extant) and gather originating tx details from that instead.
+# interim chain (if extant) and gather originating tx details from that instead.
 include-origin-tx-details = []
 
 [dependencies]
@@ -40,6 +40,9 @@ common_enclave_info = { workspace = true }
 common_debug_signers = { workspace = true }
 common_safe_addresses = { workspace = true }
 common_database_utils = { workspace = true }
+
+[dev-dependencies]
+simple_logger = { workspace = true }
 
 [lib]
 doctest = false

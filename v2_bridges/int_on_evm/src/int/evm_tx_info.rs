@@ -5,7 +5,7 @@ use common::{
     types::{Byte, Bytes, Result},
     utils::convert_bytes_to_string,
 };
-use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string};
+use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string, PTokensRouterMetadataEvent};
 use common_metadata::MetadataChainId;
 use common_safe_addresses::SAFE_ETH_ADDRESS_STR;
 use derive_more::{Constructor, Deref};
@@ -25,6 +25,7 @@ pub struct IntOnEvmEvmTxInfo {
     pub eth_token_address: EthAddress,
     pub origin_chain_id: MetadataChainId,
     pub destination_chain_id: MetadataChainId,
+    pub(crate) metadata_event: Option<PTokensRouterMetadataEvent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Default, Constructor, Deref, Serialize, Deserialize)]

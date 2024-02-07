@@ -101,7 +101,7 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
         })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "include-origin-tx-details")))]
 mod tests {
     use std::fs::read_to_string;
 
@@ -129,6 +129,7 @@ mod tests {
             get_sample_vault_address,
         },
     };
+
     #[test]
     fn should_submit_int_block_successfully() {
         let db = get_test_database();
@@ -209,5 +210,13 @@ mod tests {
         let expected_result = IntOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = IntOutput::from_str(&output).unwrap();
         assert_eq!(result, expected_result);
+    }
+}
+
+#[cfg(all(test, feature = "include-origin-tx-details"))]
+mod tests {
+    #[test]
+    fn should_pass_through_origin_chain_tx_details() {
+        todo!("get a sample for this and write a test over it");
     }
 }
