@@ -7,6 +7,7 @@ mod check_parent_exists;
 mod core_initialization;
 mod default_block_parameter;
 mod eip_1559;
+mod eip_4844;
 mod eth_block;
 mod eth_block_from_json_rpc;
 mod eth_constants;
