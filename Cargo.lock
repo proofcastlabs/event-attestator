@@ -2546,7 +2546,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_evm"
-version = "1.6.0"
+version = "1.7.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -3535,7 +3535,7 @@ dependencies = [
 
 [[package]]
 name = "pint-on-evm"
-version = "2.1.1"
+version = "2.1.2"
 dependencies = [
  "anyhow",
  "common",
