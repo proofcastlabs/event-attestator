@@ -40,6 +40,10 @@ pub struct EthBlockJsonFromRpc {
     transactions_root: String,
     transactions: Vec<String>,
     base_fee_per_gas: Option<String>,
+    withdrawals_root: Option<String>,
+    blob_gas_used: Option<String>,
+    excess_blob_gas: Option<String>,
+    parent_beacon_block_root: Option<String>,
 }
 
 impl EthSubmissionMaterial {
@@ -90,6 +94,22 @@ impl EthBlock {
             base_fee_per_gas: match json.base_fee_per_gas.as_ref() {
                 None => None,
                 Some(hex) => Some(U256::from_str_radix(&strip_hex_prefix(hex), radix)?),
+            },
+            withdrawals_root: match json.withdrawals_root.as_ref() {
+                None => None,
+                Some(hex) => Some(convert_hex_to_h256(hex)?),
+            },
+            blob_gas_used: match json.blob_gas_used.as_ref() {
+                None => None,
+                Some(hex) => Some(U256::from_str_radix(&strip_hex_prefix(hex), radix)?),
+            },
+            excess_blob_gas: match json.excess_blob_gas.as_ref() {
+                None => None,
+                Some(hex) => Some(U256::from_str_radix(&strip_hex_prefix(hex), radix)?),
+            },
+            parent_beacon_block_root: match json.parent_beacon_block_root.as_ref() {
+                None => None,
+                Some(hex) => Some(convert_hex_to_h256(hex)?),
             },
         })
     }
