@@ -448,8 +448,13 @@ mod tests {
         assert!(latest_block_num > submission_block_num);
 
         // NOTE: Now we can submit the block with the peg in in it...
-        let output = EosOutput::from_str(&submit_eos_block_to_core(&db, &submission_block_json).unwrap()).unwrap();
+        let mut output = EosOutput::from_str(&submit_eos_block_to_core(&db, &submission_block_json).unwrap()).unwrap();
         // NOTE: Asserting a tx is outputted successfully is sufficient for this test.
         assert_eq!(output.int_signed_transactions.len(), 1);
+
+        // NOTE: If we submit the _same_ material again, we should get no signed transactions since
+        // the core has already seen this global sequence.
+        output = EosOutput::from_str(&submit_eos_block_to_core(&db, &submission_block_json).unwrap()).unwrap();
+        assert_eq!(output.int_signed_transactions.len(), 0);
     }
 }
