@@ -11,10 +11,10 @@ use serde::{Deserialize, Serialize};
 
 use crate::{EosDbUtils, EosState};
 
-// NOTE: The light client for EOS doesn't not keep blocks - they are too frequent and too numerous
+// NOTE: The light client for EOS doesn't keep blocks - they are too frequent and too numerous
 // for efficient use in TEEs.
 //
-// Instead, we provide as the first trusted block from the node which contains all the
+// Instead, we provide as the first trusted block one from the node which contains all the
 // information to construct a merkle tree with the correct merkle root which is that block's ID.
 //
 // Going forward from that, we can submit a later, non-subsequent block, along with _all_ the block
