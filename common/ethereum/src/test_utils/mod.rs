@@ -77,7 +77,7 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_18: &str = "src/test_utils/rpc-block-0xf
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_19: &str = "src/test_utils/host-sub-mat-num-16640614.json";
 
-pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_20: &str = "src/test_utils/goerli-sub-mat-with-eip-4844-receipt-type.json";
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_20: &str = "src/test_utils/sepolia-sub-mat-block-5301643-with-eip-4844.json";
 
 pub fn get_sample_block_from_rpc() -> String {
     get_sample_eth_submission_material_string(18).unwrap()
@@ -184,7 +184,7 @@ pub fn get_sample_eip1559_mainnet_submission_material() -> EthSubmissionMaterial
     get_sample_eth_submission_material_n(12).unwrap()
 }
 
-pub fn get_sample_eip4844_goerli_submission_material() -> EthSubmissionMaterial {
+pub fn get_sample_eip4844_sepolia_submission_material() -> EthSubmissionMaterial {
     get_sample_eth_submission_material_n(20).unwrap()
 }
 

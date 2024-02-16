@@ -267,7 +267,7 @@ mod tests {
         get_expected_block,
         get_sample_eip1559_mainnet_submission_material,
         get_sample_eip1559_ropsten_submission_material,
-        get_sample_eip4844_goerli_submission_material,
+        get_sample_eip4844_sepolia_submission_material,
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,
         get_sample_invalid_block,
@@ -421,29 +421,29 @@ mod tests {
 
     #[test]
     fn eip_4844_block_should_have_blob_fields() {
-        let block = get_sample_eip4844_goerli_submission_material().block.unwrap();
+        let block = get_sample_eip4844_sepolia_submission_material().block.unwrap();
         let blob_gas = block.blob_gas_used.unwrap();
         let excess_blob_gas = block.excess_blob_gas.unwrap();
         let expected_blob_gas = U256::from(786432);
-        let expected_excess_blob_gas = U256::from(79429632);
+        let expected_excess_blob_gas = U256::from(79953920);
         assert_eq!(blob_gas, expected_blob_gas);
         assert_eq!(excess_blob_gas, expected_excess_blob_gas);
     }
 
     #[test]
-    fn goerli_eip4844_block_should_be_valid() {
-        let block = get_sample_eip4844_goerli_submission_material().block.unwrap();
-        let chain_id = EthChainId::Goerli;
+    fn sepolia_eip4844_block_should_be_valid() {
+        let block = get_sample_eip4844_sepolia_submission_material().block.unwrap();
+        let chain_id = EthChainId::Sepolia;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(result);
     }
 
     #[test]
-    fn invalid_goerli_eip4844_block_should_not_be_valid() {
-        let mut block = get_sample_eip4844_goerli_submission_material().block.unwrap();
+    fn invalid_sepolia_eip4844_block_should_not_be_valid() {
+        let mut block = get_sample_eip4844_sepolia_submission_material().block.unwrap();
         // NOTE: Alter the new EIP4844 block header additional field to render the block invalid.
         block.blob_gas_used = Some(block.blob_gas_used.unwrap() - 1);
-        let chain_id = EthChainId::Goerli;
+        let chain_id = EthChainId::Sepolia;
         let result = block.is_valid(&chain_id).unwrap();
         assert!(!result);
     }
