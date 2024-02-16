@@ -74,9 +74,14 @@ impl EosProducerScheduleV2 {
     /// It also accepts JSON representation of `EosProducerScheduleV1`
     /// and implicitly converts it into `EosProducerScheduleV2`.
     pub fn from_json(json_string: &str) -> common::Result<Self> {
-        EosProducerScheduleJsonV2::from(json_string)
-            .and_then(|json| Self::from_schedule_json(&json))
-            .or_else(|_| EosProducerScheduleV1::from_json(json_string).map(EosProducerScheduleV2::from))
+        match EosProducerScheduleJsonV2::from(json_string).and_then(|json| Self::from_schedule_json(&json)) {
+            Err(AppError::SerdeJsonError(e)) => {
+                error!("could not decode v2 schedule: {e}");
+                debug!("attempting to decode v1 schedule...");
+                EosProducerScheduleV1::from_json(json_string).map(EosProducerScheduleV2::from)
+            },
+            other => other,
+        }
     }
 
     pub fn from_schedule_json(json: &EosProducerScheduleJsonV2) -> common::Result<Self> {
