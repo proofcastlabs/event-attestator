@@ -4,6 +4,7 @@ use common::{
     errors::AppError,
     types::{Byte, Bytes, Result},
 };
+use eos_chain::{PublicKey as EosCratePublicKey, UnsignedInt};
 use secp256k1::{
     self,
     key::{PublicKey, SecretKey},
@@ -17,6 +18,15 @@ use crate::{
     eos_crypto::eos_signature::EosSignature,
     eos_hash::ripemd160,
 };
+
+impl From<EosPublicKey> for EosCratePublicKey {
+    fn from(pub_key: EosPublicKey) -> EosCratePublicKey {
+        EosCratePublicKey {
+            type_: UnsignedInt::default(),
+            data: pub_key.public_key.serialize(),
+        }
+    }
+}
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct EosPublicKey {

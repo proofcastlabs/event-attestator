@@ -189,9 +189,10 @@ fn convert_keys_json_to_vec_of_eos_keys(keys_json: &[ProducerKeyJsonV2]) -> comm
 }
 
 fn convert_key_json_to_eos_key(key_json: &ProducerKeyJsonV2) -> common::Result<EosKey> {
+    let internal_eos_pub_key = crate::eos_crypto::eos_public_key::EosPublicKey::from_str(&key_json.key)?;
     Ok(EosKey {
         weight: key_json.weight,
-        key: EosPublicKey::from_str(&key_json.key)?,
+        key: internal_eos_pub_key.into(),
     })
 }
 
