@@ -1,6 +1,7 @@
 use crate::eos_crypto::eos_public_key::EosPublicKey;
 lazy_static! {
     pub static ref EOS_DEFAULT_PUB_KEY: EosPublicKey = EosPublicKey::default();
+    pub static ref EOS_DEFAULT_PUB_KEY_STRING: String = EOS_DEFAULT_PUB_KEY.to_string();
 }
 
 pub const MEMO: &str = "";

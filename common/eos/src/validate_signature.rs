@@ -10,6 +10,7 @@ use secp256k1::Message;
 use crate::{
     bitcoin_crate_alias::hashes::{sha256, Hash},
     eos_block_header::{EosBlockHeaderV1, EosBlockHeaderV2},
+    eos_constants::EOS_DEFAULT_PUB_KEY_STRING,
     eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
     eos_producer_key::EosProducerKeyV1,
     eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
@@ -148,12 +149,21 @@ pub fn check_block_signature_is_valid(
     let recovered_key =
         recover_block_signer_public_key(msig_enabled, block_mroot, producer_signature, block_header, v2_schedule)?
             .to_string();
-    debug!("     Producer: {}", block_header.producer);
-    debug!("  Signing key: {}", signing_key);
-    debug!("Recovered key: {}", recovered_key);
-    match signing_key == recovered_key {
-        true => Ok(()),
-        _ => Err("✘ Block signature not valid!".into()),
+
+    debug!("     producer: {}", block_header.producer);
+    debug!("  signing key: {}", signing_key);
+    debug!("recovered key: {}", recovered_key);
+
+    if recovered_key == *EOS_DEFAULT_PUB_KEY_STRING {
+        // NOTE: When we encounter an old format EOS key we replace it with the default instead,
+        // since they're otherwise unparseable by the secp256k1 crate.
+        warn!("producer key is old format - skipping block signature validation");
+        Ok(())
+    } else if signing_key == recovered_key {
+        info!("block signature is valid");
+        Ok(())
+    } else {
+        Err("block signature not valid!".into())
     }
 }
 
