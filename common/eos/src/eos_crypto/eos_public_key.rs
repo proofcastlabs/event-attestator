@@ -4,7 +4,12 @@ use common::{
     errors::AppError,
     types::{Byte, Bytes, Result},
 };
-use secp256k1::{self, key::PublicKey, Error::InvalidPublicKey, Secp256k1};
+use secp256k1::{
+    self,
+    key::{PublicKey, SecretKey},
+    Error::InvalidPublicKey,
+    Secp256k1,
+};
 
 use crate::{
     bitcoin_crate_alias::util::base58,
@@ -17,6 +22,18 @@ use crate::{
 pub struct EosPublicKey {
     pub compressed: bool,
     pub public_key: PublicKey,
+}
+
+impl Default for EosPublicKey {
+    fn default() -> Self {
+        Self {
+            public_key: PublicKey::from_secret_key(
+                &Secp256k1::new(),
+                &SecretKey::from_str("0000000000000000000000000000000000000000000000000000000000000001").unwrap(),
+            ),
+            compressed: true,
+        }
+    }
 }
 
 impl EosPublicKey {
@@ -89,10 +106,14 @@ impl FromStr for EosPublicKey {
     type Err = AppError;
 
     fn from_str(s: &str) -> Result<EosPublicKey> {
-        if !s.starts_with("EOS") {
+        if s.starts_with("PUB_R1_") || s.starts_with("PUB_K1_") {
+            warn!("old eos public key found, using default key");
+            return Ok(Self::default());
+        } else if !s.starts_with("EOS") {
             return Err(AppError::CryptoError(InvalidPublicKey));
-        }
-        let s_hex = base58::from(&s[3..])?;
+        };
+
+        let s_hex = base58::from(&s[3..])?; // NOTE `EOS` prefix length
         let raw = &s_hex[..PUBLIC_KEY_SIZE];
         let _checksum = &s_hex[PUBLIC_KEY_SIZE..];
         let public_key = secp256k1::key::PublicKey::from_slice(raw)?;
@@ -248,5 +269,13 @@ mod test {
         let bytes = key.to_bytes();
         let result = EosPublicKey::from_bytes(&bytes).unwrap();
         assert_eq!(key, result);
+    }
+
+    #[test]
+    fn should_use_default_key_if_older_eos_key_encountered() {
+        let key_str = "PUB_R1_6zzHRqKC78BHHTtpgsRAyhiA6ufP98wMkHregJQCNsR7VpReoP";
+        let result = EosPublicKey::from_str(key_str).unwrap();
+        let expected_result = *crate::eos_constants::EOS_DEFAULT_PUB_KEY;
+        assert_eq!(result, expected_result);
     }
 }

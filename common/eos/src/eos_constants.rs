@@ -1,3 +1,8 @@
+use crate::eos_crypto::eos_public_key::EosPublicKey;
+lazy_static! {
+    pub static ref EOS_DEFAULT_PUB_KEY: EosPublicKey = EosPublicKey::default();
+}
+
 pub const MEMO: &str = "";
 pub const PRODUCER_REPS: u64 = 12;
 pub const PUBLIC_KEY_SIZE: usize = 33;
