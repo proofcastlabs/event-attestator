@@ -178,7 +178,7 @@ impl EthBlock {
         let mut rlp_stream = RlpStream::new();
         let mut num_items = 15;
         let eip_1559_is_active = Eip1559::new().is_active(chain_id, self.number)?;
-        let eip_4844_is_active = Eip4844::new().is_active(chain_id, self.number)?;
+        let eip_4844_is_active = Eip4844::new().is_active(self)?;
 
         if eip_1559_is_active {
             num_items += 1;
