@@ -7,7 +7,11 @@ use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use serde::{Deserialize, Serialize};
 
-use crate::{EthLog, EthLogExt};
+use crate::{EthLog, EthLogExt, EthReceipt};
+
+crate::make_topics!(
+    PTOKENS_ROUTER_METADATA_EVENT_TOPIC => "41954c3bf6e497b17fc12f429900878df830619bbcccb5f61aedc91e6ccc9e64",
+);
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Constructor, Deserialize, Getters, Serialize)]
 pub struct PTokensRouterMetadataEvent {
@@ -61,5 +65,22 @@ impl TryFrom<&EthLog> for PTokensRouterMetadataEvent {
                 _ => Err(get_err_msg("destination_address")),
             }?,
         })
+    }
+}
+
+impl TryFrom<&EthReceipt> for PTokensRouterMetadataEvent {
+    type Error = AppError;
+
+    fn try_from(receipt: &EthReceipt) -> Result<Self, Self::Error> {
+        info!("decoding `PTokensRouterMetadataEvent` from receipt...");
+
+        match receipt
+            .logs
+            .iter()
+            .find(|log| log.contains_topic(&PTOKENS_ROUTER_METADATA_EVENT_TOPIC))
+        {
+            Some(log) => Self::try_from(log),
+            None => Err("no matching log found".to_string())?,
+        }
     }
 }
