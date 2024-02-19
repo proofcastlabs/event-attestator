@@ -45,6 +45,9 @@ pub struct EthBlock {
     pub transactions_root: EthHash,
     pub uncles: Vec<EthHash>,
     pub base_fee_per_gas: Option<U256>,
+    // NOTE: The following new fields are EIP-4844 specific and hence they are
+    // optional. Non EIP-4844 blocks or layer 2s or other forks may not have
+    // these fields.
     pub withdrawals_root: Option<EthHash>,
     pub blob_gas_used: Option<U256>,
     pub excess_blob_gas: Option<U256>,
