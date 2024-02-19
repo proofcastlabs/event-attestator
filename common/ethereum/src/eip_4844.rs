@@ -6,8 +6,8 @@ use crate::EthBlock;
 pub struct Eip4844 {}
 
 impl Eip4844 {
-    pub fn is_active(&self, block: &EthBlock) -> Result<bool> {
-        Ok(block.blob_gas_used.is_some())
+    pub fn is_active(&self, block: &EthBlock) -> bool {
+        block.blob_gas_used.is_some()
     }
 }
 
@@ -20,7 +20,7 @@ mod tests {
     fn eip4844_should_be_active() {
         let eip_4844 = Eip4844::new();
         let block = get_sample_eip4844_sepolia_submission_material();
-        let result = eip_4844.is_active(&block.block.unwrap()).unwrap();
+        let result = eip_4844.is_active(&block.block.unwrap());
         assert!(result);
     }
 
@@ -31,7 +31,7 @@ mod tests {
         let block = get_sample_eip4844_sepolia_submission_material();
         let mut block = block.block.unwrap();
         block.blob_gas_used = None;
-        let result = eip_4844.is_active(&block).unwrap();
+        let result = eip_4844.is_active(&block);
         assert!(!result);
     }
 }
