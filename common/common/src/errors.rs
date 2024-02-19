@@ -11,7 +11,7 @@ pub enum AppError {
     #[error("✘ {0}")]
     Custom(String),
 
-    #[error("{}", 0.to_string())]
+    #[error("{0}")]
     Json(serde_json::Value),
 
     #[error("ethereum-types from_str_radix err: {0}")]
@@ -125,7 +125,7 @@ pub enum AppError {
     #[error("✘ none error {0}")]
     NoneError(&'static str),
 
-    #[error("eos chain error: {}", 0.to_string())]
+    #[error("eos chain error: {0:?}")]
     EosChain(eos_chain::Error),
 
     #[error("litecoin base58 error: {0}")]
