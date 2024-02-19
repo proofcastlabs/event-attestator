@@ -11,6 +11,7 @@ use serde_json::{json, Value as JsonValue};
 
 use crate::{
     eip_1559::Eip1559,
+    eip_4844::Eip4844,
     eth_utils::{
         convert_dec_str_to_u256,
         convert_hex_strings_to_h256s,
@@ -44,6 +45,13 @@ pub struct EthBlock {
     pub transactions_root: EthHash,
     pub uncles: Vec<EthHash>,
     pub base_fee_per_gas: Option<U256>,
+    // NOTE: The following new fields are EIP-4844 specific and hence they are
+    // optional. Non EIP-4844 blocks or layer 2s or other forks may not have
+    // these fields.
+    pub withdrawals_root: Option<EthHash>,
+    pub blob_gas_used: Option<U256>,
+    pub excess_blob_gas: Option<U256>,
+    pub parent_beacon_block_root: Option<EthHash>,
 }
 
 impl EthBlock {
@@ -54,6 +62,26 @@ impl EthBlock {
     pub fn get_base_fee_per_gas(&self) -> Result<U256> {
         self.base_fee_per_gas
             .ok_or(NoneError("Could not unwrap 'base_fee' from ETH block!"))
+    }
+
+    pub fn get_withdrawals_root(&self) -> Result<EthHash> {
+        self.withdrawals_root
+            .ok_or(NoneError("Could not unwrap 'withdrawals_root' from ETH block!"))
+    }
+
+    pub fn get_blob_gas_used(&self) -> Result<U256> {
+        self.blob_gas_used
+            .ok_or(NoneError("Could not unwrap 'blob_gas_used' from ETH block!"))
+    }
+
+    pub fn get_excess_blob_gas(&self) -> Result<U256> {
+        self.excess_blob_gas
+            .ok_or(NoneError("Could not unwrap 'excess_blob_gas' from ETH block!"))
+    }
+
+    pub fn get_parent_beacon_block_root(&self) -> Result<EthHash> {
+        self.parent_beacon_block_root
+            .ok_or(NoneError("Could not unwrap 'parent_beacon_block_root' from ETH block!"))
     }
 
     pub fn to_json(&self) -> Result<JsonValue> {
@@ -92,6 +120,8 @@ impl EthBlock {
     }
 
     pub fn from_json(json: &EthBlockJson) -> Result<Self> {
+        let radix = 16;
+
         Ok(EthBlock {
             size: U256::from(json.size),
             number: U256::from(json.number),
@@ -114,6 +144,22 @@ impl EthBlock {
             total_difficulty: convert_dec_str_to_u256(&json.total_difficulty)?,
             base_fee_per_gas: Self::parse_base_fee_per_gas(&json.base_fee_per_gas)?,
             logs_bloom: Bloom::from_slice(&convert_hex_to_bytes(&json.logs_bloom)?[..]),
+            withdrawals_root: match json.withdrawals_root.as_ref() {
+                None => None,
+                Some(hex) => Some(convert_hex_to_h256(hex)?),
+            },
+            blob_gas_used: match json.blob_gas_used.as_ref() {
+                None => None,
+                Some(hex) => Some(U256::from_str_radix(&strip_hex_prefix(hex), radix)?),
+            },
+            excess_blob_gas: match json.excess_blob_gas.as_ref() {
+                None => None,
+                Some(hex) => Some(U256::from_str_radix(&strip_hex_prefix(hex), radix)?),
+            },
+            parent_beacon_block_root: match json.parent_beacon_block_root.as_ref() {
+                None => None,
+                Some(hex) => Some(convert_hex_to_h256(hex)?),
+            },
         })
     }
 
@@ -133,9 +179,18 @@ impl EthBlock {
 
     pub fn rlp_encode(&self, chain_id: &EthChainId) -> Result<Bytes> {
         let mut rlp_stream = RlpStream::new();
+        let mut num_items = 15;
         let eip_1559_is_active = Eip1559::new().is_active(chain_id, self.number)?;
+        let eip_4844_is_active = Eip4844::new().is_active(self);
+
+        if eip_1559_is_active {
+            num_items += 1;
+        }
+        if eip_4844_is_active {
+            num_items += 4;
+        }
         rlp_stream
-            .begin_list(if eip_1559_is_active { 16 } else { 15 })
+            .begin_list(num_items)
             .append(&self.parent_hash)
             .append(&self.sha3_uncles)
             .append(&self.miner)
@@ -154,6 +209,13 @@ impl EthBlock {
         if eip_1559_is_active {
             rlp_stream.append(&self.get_base_fee_per_gas()?);
         };
+        if eip_4844_is_active {
+            rlp_stream.append(&self.get_withdrawals_root()?);
+            rlp_stream.append(&self.get_blob_gas_used()?);
+            rlp_stream.append(&self.get_excess_blob_gas()?);
+            rlp_stream.append(&self.get_parent_beacon_block_root()?);
+        }
+
         Ok(rlp_stream.out().to_vec())
     }
 
@@ -195,6 +257,10 @@ pub struct EthBlockJson {
     pub transactions_root: String,
     pub uncles: Vec<String>,
     pub base_fee_per_gas: Option<JsonValue>,
+    pub withdrawals_root: Option<String>,
+    pub blob_gas_used: Option<String>,
+    pub excess_blob_gas: Option<String>,
+    pub parent_beacon_block_root: Option<String>,
 }
 
 #[cfg(test)]
@@ -204,6 +270,7 @@ mod tests {
         get_expected_block,
         get_sample_eip1559_mainnet_submission_material,
         get_sample_eip1559_ropsten_submission_material,
+        get_sample_eip4844_sepolia_submission_material,
         get_sample_eth_submission_material,
         get_sample_eth_submission_material_json,
         get_sample_invalid_block,
@@ -353,5 +420,34 @@ mod tests {
             // error. Older blocks will not error though, but should return Ok(false).
             assert!(r.is_err() || matches!(r, Ok(false)))
         });
+    }
+
+    #[test]
+    fn eip_4844_block_should_have_blob_fields() {
+        let block = get_sample_eip4844_sepolia_submission_material().block.unwrap();
+        let blob_gas = block.blob_gas_used.unwrap();
+        let excess_blob_gas = block.excess_blob_gas.unwrap();
+        let expected_blob_gas = U256::from(786432);
+        let expected_excess_blob_gas = U256::from(79953920);
+        assert_eq!(blob_gas, expected_blob_gas);
+        assert_eq!(excess_blob_gas, expected_excess_blob_gas);
+    }
+
+    #[test]
+    fn sepolia_eip4844_block_should_be_valid() {
+        let block = get_sample_eip4844_sepolia_submission_material().block.unwrap();
+        let chain_id = EthChainId::Sepolia;
+        let result = block.is_valid(&chain_id).unwrap();
+        assert!(result);
+    }
+
+    #[test]
+    fn invalid_sepolia_eip4844_block_should_not_be_valid() {
+        let mut block = get_sample_eip4844_sepolia_submission_material().block.unwrap();
+        // NOTE: Alter the new EIP4844 block header additional field to render the block invalid.
+        block.blob_gas_used = Some(block.blob_gas_used.unwrap() - 1);
+        let chain_id = EthChainId::Sepolia;
+        let result = block.is_valid(&chain_id).unwrap();
+        assert!(!result);
     }
 }

@@ -77,6 +77,8 @@ pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_18: &str = "src/test_utils/rpc-block-0xf
 
 pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_19: &str = "src/test_utils/host-sub-mat-num-16640614.json";
 
+pub const SAMPLE_BLOCK_AND_RECEIPT_JSON_20: &str = "src/test_utils/sepolia-sub-mat-block-5301643-with-eip-4844.json";
+
 pub fn get_sample_block_from_rpc() -> String {
     get_sample_eth_submission_material_string(18).unwrap()
 }
@@ -149,6 +151,7 @@ pub fn get_sample_eth_submission_material_string(num: usize) -> Result<String> {
         17 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_17),
         18 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_18),
         19 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_19),
+        20 => Ok(SAMPLE_BLOCK_AND_RECEIPT_JSON_20),
         _ => Err(AppError::Custom(format!("Cannot find sample block num: {}", num))),
     }?;
     match Path::new(&path).exists() {
@@ -179,6 +182,10 @@ pub fn get_sample_eip2718_ropsten_submission_material() -> EthSubmissionMaterial
 
 pub fn get_sample_eip1559_mainnet_submission_material() -> EthSubmissionMaterial {
     get_sample_eth_submission_material_n(12).unwrap()
+}
+
+pub fn get_sample_eip4844_sepolia_submission_material() -> EthSubmissionMaterial {
+    get_sample_eth_submission_material_n(20).unwrap()
 }
 
 pub fn get_sample_receipt_n(sample_block_num: usize, receipt_index: usize) -> Result<EthReceipt> {
