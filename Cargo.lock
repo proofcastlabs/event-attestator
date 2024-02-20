@@ -2386,7 +2386,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_eos"
-version = "2.0.0"
+version = "2.1.0"
 dependencies = [
  "chain_ids",
  "common",
