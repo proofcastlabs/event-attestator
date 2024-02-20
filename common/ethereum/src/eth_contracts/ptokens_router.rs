@@ -84,3 +84,27 @@ impl TryFrom<&EthReceipt> for PTokensRouterMetadataEvent {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::str::FromStr;
+
+    use super::*;
+    use crate::eth_contracts::test_utils::get_ptokens_router_metadata_event_receipt;
+
+    #[test]
+    fn should_decode_metadata_event_from_receipt() {
+        let expected_event = PTokensRouterMetadataEvent {
+            user_data: vec![192, 255, 238],
+            origin_chain_id: MetadataChainId::from_str("0x00f34368").unwrap(),
+            origin_address: "0xfEDFe2616EB3661CB8FEd2782F5F0cC91D59DCaC".to_string(),
+            destination_chain_id: MetadataChainId::from_str("0xffffffff").unwrap(),
+            destination_address: "0xedB86cd455ef3ca43f0e227e00469C3bDFA40628".to_string(),
+        };
+
+        let receipt = get_ptokens_router_metadata_event_receipt().unwrap();
+        let event = PTokensRouterMetadataEvent::try_from(&receipt).unwrap();
+
+        assert_eq!(expected_event, event);
+    }
+}
