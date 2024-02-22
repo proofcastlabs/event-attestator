@@ -295,7 +295,7 @@ impl Erc777RedeemEvent {
                 }?,
                 destination_chain_id: match tokens[4] {
                     EthAbiToken::FixedBytes(ref bytes) => Ok(Some(MetadataChainId::from_bytes(bytes)?)),
-                    _ => Err(Self::get_err_msg("origin_chain_id")),
+                    _ => Err(Self::get_err_msg("destination_chain_id")),
                 }?,
             })
         })

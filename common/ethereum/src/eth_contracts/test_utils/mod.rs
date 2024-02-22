@@ -3,7 +3,7 @@ use std::{fs::read_to_string, path::Path, str::FromStr};
 
 use common::{dictionaries::eth_evm::EthEvmTokenDictionary, types::Result};
 
-use crate::{EthLog, EthPrivateKey, EthSubmissionMaterial};
+use crate::{EthLog, EthPrivateKey, EthReceipt, EthSubmissionMaterial};
 
 fn get_sample_submission_material_string_n(chain_type: &str, n: usize) -> Result<String> {
     let path = format!(
@@ -52,6 +52,15 @@ pub fn get_sample_erc20_vault_log_with_user_data() -> EthLog {
 
 pub fn get_sample_submission_material_with_weth_deposit() -> EthSubmissionMaterial {
     EthSubmissionMaterial::from_str(&get_sample_submission_material_string_n("eth", 2).unwrap()).unwrap()
+}
+
+const PTOKENS_ROUTER_METADATA_EVENT_RECEIPT: &str = "src/eth_contracts/test_utils/ptokens-router-metadata-event-1.json";
+
+pub fn get_ptokens_router_metadata_event_receipt() -> Result<EthReceipt> {
+    match Path::new(PTOKENS_ROUTER_METADATA_EVENT_RECEIPT).exists() {
+        true => EthReceipt::from_str(&read_to_string(PTOKENS_ROUTER_METADATA_EVENT_RECEIPT)?),
+        false => Err(format!("✘ Cannot find {} file!", PTOKENS_ROUTER_METADATA_EVENT_RECEIPT).into()),
+    }
 }
 
 mod tests {

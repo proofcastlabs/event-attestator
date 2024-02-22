@@ -105,6 +105,7 @@ pub use self::{
         Erc20VaultPegInEventParams,
         Erc777BurnEvent,
         Erc777RedeemEvent,
+        PTokensRouterMetadataEvent,
         SupportedTopics,
         ToErc20TokenTransferEvent,
         ToWethDepositEvent,

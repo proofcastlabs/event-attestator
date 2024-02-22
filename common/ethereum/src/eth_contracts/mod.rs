@@ -2,6 +2,7 @@ mod erc20_token;
 mod erc20_vault;
 mod erc777_proxy;
 mod erc777_token;
+mod ptokens_router;
 mod weth;
 
 pub use self::{
@@ -35,6 +36,7 @@ pub use self::{
         ERC_777_REDEEM_EVENT_TOPIC_WITHOUT_USER_DATA,
         ERC_777_REDEEM_EVENT_TOPIC_WITH_USER_DATA,
     },
+    ptokens_router::PTokensRouterMetadataEvent,
     weth::{ToWethDepositEvent, WethDepositEvent, WethDepositEvents},
 };
 
