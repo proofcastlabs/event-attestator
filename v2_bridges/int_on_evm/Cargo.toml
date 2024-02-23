@@ -16,7 +16,7 @@ non-validating = ["common_eth/non-validating"]
 # NOTE: Normally the peg-in event coming from the interim chain will have origin details pertaining _to_
 # that interim chain. With this feature enabled, we instead look for the original minting action on the
 # interim chain (if extant) and gather originating tx details from that instead.
-include-origin-tx-details = []
+include-origin-tx-details = ["common_chain_ids/include-origin-tx-details"]
 
 [dependencies]
 hex = { workspace = true }
