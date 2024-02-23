@@ -9,6 +9,12 @@ rust-version = "1.56"
 keywords = ["provable", "defi", "crypto"]
 authors = ["Greg Kapka <gregkapka@gmail.com>"]
 
+[features]
+# NOTE: This feature was required for v3 dao messages to be passed accross chain correctly, which message
+# require a higher gas limit stipend. This higher limit may eventually be present by default, but for now
+# its feature gated
+include-origin-tx-details = []
+
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
