@@ -80,10 +80,12 @@ pub fn get_sample_evm_init_block_json_string() -> String {
     read_to_string("src/test_utils/evm-init-block.json").unwrap()
 }
 
+#[cfg(not(feature = "include-origin-tx-details"))]
 pub fn get_sample_evm_goerli_init_block_json_string() -> String {
     read_to_string("src/test_utils/goerli-core-peg-out-init-block.json").unwrap()
 }
 
+#[cfg(not(feature = "include-origin-tx-details"))]
 pub fn get_sample_int_init_block_json_string() -> String {
     read_to_string("src/test_utils/int-init-block.json").unwrap()
 }
@@ -127,6 +129,34 @@ pub fn get_sample_eth_private_key() -> EthPrivateKey {
 pub fn get_sample_evm_private_key() -> EthPrivateKey {
     EthPrivateKey::from_slice(&hex::decode("57a5a09577a0604b84870577598d4a24fe9e5b879650a0248ac96be7d9d3f3aa").unwrap())
         .unwrap()
+}
+
+#[cfg(feature = "include-origin-tx-details")]
+pub fn get_sample_peg_in_with_origin_tx_details() -> String {
+    read_to_string("src/test_utils/eth-submission-material-originating-tx-info.json").unwrap()
+}
+
+#[cfg(feature = "include-origin-tx-details")]
+pub fn get_sample_peg_in_with_origin_tx_details_init_block() -> String {
+    read_to_string("src/test_utils/eth-submission-material-originating-tx-info-init-block.json").unwrap()
+}
+
+#[cfg(feature = "include-origin-tx-details")]
+pub fn get_sample_token_dictionary_entry_2() -> EthEvmTokenDictionaryEntry {
+    EthEvmTokenDictionaryEntry::from_str(
+        &json!({
+            "eth_symbol": "PNT",
+            "evm_symbol": "PNT",
+            "evm_address": "0x0259461eed4d76d4f0f900f9035f6c4dfb39159a",
+            "eth_address": "0xeeef86a5598a48c568cca576d9e0c15c370b50a0",
+            "eth_fee_basis_points": 0,
+            "evm_fee_basis_points": 0,
+            "eth_token_decimals": 18,
+            "evm_token_decimals": 18
+        })
+        .to_string(),
+    )
+    .unwrap()
 }
 
 mod tests {
