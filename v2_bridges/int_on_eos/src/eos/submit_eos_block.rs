@@ -1,10 +1,8 @@
 use common::{traits::DatabaseInterface, types::Result, CoreType};
 use common_eos::{
-    append_interim_block_ids_to_incremerkle_in_state,
     end_eos_db_transaction_and_return_state,
     get_active_schedule_from_db_and_add_to_state,
     get_enabled_protocol_features_and_add_to_state,
-    get_incremerkle_and_add_to_state,
     get_processed_global_sequences_and_add_to_state,
     maybe_add_global_sequences_to_processed_list_and_return_state,
     maybe_add_new_eos_schedule_to_db_and_return_state,
@@ -15,12 +13,10 @@ use common_eos::{
     maybe_filter_out_proofs_with_invalid_merkle_proofs,
     maybe_filter_out_proofs_with_wrong_action_mroot,
     parse_submission_material_and_add_to_state,
-    save_incremerkle_from_state_to_db,
-    save_latest_block_id_to_db,
-    save_latest_block_num_to_db,
     validate_block_header_signature,
     validate_producer_slot_of_block_in_state,
     EosState,
+    Incremerkles,
 };
 
 use crate::eos::{
@@ -49,8 +45,8 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(|_| CoreType::check_is_initialized(db))
         .and_then(|_| parse_submission_material_and_add_to_state(block_json, EosState::init(db)))
         .and_then(get_enabled_protocol_features_and_add_to_state)
-        .and_then(get_incremerkle_and_add_to_state)
-        .and_then(append_interim_block_ids_to_incremerkle_in_state)
+        .and_then(Incremerkles::get_from_db_and_add_to_state)
+        .and_then(Incremerkles::add_block_ids_and_return_state)
         .and_then(get_active_schedule_from_db_and_add_to_state)
         .and_then(validate_producer_slot_of_block_in_state)
         .and_then(validate_block_header_signature)
@@ -73,9 +69,6 @@ pub fn submit_eos_block_to_core<D: DatabaseInterface>(db: &D, block_json: &str) 
         .and_then(divert_tx_infos_to_safe_address_if_destination_is_router_address)
         .and_then(maybe_sign_int_txs_and_add_to_state)
         .and_then(maybe_increment_int_nonce_in_db_and_return_eos_state)
-        .and_then(save_latest_block_id_to_db)
-        .and_then(save_latest_block_num_to_db)
-        .and_then(save_incremerkle_from_state_to_db)
         .and_then(end_eos_db_transaction_and_return_state)
         .and_then(get_eos_output)
 }
@@ -86,14 +79,16 @@ mod tests {
 
     use common::test_utils::get_test_database;
     use common_chain_ids::{EosChainId, EthChainId};
-    use common_eos::{initialize_eos_core_inner, EosPrivateKey, ProcessedGlobalSequences};
+    use common_eos::{initialize_eos_core_inner, EosPrivateKey, EosSubmissionMaterial, ProcessedGlobalSequences};
     use common_eth::{
+        initialize_eth_core_with_router_contract_and_return_state,
         initialize_eth_core_with_vault_and_router_contracts_and_return_state,
         EthDbUtils,
         EthDbUtilsExt,
         EthState as IntState,
         VaultUsingCores,
     };
+    use ethereum_types::Address as EthAddress;
     use serde_json::json;
 
     use super::*;
@@ -112,6 +107,12 @@ mod tests {
             get_sample_int_private_key,
             get_sample_router_address,
             get_sample_vault_address,
+            multi_incremerkle_submission::{
+                get_incremekle_update_block,
+                get_init_block,
+                get_sample_dictionary as get_sample_dictionary_for_incremerkle_test,
+                get_submission_block,
+            },
         },
     };
 
@@ -297,9 +298,6 @@ mod tests {
         let processed_glob_sequences_before = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert!(processed_glob_sequences_before.is_empty());
 
-        use simple_logger;
-        simple_logger::init().unwrap();
-
         // NOTE: Submit the block with the peg in in it...
         let output = EosOutput::from_str(
             &submit_eos_block_to_core(&db, &get_sample_eos_submission_material_string_2()).unwrap(),
@@ -354,5 +352,109 @@ mod tests {
         // NOTE: Assert that we processed the expected global sequence...
         let processed_glob_sequences_after = ProcessedGlobalSequences::get_from_db(&db).unwrap();
         assert!(processed_glob_sequences_after.contains(&294821926));
+    }
+
+    #[test]
+    fn should_submit_eos_material_with_proof_tied_to_block_behind_chain_tip() {
+        let db = get_test_database();
+        let router_address = get_sample_router_address();
+
+        // NOTE: Initialize the EOS mainnet core...
+        let eos_chain_id = "aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906";
+        let maybe_eos_account_name = Some("effecttokens");
+        let maybe_eos_token_symbol = None;
+        let eos_init_block = get_init_block();
+        let eos_init_block_num = 351736970;
+        initialize_eos_core_inner(
+            &db,
+            eos_chain_id,
+            maybe_eos_account_name,
+            maybe_eos_token_symbol,
+            &eos_init_block,
+            true,
+        )
+        .unwrap();
+
+        // NOTE: Overwrite the EOS private key since it's generated randomly above...
+        let eos_pk = get_sample_eos_private_key();
+        eos_pk.write_to_db(&db).unwrap();
+        assert_eq!(EosPrivateKey::get_from_db(&db).unwrap(), eos_pk);
+
+        // NOTE: Initialize the INT side of the core...
+        let int_confirmations = 0;
+        let int_gas_price = 20_000_000_000;
+        let contiguous_int_block_json_strs = get_contiguous_int_block_json_strs();
+        let int_init_block = contiguous_int_block_json_strs[0].clone();
+        initialize_eth_core_with_router_contract_and_return_state(
+            &int_init_block,
+            &EthChainId::Ropsten,
+            int_gas_price,
+            int_confirmations,
+            IntState::init(&db),
+            &router_address,
+            false,
+        )
+        .unwrap();
+
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let int_address = get_sample_int_address();
+        let int_private_key = get_sample_int_private_key();
+        let int_db_utils = EthDbUtils::new(&db);
+        int_db_utils
+            .put_eth_address_in_db(&int_db_utils.get_eth_address_key(), &int_address)
+            .unwrap();
+        int_db_utils.put_eth_private_key_in_db(&int_private_key).unwrap();
+        assert_eq!(int_db_utils.get_public_eth_address_from_db().unwrap(), int_address);
+        assert_eq!(int_db_utils.get_eth_private_key_from_db().unwrap(), int_private_key);
+
+        // NOTE: Add a vault address for ETH required for tx signing output
+        int_db_utils
+            .put_int_on_eos_smart_contract_address_in_db(&EthAddress::random())
+            .unwrap();
+
+        // NOTE: Add the token dictionary to the db...
+        let dictionary = get_sample_dictionary_for_incremerkle_test();
+        dictionary.save_to_db(&db).unwrap();
+
+        // NOTE: Assert that there are no processed global sequences in the db...
+        let processed_glob_sequences_before = ProcessedGlobalSequences::get_from_db(&db).unwrap();
+        assert!(processed_glob_sequences_before.is_empty());
+
+        let mut incremerkles = Incremerkles::get_from_db(&common_eos::EosDbUtils::new(&db)).unwrap();
+        assert_eq!(incremerkles.len(), 1);
+        assert_eq!(incremerkles.latest_block_num(), eos_init_block_num);
+
+        // NOTE: Now lets update the incremerkle...
+        let incremerkle_update_block = get_incremekle_update_block();
+        let incremerkle_update_block_num = EosSubmissionMaterial::from_str(&incremerkle_update_block)
+            .unwrap()
+            .block_num;
+        submit_eos_block_to_core(&db, &incremerkle_update_block).unwrap();
+
+        incremerkles = Incremerkles::get_from_db(&common_eos::EosDbUtils::new(&db)).unwrap();
+        assert_eq!(incremerkles.len(), 2);
+        assert_eq!(incremerkles.latest_block_num(), incremerkle_update_block_num);
+
+        let submission_block_json = get_submission_block();
+        let submission_block_num = EosSubmissionMaterial::from_str(&submission_block_json)
+            .unwrap()
+            .block_num;
+        assert_eq!(submission_block_num, 351737739);
+
+        // NOTE: Let's assert that the core's latest block number is indeed _past_ the submission
+        // material block num
+        let latest_block_num = incremerkles.latest_block_num();
+        assert_eq!(latest_block_num, 351738099);
+        assert!(latest_block_num > submission_block_num);
+
+        // NOTE: Now we can submit the block with the peg in in it...
+        let mut output = EosOutput::from_str(&submit_eos_block_to_core(&db, &submission_block_json).unwrap()).unwrap();
+        // NOTE: Asserting a tx is outputted successfully is sufficient for this test.
+        assert_eq!(output.int_signed_transactions.len(), 1);
+
+        // NOTE: If we submit the _same_ material again, we should get no signed transactions since
+        // the core has already seen this global sequence.
+        output = EosOutput::from_str(&submit_eos_block_to_core(&db, &submission_block_json).unwrap()).unwrap();
+        assert_eq!(output.int_signed_transactions.len(), 0);
     }
 }

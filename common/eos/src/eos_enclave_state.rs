@@ -12,6 +12,7 @@ use crate::{
     eos_global_sequences::ProcessedGlobalSequences,
     eos_types::EosKnownSchedulesJsons,
     protocol_features::EnabledFeatures,
+    Incremerkles,
 };
 
 #[derive(Serialize, Deserialize)]
@@ -44,14 +45,18 @@ impl EosEnclaveState {
         include_account_name: bool,
     ) -> Result<Self> {
         info!("✔ Getting EOS enclave state...");
+        let incremerkles = Incremerkles::get_from_db(eos_db_utils)?;
+        let eos_last_seen_block_num = incremerkles.latest_block_num();
+        let eos_last_seen_block_id = incremerkles.latest_block_id()?.to_string();
+
         Ok(EosEnclaveState {
+            eos_last_seen_block_id,
+            eos_last_seen_block_num,
             eos_safe_address: SAFE_EOS_ADDRESS_STR.to_string(),
             eos_core_is_validating: !cfg!(feature = "non-validating"),
             eos_chain_id: eos_db_utils.get_eos_chain_id_from_db()?.to_hex(),
             eos_signature_nonce: eos_db_utils.get_eos_account_nonce_from_db()?,
-            eos_last_seen_block_num: eos_db_utils.get_latest_eos_block_number()?,
             eos_public_key: eos_db_utils.get_eos_public_key_from_db()?.to_string(),
-            eos_last_seen_block_id: eos_db_utils.get_eos_last_seen_block_id_from_db()?.to_string(),
             processed_global_sequences: ProcessedGlobalSequences::get_from_db(eos_db_utils.get_db())?,
             eos_enabled_protocol_features: eos_db_utils.get_eos_enabled_protocol_features_from_db()?,
             eos_eth_token_dictionary: EosEthTokenDictionary::get_from_db(eos_db_utils.get_db())?.to_json()?,

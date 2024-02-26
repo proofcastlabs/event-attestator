@@ -11,7 +11,7 @@ use eos_chain::{AccountName as EosAccountName, Checksum256};
 
 use crate::{
     eos_crypto::eos_public_key::EosPublicKey,
-    eos_merkle_utils::{Incremerkle, IncremerkleJson},
+    eos_incremerkle::Incremerkle,
     eos_producer_schedule::EosProducerScheduleV2,
     eos_types::EosKnownSchedules,
     eos_utils::{convert_hex_to_checksum256, get_eos_schedule_db_key},
@@ -121,7 +121,7 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
         debug!("✔ Putting EOS incremerkle in db...");
         self.get_db().put(
             self.get_eos_incremerkle_key(),
-            serde_json::to_vec(&incremerkle.to_json())?,
+            serde_json::to_vec(&incremerkle)?,
             MIN_DATA_SENSITIVITY_LEVEL,
         )
     }
@@ -131,7 +131,6 @@ impl<'a, D: DatabaseInterface> EosDbUtils<'a, D> {
         self.get_db()
             .get(self.get_eos_incremerkle_key(), MIN_DATA_SENSITIVITY_LEVEL)
             .and_then(|bytes| Ok(serde_json::from_slice(&bytes)?))
-            .and_then(|json: IncremerkleJson| json.to_incremerkle())
     }
 
     pub fn get_eos_known_schedules_from_db(&self) -> Result<EosKnownSchedules> {

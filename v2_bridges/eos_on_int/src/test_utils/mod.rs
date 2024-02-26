@@ -1,4 +1,12 @@
-#![cfg(all(test, feature = "non-validating"))] // NOTE: The test uses TELOS blocks, whose headers fail validation.
+#![cfg(test)]
+// NOTE: Some tests use telos blocks which require `non-validating` feature flag.
+// Helpers for those tests would flag up in the linter as unused if the feature is
+// not used. This solves that.
+#![allow(unused)]
+
+#[cfg(feature = "non-validating")]
+pub(crate) mod multi_incremerkle_submission;
+
 use std::fs::read_to_string;
 
 use common::{
@@ -15,6 +23,7 @@ macro_rules! write_int_paths_and_getter_fxn {
         paste! {
             $(const [<SAMPLE_INT_BLOCK_ $num>]: &str = $path;)*
 
+            //#[cfg(feature = "non-validating")] // NOTE: The test uses TELOS blocks, whose headers fail validation.
             fn get_int_path_n(n: usize) -> Result<String> {
                 match n {
                     $($num => Ok([<SAMPLE_INT_BLOCK_ $num>].to_string()),)*
@@ -96,7 +105,6 @@ pub fn get_sample_int_address() -> EthAddress {
     convert_hex_to_eth_address("0x49B9d619E3402de8867A8113C7bc204653F5DB4c").unwrap()
 }
 
-#[cfg(feature = "non-validating")]
 pub fn get_sample_eos_submission_material_string() -> String {
     read_to_string(get_eos_path_n(1).unwrap()).unwrap()
 }

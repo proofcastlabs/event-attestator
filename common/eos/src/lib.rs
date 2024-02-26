@@ -5,7 +5,6 @@ use bitcoin as bitcoin_crate_alias;
 use litecoin as bitcoin_crate_alias;
 
 mod add_schedule;
-mod append_interim_block_ids;
 mod core_initialization;
 mod disable_protocol_feature;
 mod enable_protocol_feature;
@@ -22,7 +21,8 @@ mod eos_enclave_state;
 mod eos_extension;
 mod eos_global_sequences;
 mod eos_hash;
-mod eos_merkle_utils;
+mod eos_incremerkle;
+mod eos_merkle_proof;
 mod eos_producer_key;
 mod eos_producer_schedule;
 mod eos_state;
@@ -35,19 +35,15 @@ mod filter_action_proofs;
 mod get_action_digest;
 mod get_active_schedule;
 mod get_enabled_protocol_features;
-mod get_eos_incremerkle;
 mod get_processed_actions_list;
 mod increment_eos_account_nonce;
 mod protocol_features;
-mod save_incremerkle;
-mod save_latest_block_id;
-mod save_latest_block_num;
 mod validate_producer_slot;
 mod validate_signature;
 
+use self::eos_merkle_proof::MerkleProof;
 pub use self::{
     add_schedule::maybe_add_new_eos_schedule_to_db_and_return_state,
-    append_interim_block_ids::append_interim_block_ids_to_incremerkle_in_state,
     core_initialization::{
         initialize_eos_core_inner,
         maybe_initialize_eos_core_with_eos_account_and_symbol,
@@ -88,6 +84,7 @@ pub use self::{
         GlobalSequences,
         ProcessedGlobalSequences,
     },
+    eos_incremerkle::Incremerkles,
     eos_state::EosState,
     eos_submission_material::{
         parse_submission_material_and_add_to_state,
@@ -116,12 +113,8 @@ pub use self::{
     },
     get_active_schedule::get_active_schedule_from_db_and_add_to_state,
     get_enabled_protocol_features::get_enabled_protocol_features_and_add_to_state,
-    get_eos_incremerkle::get_incremerkle_and_add_to_state,
     get_processed_actions_list::get_processed_actions_list,
     increment_eos_account_nonce::increment_eos_account_nonce,
-    save_incremerkle::save_incremerkle_from_state_to_db,
-    save_latest_block_id::save_latest_block_id_to_db,
-    save_latest_block_num::save_latest_block_num_to_db,
     validate_producer_slot::validate_producer_slot_of_block_in_state,
     validate_signature::validate_block_header_signature,
 };

@@ -8,11 +8,6 @@ echo testing non-validating core compilations
 featureFlag="--features=non-validating"
 
 packages=(
-	"pbtc-on-eos"
-	"pbtc-on-eth"
-	"peos-on-eth"
-	"perc20-on-eos"
-	"perc20-on-evm"
 	"pbtc-on-int"
 	"peos-on-int"
 	"perc20-on-int"

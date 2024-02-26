@@ -4,6 +4,7 @@ use common::{
     dictionaries::eos_eth::{EosEthTokenDictionary, EosEthTokenDictionaryJson},
     traits::DatabaseInterface,
     types::{Bytes, NoneError, Result},
+    AppError,
 };
 use common_chain_ids::EosChainId;
 use serde::{Deserialize, Serialize};
@@ -14,7 +15,7 @@ use crate::{
     eos_crypto::eos_private_key::EosPrivateKey,
     eos_database_utils::EosDbUtils,
     eos_global_sequences::ProcessedGlobalSequences,
-    eos_merkle_utils::Incremerkle,
+    eos_incremerkle::{Incremerkle, Incremerkles},
     eos_producer_schedule::EosProducerScheduleV2,
     eos_submission_material::EosSubmissionMaterial,
     eos_types::{Checksum256s, EosBlockHeaderJson, EosKnownSchedules},
@@ -32,6 +33,14 @@ pub struct EosInitJson {
     pub maybe_protocol_features_to_enable: Option<Vec<String>>,
     pub eos_eth_token_dictionary: Option<EosEthTokenDictionaryJson>,
     pub erc20_on_eos_token_dictionary: Option<EosEthTokenDictionaryJson>,
+}
+
+impl FromStr for EosInitJson {
+    type Err = AppError;
+
+    fn from_str(s: &str) -> Result<Self> {
+        EosInitJson::from_json_string(s)
+    }
 }
 
 impl EosInitJson {
@@ -121,14 +130,15 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
         info!("✔ Skipping EOS init block validation check!");
         Ok(state)
     } else {
-        info!("✔ Checking block validation passes...");
+        info!("checking block validation passes...");
         check_block_signature_is_valid(
-            state
-                .enabled_protocol_features
-                .is_enabled(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH.as_ref()),
-            state
-                .eos_db_utils
-                .get_incremerkle_from_db()?
+            state.enabled_protocol_features.is_enabled(
+                hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)
+                    .unwrap_or_default()
+                    .as_ref(),
+            ),
+            Incremerkles::get_from_db(&EosDbUtils::new(state.db))?
+                .get_incremerkle_for_block_number(block_json.block_num)?
                 .get_root()
                 .to_bytes()
                 .as_ref(),
@@ -144,23 +154,32 @@ pub fn test_block_validation_and_return_state<'a, D: DatabaseInterface>(
 
 pub fn generate_and_put_incremerkle_in_db<D: DatabaseInterface>(
     db_utils: &EosDbUtils<D>,
-    blockroot_merkle: &[String],
+    init_json: &EosInitJson,
 ) -> Result<()> {
-    info!("✔ Generating and putting incremerkle in db...");
-    db_utils.put_incremerkle_in_db(&Incremerkle::new(
-        db_utils.get_latest_eos_block_number()? - 1,
-        blockroot_merkle
+    info!(
+        "generating and putting new incremerkle in db for block num {}...",
+        init_json.block.block_num
+    );
+
+    let incremerkle = Incremerkle::new(
+        init_json.block.block_num,
+        init_json
+            .blockroot_merkle
             .iter()
             .map(convert_hex_to_checksum256)
             .collect::<Result<Checksum256s>>()?,
-    ))
+    );
+
+    let incremerkles = Incremerkles::new(vec![incremerkle]);
+    incremerkles.put_in_db(db_utils)?;
+    Ok(())
 }
 
 pub fn generate_and_put_incremerkle_in_db_and_return_state<'a, D: DatabaseInterface>(
-    blockroot_merkle: &[String],
+    init_json: &EosInitJson,
     state: EosState<'a, D>,
 ) -> Result<EosState<'a, D>> {
-    generate_and_put_incremerkle_in_db(&state.eos_db_utils, blockroot_merkle).and(Ok(state))
+    generate_and_put_incremerkle_in_db(&state.eos_db_utils, init_json).and(Ok(state))
 }
 
 pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(
@@ -176,13 +195,6 @@ pub fn put_eos_latest_block_info_in_db<D: DatabaseInterface>(
         .and_then(|_| {
             db_utils.put_eos_last_seen_block_id_in_db(&convert_hex_to_checksum256(block_json.block_id.clone())?)
         })
-}
-
-pub fn put_eos_latest_block_info_in_db_and_return_state<'a, D: DatabaseInterface>(
-    block_json: &EosBlockHeaderJson,
-    state: EosState<'a, D>,
-) -> Result<EosState<'a, D>> {
-    put_eos_latest_block_info_in_db(&state.eos_db_utils, block_json).and(Ok(state))
 }
 
 pub fn put_eos_known_schedule_in_db_and_return_state<'a, D: DatabaseInterface>(

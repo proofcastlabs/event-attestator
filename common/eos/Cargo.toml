@@ -28,6 +28,7 @@ lazy_static = { workspace = true }
 derive_more = { workspace = true }
 tiny-keccak = { workspace = true }
 function_name = { workspace = true }
+ethereum-types = { workspace = true }
 bitcoin = { workspace = true, optional = true }
 litecoin = { workspace = true, optional = true }
 

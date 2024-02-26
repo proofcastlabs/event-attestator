@@ -1,4 +1,8 @@
 #![cfg(test)]
+
+#[cfg(feature = "non-validating")]
+pub(crate) mod multi_incremerkle_submission;
+
 use std::fs::read_to_string;
 
 use common::{

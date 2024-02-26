@@ -17,7 +17,7 @@ use crate::{
     eos_action_receipt::{AuthSequence, EosActionReceipt},
     eos_block_header::EosBlockHeaderV2,
     eos_crypto::{eos_private_key::EosPrivateKey, eos_public_key::EosPublicKey, eos_signature::EosSignature},
-    eos_merkle_utils::Incremerkle,
+    eos_incremerkle::Incremerkle,
     eos_producer_schedule::{
         EosProducerScheduleJsonV1,
         EosProducerScheduleJsonV2,
@@ -388,4 +388,12 @@ pub fn serialize_block_header_v2(header: &EosBlockHeaderV2) -> Result<Bytes> {
     let mut data = vec![0u8; header.num_bytes()];
     header.write(&mut data, &mut 0)?;
     Ok(data)
+}
+
+pub fn get_init_block_352283689() -> String {
+    read_to_string("src/eos_test_utils/eos-init-block-352283689.json").unwrap()
+}
+
+pub fn get_init_block_352283690() -> String {
+    read_to_string("src/eos_test_utils/eos-init-block-352283690.json").unwrap()
 }

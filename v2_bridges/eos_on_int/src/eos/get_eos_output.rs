@@ -95,7 +95,7 @@ pub fn get_int_signed_tx_info_from_txs(
 pub fn get_eos_output<D: DatabaseInterface>(state: EosState<D>) -> Result<String> {
     info!("✔ Getting EOS output json...");
     let output = serde_json::to_string(&EosOutput {
-        eos_latest_block_number: state.eos_db_utils.get_latest_eos_block_number()?,
+        eos_latest_block_number: state.incremerkles.latest_block_num(),
         int_signed_transactions: match state.eth_signed_txs.len() {
             0 => vec![],
             _ => {

@@ -9,9 +9,9 @@ use eos_chain::{AccountName as EosAccountName, ActionName as EosActionName, Chec
 use crate::{
     eos_action_proofs::{EosActionProof, EosActionProofs},
     eos_constants::{PEGIN_ACTION_NAME, REDEEM_ACTION_NAME, V2_REDEEM_ACTION_NAME},
-    eos_merkle_utils::verify_merkle_proof,
     get_action_digest::get_action_digest,
     EosState,
+    MerkleProof,
 };
 
 pub fn filter_for_proofs_with_action_mroot(
@@ -72,8 +72,9 @@ pub fn filter_for_proofs_with_action_name(
 pub fn filter_out_proofs_with_invalid_merkle_proofs(action_proofs: &[EosActionProof]) -> Result<EosActionProofs> {
     let filtered = action_proofs
         .iter()
-        .map(|proof_data| proof_data.action_proof.as_slice())
-        .map(verify_merkle_proof)
+        .map(|proof_data| proof_data.action_proof.clone())
+        .map(MerkleProof::from)
+        .map(|proof| proof.verify())
         .collect::<Result<Vec<bool>>>()?
         .into_iter()
         .zip(action_proofs.iter())

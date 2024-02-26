@@ -10,6 +10,7 @@ use secp256k1::Message;
 use crate::{
     bitcoin_crate_alias::hashes::{sha256, Hash},
     eos_block_header::{EosBlockHeaderV1, EosBlockHeaderV2},
+    eos_constants::EOS_DEFAULT_PUB_KEY_STRING,
     eos_crypto::{eos_public_key::EosPublicKey, eos_signature::EosSignature},
     eos_producer_key::EosProducerKeyV1,
     eos_producer_schedule::{EosProducerScheduleV1, EosProducerScheduleV2},
@@ -23,17 +24,16 @@ fn create_eos_signing_digest(block_mroot: &[Byte], schedule_hash: &[Byte], block
 }
 
 fn get_block_digest(msig_enabled: bool, block_header: &EosBlockHeaderV2) -> Result<Bytes> {
-    match msig_enabled {
-        true => Ok(block_header.digest()?.to_bytes().to_vec()),
-        false => {
-            info!("✔ MSIG not enabled, converting block to contain V1 schedule...");
-            Ok(
-                convert_v2_schedule_block_header_to_v1_schedule_block_header(block_header)
-                    .digest()?
-                    .to_bytes()
-                    .to_vec(),
-            )
-        },
+    if msig_enabled {
+        Ok(block_header.digest()?.to_bytes().to_vec())
+    } else {
+        info!("✔ MSIG not enabled, converting block to contain V1 schedule...");
+        Ok(
+            convert_v2_schedule_block_header_to_v1_schedule_block_header(block_header)
+                .digest()?
+                .to_bytes()
+                .to_vec(),
+        )
     }
 }
 
@@ -69,10 +69,12 @@ fn convert_v2_schedule_to_v1(v1_schedule: &EosProducerScheduleV2) -> EosProducer
 }
 
 fn get_schedule_hash(msig_enabled: bool, v2_schedule: &EosProducerScheduleV2) -> Result<Bytes> {
-    let hash = match msig_enabled {
-        true => v2_schedule.schedule_hash()?,
-        false => convert_v2_schedule_to_v1(v2_schedule).schedule_hash()?,
+    let hash = if msig_enabled {
+        v2_schedule.schedule_hash()?
+    } else {
+        convert_v2_schedule_to_v1(v2_schedule).schedule_hash()?
     };
+
     Ok(hash.to_bytes().to_vec())
 }
 
@@ -147,35 +149,49 @@ pub fn check_block_signature_is_valid(
     let recovered_key =
         recover_block_signer_public_key(msig_enabled, block_mroot, producer_signature, block_header, v2_schedule)?
             .to_string();
-    debug!("     Producer: {}", block_header.producer);
-    debug!("  Signing key: {}", signing_key);
-    debug!("Recovered key: {}", recovered_key);
-    match signing_key == recovered_key {
-        true => Ok(()),
-        _ => Err("✘ Block signature not valid!".into()),
+
+    debug!("     producer: {}", block_header.producer);
+    debug!("  signing key: {}", signing_key);
+    debug!("recovered key: {}", recovered_key);
+
+    if recovered_key == *EOS_DEFAULT_PUB_KEY_STRING {
+        // NOTE: When we encounter an old format EOS key we replace it with the default instead,
+        // since they're otherwise unparseable by the secp256k1 crate.
+        warn!("producer key is old format - skipping block signature validation");
+        Ok(())
+    } else if signing_key == recovered_key {
+        info!("block signature is valid");
+        Ok(())
+    } else {
+        Err("block signature not valid!".into())
     }
 }
 
 pub fn validate_block_header_signature<D: DatabaseInterface>(state: EosState<D>) -> Result<EosState<D>> {
     if cfg!(feature = "non-validating") {
-        info!("✔ Skipping EOS block header signature validation");
+        info!("skipping EOS block header signature validation");
         Ok(state)
     } else if state.get_eos_block_header()?.new_producer_schedule.is_some() {
         // NOTE/FIXME; To be cleaned up once validation for these has been fixed!
-        info!("✔ New producer schedule exists in EOS block ∴ skipping validation check...");
+        info!("new producer schedule exists in EOS block ∴ skipping validation check...");
         Ok(state)
     } else {
-        info!("✔ Validating EOS block header signature...");
-        check_block_signature_is_valid(
-            state
-                .enabled_protocol_features
-                .is_enabled(&hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)?),
-            &state.incremerkle.get_root().to_bytes(),
-            &state.producer_signature,
-            state.get_eos_block_header()?,
-            state.get_active_schedule()?,
-        )
-        .and(Ok(state))
+        info!("validating EOS block header signature...");
+        state
+            .get_eos_block_num()
+            .and_then(|n| state.incremerkles.get_incremerkle_for_block_number(n))
+            .and_then(|incremerkle| {
+                check_block_signature_is_valid(
+                    state
+                        .enabled_protocol_features
+                        .is_enabled(&hex::decode(WTMSIG_BLOCK_SIGNATURE_FEATURE_HASH)?),
+                    &incremerkle.get_root().to_bytes(),
+                    &state.producer_signature,
+                    state.get_eos_block_header()?,
+                    state.get_active_schedule()?,
+                )
+            })
+            .and(Ok(state))
     }
 }
 
@@ -185,7 +201,7 @@ mod tests {
 
     use super::*;
     use crate::{
-        eos_merkle_utils::Incremerkle,
+        eos_incremerkle::Incremerkle,
         eos_test_utils::{
             get_init_and_subsequent_blocks_json_n,
             get_sample_eos_submission_material_json_n,
@@ -265,7 +281,6 @@ mod tests {
     #[ignore] // TODO: Fix this test
     #[test]
     fn should_validate_mainnet_block_with_new_producers() {
-        // simple_logger::init().unwrap();
         let submission_material_num = 8;
         let submission_material = get_sample_eos_submission_material_n(submission_material_num);
         let submission_material_json = get_sample_eos_submission_material_json_n(submission_material_num);
@@ -315,7 +330,6 @@ mod tests {
     #[ignore] // TODO: Fix this test
     #[test]
     fn should_validate_jungle_3_block_with_new_producers() {
-        // simple_logger::init().unwrap();
         let submission_material_num = 9;
         let submission_material = get_sample_eos_submission_material_n(submission_material_num);
         let submission_material_json = get_sample_eos_submission_material_json_n(submission_material_num);
