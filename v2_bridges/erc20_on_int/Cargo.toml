@@ -13,6 +13,10 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eth/non-validating"]
 
+# NOTE: Normally the peg-out event coming from the interim chain will have origin details pertaining _to_ that interim chain. With this feature enabled, we instead look for the metadata event fired from the interim chain (if extant) and gather originating tx details from that instead.
+include-origin-tx-details = ["common_chain_ids/include-origin-tx-details"]
+
+
 [dependencies]
 hex = { workspace = true }
 log = { workspace = true }
