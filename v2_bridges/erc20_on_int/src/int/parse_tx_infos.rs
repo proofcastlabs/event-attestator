@@ -9,6 +9,7 @@ use common_eth::{
     EthReceipt,
     EthState,
     EthSubmissionMaterial,
+    PTokensRouterMetadataEvent,
     ERC777_REDEEM_EVENT_TOPIC_V2,
 };
 use ethereum_types::Address as EthAddress;
@@ -78,6 +79,7 @@ impl Erc20OnIntEthTxInfos {
                         destination_address: event_params.underlying_asset_recipient,
                         native_token_amount: dictionary
                             .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
+                        metadata_event: PTokensRouterMetadataEvent::try_from(receipt).ok(),
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)

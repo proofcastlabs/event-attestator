@@ -6,7 +6,7 @@ use common::{
     utils::convert_bytes_to_string,
 };
 use common_chain_ids::EthChainId;
-use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string};
+use common_eth::{convert_eth_address_to_string, convert_eth_hash_to_string, PTokensRouterMetadataEvent};
 use common_safe_addresses::SAFE_ETH_ADDRESS_STR;
 use derive_more::{Constructor, Deref, IntoIterator};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -26,6 +26,7 @@ pub struct Erc20OnIntEthTxInfo {
     pub evm_token_address: EthAddress,
     pub eth_vault_address: EthAddress,
     pub eth_token_address: EthAddress,
+    pub(crate) metadata_event: Option<PTokensRouterMetadataEvent>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Constructor, Deref, IntoIterator, Serialize, Deserialize)]

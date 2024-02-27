@@ -8,7 +8,8 @@ echo testing cores with origin chain tx pass through enabled
 featureFlag="--features=include-origin-tx-details"
 
 packages=(
-	"int_on_evm" # NOTE: array in case we add this feature to future cores
+	"int_on_evm"
+	"erc20_on_int"
 )
 
 for package in "${packages[@]}"
