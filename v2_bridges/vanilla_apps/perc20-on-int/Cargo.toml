@@ -1,5 +1,5 @@
 [package]
-version = "2.0.2"
+version = "2.0.3"
 edition = "2021"
 rust-version = "1.56"
 name = "perc20-on-int"
@@ -12,6 +12,10 @@ rocks-db = ["common_rocksdb_database"]
 json-rpc-db = ["common_jsonrpc_database"]
 std-err-logger = ["common_stderr_logger"]
 non-validating = ["erc20_on_int/non-validating"]
+# NOTE: Normally the peg-in event coming from the erc20 chain will have origin details pertaining _to_
+# that erc20 chain. With this feature enabled, we instead look for the original minting action on the
+# erc20 chain (if extant) and gather originating tx details from that instead.
+include-origin-tx-details = ["erc20_on_int/include-origin-tx-details"]
 
 [dependencies]
 log = { workspace = true }
