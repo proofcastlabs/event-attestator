@@ -17,18 +17,18 @@ impl IntOnEvmEvmTxInfo {
             self.user_data.clone()
         };
 
-        // NOTE: In this case the token sender is the router address, and the origin chain id
-        // is that of the interim chain, IE 0xffffffff
-        let mut origin_address = MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?;
-
-        if cfg!(feature = "include-origin-tx-details") && self.metadata_event.is_some() {
-            // NOTE: Here we use the router's metadata event to get the original sender & chain ID details
+        let origin_address = if cfg!(feature = "include-origin-tx-details") && self.metadata_event.is_some() {
+            debug!("using origin tx details in metadata");
             let metadata = self
                 .metadata_event
                 .as_ref()
                 .expect("this not to fail due to preceeding line");
 
-            origin_address = MetadataAddress::new(metadata.origin_address(), metadata.origin_chain_id())?;
+            MetadataAddress::new(metadata.origin_address(), metadata.origin_chain_id())?
+        } else {
+            // NOTE: In this case the token sender is the router address, and the origin chain id
+            // is that of the interim chain, IE 0xffffffff
+            MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?
         };
 
         Ok(Metadata::new_v2(
