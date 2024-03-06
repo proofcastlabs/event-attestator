@@ -19,12 +19,14 @@ pub fn get_sample_eth_tx_infos() -> Erc20OnIntEthTxInfos {
     let dictionary = get_sample_token_dictionary();
     let material = get_sample_peg_out_submission_material();
     let origin_chain_id = EthChainId::Ropsten;
+    let destination_chain_id = EthChainId::Mainnet;
     let vault_address = get_random_eth_address();
     let router_address = get_random_eth_address();
     Erc20OnIntEthTxInfos::from_submission_material(
         &material,
         &dictionary,
         &origin_chain_id,
+        &destination_chain_id,
         &vault_address,
         &router_address,
     )

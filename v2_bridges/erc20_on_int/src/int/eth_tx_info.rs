@@ -22,6 +22,7 @@ pub struct Erc20OnIntEthTxInfo {
     pub origin_chain_id: EthChainId,
     pub token_recipient: EthAddress,
     pub destination_address: String,
+    pub destination_chain_id: EthChainId,
     pub originating_tx_hash: EthHash,
     pub evm_token_address: EthAddress,
     pub eth_vault_address: EthAddress,
