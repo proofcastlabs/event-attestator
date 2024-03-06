@@ -3,6 +3,7 @@ use std::str::FromStr;
 use common::types::{Bytes, Result};
 use common_eth::MAX_BYTES_FOR_ETH_USER_DATA;
 use common_metadata::{Metadata, MetadataAddress, MetadataChainId, MetadataProtocolId};
+use common_safe_addresses::safely_convert_str_to_eth_address;
 
 use crate::int::eth_tx_info::Erc20OnIntEthTxInfo;
 
@@ -33,7 +34,18 @@ impl Erc20OnIntEthTxInfo {
             )?
         };
 
-        Ok(Metadata::new(&user_data, &origin_address))
+        let destination_address = &MetadataAddress::new_from_eth_address(
+            &safely_convert_str_to_eth_address(&self.destination_address),
+            &MetadataChainId::from_str(&self.destination_chain_id.to_string())?,
+        )?;
+
+        let metadata = if cfg!(feature = "include-origin-tx-details") {
+            Metadata::new_v3(&user_data, &origin_address, destination_address, None, None)
+        } else {
+            Metadata::new(&user_data, &origin_address)
+        };
+
+        Ok(metadata)
     }
 
     pub fn to_metadata_bytes(&self) -> Result<Bytes> {
