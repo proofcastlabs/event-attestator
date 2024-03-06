@@ -31,16 +31,19 @@ impl IntOnEvmEvmTxInfo {
             MetadataAddress::new_from_eth_address(&self.token_sender, &self.origin_chain_id)?
         };
 
-        Ok(Metadata::new_v2(
-            &user_data,
-            &origin_address,
-            &MetadataAddress::new_from_eth_address(
-                &safely_convert_str_to_eth_address(&self.destination_address),
-                &self.destination_chain_id,
-            )?,
-            None,
-            None,
-        ))
+        let destination_address = &MetadataAddress::new_from_eth_address(
+            &safely_convert_str_to_eth_address(&self.destination_address),
+            &self.destination_chain_id,
+        )?;
+
+        let metadata = if cfg!(feature = "include-origin-tx-details") {
+            Metadata::new_v3(&user_data, &origin_address, destination_address, None, None)
+        } else {
+            // NOTE: To avoid regressions since this is the version used prior.
+            Metadata::new_v2(&user_data, &origin_address, destination_address, None, None)
+        };
+
+        Ok(metadata)
     }
 
     pub fn to_metadata_bytes(&self) -> Result<Bytes> {

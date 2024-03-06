@@ -124,7 +124,7 @@ pub fn maybe_sign_evm_txs_and_add_to_eth_state<D: DatabaseInterface>(state: EthS
     }
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "include-origin-tx-details")))]
 mod tests {
     use common_eth::EthTxInfoCompatible;
 
