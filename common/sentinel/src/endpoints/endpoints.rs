@@ -1,11 +1,12 @@
 use std::result::Result;
 
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use jsonrpsee::ws_client::WsClient;
 use serde::{Deserialize, Serialize};
 
 use super::{get_rpc_client, EndpointError};
-use crate::{NetworkId, SentinelConfigError, SentinelError};
+use crate::{SentinelConfigError, SentinelError};
 
 #[derive(Debug, Default, Clone, Getters, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Endpoints {

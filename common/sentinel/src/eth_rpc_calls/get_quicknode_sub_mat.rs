@@ -11,13 +11,14 @@ use common_eth::{
     EthReceipts,
     EthSubmissionMaterial,
 };
+use common_network_ids::NetworkId;
 use ethereum_types::{Bloom, U256};
 use jsonrpsee::{core::client::ClientT, rpc_params, ws_client::WsClient};
 use serde::{Deserialize, Serialize};
 use tokio::time::{sleep, Duration};
 
 use super::constants::{ETH_RPC_CALL_TIME_LIMIT, MAX_RPC_CALL_ATTEMPTS};
-use crate::{run_timer, EndpointError, NetworkId, SentinelError};
+use crate::{run_timer, EndpointError, SentinelError};
 
 const RPC_CMD: &str = "qn_getBlockWithReceipts";
 

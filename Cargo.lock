@@ -4348,6 +4348,7 @@ dependencies = [
  "lazy_static",
  "log",
  "metadata",
+ "network_ids",
  "paste",
  "rand 0.8.5",
  "rbtag",

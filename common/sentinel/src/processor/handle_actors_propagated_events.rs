@@ -2,9 +2,10 @@ use std::result::Result;
 
 use common::DatabaseInterface;
 use common_eth::EthSubmissionMaterial;
+use common_network_ids::NetworkId;
 use ethereum_types::Address as EthAddress;
 
-use crate::{Actor, Actors, NetworkId, SentinelDbUtils, SentinelError};
+use crate::{Actor, Actors, SentinelDbUtils, SentinelError};
 
 pub(super) fn maybe_handle_actors_propagated_events<D: DatabaseInterface>(
     db_utils: &SentinelDbUtils<D>,

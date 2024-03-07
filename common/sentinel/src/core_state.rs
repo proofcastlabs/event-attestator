@@ -3,10 +3,11 @@ use std::result::Result;
 use common::DatabaseInterface;
 use common_eth::{ChainDbUtils, ChainError, ChainState};
 use common_metadata::MetadataChainId;
+use common_network_ids::{NetworkId, NetworkIdError};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
-use crate::{NetworkId, NetworkIdError, SentinelError};
+use crate::SentinelError;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CoreState {

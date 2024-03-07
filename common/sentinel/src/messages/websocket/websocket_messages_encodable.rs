@@ -2,13 +2,13 @@ use std::{fmt, str::FromStr};
 
 use base64::{engine::general_purpose, Engine};
 use common_debug_signers::DebugSignature;
+use common_network_ids::NetworkId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use serde::{Deserialize, Serialize};
 use serde_json::Value as Json;
 
 use super::WebSocketMessagesEncodableDbOps;
 use crate::{
-    NetworkId,
     SentinelError,
     UserOpUniqueId,
     WebSocketMessagesCancelUserOpArgs,

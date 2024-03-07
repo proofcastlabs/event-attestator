@@ -1,5 +1,6 @@
 use std::{fmt, str::FromStr};
 
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
@@ -7,7 +8,7 @@ use serde_json::Value as Json;
 use serde_with::{serde_as, DisplayFromStr};
 use thiserror::Error;
 
-use crate::{get_utc_timestamp, NetworkId, SentinelError, WebSocketMessagesEncodable};
+use crate::{get_utc_timestamp, SentinelError, WebSocketMessagesEncodable};
 
 #[derive(Debug, Error)]
 pub enum DeltaError {

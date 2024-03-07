@@ -1,9 +1,10 @@
 use common_eth::DefaultBlockParameter;
+use common_network_ids::NetworkId;
 use ethereum_types::Address as EthAddress;
 use jsonrpsee::ws_client::WsClient;
 
 use super::eth_call;
-use crate::{NetworkId, SentinelError, UserOp, UserOpSmartContractState};
+use crate::{SentinelError, UserOp, UserOpSmartContractState};
 
 pub async fn get_user_op_state(
     user_op: &UserOp,

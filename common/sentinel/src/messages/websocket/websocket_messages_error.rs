@@ -1,11 +1,12 @@
 use common::AppError as CommonError;
 use common_eth::{ChainError, NoParentError};
+use common_network_ids::NetworkId;
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as Json;
 use thiserror::Error;
 
-use crate::{NetworkId, SentinelError};
+use crate::SentinelError;
 
 #[derive(Clone, Error, Debug, PartialEq, Serialize, Deserialize)]
 pub enum WebSocketMessagesError {

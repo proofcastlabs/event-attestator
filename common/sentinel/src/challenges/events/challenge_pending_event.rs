@@ -33,6 +33,7 @@ impl ChallengePendingEvents {
 
 #[cfg(test)]
 mod tests {
+    use common_network_ids::NetworkId;
     use ethereum_types::U256;
 
     use super::*;
@@ -42,7 +43,6 @@ mod tests {
             get_sample_sub_mat_with_challenge_pending_event,
         },
         ActorType,
-        NetworkId,
     };
 
     fn get_expected_challenge_event() -> ChallengeEvent {

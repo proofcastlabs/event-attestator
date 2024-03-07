@@ -1,6 +1,7 @@
 use std::fmt;
 
 use common::{crypto_utils::keccak_hash_bytes, DatabaseInterface, MIN_DATA_SENSITIVITY_LEVEL};
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use ethabi::Token as EthAbiToken;
@@ -10,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as Json};
 
 use super::{type_aliases::Hash, Actor, Actors, ActorsError};
-use crate::{DbKey, DbUtilsT, NetworkId, SentinelDbKeys, SentinelDbUtils, SentinelError, WebSocketMessagesEncodable};
+use crate::{DbKey, DbUtilsT, SentinelDbKeys, SentinelDbUtils, SentinelError, WebSocketMessagesEncodable};
 
 type Byte = u8;
 

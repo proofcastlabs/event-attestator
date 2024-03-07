@@ -1,6 +1,7 @@
 use std::{cmp, fmt};
 
 use common_eth::EthLog;
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
@@ -15,7 +16,7 @@ use super::{
     EXECUTED_USER_OP_TOPIC,
     WITNESSED_USER_OP_TOPIC,
 };
-use crate::{get_utc_timestamp, Actor, ActorType, NetworkId};
+use crate::{get_utc_timestamp, Actor, ActorType};
 
 lazy_static! {
     // NOTE: The zero address is a standin for _this_ sentinel, since we don't easily

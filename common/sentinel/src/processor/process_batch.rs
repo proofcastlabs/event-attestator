@@ -2,6 +2,7 @@ use std::result::Result;
 
 use common::DatabaseInterface;
 use common_eth::{Chain, ChainDbUtils, EthSubmissionMaterials};
+use common_network_ids::NetworkId;
 use ethereum_types::Address as EthAddress;
 
 use super::{
@@ -10,7 +11,7 @@ use super::{
     maybe_handle_challenge_solved_events,
     process_single,
 };
-use crate::{NetworkId, ProcessorOutput, SentinelDbUtils, SentinelError, UserOps};
+use crate::{ProcessorOutput, SentinelDbUtils, SentinelError, UserOps};
 
 pub fn process_batch<D: DatabaseInterface>(
     db: &D,

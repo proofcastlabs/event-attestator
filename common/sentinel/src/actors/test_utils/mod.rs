@@ -2,12 +2,10 @@
 use std::{fs::read_to_string, str::FromStr};
 
 use common_eth::{EthLog, EthSubmissionMaterial};
+use common_network_ids::NetworkId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 
-use crate::{
-    actors::{Actor, ActorType, Actors},
-    NetworkId,
-};
+use crate::actors::{Actor, ActorType, Actors};
 
 pub fn get_sample_actors_propagated_sub_mat() -> EthSubmissionMaterial {
     EthSubmissionMaterial::from_str(

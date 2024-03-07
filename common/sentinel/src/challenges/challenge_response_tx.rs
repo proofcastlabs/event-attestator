@@ -1,11 +1,12 @@
 use common::Bytes;
 use common_chain_ids::EthChainId;
 use common_eth::{encode_fxn_call, EthPrivateKey, EthTransaction};
+use common_network_ids::NetworkId;
 use ethabi::Token as EthAbiToken;
 use ethereum_types::{Address as EthAddress, U256};
 
 use super::{Challenge, ChallengeResponseSignatureInfo, ChallengesError};
-use crate::{ActorType, NetworkId};
+use crate::ActorType;
 
 const RESPONSE_FXN_ABI: &str = "[{\"inputs\":[{\"components\":[{\"internalType\":\"uint256\",\"name\":\"nonce\",\"type\":\"uint256\"},{\"internalType\":\"address\",\"name\":\"actor\",\"type\":\"address\"},{\"internalType\":\"address\",\"name\":\"challenger\",\"type\":\"address\"},{\"internalType\":\"enum IPNetworkHub.ActorTypes\",\"name\":\"actorType\",\"type\":\"uint8\"},{\"internalType\":\"uint64\",\"name\":\"timestamp\",\"type\":\"uint64\"},{\"internalType\":\"bytes4\",\"name\":\"networkId\",\"type\":\"bytes4\"}],\"internalType\":\"struct IPNetworkHub.Challenge\",\"name\":\"challenge\",\"type\":\"tuple\"},{\"internalType\":\"enum IPNetworkHub.ActorTypes\",\"name\":\"actorType\",\"type\":\"uint8\"},{\"internalType\":\"bytes32[]\",\"name\":\"proof\",\"type\":\"bytes32[]\"},{\"internalType\":\"bytes\",\"name\":\"signature\",\"type\":\"bytes\"}],\"name\":\"solveChallenge\",\"outputs\":[],\"stateMutability\":\"nonpayable\",\"type\":\"function\"}]";
 

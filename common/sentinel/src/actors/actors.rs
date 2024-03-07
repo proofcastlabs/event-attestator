@@ -1,13 +1,13 @@
 use std::fmt;
 
 use common_eth::{EthReceipts, EthSubmissionMaterial};
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
 
 use super::{type_aliases::Hash, Actor, ActorsError, ActorsPropagatedEvent, ACTORS_PROPAGATED_EVENT_TOPIC};
-use crate::NetworkId;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Constructor, Getters, Serialize, Deserialize)]
 pub struct Actors {

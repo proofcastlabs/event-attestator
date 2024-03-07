@@ -100,12 +100,10 @@ mod tests {
     use std::str::FromStr;
 
     use common_eth::convert_hex_to_eth_address;
+    use common_network_ids::NetworkId;
 
     use super::*;
-    use crate::{
-        user_ops::{test_utils::get_sub_mat_with_enqueued_user_op, UserOps},
-        NetworkId,
-    };
+    use crate::user_ops::{test_utils::get_sub_mat_with_enqueued_user_op, UserOps};
 
     #[test]
     fn should_get_user_op_cancellation_tx_correctly() {

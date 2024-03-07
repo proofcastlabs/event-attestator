@@ -42,6 +42,7 @@ impl TryFrom<WebSocketMessagesEncodable> for Challenges {
 mod tests {
     use std::str::FromStr;
 
+    use common_network_ids::NetworkId;
     use ethereum_types::{H256 as EthHash, U256};
 
     use super::*;
@@ -52,7 +53,6 @@ mod tests {
         },
         Actor,
         ActorType,
-        NetworkId,
     };
 
     fn get_expected_challenge() -> Challenge {

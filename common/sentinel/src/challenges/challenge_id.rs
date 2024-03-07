@@ -37,10 +37,11 @@ impl Challenge {
 mod tests {
     use std::str::FromStr;
 
+    use common_network_ids::NetworkId;
     use ethereum_types::{Address as EthAddress, U256};
 
     use super::*;
-    use crate::{Actor, ActorType, NetworkId};
+    use crate::{Actor, ActorType};
 
     #[test]
     fn should_get_expected_challenge_id() {

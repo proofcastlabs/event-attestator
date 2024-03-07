@@ -24,7 +24,7 @@ pub enum ChallengesError {
     CannotGetChallengeStateFrom(String),
 
     #[error("challenges network id error: {0}")]
-    NetworkId(#[from] crate::NetworkIdError),
+    NetworkId(#[from] common_network_ids::NetworkIdError),
 
     #[error("challenges app error: {0}")]
     AppError(#[from] common::AppError),

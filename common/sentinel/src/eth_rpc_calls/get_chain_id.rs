@@ -1,11 +1,12 @@
 use std::result::Result;
 
 use common::strip_hex_prefix;
+use common_network_ids::NetworkId;
 use jsonrpsee::{core::client::ClientT, rpc_params, ws_client::WsClient};
 use tokio::time::{sleep, Duration};
 
 use super::{ETH_RPC_CALL_TIME_LIMIT, MAX_RPC_CALL_ATTEMPTS};
-use crate::{run_timer, EndpointError, NetworkId, SentinelError};
+use crate::{run_timer, EndpointError, SentinelError};
 
 const RPC_CMD: &str = "eth_chainId";
 

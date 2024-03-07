@@ -4,6 +4,7 @@ use std::{
 };
 
 use common_eth::{Chain, ChainBlockData, EthPrivateKey, EthSignature, EthSigningCapabilities};
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use rbtag::{BuildDateTime, BuildInfo};
@@ -11,7 +12,7 @@ use serde::{Deserialize, Serialize, Serializer};
 use serde_json::json;
 use thiserror::Error;
 
-use crate::{get_utc_timestamp, NetworkId, SentinelError, WebSocketMessagesEncodable};
+use crate::{get_utc_timestamp, SentinelError, WebSocketMessagesEncodable};
 
 /* JSON Reference:
 {

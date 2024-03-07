@@ -1,19 +1,13 @@
 use common::DatabaseInterface;
 use common_chain_ids::EthChainId;
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
 use super::{UserOp, UserOpError, UserOpList, UserOpState, UserOpStates, UserOps, USER_OP_CANCEL_TX_GAS_LIMIT};
-use crate::{
-    LatestBlockInfos,
-    NetworkId,
-    SentinelDbUtils,
-    SentinelError,
-    WebSocketMessagesEncodable,
-    WebSocketMessagesError,
-};
+use crate::{LatestBlockInfos, SentinelDbUtils, SentinelError, WebSocketMessagesEncodable, WebSocketMessagesError};
 
 #[derive(Clone, Debug, Eq, Default, PartialEq, Serialize, Deserialize, Constructor, Deref, DerefMut)]
 pub struct CancellableUserOps(Vec<CancellableUserOp>);

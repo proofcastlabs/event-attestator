@@ -1,10 +1,11 @@
 use std::result::Result;
 
+use common_network_ids::NetworkId;
 use jsonrpsee::{core::client::ClientT, rpc_params, ws_client::WsClient};
 use tokio::time::{sleep, Duration};
 
 use super::constants::{ETH_RPC_CALL_TIME_LIMIT, MAX_RPC_CALL_ATTEMPTS};
-use crate::{constants::HEX_RADIX, endpoints::EndpointError, utils::run_timer, NetworkId, SentinelError};
+use crate::{constants::HEX_RADIX, endpoints::EndpointError, utils::run_timer, SentinelError};
 
 const RPC_CMD: &str = "eth_blockNumber";
 

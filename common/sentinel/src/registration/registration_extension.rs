@@ -1,9 +1,10 @@
 use common_chain_ids::EthChainId;
 use common_eth::{encode_fxn_call, EthPrivateKey, EthTransaction};
+use common_network_ids::NetworkId;
 use ethabi::Token as EthAbiToken;
 use ethereum_types::{Address as EthAddress, U256};
 
-use crate::{NetworkId, SentinelError};
+use crate::SentinelError;
 
 const REGISTRATION_EXTENSION_GAS_LIMIT: usize = 100_000;
 

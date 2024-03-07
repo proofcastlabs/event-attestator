@@ -1,6 +1,7 @@
 use common::AppError as CommonError;
 use common_chain_ids::EthChainId;
 use common_metadata::MetadataChainIdError;
+use common_network_ids::NetworkId;
 use thiserror::Error;
 
 use crate::{
@@ -9,7 +10,6 @@ use crate::{
     DbIntegrity,
     DbKey,
     EthRpcMessages,
-    NetworkId,
     StatusPublisherMessages,
     SyncerMessages,
     UserOpCancellerMessages,
@@ -118,7 +118,7 @@ pub enum SentinelError {
     KeyExists(DbKey),
 
     #[error("network ID error: {0}")]
-    NetworkId(#[from] crate::network_id::NetworkIdError),
+    NetworkId(#[from] common_network_ids::NetworkIdError),
 
     #[error("poisoned lock encountered when accessing")]
     PoisonedLock(String),
