@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-version = "0.1.0"
+version = "0.2.0"
 name = "sentinel-lib"
 authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
 description = "shared fxnality for pTokens sentinels"
