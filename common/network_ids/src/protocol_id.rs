@@ -4,6 +4,7 @@ use common_metadata::MetadataProtocolId;
 use serde::{Deserialize, Serialize};
 #[cfg(test)]
 use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 use super::NetworkIdError;
 
