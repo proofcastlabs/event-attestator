@@ -1,14 +1,8 @@
 use std::str::FromStr;
 
 use common_eth::EthPrivateKey;
-use common_sentinel::{
-    get_registration_extension_tx,
-    EthRpcMessages,
-    EthRpcSenders,
-    NetworkId,
-    SentinelConfig,
-    SentinelError,
-};
+use common_network_ids::NetworkId;
+use common_sentinel::{get_registration_extension_tx, EthRpcMessages, EthRpcSenders, SentinelConfig, SentinelError};
 use ethereum_types::Address as EthAddress;
 use serde_json::{json, Value as Json};
 

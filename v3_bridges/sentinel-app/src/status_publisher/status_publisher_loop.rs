@@ -1,9 +1,9 @@
+use common_network_ids::NetworkId;
 use common_sentinel::{
     call_core,
     check_ipfs_daemon_is_running,
     publish_status as publish_status_via_ipfs,
     BroadcastChannelMessages,
-    NetworkId,
     SentinelConfig,
     SentinelError,
     SentinelStatus,

@@ -1,4 +1,5 @@
-use common_sentinel::{call_core, NetworkId, SentinelError, WebSocketMessagesEncodable, WebSocketMessagesError};
+use common_network_ids::NetworkId;
+use common_sentinel::{call_core, SentinelError, WebSocketMessagesEncodable, WebSocketMessagesError};
 
 use crate::{
     rpc_server::{RpcCalls, RpcParams, STRONGBOX_TIMEOUT},

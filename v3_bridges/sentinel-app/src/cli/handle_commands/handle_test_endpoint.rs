@@ -1,6 +1,7 @@
 use std::result::Result;
 
-use common_sentinel::{Endpoints, NetworkId, SentinelError};
+use common_network_ids::NetworkId;
+use common_sentinel::{Endpoints, SentinelError};
 use tokio::time::{sleep, Duration};
 
 pub async fn handle_test_endpoint(endpoint: String) -> Result<String, SentinelError> {

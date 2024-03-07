@@ -2,6 +2,7 @@ use std::result::Result;
 
 use common_chain_ids::EthChainId;
 use common_eth::EthPrivateKey;
+use common_network_ids::NetworkId;
 use common_sentinel::{
     call_core,
     BroadcastChannelMessages,
@@ -10,7 +11,6 @@ use common_sentinel::{
     Env,
     EthRpcMessages,
     EthRpcSenders,
-    NetworkId,
     SentinelConfig,
     SentinelError,
     UserOpCancellationSignature,

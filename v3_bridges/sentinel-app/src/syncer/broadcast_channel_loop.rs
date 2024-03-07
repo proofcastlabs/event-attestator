@@ -1,4 +1,5 @@
-use common_sentinel::{BroadcastChannelMessages, NetworkId, SentinelError, SyncerBroadcastChannelMessages};
+use common_network_ids::NetworkId;
+use common_sentinel::{BroadcastChannelMessages, SentinelError, SyncerBroadcastChannelMessages};
 
 use crate::type_aliases::BroadcastChannelRx;
 
