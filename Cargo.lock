@@ -4268,7 +4268,7 @@ checksum = "b97ed7a9823b74f99c7742f5336af7be5ecd3eeafcb1507d1fa93347b1d589b0"
 
 [[package]]
 name = "sentinel-app"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "axum",
@@ -4297,6 +4297,7 @@ dependencies = [
  "lazy_static",
  "log",
  "metadata",
+ "network_ids",
  "paste",
  "reqwest",
  "sentinel-lib",
