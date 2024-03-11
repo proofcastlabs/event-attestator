@@ -2,7 +2,7 @@
 license = "MIT"
 publish = false
 edition = "2021"
-version = "1.6.0"
+version = "1.7.0"
 name = "int_on_evm"
 readme = "README.md"
 rust-version = "1.56"
@@ -12,6 +12,11 @@ authors = ["Greg Kapka <gregkapka@gmail.com>"]
 [features]
 # NOTE: Turns off block header & chain validation.
 non-validating = ["common_eth/non-validating"]
+
+# NOTE: Normally the peg-in event coming from the interim chain will have origin details pertaining
+# to that interim chain. With this feature enabled, we instead look for the metadata event fired by
+# the router on the interim chain and gather the true originating tx details from that instead.
+include-origin-tx-details = ["common_chain_ids/include-origin-tx-details"]
 
 [dependencies]
 hex = { workspace = true }
@@ -35,6 +40,9 @@ common_enclave_info = { workspace = true }
 common_debug_signers = { workspace = true }
 common_safe_addresses = { workspace = true }
 common_database_utils = { workspace = true }
+
+[dev-dependencies]
+simple_logger = { workspace = true }
 
 [lib]
 doctest = false

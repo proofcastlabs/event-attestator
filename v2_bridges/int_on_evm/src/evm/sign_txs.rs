@@ -109,7 +109,9 @@ pub fn maybe_sign_eth_txs_and_add_to_evm_state<D: DatabaseInterface>(state: EthS
     }
 }
 
-#[cfg(test)]
+// NOTE: Including origin tx details provisions more gas to txs, which changes tx encoding, hence
+// cause test failures.
+#[cfg(all(test, not(feature = "include-origin-tx-details")))]
 mod tests {
     use common_eth::EthTxInfoCompatible;
 

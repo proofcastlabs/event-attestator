@@ -13,8 +13,6 @@ lazy_static! {
         convert_hex_to_eth_address("0x5979f50f1d4c08f9a53863c2f39a7b0492c38d0f").expect("this not to fail");
     pub static ref PIQ_ADDRESS: EthAddress =
         convert_hex_to_eth_address("0xa23d33d5e0a61ba81919bfd727c671bb03ab0fea").expect("this not to fail");
-    pub static ref PNT_ON_GNOSIS_ADDRESS: EthAddress =
-        convert_hex_to_eth_address("0x0259461eed4d76d4f0f900f9035f6c4dfb39159a").expect("this not to fail");
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -22,7 +20,6 @@ pub enum V1Addresses {
     PIQ,
     PLTC,
     PTLOS,
-    PntOnGnosis,
 }
 
 impl V1Addresses {
@@ -38,7 +35,6 @@ impl V1Addresses {
             Self::PIQ => MetadataChainId::EosMainnet,
             Self::PTLOS => MetadataChainId::TelosMainnet,
             Self::PLTC => MetadataChainId::LitecoinMainnet,
-            Self::PntOnGnosis => MetadataChainId::EthereumMainnet,
         }
     }
 }
@@ -53,8 +49,6 @@ impl TryFrom<&EthAddress> for V1Addresses {
             Ok(Self::PLTC)
         } else if e == &*PIQ_ADDRESS {
             Ok(Self::PIQ)
-        } else if e == &*PNT_ON_GNOSIS_ADDRESS {
-            Ok(Self::PntOnGnosis)
         } else {
             Err("could not convert address {e} to v1 token address".into())
         }
@@ -67,7 +61,6 @@ impl fmt::Display for V1Addresses {
             Self::PIQ => "pIQ",
             Self::PLTC => "pLTC",
             Self::PTLOS => "pTLOS",
-            Self::PntOnGnosis => "pPNT-on-gnosis",
         };
         write!(f, "{s}")
     }

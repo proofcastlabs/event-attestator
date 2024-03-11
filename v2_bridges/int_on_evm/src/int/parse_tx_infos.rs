@@ -8,6 +8,7 @@ use common_eth::{
     EthReceipt,
     EthState,
     EthSubmissionMaterial,
+    PTokensRouterMetadataEvent,
     ERC20_VAULT_PEG_IN_EVENT_TOPIC_V2,
 };
 use ethereum_types::Address as EthAddress;
@@ -55,6 +56,7 @@ impl IntOnEvmEvmTxInfos {
                         origin_chain_id: event_params.get_origin_chain_id()?,
                         destination_address: event_params.destination_address.clone(),
                         destination_chain_id: event_params.get_destination_chain_id()?,
+                        metadata_event: PTokensRouterMetadataEvent::try_from(receipt).ok(),
                         evm_token_address: dictionary.get_evm_address_from_eth_address(&event_params.token_address)?,
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);

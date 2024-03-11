@@ -75,12 +75,20 @@ impl FromStr for EthChainId {
     }
 }
 
+#[cfg(not(feature = "include-origin-tx-details"))]
+const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
+#[cfg(feature = "include-origin-tx-details")]
+const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 1_000_000;
+
+#[cfg(not(feature = "include-origin-tx-details"))]
+const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 450_000;
+#[cfg(feature = "include-origin-tx-details")]
+const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 1_000_000;
+
 const ARBITRUM_GAS_MULTIPLIER: usize = 10;
 const ERC777_CHANGE_PNETWORK_GAS_LIMIT: usize = 30_000;
 const ERC20_VAULT_MIGRATE_GAS_LIMIT: usize = 2_000_000;
-const ERC777_MINT_WITH_DATA_GAS_LIMIT: usize = 450_000;
 const ERC777_MINT_WITH_NO_DATA_GAS_LIMIT: usize = 180_000;
-const ERC20_VAULT_PEGOUT_WITH_USER_DATA_GAS_LIMIT: usize = 450_000;
 const ERC20_VAULT_CHANGE_SUPPORTED_TOKEN_GAS_LIMIT: usize = 100_000;
 const ERC20_VAULT_PEGOUT_WITHOUT_USER_DATA_GAS_LIMIT: usize = 250_000;
 

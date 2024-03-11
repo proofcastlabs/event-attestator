@@ -101,7 +101,7 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
         })
 }
 
-#[cfg(test)]
+#[cfg(all(test, not(feature = "include-origin-tx-details")))]
 mod tests {
     use std::fs::read_to_string;
 
@@ -129,6 +129,7 @@ mod tests {
             get_sample_vault_address,
         },
     };
+
     #[test]
     fn should_submit_int_block_successfully() {
         let db = get_test_database();
@@ -209,5 +210,125 @@ mod tests {
         let expected_result = IntOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = IntOutput::from_str(&output).unwrap();
         assert_eq!(result, expected_result);
+    }
+}
+
+#[cfg(all(test, feature = "include-origin-tx-details"))]
+mod tests {
+    use common::{dictionaries::eth_evm::EthEvmTokenDictionary, test_utils::get_test_database};
+    use common_chain_ids::EthChainId;
+    use common_eth::{
+        convert_hex_to_eth_address,
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+        initialize_evm_core_with_no_contract_tx,
+        EthDbUtilsExt,
+        EthPrivateKey,
+        EvmDbUtils,
+        VaultUsingCores,
+    };
+    use ethereum_types::Address as EthAddress;
+    use serde_json::json;
+
+    use super::*;
+    use crate::{
+        int::get_int_output_json::IntOutput,
+        test_utils::{
+            get_sample_evm_init_block_json_string,
+            get_sample_peg_in_with_origin_tx_details,
+            get_sample_peg_in_with_origin_tx_details_init_block,
+            get_sample_router_address,
+            get_sample_token_dictionary_entry_2,
+        },
+    };
+
+    #[test]
+    fn should_pass_through_origin_chain_tx_details() {
+        let db = get_test_database();
+        let router_address = get_sample_router_address();
+        let vault_address = EthAddress::from_str("857831740fa65f22eabdbc703a5b512edf9fa4df").unwrap();
+        let confirmations = 0;
+        let gas_price = 20_000_000_000;
+        // NOTE: Initialize the INT side of the core...
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &get_sample_peg_in_with_origin_tx_details_init_block(),
+            &EthChainId::InterimChain,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::IntOnEvm,
+            true, // NOTE: is_native
+        )
+        .unwrap();
+        // NOTE: Initialize the EVM side of the core...
+        initialize_evm_core_with_no_contract_tx(
+            &get_sample_evm_init_block_json_string(),
+            &EthChainId::Ropsten,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            false, // NOTE: is_native
+        )
+        .unwrap();
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let address = convert_hex_to_eth_address("0x969c70bccf47406e6d27ec91a12e66aedc7ef23e").unwrap();
+        let private_key = EthPrivateKey::from_slice(
+            &hex::decode("f39d9bfba0555500b8b2c89cc46e90ae75fa80c23752ebae1ff31e3123d459dd").unwrap(),
+        )
+        .unwrap();
+        let db_utils = EvmDbUtils::new(&db);
+        db_utils
+            .put_eth_address_in_db(&db_utils.get_eth_address_key(), &address)
+            .unwrap();
+        db_utils.put_eth_private_key_in_db(&private_key).unwrap();
+        // NOTE: Set the nonce to match that used during the test...
+        let evm_nonce = 1;
+        db_utils.put_eth_account_nonce_in_db(evm_nonce).unwrap();
+        assert_eq!(db_utils.get_public_eth_address_from_db().unwrap(), address);
+        assert_eq!(db_utils.get_eth_private_key_from_db().unwrap(), private_key);
+        assert_eq!(db_utils.get_eth_account_nonce_from_db().unwrap(), evm_nonce);
+        // NOTE Save the token dictionary into the db...
+        EthEvmTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_token_dictionary_entry_2(), &db)
+            .unwrap();
+        let submission_string = get_sample_peg_in_with_origin_tx_details();
+        // NOTE: Finally, submit the block containing the peg in....
+        let output = submit_int_block_to_core(&db, &submission_string).unwrap();
+        let expected_result_json = json!({
+            "int_latest_block_number": 22601142,
+            "evm_signed_transactions": [{
+                "_id":"pint-on-evm-evm-1",
+                "broadcast":false,
+                "evm_tx_hash":"0xbdf4b4313195e5321f5ebe68532f55f92f76afdde3e651c104b70e22babbf9a9",
+                "evm_tx_amount":"999000000000000000",
+                "evm_tx_recipient":"0xa41657bf225f8ec7e2010c89c3f084172948264d",
+                "witnessed_timestamp":1708707488,
+                "host_token_address":"0x0259461eed4d76d4f0f900f9035f6c4dfb39159a",
+                "originating_tx_hash":"0x4b881458a053de16e9a7a76dc7e8251da6376d1179d71c55dbb2bcd701168471",
+                "originating_address":"0x54d5a0638f23f0b89053f86eed60237bbc56e98c",
+                "destination_chain_id":"0x00f1918e",
+                "native_token_address":"0xeeef86a5598a48c568cca576d9e0c15c370b50a0",
+                "evm_signed_tx":"f9036b018504a817c800830f4240940259461eed4d76d4f0f900f9035f6c4dfb39159a80b90304dcdc7dd0000000000000000000000000a41657bf225f8ec7e2010c89c3f084172948264d0000000000000000000000000000000000000000000000000ddd2935029d8000000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000002e0000000000000000000000000000000000000000000000000000000000000024003000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100005fe7f900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000014000f1918e0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001a00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000022000000000000000000000000000000000000000000000000000000000000000084630304442414245000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a30786134313635376266323235663865633765323031306338396333663038343137323934383236346400000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002a3078613431363537626632323566386563376532303130633839633366303834313732393438323634640000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000029a0dd02b203b85aa07ec04d24aa122ec0dc41562c2fa0a9cea22be5e33e4c78bac1a02e47e37ab57115af951a76cfd05c066195083382463add6fe562ecd0fb7d4047",
+                "any_sender_nonce":null,
+                "evm_account_nonce":1,
+                "evm_latest_block_number":11571205,
+                "broadcast_tx_hash":null,
+                "broadcast_timestamp":null,
+                "any_sender_tx":null
+            }]
+        });
+        let expected_result = IntOutput::from_str(&expected_result_json.to_string()).unwrap();
+        let result = IntOutput::from_str(&output).unwrap();
+        assert_eq!(result, expected_result);
+        let signed_tx = expected_result.evm_signed_transactions[0]
+            .evm_signed_tx
+            .clone()
+            .unwrap();
+
+        // NOTE: Assert that there's no mention of the interim chain in the tx.
+        assert!(!signed_tx.contains("ffffffff"));
+        // NOTE: Assert that the expected origin address exists in the tx.
+        assert!(signed_tx.contains("a41657bf225f8ec7e2010c89c3f084172948264d"));
     }
 }

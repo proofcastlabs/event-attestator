@@ -642,7 +642,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chain_ids"
-version = "1.1.0"
+version = "1.2.0"
 dependencies = [
  "bitcoin 0.29.2",
  "common",
@@ -1477,7 +1477,7 @@ dependencies = [
 
 [[package]]
 name = "ethereum"
-version = "6.14.0"
+version = "6.14.1"
 dependencies = [
  "chain_ids",
  "common",
@@ -2412,7 +2412,7 @@ dependencies = [
 
 [[package]]
 name = "int_on_evm"
-version = "1.6.0"
+version = "1.7.0"
 dependencies = [
  "chain_ids",
  "common",
@@ -2433,6 +2433,7 @@ dependencies = [
  "safe_addresses",
  "serde",
  "serde_json",
+ "simple_logger",
  "tiny-keccak 2.0.2",
 ]
 
@@ -3310,7 +3311,7 @@ dependencies = [
 
 [[package]]
 name = "pint-on-evm"
-version = "2.1.1"
+version = "2.1.2"
 dependencies = [
  "anyhow",
  "common",
