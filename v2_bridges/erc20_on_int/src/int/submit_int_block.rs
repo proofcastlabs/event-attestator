@@ -102,7 +102,9 @@ pub fn submit_int_blocks_to_core<D: DatabaseInterface>(db: &D, blocks: &str) -> 
         })
 }
 
-#[cfg(test)]
+// NOTE: Including origin tx details provisions more gas to txs, which changes tx encoding, hence
+// cause test failures.
+#[cfg(all(test, not(feature = "include-origin-tx-details")))]
 mod tests {
     use std::fs::read_to_string;
 
@@ -223,5 +225,130 @@ mod tests {
         let expected_result = IntOutput::from_str(&expected_result_json.to_string()).unwrap();
         let result = IntOutput::from_str(&core_output).unwrap();
         assert_eq!(result, expected_result)
+    }
+}
+
+#[cfg(all(test, feature = "include-origin-tx-details"))]
+mod tests {
+    use std::fs::read_to_string;
+
+    use common::{dictionaries::eth_evm::EthEvmTokenDictionary, test_utils::get_test_database};
+    use common_chain_ids::EthChainId;
+    use common_eth::{
+        convert_hex_to_eth_address,
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state,
+        initialize_evm_core_with_no_contract_tx,
+        parse_eth_submission_material_and_put_in_state,
+        EthDbUtils,
+        EthDbUtilsExt,
+        EthPrivateKey,
+        VaultUsingCores,
+    };
+    use common_eth_debug::reset_eth_chain;
+    use serde_json::json;
+
+    use super::*;
+    use crate::{
+        int::get_int_output_json::IntOutput,
+        test_utils::{
+            get_sample_eth_init_block_json_string,
+            get_sample_int_init_block_json_string,
+            get_sample_peg_out_json_string,
+            get_sample_peg_out_with_origin_tx_details,
+            get_sample_peg_out_with_origin_tx_details_init_block,
+            get_sample_token_dictionary_entry_2,
+        },
+    };
+
+    #[test]
+    fn should_pass_through_origin_chain_tx_details() {
+        let db = get_test_database();
+        let router_address = convert_hex_to_eth_address("0x0e1c8524b1D1891B201ffC7BB58a82c96f8Fc4F6").unwrap();
+        let vault_address = convert_hex_to_eth_address("0xe396757EC7E6aC7C8E5ABE7285dde47b98F22db8").unwrap();
+        let confirmations = 0;
+        let gas_price = 20_000_000_000;
+        let eth_init_block = get_sample_eth_init_block_json_string();
+        let int_init_block = get_sample_peg_out_with_origin_tx_details_init_block();
+        // NOTE: Initialize the ETH side of the core...
+        initialize_eth_core_with_vault_and_router_contracts_and_return_state(
+            &eth_init_block,
+            &EthChainId::Rinkeby,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            &vault_address,
+            &router_address,
+            &VaultUsingCores::Erc20OnInt,
+            true, // NOTE: is_native
+        )
+        .unwrap();
+        // NOTE: Initialize the INT side of the core...
+        initialize_evm_core_with_no_contract_tx(
+            &int_init_block,
+            &EthChainId::InterimChain,
+            gas_price,
+            confirmations,
+            EthState::init(&db),
+            false, // NOTE: is_native
+        )
+        .unwrap();
+        // NOTE: Overwrite the INT address & private key since it's generated randomly above...
+        let address = convert_hex_to_eth_address("f4180c63f51a6063a1b18a1dd23823ea2e0e83c1").unwrap();
+        let private_key = EthPrivateKey::from_slice(
+            &hex::decode("f2dfe3a6e74ae140c2719e5a33df77eb2cb53a5dde5fb436822f80ad001ff93c").unwrap(),
+        )
+        .unwrap();
+        let db_utils = EthDbUtils::new(&db);
+        // NOTE: Overwrite the nonce since the test sample used the 3rd nonce...
+        db_utils
+            .put_eth_address_in_db(&db_utils.get_eth_address_key(), &address)
+            .unwrap();
+        db_utils.put_eth_private_key_in_db(&private_key).unwrap();
+        assert_eq!(db_utils.get_public_eth_address_from_db().unwrap(), address,);
+        assert_eq!(db_utils.get_eth_private_key_from_db().unwrap(), private_key,);
+        // NOTE: Save the token dictionary in the db...
+        EthEvmTokenDictionary::new(vec![])
+            .add_and_update_in_db(get_sample_token_dictionary_entry_2(), &db)
+            .unwrap();
+        // NOTE: Bring the ETH chain up to the block prior to the block containing a peg-in...
+        let is_for_eth = false;
+        let submission_string = get_sample_peg_out_with_origin_tx_details();
+        // NOTE: Finally, submit the block containing the peg out....
+        let core_output = submit_int_block_to_core(&db, &submission_string).unwrap();
+        let expected_result_json = json!({
+            "int_latest_block_number": 22770077,
+            "eth_signed_transactions": [{
+                "_id": "perc20-on-int-eth-0",
+                "broadcast": false,
+                "eth_tx_hash": "0x6bb2b8c36e05553c6e23c549d159785476b2ee98192d438514168babaf4155f7",
+                "eth_tx_amount": "306523355931",
+                "eth_tx_recipient": "0xbb610bdd7cbd0d6e5e46516ac6dfe24cf79d4fa0",
+                "witnessed_timestamp": 1638960988,
+                "host_token_address": "0xa4aa256cd0288981d0e828282a39d7fca922b353",
+                "originating_tx_hash": "0x0c679dc3e8c13ad1546dbf9adb9f463bc84e4c9a7201042cbc3b8b23f54b5237",
+                "originating_address": "0x54d5a0638f23f0b89053f86eed60237bbc56e98c",
+                "native_token_address": "0x15d4c048f83bd7e37d49ea4c83a07267ec4203da",
+                "eth_signed_tx": "f8ca808504a817c8008303d09094e396757ec7e6ac7c8e5abe7285dde47b98f22db880b86483c09d42000000000000000000000000bb610bdd7cbd0d6e5e46516ac6dfe24cf79d4fa000000000000000000000000015d4c048f83bd7e37d49ea4c83a07267ec4203da000000000000000000000000000000000000000000000000000000475e373b1b2ca0a75d08ba041ad075d05135a88894fd179ee73218aec114c8494a33a698031b3ba0442c76c6983387f3ed265a38274e68fe038c2ad7030fb2fce21e80d53e60858a",
+                "any_sender_nonce": null,
+                "eth_account_nonce": 0,
+                "eth_latest_block_number": 9749607,
+                "broadcast_tx_hash": null,
+                "broadcast_timestamp": null,
+                "any_sender_tx": null,
+                "destination_chain_id": "0x00f34368",
+            }]
+        });
+        let expected_result = IntOutput::from_str(&expected_result_json.to_string()).unwrap();
+        let result = IntOutput::from_str(&core_output).unwrap();
+        assert_eq!(result, expected_result);
+        let signed_tx = expected_result.eth_signed_transactions[0]
+            .eth_signed_tx
+            .clone()
+            .unwrap();
+
+        // NOTE: Assert that there's no mention of the interim chain in the tx.
+        assert!(!signed_tx.contains("ffffffff"));
+        // NOTE: Assert that the expected origin address exists in the tx.
+        assert!(signed_tx.contains("bb610bdd7cbd0d6e5e46516ac6dfe24cf79d4fa0"));
     }
 }

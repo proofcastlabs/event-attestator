@@ -19,12 +19,14 @@ pub fn get_sample_eth_tx_infos() -> Erc20OnIntEthTxInfos {
     let dictionary = get_sample_token_dictionary();
     let material = get_sample_peg_out_submission_material();
     let origin_chain_id = EthChainId::Ropsten;
+    let destination_chain_id = EthChainId::Mainnet;
     let vault_address = get_random_eth_address();
     let router_address = get_random_eth_address();
     Erc20OnIntEthTxInfos::from_submission_material(
         &material,
         &dictionary,
         &origin_chain_id,
+        &destination_chain_id,
         &vault_address,
         &router_address,
     )
@@ -185,6 +187,34 @@ pub fn get_sample_peg_out_json_string() -> String {
 
 pub fn get_sample_peg_out_submission_material() -> EthSubmissionMaterial {
     EthSubmissionMaterial::from_str(&get_sample_peg_out_json_string()).unwrap()
+}
+
+#[cfg(feature = "include-origin-tx-details")]
+pub fn get_sample_peg_out_with_origin_tx_details() -> String {
+    read_to_string("src/test_utils/eth-submission-material-originating-tx-info.json").unwrap()
+}
+
+#[cfg(feature = "include-origin-tx-details")]
+pub fn get_sample_peg_out_with_origin_tx_details_init_block() -> String {
+    read_to_string("src/test_utils/eth-submission-material-originating-tx-info-init-block.json").unwrap()
+}
+
+#[cfg(feature = "include-origin-tx-details")]
+pub fn get_sample_token_dictionary_entry_2() -> EthEvmTokenDictionaryEntry {
+    EthEvmTokenDictionaryEntry::from_str(
+        &json!({
+          "eth_symbol": "GALA",
+          "evm_symbol": "GALA",
+          "evm_address": "0xa4aa256cd0288981d0e828282a39d7fca922b353",
+          "eth_address": "0x15d4c048f83bd7e37d49ea4c83a07267ec4203da",
+          "eth_fee_basis_points": 0,
+          "evm_fee_basis_points": 0,
+          "eth_token_decimals": 8,
+          "evm_token_decimals": 18
+        })
+        .to_string(),
+    )
+    .unwrap()
 }
 
 mod tests {

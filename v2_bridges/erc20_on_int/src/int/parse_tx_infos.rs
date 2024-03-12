@@ -9,6 +9,7 @@ use common_eth::{
     EthReceipt,
     EthState,
     EthSubmissionMaterial,
+    PTokensRouterMetadataEvent,
     ERC777_REDEEM_EVENT_TOPIC_V2,
 };
 use ethereum_types::Address as EthAddress;
@@ -53,6 +54,7 @@ impl Erc20OnIntEthTxInfos {
         receipt: &EthReceipt,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        destination_chain_id: &EthChainId,
         vault_address: &EthAddress,
         router_address: &EthAddress,
     ) -> Result<Self> {
@@ -76,8 +78,10 @@ impl Erc20OnIntEthTxInfos {
                         originating_tx_hash: receipt.transaction_hash,
                         eth_token_address: dictionary.get_eth_address_from_evm_address(&log.address)?,
                         destination_address: event_params.underlying_asset_recipient,
+                        destination_chain_id: destination_chain_id.clone(),
                         native_token_amount: dictionary
                             .convert_evm_amount_to_eth_amount(&log.address, event_params.value)?,
+                        metadata_event: PTokensRouterMetadataEvent::try_from(receipt).ok(),
                     };
                     info!("✔ Parsed tx info: {:?}", tx_info);
                     Ok(tx_info)
@@ -90,6 +94,7 @@ impl Erc20OnIntEthTxInfos {
         submission_material: &EthSubmissionMaterial,
         dictionary: &EthEvmTokenDictionary,
         origin_chain_id: &EthChainId,
+        destination_chain_id: &EthChainId,
         vault_address: &EthAddress,
         router_address: &EthAddress,
     ) -> Result<Self> {
@@ -99,7 +104,14 @@ impl Erc20OnIntEthTxInfos {
                 .get_receipts()
                 .iter()
                 .map(|receipt| {
-                    Self::from_eth_receipt(receipt, dictionary, origin_chain_id, vault_address, router_address)
+                    Self::from_eth_receipt(
+                        receipt,
+                        dictionary,
+                        origin_chain_id,
+                        destination_chain_id,
+                        vault_address,
+                        router_address,
+                    )
                 })
                 .collect::<Result<Vec<Erc20OnIntEthTxInfos>>>()?
                 .into_iter()
@@ -131,6 +143,7 @@ pub fn maybe_parse_tx_info_from_canon_block_and_add_to_state<D: DatabaseInterfac
                             &submission_material,
                             &account_names,
                             &state.evm_db_utils.get_eth_chain_id_from_db()?,
+                            &state.eth_db_utils.get_eth_chain_id_from_db()?,
                             &state.evm_db_utils.get_erc20_on_evm_smart_contract_address_from_db()?,
                             &state.eth_db_utils.get_eth_router_smart_contract_address_from_db()?,
                         )
@@ -157,6 +170,7 @@ mod tests {
     fn should_get_erc20_on_evm_eth_tx_info_from_submission_material() {
         let dictionary = get_sample_token_dictionary();
         let origin_chain_id = EthChainId::Ropsten;
+        let destination_chain_id = EthChainId::Mainnet;
         let material = get_sample_peg_out_submission_material();
         let vault_address = get_random_eth_address();
         let router_address = get_random_eth_address();
@@ -164,6 +178,7 @@ mod tests {
             &material,
             &dictionary,
             &origin_chain_id,
+            &destination_chain_id,
             &vault_address,
             &router_address,
         )
@@ -172,6 +187,7 @@ mod tests {
         assert_eq!(results.len(), expected_num_results);
         let result = results[0].clone();
         assert_eq!(result.origin_chain_id, origin_chain_id);
+        assert_eq!(result.destination_chain_id, destination_chain_id);
         assert_eq!(result.user_data, hex::decode("decaff").unwrap());
         assert_eq!(result.native_token_amount, U256::from_dec_str("665").unwrap());
         assert_eq!(result.token_sender, get_sample_router_address());
