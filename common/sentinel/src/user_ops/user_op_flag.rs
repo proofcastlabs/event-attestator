@@ -121,11 +121,11 @@ impl UserOpFlag {
 
 #[cfg(test)]
 mod tests {
+    use common_network_ids::NetworkId;
     use ethereum_types::H256 as EthHash;
     use strum::IntoEnumIterator;
 
     use super::*;
-    use crate::NetworkId;
 
     #[test]
     fn default_should_have_no_flag_set() {

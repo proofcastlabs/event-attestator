@@ -2,9 +2,10 @@ use std::result::Result;
 
 use common::DatabaseInterface;
 use common_eth::{Chain, ChainDbUtils, EthSubmissionMaterial};
+use common_network_ids::NetworkId;
 use ethereum_types::Address as EthAddress;
 
-use crate::{NetworkId, SentinelDbUtils, SentinelError, UserOpList, UserOps};
+use crate::{SentinelDbUtils, SentinelError, UserOpList, UserOps};
 
 pub(super) fn process_single<D: DatabaseInterface>(
     db: &D,

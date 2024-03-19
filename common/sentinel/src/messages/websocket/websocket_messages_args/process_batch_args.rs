@@ -1,10 +1,9 @@
 use common_eth::EthSubmissionMaterials;
+use common_network_ids::NetworkId;
 use derive_getters::{Dissolve, Getters};
 use derive_more::Constructor;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
-
-use crate::NetworkId;
 
 #[derive(Debug, Clone, PartialEq, Constructor, Serialize, Deserialize, Getters, Dissolve)]
 pub struct WebSocketMessagesProcessBatchArgs {

@@ -2,6 +2,7 @@ use std::{convert::TryFrom, fmt};
 
 use common::{Byte, Bytes, MIN_DATA_SENSITIVITY_LEVEL};
 use common_eth::EthLog;
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethabi::{encode as eth_abi_encode, Token as EthAbiToken};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
@@ -10,7 +11,7 @@ use serde_with::{serde_as, DisplayFromStr};
 use sha2::{Digest, Sha256};
 
 use super::{UserOpError, UserOpFlag, UserOpLog, UserOpState, UserOpVersion};
-use crate::{DbKey, DbUtilsT, NetworkId, SentinelError};
+use crate::{DbKey, DbUtilsT, SentinelError};
 
 impl DbUtilsT for UserOp {
     fn key(&self) -> Result<DbKey, SentinelError> {

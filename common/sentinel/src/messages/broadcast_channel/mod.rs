@@ -4,7 +4,7 @@ mod status_publisher;
 mod syncer;
 mod user_op_canceller;
 
-use crate::NetworkId;
+use common_network_ids::NetworkId;
 
 #[derive(Debug, Clone)]
 pub enum BroadcastChannelMessages {

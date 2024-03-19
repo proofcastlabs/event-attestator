@@ -1,10 +1,5 @@
-use common_sentinel::{
-    BroadcastChannelMessages,
-    NetworkId,
-    NetworkIdError,
-    SentinelError,
-    SyncerBroadcastChannelMessages,
-};
+use common_network_ids::{NetworkId, NetworkIdError};
+use common_sentinel::{BroadcastChannelMessages, SentinelError, SyncerBroadcastChannelMessages};
 use serde_json::{json, Value as Json};
 
 use crate::{

@@ -1,6 +1,5 @@
+use common_network_ids::NetworkId;
 use thiserror::Error;
-
-use crate::NetworkId;
 
 #[derive(Error, Debug)]
 pub enum EndpointError {

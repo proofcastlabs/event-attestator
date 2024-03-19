@@ -1,10 +1,11 @@
 use std::result::Result;
 
 use common_eth::EthSubmissionMaterial;
+use common_network_ids::NetworkId;
 use jsonrpsee::ws_client::WsClient;
 
 use super::get_quicknode_sub_mat::get_quicknode_sub_mat;
-use crate::{get_block, get_receipts, NetworkId, SentinelError};
+use crate::{get_block, get_receipts, SentinelError};
 
 pub async fn get_sub_mat_inner(
     ws_client: &WsClient,

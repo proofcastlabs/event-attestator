@@ -1,10 +1,11 @@
 use std::fmt;
 
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as Json;
 
-use crate::{get_utc_timestamp, NetworkId, SentinelError, UserOps};
+use crate::{get_utc_timestamp, SentinelError, UserOps};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize, Getters)]
 pub struct ProcessorOutput {

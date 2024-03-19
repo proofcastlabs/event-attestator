@@ -1,9 +1,8 @@
+use common_network_ids::NetworkId;
 use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::U256;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
-
-use crate::NetworkId;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Deref, DerefMut, Constructor)]
 pub struct Balances(Vec<Balance>);

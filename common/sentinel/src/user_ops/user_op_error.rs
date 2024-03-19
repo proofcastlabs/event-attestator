@@ -35,7 +35,7 @@ pub enum UserOpError {
     NotWitnessed(Box<UserOp>),
 
     #[error("user op network id error: {0}")]
-    NetworkId(#[from] crate::NetworkIdError),
+    NetworkId(#[from] common_network_ids::NetworkIdError),
 
     #[error("ethabi error: {0}")]
     EthAbi(#[from] ethabi::Error),

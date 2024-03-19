@@ -1,5 +1,6 @@
 use std::{collections::HashMap, result::Result};
 
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::Address as EthAddress;
 use log::Level as LogLevel;
@@ -18,7 +19,6 @@ use crate::{
         SentinelCoreConfig,
     },
     Endpoints,
-    NetworkId,
     SentinelError,
 };
 

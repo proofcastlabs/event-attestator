@@ -2,15 +2,13 @@ use std::convert::TryFrom;
 
 use common::Bytes;
 use common_eth::{EthLog, EthLogExt};
+use common_network_ids::NetworkId;
 use derive_getters::{Dissolve, Getters};
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    user_ops::{UserOp, UserOpError},
-    NetworkId,
-};
+use crate::user_ops::{UserOp, UserOpError};
 
 // NOTE: See example here: https://bscscan.com/tx/0x1b245f033511dd60a5d50094c92c3d023ae81cb5d261a8824adff8429debf756
 

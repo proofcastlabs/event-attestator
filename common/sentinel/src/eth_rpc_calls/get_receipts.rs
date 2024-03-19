@@ -1,6 +1,7 @@
 use std::result::Result;
 
 use common_eth::{EthReceipt, EthReceipts};
+use common_network_ids::NetworkId;
 use ethereum_types::H256 as EthHash;
 use futures::{stream, Future, Stream, StreamExt};
 use jsonrpsee::{
@@ -12,7 +13,7 @@ use serde_json::Value as JsonValue;
 use tokio::time::{sleep, Duration};
 
 use super::MAX_RPC_CALL_ATTEMPTS;
-use crate::{run_timer, EndpointError, NetworkId, SentinelError};
+use crate::{run_timer, EndpointError, SentinelError};
 
 const MAX_CONCURRENT_REQUESTS: usize = 250;
 const RPC_CMD: &str = "eth_getTransactionReceipt";

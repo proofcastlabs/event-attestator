@@ -2,10 +2,11 @@
 use std::{env, fs::read_to_string, str::FromStr};
 
 use common_eth::EthSubmissionMaterial;
+use common_network_ids::NetworkId;
 use dotenv::dotenv;
 use jsonrpsee::ws_client::WsClient;
 
-use crate::{endpoints::get_rpc_client, Batch, Endpoints, NetworkId, SentinelError};
+use crate::{endpoints::get_rpc_client, Batch, Endpoints, SentinelError};
 
 const ENV_VAR: &str = "TEST_ENDPOINT";
 

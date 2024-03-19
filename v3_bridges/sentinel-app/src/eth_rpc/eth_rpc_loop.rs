@@ -1,5 +1,6 @@
 use std::result::Result;
 
+use common_network_ids::NetworkId;
 use common_sentinel::{
     eth_call,
     get_challenge_state,
@@ -13,7 +14,6 @@ use common_sentinel::{
     BroadcastChannelMessages,
     Endpoints,
     EthRpcMessages,
-    NetworkId,
     SentinelConfig,
     SentinelError,
 };

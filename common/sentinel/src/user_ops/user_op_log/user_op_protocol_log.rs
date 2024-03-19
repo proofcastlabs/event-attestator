@@ -2,14 +2,12 @@ use std::convert::TryFrom;
 
 use common::Bytes;
 use common_eth::{EthLog, EthLogExt};
+use common_network_ids::NetworkId;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType};
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    user_ops::{UserOp, UserOpError},
-    NetworkId,
-};
+use crate::user_ops::{UserOp, UserOpError};
 // NOTE: A protocol cancellation log also includes information pertaining to the actor who
 // performed the cancellation. The actor's address & type are indexed, and so appear in the topic
 // list, meaning the rest of the log is parsable by the same logic below as other protocol logs.

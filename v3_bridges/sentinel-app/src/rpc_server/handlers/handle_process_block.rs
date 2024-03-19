@@ -1,9 +1,9 @@
 use common_eth::EthSubmissionMaterials;
+use common_network_ids::NetworkId;
 use common_sentinel::{
     call_core,
     EthRpcMessages,
     EthRpcSenders,
-    NetworkId,
     SentinelConfig,
     SentinelError,
     WebSocketMessagesEncodable,

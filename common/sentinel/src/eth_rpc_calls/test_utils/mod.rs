@@ -2,8 +2,9 @@
 use std::{fs::read_to_string, str::FromStr};
 
 use common_eth::{convert_hex_to_eth_address, convert_hex_to_h256, EthSubmissionMaterial};
+use common_network_ids::NetworkId;
 
-use crate::{NetworkId, UserOp, UserOps};
+use crate::{UserOp, UserOps};
 
 fn get_arbitrum_protocol_queue_operation_sub_mat() -> EthSubmissionMaterial {
     let path = "src/lib/eth_rpc_calls/test_utils/host-sub-mat-num-105419318.json";

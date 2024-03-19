@@ -11,10 +11,10 @@ use axum::{
     Router,
     TypedHeader,
 };
+use common_network_ids::NetworkId;
 use common_sentinel::{
     BroadcastChannelMessages,
     ChallengeResponderBroadcastChannelMessages,
-    NetworkId,
     RpcServerBroadcastChannelMessages,
     SentinelConfig,
     SentinelError,

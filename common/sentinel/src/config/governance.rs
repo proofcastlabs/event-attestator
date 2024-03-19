@@ -1,10 +1,11 @@
 use std::{result::Result, str::FromStr};
 
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 
-use crate::{NetworkId, SentinelError};
+use crate::SentinelError;
 
 #[derive(Debug, Clone, Deserialize, Getters)]
 pub struct GovernanceToml {

@@ -1,10 +1,11 @@
 use common_eth::convert_hex_to_eth_address;
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 
 use super::SentinelConfigError;
-use crate::{Endpoints, NetworkId, SentinelError};
+use crate::{Endpoints, SentinelError};
 
 #[derive(Debug, Clone, Deserialize)]
 pub struct NetworkToml {

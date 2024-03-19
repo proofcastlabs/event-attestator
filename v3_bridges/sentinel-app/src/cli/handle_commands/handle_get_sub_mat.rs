@@ -3,7 +3,8 @@ use std::{
     io::{BufWriter, Write},
 };
 
-use common_sentinel::{get_sub_mat, Endpoints, NetworkId, SentinelError};
+use common_network_ids::NetworkId;
+use common_sentinel::{get_sub_mat, Endpoints, SentinelError};
 use tokio::time::{sleep, Duration};
 
 pub async fn handle_get_sub_mat(block_num: u64, endpoint: String) -> Result<String, SentinelError> {

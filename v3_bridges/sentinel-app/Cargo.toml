@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-version = "0.1.0"
+version = "0.2.0"
 name = "sentinel-app"
 authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
 description = "A pTokens Sentinel for EVM-to-EVM style bridges."
@@ -37,7 +37,6 @@ tiny-keccak = { workspace = true }
 derive_more = { workspace = true }
 lazy_static = { workspace = true }
 ethers-core = { workspace = true }
-strum_macros = { workspace = true }
 serde_derive = { workspace = true }
 flexi_logger = { workspace = true }
 futures-retry = { workspace = true }
@@ -52,6 +51,7 @@ common_sentinel = { workspace = true }
 common_metadata = { workspace = true }
 common_chain_ids = { workspace = true }
 common_eth_debug = { workspace = true }
+common_network_ids = { workspace = true }
 common_enclave_info = { workspace = true }
 common_debug_signers = { workspace = true }
 

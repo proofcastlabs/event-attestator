@@ -19,7 +19,6 @@ mod ipfs;
 mod latest_block_info;
 mod logging;
 mod messages;
-mod network_id;
 mod processor;
 mod registration;
 mod sanity_check_frequency;
@@ -99,7 +98,6 @@ pub use self::{
         WebSocketMessagesProcessBatchArgs,
         WebSocketMessagesResetChainArgs,
     },
-    network_id::{Bytes4, NetworkId, NetworkIdError, NetworkIds, ProtocolId},
     processor::{process_batch, ProcessorOutput},
     registration::{get_registration_extension_tx, get_registration_signature},
     sanity_check_frequency::sanity_check_frequency,
@@ -126,5 +124,3 @@ extern crate log;
 extern crate lazy_static;
 #[macro_use]
 extern crate paste;
-#[macro_use]
-extern crate strum_macros;

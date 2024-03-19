@@ -1,9 +1,10 @@
 use common_eth::{convert_hex_to_eth_address, EthSubmissionMaterial};
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 
-use crate::{NetworkId, WebSocketMessagesError};
+use crate::WebSocketMessagesError;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, Getters)]
 pub struct WebSocketMessagesInitArgs {

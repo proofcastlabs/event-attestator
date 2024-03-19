@@ -1,7 +1,6 @@
+use common_network_ids::NetworkId;
 use derive_more::{Constructor, Deref};
 use serde::{Deserialize, Serialize};
-
-use crate::NetworkId;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Deref, Constructor)]
 pub struct SyncState(Vec<SyncStatus>);

@@ -1,12 +1,13 @@
 use std::collections::HashMap;
 
+use common_network_ids::NetworkId;
 use derive_more::{Constructor, Deref, DerefMut};
 use tokio::sync::{
     mpsc,
     mpsc::{Receiver, Sender},
 };
 
-use crate::{EthRpcMessages, NetworkId, SentinelConfigError, MAX_CHANNEL_CAPACITY};
+use crate::{EthRpcMessages, SentinelConfigError, MAX_CHANNEL_CAPACITY};
 
 #[derive(Debug, Clone, Constructor, Deref)]
 pub struct EthRpcSenders(HashMap<NetworkId, Sender<EthRpcMessages>>);

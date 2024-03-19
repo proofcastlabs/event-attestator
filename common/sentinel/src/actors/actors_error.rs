@@ -1,9 +1,9 @@
+use common_network_ids::NetworkId;
 use ethabi::Token as EthAbiToken;
 use ethereum_types::H256 as EthHash;
 use thiserror::Error;
 
 use super::Actor;
-use crate::NetworkId;
 
 #[derive(Debug, Error)]
 pub enum ActorsError {

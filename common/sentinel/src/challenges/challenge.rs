@@ -1,5 +1,6 @@
 use common::MIN_DATA_SENSITIVITY_LEVEL;
 use common_eth::{EthPrivateKey, EthSignature, EthSigningCapabilities};
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use ethereum_types::{Address as EthAddress, U256};
@@ -7,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value as Json;
 
 use super::{ChallengeEvent, ChallengeResponseSignatureInfo, ChallengesError};
-use crate::{Actor, ActorInclusionProof, DbKey, DbUtilsT, NetworkId, SentinelError, WebSocketMessagesEncodable};
+use crate::{Actor, ActorInclusionProof, DbKey, DbUtilsT, SentinelError, WebSocketMessagesEncodable};
 
 /* Reference:
 From: https://github.com/pnetwork-association/pnetwork/blob/14d11b116da6abf70cba11e0fd931686f77f22b5/packages/ptokens-evm-contracts/contracts/interfaces/IPNetworkHub.sol#L47C1-L54C6

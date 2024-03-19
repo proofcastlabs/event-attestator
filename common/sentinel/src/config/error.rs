@@ -1,11 +1,10 @@
+use common_network_ids::NetworkId;
 use thiserror::Error;
-
-use crate::NetworkId;
 
 #[derive(Error, Debug)]
 pub enum SentinelConfigError {
     #[error("sentinel config network id error {0}")]
-    NetworkId(#[from] crate::NetworkIdError),
+    NetworkId(#[from] common_network_ids::NetworkIdError),
 
     #[error("logs of size {size}b is not between min of {min}b and max of {max}b ")]
     LogSize { size: u64, min: u64, max: u64 },

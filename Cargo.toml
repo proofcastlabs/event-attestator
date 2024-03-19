@@ -10,6 +10,7 @@ members = [
     "common/sentinel",
     "common/ethereum",
     "common/chain_ids",
+    "common/network_ids",
     "common/file_logger",
     "common/enclave_info",
     "common/stderr_logger",
@@ -132,6 +133,7 @@ common_metadata = { package = "metadata", path = "./common/metadata" }
 common_chain_ids = { package = "chain_ids", path = "./common/chain_ids" }
 common_sentinel = { package = "sentinel-lib", path = "./common/sentinel" }
 common_file_logger = { package = "file_logger", path = "./common/file_logger" }
+common_network_ids = { package = "network_ids", path = "./common/network_ids" }
 common_eth_debug = { package = "ethereum_debug", path = "./common/ethereum_debug"}
 common_enclave_info = { package = "enclave_info", path = "./common/enclave_info" }
 common_debug_signers = { package = "debug_signers", path = "./common/debug_signers" }

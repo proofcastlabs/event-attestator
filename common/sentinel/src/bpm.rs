@@ -1,11 +1,12 @@
 use std::{convert::From, fmt};
 
 use bounded_vec_deque::BoundedVecDeque;
+use common_network_ids::NetworkId;
 use derive_more::Deref;
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value as Json};
 
-use crate::{NetworkId, ProcessorOutput};
+use crate::ProcessorOutput;
 
 type Timestamp = u64;
 type LatestBlockNum = u64;

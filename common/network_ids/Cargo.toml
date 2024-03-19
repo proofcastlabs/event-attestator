@@ -1,0 +1,32 @@
+[package]
+license = "MIT"
+publish = false
+edition = "2021"
+name = "network_ids"
+version = "1.0.0"
+readme = "README.md"
+rust-version = "1.56"
+keywords = ["defi", "crypto"]
+authors = ["Greg Kapka <gregkapka@gmail.com>"]
+
+[dependencies]
+hex = { workspace = true }
+sha2 = { workspace = true }
+serde = { workspace = true }
+strum = { workspace = true }
+ethabi = { workspace = true }
+thiserror = { workspace = true }
+serde_json = { workspace = true }
+derive_more = { workspace = true }
+strum_macros = { workspace = true }
+ethereum-types = { workspace = true }
+
+common = { workspace = true }
+common_metadata = { workspace = true }
+common_chain_ids = { workspace = true }
+
+[dev-dependencies]
+simple_logger = "2.0.0"
+
+[lib]
+doctest = false

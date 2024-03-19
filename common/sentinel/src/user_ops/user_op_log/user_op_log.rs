@@ -1,21 +1,19 @@
 use common::Bytes;
 use common_eth::EthLog;
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, DisplayFromStr};
 
-use crate::{
-    user_ops::{
-        UserOpError,
-        UserOpProtocolLog,
-        UserSendLog,
-        CANCELLED_USER_OP_TOPIC,
-        ENQUEUED_USER_OP_TOPIC,
-        EXECUTED_USER_OP_TOPIC,
-        WITNESSED_USER_OP_TOPIC,
-    },
-    NetworkId,
+use crate::user_ops::{
+    UserOpError,
+    UserOpProtocolLog,
+    UserSendLog,
+    CANCELLED_USER_OP_TOPIC,
+    ENQUEUED_USER_OP_TOPIC,
+    EXECUTED_USER_OP_TOPIC,
+    WITNESSED_USER_OP_TOPIC,
 };
 
 // NOTE: So we have to parse a user op log from one of two types of logs. First there are logs

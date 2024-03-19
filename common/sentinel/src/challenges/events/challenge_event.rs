@@ -1,4 +1,5 @@
 use common_eth::{EthLog, EthLogExt};
+use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use derive_more::Constructor;
 use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
@@ -10,7 +11,6 @@ use crate::{
         ChallengesError,
     },
     ActorType,
-    NetworkId,
 };
 
 #[derive(Debug, Clone, Eq, PartialEq, Getters, Constructor)]

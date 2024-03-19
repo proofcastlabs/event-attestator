@@ -2,6 +2,7 @@ use std::{convert::TryFrom, fmt, str::FromStr};
 
 use common::{Byte, Bytes};
 use common_eth::EthSubmissionMaterial;
+use common_network_ids::NetworkId;
 use derive_more::{Constructor, Deref};
 use ethereum_types::{Address as EthAddress, U256};
 use serde::{Deserialize, Serialize};
@@ -15,7 +16,7 @@ use super::{
     EXECUTED_USER_OP_TOPIC,
     WITNESSED_USER_OP_TOPIC,
 };
-use crate::{get_utc_timestamp, NetworkId, SentinelError, WebSocketMessagesEncodable, WebSocketMessagesError};
+use crate::{get_utc_timestamp, SentinelError, WebSocketMessagesEncodable, WebSocketMessagesError};
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Constructor, Deref, Serialize, Deserialize)]
 pub struct UserOps(Vec<UserOp>);

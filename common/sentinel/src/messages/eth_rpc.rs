@@ -1,9 +1,10 @@
 use common::Bytes;
 use common_eth::{DefaultBlockParameter, EthSubmissionMaterial, EthTransaction};
+use common_network_ids::NetworkId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use tokio::sync::{oneshot, oneshot::Receiver};
 
-use crate::{Challenge, ChallengeState, NetworkId, Responder, SentinelError, UserOp, UserOpSmartContractState};
+use crate::{Challenge, ChallengeState, Responder, SentinelError, UserOp, UserOpSmartContractState};
 
 #[derive(Debug)]
 pub enum EthRpcMessages {
