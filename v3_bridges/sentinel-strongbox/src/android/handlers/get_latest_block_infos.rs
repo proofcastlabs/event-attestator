@@ -1,5 +1,6 @@
 use common_eth::{Chain, ChainDbUtils};
 use common_metadata::MetadataChainId;
+use common_network_ids::NetworkId;
 use common_sentinel::{
     LatestBlockInfo,
     LatestBlockInfos,
@@ -7,7 +8,6 @@ use common_sentinel::{
     WebSocketMessagesEncodable,
     WebSocketMessagesError,
 };
-use common_network_ids::NetworkId;
 use serde_json::json;
 
 use crate::android::State;
