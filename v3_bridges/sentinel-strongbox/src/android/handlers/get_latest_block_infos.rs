@@ -3,11 +3,11 @@ use common_metadata::MetadataChainId;
 use common_sentinel::{
     LatestBlockInfo,
     LatestBlockInfos,
-    NetworkId,
     SentinelError,
     WebSocketMessagesEncodable,
     WebSocketMessagesError,
 };
+use common_network_ids::NetworkId;
 use serde_json::json;
 
 use crate::android::State;

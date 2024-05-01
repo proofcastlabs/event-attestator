@@ -4,12 +4,11 @@ use common_sentinel::{
     CancellableUserOps,
     LatestBlockInfo,
     LatestBlockInfos,
-    NetworkId,
-    NetworkIdError,
     SentinelDbUtils,
     SentinelError,
     WebSocketMessagesEncodable,
 };
+use common_network_ids::{NetworkId, NetworkIdError};
 use serde_json::json;
 
 use crate::android::State;

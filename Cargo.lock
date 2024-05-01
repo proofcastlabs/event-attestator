@@ -4390,6 +4390,7 @@ dependencies = [
  "jni",
  "log",
  "metadata",
+ "network_ids",
  "sentinel-lib",
  "serde",
  "serde_json",
