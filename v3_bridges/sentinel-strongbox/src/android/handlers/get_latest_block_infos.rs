@@ -1,9 +1,9 @@
 use common_eth::{Chain, ChainDbUtils};
 use common_metadata::MetadataChainId;
+use common_network_ids::NetworkId;
 use common_sentinel::{
     LatestBlockInfo,
     LatestBlockInfos,
-    NetworkId,
     SentinelError,
     WebSocketMessagesEncodable,
     WebSocketMessagesError,

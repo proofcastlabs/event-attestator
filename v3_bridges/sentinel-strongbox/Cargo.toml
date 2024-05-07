@@ -1,6 +1,6 @@
 [package]
 edition = "2021"
-version = "0.1.0"
+version = "0.1.1"
 name = "sentinel-strongbox"
 authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
 description = "The android/strongbox library for a pTokens EVM sentinel"
@@ -30,5 +30,6 @@ common = { workspace = true }
 common_eth = { workspace = true }
 common_sentinel = { workspace = true }
 common_metadata = { workspace = true }
+common_network_ids = { workspace = true }
 common_debug_signers = { workspace = true }
 common_file_logger = { workspace = true, optional = true }

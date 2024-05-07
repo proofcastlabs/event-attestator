@@ -1,11 +1,10 @@
 use common_eth::{Chain, ChainDbUtils, ChainError};
 use common_metadata::MetadataChainId;
+use common_network_ids::{NetworkId, NetworkIdError};
 use common_sentinel::{
     CancellableUserOps,
     LatestBlockInfo,
     LatestBlockInfos,
-    NetworkId,
-    NetworkIdError,
     SentinelDbUtils,
     SentinelError,
     WebSocketMessagesEncodable,
