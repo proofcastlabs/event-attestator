@@ -45,22 +45,26 @@ impl TryFrom<Vec<String>> for WebSocketMessagesResetChainArgs {
             });
         }
 
-        let mut arg = args[0].clone();
+        let arg1 = args[0].clone();
 
-        let network_id = NetworkId::try_from(&arg).map_err(|_| WebSocketMessagesError::UnrecognizedNetworkId(arg))?;
+        let network_id = NetworkId::try_from(&arg1).map_err(|_| WebSocketMessagesError::UnrecognizedNetworkId(arg1))?;
 
-        arg = args[1].clone();
-        let use_latest_block = matches!(arg.to_lowercase().as_ref(), "latest");
+        let arg2 = args[1].clone();
+        let use_latest_block = matches!(arg2.to_lowercase().as_ref(), "latest");
 
         let block_num = if use_latest_block {
             None
         } else {
-            let n = arg.parse::<u64>().map_err(|_| WebSocketMessagesError::ParseInt(arg))?;
+            let n = arg2
+                .parse::<u64>()
+                .map_err(|_| WebSocketMessagesError::ParseInt(arg2))?;
             Some(n)
         };
 
-        arg = args[2].clone();
-        let confs = arg.parse::<u64>().map_err(|_| WebSocketMessagesError::ParseInt(arg))?;
+        let arg3 = args[2].clone();
+        let confs = arg3
+            .parse::<u64>()
+            .map_err(|_| WebSocketMessagesError::ParseInt(arg3))?;
 
         let validate = matches!(args[3].as_ref(), "true");
 
