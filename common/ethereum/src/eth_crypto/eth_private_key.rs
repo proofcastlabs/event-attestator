@@ -2,7 +2,7 @@ use std::{convert::TryFrom, fmt, str::FromStr};
 
 use common::{
     constants::MAX_DATA_SENSITIVITY_LEVEL,
-    crypto_utils::{generate_random_private_key, keccak_hash_bytes},
+    crypto_utils::{generate_random_private_key, keccak_hash_bytes, sha256_hash_bytes},
     strip_hex_prefix,
     traits::DatabaseInterface,
     types::{Byte, Result},
@@ -91,8 +91,17 @@ impl EthSigningCapabilities for EthPrivateKey {
         self.sign_hash(hash).map(EthSignature::set_recovery_param)
     }
 
-    fn hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature> {
+    fn keccak_hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature> {
         self.sign_hash(keccak_hash_bytes(message))
+    }
+
+    fn sha256_hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature> {
+        self.sign_hash(H256::from_slice(&sha256_hash_bytes(message)))
+    }
+
+    fn hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature> {
+        // NOTE: For backwards compatibility, where keccack was the default hashing for eth sigs
+        self.keccak_hash_and_sign_msg(message)
     }
 
     fn hash_and_sign_msg_with_eth_prefix(&self, message: &[Byte]) -> Result<EthSignature> {

@@ -125,13 +125,3 @@ pub struct ProducerSchedule {
     pub version: u32,
     pub producers: ProducerKeys,
 }
-
-#[derive(Debug)]
-pub struct EosRawTxData {
-    pub sender: String,
-    pub mint_nonce: u64,
-    pub receiver: String,
-    pub asset_amount: u64,
-    pub asset_name: String,
-    pub eth_address: String,
-}
