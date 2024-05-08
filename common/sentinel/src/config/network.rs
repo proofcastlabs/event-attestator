@@ -9,27 +9,33 @@ use super::SentinelConfigError;
 use crate::{Endpoints, SentinelError};
 
 #[derive(Debug, Clone, Default, Getters, Eq, PartialEq, Serialize, Deserialize, Constructor)]
-pub struct Event {
+pub struct ConfiguredEvent {
     address: EthAddress,
     topic: EthHash,
 }
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, Constructor, Deref)]
-pub struct Events(Vec<Event>);
+pub struct ConfiguredEvents(Vec<ConfiguredEvent>);
 
-impl TryFrom<&Vec<Vec<String>>> for Events {
+impl TryFrom<&Vec<Vec<String>>> for ConfiguredEvents {
     type Error = SentinelConfigError;
 
     fn try_from(e: &Vec<Vec<String>>) -> Result<Self, Self::Error> {
-        let events = e.iter().map(|v| {
-            if v.len() < 2 {
-                Err(Self::Error::NotEnoughEventArgs)
-            } else {
-                Ok(Event::new( convert_hex_to_eth_address(&v[0])?, convert_hex_to_h256(&v[1])?))
-            }
-        }).collect::<Result<Vec<_>, Self::Error>>()?;
+        let events = e
+            .iter()
+            .map(|v| {
+                if v.len() < 2 {
+                    Err(Self::Error::NotEnoughEventArgs)
+                } else {
+                    Ok(ConfiguredEvent::new(
+                        convert_hex_to_eth_address(&v[0])?,
+                        convert_hex_to_h256(&v[1])?,
+                    ))
+                }
+            })
+            .collect::<Result<Vec<_>, Self::Error>>()?;
 
-        Ok(Events::new(events))
+        Ok(Self::new(events))
     }
 }
 
@@ -49,7 +55,6 @@ pub struct NetworkToml {
 
 #[derive(Debug, Clone, Default, Getters, Eq, PartialEq, Serialize, Deserialize)]
 pub struct NetworkConfig {
-    events: Events,
     validate: bool,
     batch_size: u64,
     gas_limit: usize,
@@ -59,6 +64,7 @@ pub struct NetworkConfig {
     endpoints: Endpoints,
     gas_price: Option<u64>,
     pnetwork_hub: EthAddress,
+    events: ConfiguredEvents,
     pre_filter_receipts: bool,
 }
 
@@ -72,7 +78,7 @@ impl NetworkConfig {
             validate: toml.validate,
             gas_price: toml.gas_price,
             gas_limit: toml.gas_limit,
-            events: Events::try_from(&toml.events)?,
+            events: ConfiguredEvents::try_from(&toml.events)?,
             pre_filter_receipts: toml.pre_filter_receipts,
             batch_size: Self::sanity_check_batch_size(toml.batch_size)?,
             pnetwork_hub: convert_hex_to_eth_address(&toml.pnetwork_hub)?,

@@ -1,6 +1,4 @@
 mod actors;
-mod merkle_proof;
-mod signed_events;
 mod balances;
 mod batching;
 mod bpm;
@@ -20,10 +18,12 @@ mod flatten_join_handle;
 mod ipfs;
 mod latest_block_info;
 mod logging;
+mod merkle_proof;
 mod messages;
 mod processor;
 mod registration;
 mod sanity_check_frequency;
+mod signed_events;
 mod status;
 mod sync_state;
 mod test_utils;
@@ -31,8 +31,6 @@ mod user_ops;
 mod utils;
 
 pub use self::{
-    merkle_proof::MerkleProof,
-    signed_events::{SignedEvent, SignedEvents},
     actors::{Actor, ActorInclusionProof, ActorType, Actors, ActorsError},
     balances::{Balance, Balances},
     batching::Batch,
@@ -47,7 +45,16 @@ pub use self::{
         ChallengesError,
         ChallengesList,
     },
-    config::{IpfsConfig, LogConfig, NetworkConfig, SentinelConfig, SentinelConfigError, SentinelCoreConfig},
+    config::{
+        ConfiguredEvent,
+        ConfiguredEvents,
+        IpfsConfig,
+        LogConfig,
+        NetworkConfig,
+        SentinelConfig,
+        SentinelConfigError,
+        SentinelCoreConfig,
+    },
     constants::{
         DEFAULT_SLEEP_TIME,
         HOST_PROTOCOL_ID,
@@ -80,6 +87,7 @@ pub use self::{
     ipfs::{check_ipfs_daemon_is_running, publish_status, IpfsError},
     latest_block_info::{LatestBlockInfo, LatestBlockInfos},
     logging::{init_logger, LogLevel},
+    merkle_proof::MerkleProof,
     messages::{
         BroadcastChannelMessages,
         ChallengeResponderBroadcastChannelMessages,
@@ -105,6 +113,7 @@ pub use self::{
     processor::{process_batch, ProcessorOutput},
     registration::{get_registration_extension_tx, get_registration_signature},
     sanity_check_frequency::sanity_check_frequency,
+    signed_events::{SignedEvent, SignedEvents},
     status::{SentinelStatus, SentinelStatusError},
     sync_state::SyncState,
     user_ops::{

@@ -1,9 +1,10 @@
-use derive_more::Constructor;
-use serde::{Serialize, Deserialize};
-use derive_getters::Getters;
-use common_eth::EthLog;
-use ethereum_types::H256 as EthHash;
+use common_eth::{EthBlock, EthLog, EthPrivateKey};
 use common_metadata::MetadataChainId;
+use derive_getters::Getters;
+use derive_more::Constructor;
+use ethereum_types::H256 as EthHash;
+use serde::{Deserialize, Serialize};
+
 use super::SignedEventVersion;
 use crate::MerkleProof;
 
