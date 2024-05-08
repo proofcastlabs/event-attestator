@@ -1,4 +1,5 @@
 mod actors;
+mod events;
 mod balances;
 mod batching;
 mod bpm;
@@ -29,6 +30,7 @@ mod user_ops;
 mod utils;
 
 pub use self::{
+    events::{SignedEvent, SignedEvents},
     actors::{Actor, ActorInclusionProof, ActorType, Actors, ActorsError},
     balances::{Balance, Balances},
     batching::Batch,
