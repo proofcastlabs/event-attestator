@@ -1,5 +1,6 @@
 mod actors;
-mod events;
+mod merkle_proof;
+mod signed_events;
 mod balances;
 mod batching;
 mod bpm;
@@ -30,7 +31,8 @@ mod user_ops;
 mod utils;
 
 pub use self::{
-    events::{SignedEvent, SignedEvents},
+    merkle_proof::MerkleProof,
+    signed_events::{SignedEvent, SignedEvents},
     actors::{Actor, ActorInclusionProof, ActorType, Actors, ActorsError},
     balances::{Balance, Balances},
     batching::Batch,
