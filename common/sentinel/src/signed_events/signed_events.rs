@@ -10,6 +10,12 @@ use crate::{MerkleProof, NetworkConfig, SentinelError};
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Constructor, Deref, DerefMut)]
 pub struct SignedEvents(Vec<SignedEvent>);
 
+impl SignedEvents {
+    pub fn empty() -> Self {
+        Self::default()
+    }
+}
+
 impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthReceipts, &NetworkConfig)> for SignedEvents {
     type Error = SentinelError;
 
@@ -39,6 +45,7 @@ impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthReceipts, &NetworkConfig)> f
 
         todo!("continue parsing the various bits to create the vec of `SignedEvent` below");
         let events = vec![];
+        todo!("encode events per gitmp01's spec:");
 
         Ok(Self::new(events))
     }
