@@ -24,8 +24,8 @@ use crate::{
     eth_rpc::eth_rpc_loop,
     rpc_server::rpc_server_loop,
     status_publisher::status_publisher_loop,
-    ws_server::ws_server_loop,
     syncer::syncer,
+    ws_server::ws_server_loop,
 };
 
 const MAX_CHANNEL_CAPACITY: usize = 1337;

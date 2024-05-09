@@ -14,13 +14,7 @@ use super::{
     type_aliases::{RpcId, RpcParams},
     JsonRpcRequest,
 };
-use crate::type_aliases::{
-    BroadcastChannelTx,
-    ChallengeResponderTx,
-    CoreCxnStatus,
-    StatusPublisherTx,
-    WebSocketTx,
-};
+use crate::type_aliases::{BroadcastChannelTx, ChallengeResponderTx, CoreCxnStatus, StatusPublisherTx, WebSocketTx};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Error(String);
