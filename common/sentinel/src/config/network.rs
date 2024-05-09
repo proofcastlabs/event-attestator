@@ -69,6 +69,10 @@ pub struct NetworkConfig {
 }
 
 impl NetworkConfig {
+    pub fn network_id(&self) -> NetworkId {
+        *self.endpoints.network_id()
+    }
+
     pub fn from_toml(network_id: NetworkId, toml: &NetworkToml) -> Result<Self, SentinelError> {
         let sleep_duration = toml.sleep_duration;
         let endpoints = Endpoints::new(sleep_duration, network_id, toml.endpoints.clone());
