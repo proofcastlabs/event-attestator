@@ -1,16 +1,31 @@
+use std::sync::Arc;
+
 use common_eth::EthReceipts;
+use derive_more::Constructor;
+use eth_trie::{EthTrie, MemoryDB, Trie};
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
+use thiserror::Error;
 
-use crate::SentinelError;
+#[derive(Error, Debug)]
+pub enum MerkleProofError {
+    #[error("cannot make proof, target key is not in trie")]
+    NoKeyToProve,
 
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct MerkleProof(Vec<EthHash>);
+    #[error("trie error: {0}")]
+    Trie(#[from] eth_trie::TrieError),
+
+    #[error("common error: {0}")]
+    Common(#[from] common::CommonError),
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize, Constructor)]
+pub struct MerkleProof(Vec<Vec<u8>>);
 
 impl TryFrom<(&EthReceipts, &EthHash)> for MerkleProof {
-    type Error = SentinelError;
+    type Error = MerkleProofError;
 
-    fn try_from((_receipts, _target_tx_hash): (&EthReceipts, &EthHash)) -> Result<Self, Self::Error> {
+    fn try_from((receipts, target_tx_hash): (&EthReceipts, &EthHash)) -> Result<Self, Self::Error> {
         // NOTE: the root will be calculated fomr the set of receipts. You may want to add in a
         // target root in order to validate this is the correct root, though that should have been
         // validated elsewhere and may be redundant. However there's no guarantee of this. At least
@@ -18,10 +33,39 @@ impl TryFrom<(&EthReceipts, &EthHash)> for MerkleProof {
         // desired block or not and thus will fail, which is likely the most robust behaviour we'd
         // want.
 
-        // NOTE: Here's a link to the eos action proof makers merkle proof creation fxn for
-        // reference: https://github.com/pnetwork-association/eos-action-proof-maker/blob/95ae7167ae22da0390b8fafc5a178c41f77e0dad/src/eos_merkle_utils.rs#L86
-        // There are likely other crates that can make this easy to do too, eg reth
-        // Pass in args probably ought to be a struct too for more clarity rather than this tuple.
-        todo!("make merkle proof")
+        let mut maybe_key_to_prove: Option<Vec<u8>> = None;
+        // NOTE: https://github.com/carver/eth-trie.rs/blob/94ad815505c4a1dce97d6f30a052446ce3b2abfb/src/db.rs#L52
+        let db = Arc::new(MemoryDB::new(true));
+        let mut trie = EthTrie::new(db);
+
+        for (i, receipt) in receipts.iter().enumerate() {
+            let (k, v) = receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple()?;
+            if &receipt.transaction_hash == target_tx_hash {
+                maybe_key_to_prove = Some(k.clone());
+            };
+            trie.insert(&k, &v)?;
+        }
+
+        let key_to_prove = if maybe_key_to_prove.is_none() {
+            return Err(MerkleProofError::NoKeyToProve);
+        } else {
+            maybe_key_to_prove.expect("this never to fail due to above")
+        };
+
+        // NOTE: Proof format contains all encoded nodes on the path to the value at key. The
+        // value itself is also included in the last node.  We don't have to care about the
+        // case where there's no value for the key since we've handled it above.
+        // Docs here: https://github.com/carver/eth-trie.rs/blob/94ad815505c4a1dce97d6f30a052446ce3b2abfb/src/trie.rs#L34
+        Ok(Self::new(trie.get_proof(&key_to_prove)?))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_get_merkle_proof() {
+        todo!("write this test");
     }
 }

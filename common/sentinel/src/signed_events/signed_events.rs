@@ -5,7 +5,7 @@ use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
 use super::{SignedEvent, SignedEventVersion};
-use crate::{MerkleProof, NetworkConfig, SentinelError};
+use crate::{MerkleProof, MerkleProofError, NetworkConfig, SentinelError};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Constructor, Deref, DerefMut)]
 pub struct SignedEvents(Vec<SignedEvent>);
@@ -41,7 +41,7 @@ impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthReceipts, &NetworkConfig)> f
         let merkle_proofs = target_tx_hashes
             .iter()
             .map(|tx_hash| MerkleProof::try_from((receipts, tx_hash)))
-            .collect::<Result<Vec<MerkleProof>, Self::Error>>()?;
+            .collect::<Result<Vec<MerkleProof>, MerkleProofError>>()?;
 
         todo!("continue parsing the various bits to create the vec of `SignedEvent` below");
         let events = vec![];
