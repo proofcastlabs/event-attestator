@@ -113,7 +113,7 @@ pub use self::{
     processor::{process_batch, ProcessorOutput},
     registration::{get_registration_extension_tx, get_registration_signature},
     sanity_check_frequency::sanity_check_frequency,
-    signed_events::{SignedEvent, SignedEvents},
+    signed_events::{SignedEvent, SignedEventError, SignedEvents},
     status::{SentinelStatus, SentinelStatusError},
     sync_state::SyncState,
     user_ops::{

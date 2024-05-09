@@ -4,8 +4,8 @@ use derive_more::{Constructor, Deref, DerefMut};
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
-use super::{SignedEvent, SignedEventVersion};
-use crate::{MerkleProof, MerkleProofError, NetworkConfig, SentinelError};
+use super::{SignedEvent, SignedEventError, SignedEventVersion};
+use crate::{MerkleProof, MerkleProofError, NetworkConfig};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Constructor, Deref, DerefMut)]
 pub struct SignedEvents(Vec<SignedEvent>);
@@ -29,7 +29,7 @@ impl From<Vec<SignedEvents>> for SignedEvents {
 }
 
 impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthReceipts, &NetworkConfig)> for SignedEvents {
-    type Error = SentinelError;
+    type Error = SignedEventError;
 
     fn try_from(
         (metadata_chain_id, private_key, receipts, network_config): (

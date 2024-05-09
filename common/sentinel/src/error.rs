@@ -24,8 +24,8 @@ impl From<SentinelError> for CommonError {
 
 #[derive(Error, Debug)]
 pub enum SentinelError {
-    #[error("{0}")]
-    MerkleProof(#[from] crate::merkle_proof::MerkleProofError),
+    #[error("signed event error: {0}")]
+    SignedEvent(#[from] crate::SignedEventError),
 
     #[error("file logger error: {0}")]
     FileLogger(#[from] common_file_logger::LoggerError),
