@@ -78,17 +78,6 @@ impl Batch {
         self.block_num
     }
 
-    pub fn update_bpm_from_json(&mut self, j: Json) {
-        let err_msg = format!("error converting json: '{j}' to processor output:");
-        match ProcessorOutput::try_from(j) {
-            Ok(ref o) => self.update_bpm(o),
-            Err(e) => {
-                warn!("{err_msg}: {e}");
-                warn!("not updating syncer bpm for network {}", self.bpm.network_id());
-            },
-        }
-    }
-
     pub fn update_bpm(&mut self, o: &ProcessorOutput) {
         self.bpm.push(o)
     }
