@@ -11,7 +11,7 @@ use super::{
     maybe_handle_challenge_solved_events,
     process_single,
 };
-use crate::{ProcessorOutput, SentinelDbUtils, SentinelError, UserOps};
+use crate::{ProcessorOutput, SentinelDbUtils, SentinelError, SignedEvent, SignedEvents};
 
 pub fn process_batch<D: DatabaseInterface>(
     db: &D,
@@ -58,26 +58,9 @@ pub fn process_batch<D: DatabaseInterface>(
         .iter()
         .try_for_each(|m| maybe_handle_challenge_solved_events(&s_db_utils, pnetwork_hub, m, &sentinel_address))?;
 
-    let processed_user_ops = UserOps::from(
-        batch
-            .iter()
-            .map(|sub_mat| {
-                process_single(
-                    db,
-                    sub_mat.clone(),
-                    pnetwork_hub,
-                    validate,
-                    use_db_tx,
-                    dry_run,
-                    network_id,
-                    reprocess,
-                    &mut chain,
-                )
-            })
-            .collect::<Result<Vec<UserOps>, SentinelError>>()?,
-    );
+    let signed_events = todo!("parse signed events from submissions in `process_single`");
 
     info!("finished processing {network_id} submission material");
-    let r = ProcessorOutput::new(*network_id, batch.get_last_block_num()?, processed_user_ops)?;
+    let r = ProcessorOutput::new(*network_id, batch.get_last_block_num()?, signed_events)?;
     Ok(r)
 }
