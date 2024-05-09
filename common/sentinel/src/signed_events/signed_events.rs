@@ -16,6 +16,18 @@ impl SignedEvents {
     }
 }
 
+impl From<Vec<SignedEvents>> for SignedEvents {
+    fn from(vec_of_signed_events: Vec<SignedEvents>) -> Self {
+        let mut r: SignedEvents = SignedEvents::empty();
+        for signed_events in vec_of_signed_events.into_iter() {
+            for signed_event in signed_events.0.into_iter() {
+                r.push(signed_event)
+            }
+        }
+        r
+    }
+}
+
 impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthReceipts, &NetworkConfig)> for SignedEvents {
     type Error = SentinelError;
 

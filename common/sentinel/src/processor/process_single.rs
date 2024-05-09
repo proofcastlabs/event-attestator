@@ -57,6 +57,7 @@ pub(super) fn process_single<D: DatabaseInterface>(
         &canonical_sub_mat.receipts,
         network_config,
     ))?;
+
     debug!("found signed events: {signed_events:?}");
     debug!("finished processing {mcid} block {n}");
 
