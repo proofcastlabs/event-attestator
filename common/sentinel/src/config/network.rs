@@ -10,8 +10,8 @@ use crate::{Endpoints, SentinelError};
 
 #[derive(Debug, Clone, Default, Getters, Eq, PartialEq, Serialize, Deserialize, Constructor)]
 pub struct ConfiguredEvent {
-    address: EthAddress,
-    topic: EthHash,
+    pub address: EthAddress,
+    pub topic: EthHash,
 }
 
 #[derive(Debug, Clone, Default, Eq, PartialEq, Serialize, Deserialize, Constructor, Deref)]
