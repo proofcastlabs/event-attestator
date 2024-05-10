@@ -1,11 +1,10 @@
-use common_eth::{EthPrivateKey, EthReceipts};
+use common_eth::{EthLog, EthPrivateKey, EthSubmissionMaterial};
 use common_metadata::MetadataChainId;
 use derive_more::{Constructor, Deref, DerefMut};
-use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
-use super::{SignedEvent, SignedEventError, SignedEventVersion};
-use crate::{MerkleProof, MerkleProofError, NetworkConfig};
+use super::{SignedEvent, SignedEventError};
+use crate::{ConfiguredEvent, MerkleProof, MerkleTree, NetworkConfig};
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize, Constructor, Deref, DerefMut)]
 pub struct SignedEvents(Vec<SignedEvent>);
@@ -28,37 +27,67 @@ impl From<Vec<SignedEvents>> for SignedEvents {
     }
 }
 
-impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthReceipts, &NetworkConfig)> for SignedEvents {
+impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthSubmissionMaterial, &NetworkConfig)> for SignedEvents {
     type Error = SignedEventError;
 
     fn try_from(
-        (metadata_chain_id, private_key, receipts, network_config): (
+        (metadata_chain_id, private_key, eth_submission_material, network_config): (
             &MetadataChainId,
             &EthPrivateKey,
-            &EthReceipts,
+            &EthSubmissionMaterial,
             &NetworkConfig,
         ),
     ) -> Result<Self, Self::Error> {
-        // NOTE: The tuple is everything we need to parse signed events from a block
+        let block_hash = eth_submission_material.get_block_hash()?;
+        let mut merkle_tree = MerkleTree::try_from(eth_submission_material)?;
+        let mut relevant_infos: Vec<(MerkleProof, Vec<EthLog>)> = vec![];
 
-        let version = SignedEventVersion::current();
-        let target_tx_hashes = network_config
-            .events()
-            .iter()
-            .map(|_event| {
-                todo!("use the `event.address()` and `event.topic()` params to parse relevant txs from receipts")
-            })
-            .collect::<Result<Vec<EthHash>, Self::Error>>()?;
+        // NOTE: These are the events that the sentinel is configured to watch out for (via the config file)
+        for ConfiguredEvent { address, topic } in network_config.events().iter() {
+            for receipt in eth_submission_material.receipts.iter() {
+                let mut relevant_logs = vec![];
 
-        let merkle_proofs = target_tx_hashes
-            .iter()
-            .map(|tx_hash| MerkleProof::try_from((receipts, tx_hash)))
-            .collect::<Result<Vec<MerkleProof>, MerkleProofError>>()?;
+                for log in receipt.logs.iter() {
+                    if log.is_from_address_and_contains_topic(address, topic) {
+                        relevant_logs.push(log.clone())
+                    };
+                }
 
-        todo!("continue parsing the various bits to create the vec of `SignedEvent` below");
-        let events = vec![];
-        todo!("encode events per gitmp01's spec:");
+                if relevant_logs.is_empty() {
+                    continue;
+                } else {
+                    debug!("found {} relevant logs", relevant_logs.len());
+                    let receipt_inclusion_proof = MerkleProof::try_from((&mut merkle_tree, &receipt.transaction_hash))?;
+                    relevant_infos.push((receipt_inclusion_proof, relevant_logs.clone()));
+                    relevant_logs.clear();
+                }
+            }
+        }
 
-        Ok(Self::new(events))
+        let mut signed_events = vec![];
+        for (receipt_inclusion_proof, logs) in relevant_infos.into_iter() {
+            for log in logs.into_iter() {
+                let signed_event = SignedEvent::new(
+                    log,
+                    block_hash,
+                    receipt_inclusion_proof.clone(),
+                    *metadata_chain_id,
+                    private_key,
+                )?;
+                signed_events.push(signed_event);
+            }
+        }
+
+        Ok(Self::new(signed_events))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn should_get_signed_events() {
+        todo!("write this test");
     }
 }

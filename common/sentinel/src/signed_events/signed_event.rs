@@ -1,7 +1,6 @@
-use common_eth::{EthBlock, EthLog, EthPrivateKey, EthSignature, EthSigningCapabilities};
+use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::MetadataChainId;
 use derive_getters::Getters;
-use derive_more::Constructor;
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
