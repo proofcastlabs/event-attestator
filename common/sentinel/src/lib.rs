@@ -18,7 +18,7 @@ mod flatten_join_handle;
 mod ipfs;
 mod latest_block_info;
 mod logging;
-mod merkle_proof;
+mod merkle;
 mod messages;
 mod processor;
 mod registration;
@@ -87,7 +87,7 @@ pub use self::{
     ipfs::{check_ipfs_daemon_is_running, publish_status, IpfsError},
     latest_block_info::{LatestBlockInfo, LatestBlockInfos},
     logging::{init_logger, LogLevel},
-    merkle_proof::{MerkleProof, MerkleProofError},
+    merkle::{MerkleError, MerkleProof, MerkleTree},
     messages::{
         BroadcastChannelMessages,
         ChallengeResponderBroadcastChannelMessages,
