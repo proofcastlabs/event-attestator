@@ -54,7 +54,7 @@ pub(super) fn process_single<D: DatabaseInterface>(
     let signed_events = SignedEvents::try_from((
         &chain.mcid(),
         &chain_db_utils.get_pk()?,
-        &canonical_sub_mat.receipts,
+        &canonical_sub_mat,
         network_config,
     ))?;
 
