@@ -2,15 +2,12 @@ use std::result::Result;
 
 use common::DatabaseInterface;
 use common_eth::{Chain, ChainDbUtils, EthSubmissionMaterial};
-use common_network_ids::NetworkId;
-use ethereum_types::Address as EthAddress;
 
-use crate::{NetworkConfig, SentinelDbUtils, SentinelError, SignedEvent, SignedEvents};
+use crate::{NetworkConfig, SentinelError, SignedEvents};
 
 pub(super) fn process_single<D: DatabaseInterface>(
     db: &D,
     sub_mat: EthSubmissionMaterial,
-    pnetwork_hub: &EthAddress, // Take this from config, use netowrk ID to get stuff
     validate: bool,
     dry_run: bool,
     network_config: &NetworkConfig,

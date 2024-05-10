@@ -10,7 +10,7 @@ use super::{
     maybe_handle_challenge_solved_events,
     process_single,
 };
-use crate::{NetworkConfig, ProcessorOutput, SentinelDbUtils, SentinelError, SignedEvent, SignedEvents};
+use crate::{NetworkConfig, ProcessorOutput, SentinelDbUtils, SentinelError, SignedEvents};
 
 pub fn process_batch<D: DatabaseInterface>(
     db: &D,
@@ -30,8 +30,6 @@ pub fn process_batch<D: DatabaseInterface>(
     let s_db_utils = SentinelDbUtils::new(db);
 
     let mut chain = Chain::get(&c_db_utils, network_id.try_into()?)?;
-
-    let use_db_tx = !dry_run;
 
     if let Some(ref governance_address) = maybe_governance_address {
         debug!("checking for events from governance address {governance_address}");
@@ -65,7 +63,6 @@ pub fn process_batch<D: DatabaseInterface>(
                 process_single(
                     db,
                     sub_mat.clone(),
-                    pnetwork_hub,
                     validate,
                     dry_run,
                     network_config,

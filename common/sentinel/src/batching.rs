@@ -5,7 +5,6 @@ use common_network_ids::NetworkId;
 use derive_getters::Getters;
 use ethereum_types::{Address as EthAddress, U256};
 use jsonrpsee::ws_client::WsClient;
-use serde_json::Value as Json;
 use thiserror::Error;
 
 use crate::{endpoints::Endpoints, Bpm, ProcessorOutput, SentinelConfig, SentinelError};
