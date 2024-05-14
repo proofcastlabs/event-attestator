@@ -15,4 +15,10 @@ impl SignedEventVersion {
     pub fn current() -> Self {
         Self::V1
     }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        match self {
+            Self::V1 => &[1],
+        }
+    }
 }

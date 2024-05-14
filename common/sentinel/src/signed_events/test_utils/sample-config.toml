@@ -1,0 +1,35 @@
+[log]
+path = ""
+level = ""
+enabled = false
+max_log_size = 1_000_000_000
+max_num_logs = 1
+use_file_logging = false
+
+[ipfs]
+ipfs_bin_path = ""
+status_update_frequency = 0
+
+[core]
+timeout = 0
+challenge_response_frequency = 0
+
+[governance]
+address = "0x0000000000000000000000000000000000000000"
+network_id = "ethereum"
+
+
+[networks.eth]
+pnetwork_hub = "0x0000000000000000000000000000000000000000"
+endpoints = [ "" ]
+sleep_duration = 0
+network_id = "ethereum"
+validate = false
+gas_limit = 0
+batch_size = 1000
+batch_duration = 0
+pre_filter_receipts = false
+base_challenge_period_duration = 0
+events = [
+  ["0x990f341946a3fdb507ae7e52d17851b87168017c", "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
+]
