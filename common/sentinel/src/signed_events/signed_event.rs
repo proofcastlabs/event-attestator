@@ -1,5 +1,7 @@
+use common::types::Bytes;
+use common_chain_ids::EthChainId;
 use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
-use common_metadata::MetadataChainId;
+use common_metadata::{MetadataChainId, MetadataProtocolId};
 use derive_getters::Getters;
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
@@ -36,13 +38,24 @@ impl SignedEvent {
             metadata_chain_id,
             version: SignedEventVersion::current(),
         };
-        let hash = signed_event.encode()?;
-        let sig = pk.sha256_hash_and_sign_msg(hash.0.as_slice())?;
+        let signed_event_encoded = signed_event.encode();
+        let sig = pk.sha256_hash_and_sign_msg(signed_event_encoded.as_slice())?;
         signed_event.signature = Some(sig.to_string());
         Ok(signed_event)
     }
 
-    fn encode(&self) -> Result<EthHash, SignedEventError> {
-        todo!("encode via gitmp01's spec");
+    fn encode(&self) -> Bytes {
+        // FIXME sha256(protocol, protocol_chain_id, blockhash, unique_event_identifier_such_as_merklepathonevm)
+        // Currently, random 32 bytes
+        let event_id = &[0xab, 0xcd, 0xee, 0xff];
+        [
+            self.version.as_bytes(),
+            &[MetadataProtocolId::Ethereum.to_byte()],
+            EthChainId::Mainnet.to_bytes().as_ref().unwrap(),
+            event_id,
+            &self.log.data.len().to_le_bytes(),
+            self.log.data.as_ref(),
+        ]
+        .concat()
     }
 }
