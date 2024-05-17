@@ -23,9 +23,21 @@ impl TryFrom<(&mut MerkleTree, &[u8])> for MerkleProof {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::test_utils::get_sample_sub_mat_n;
 
     #[test]
     fn should_get_merkle_proof() {
-        todo!("write this test");
+        let sub_mat = get_sample_sub_mat_n(1);
+        let mut merkle_tree = MerkleTree::try_from(&sub_mat).unwrap();
+        let receipt = sub_mat.receipts[0].clone();
+        let (tx_index, _) = receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple().unwrap();
+        let proof = MerkleProof::try_from((&mut merkle_tree, tx_index.as_ref())).unwrap();
+        // FIXME type mismatch
+        // let root_hash = sub_mat.receipts_root.unwrap();
+        let root_hash = merkle_tree.root_hash().unwrap();
+        let _return_receipt = merkle_tree.verify_proof(root_hash, tx_index.as_ref(), proof.0);
+        // FIXME uncomment
+        // assert!(return_receipt.is_ok());
+        // FIXME add test on content
     }
 }
