@@ -57,7 +57,9 @@ impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthSubmissionMaterial, &Network
                     continue;
                 } else {
                     debug!("found {} relevant logs", relevant_logs.len());
-                    let receipt_inclusion_proof = MerkleProof::try_from((&mut merkle_tree, &receipt.transaction_hash))?;
+                    let (transaction_index, _) = receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple()?;
+                    let receipt_inclusion_proof =
+                        MerkleProof::try_from((&mut merkle_tree, transaction_index.as_ref()))?;
                     relevant_infos.push((receipt_inclusion_proof, relevant_logs.clone()));
                     relevant_logs.clear();
                 }
@@ -92,19 +94,20 @@ mod tests {
     #[test]
     fn should_get_signed_events() {
         let sub_mat = get_sample_sub_mat_n(1);
-        let block_hash = sub_mat.get_block_hash().unwrap();
         let metadata_chain_id = MetadataChainId::EthereumMainnet;
-        let receipt = sub_mat.receipts[0].clone();
-        let tx_hash = receipt.transaction_hash;
-        let log = receipt.logs[0].clone();
-        let mut merkle_tree = MerkleTree::try_from(&sub_mat).unwrap();
-        let merkle_proof = MerkleProof::try_from((&mut merkle_tree, &tx_hash)).unwrap();
         let pk = EthPrivateKey::from_str("e8eeb2631ab476dacd68f84eb0b9ee558b872f5155a088bf74381b5f2c63a130").unwrap();
-        let expected_result = SignedEvent::new(log, block_hash, merkle_proof, metadata_chain_id, &pk).unwrap();
         let path = "src/signed_events/test_utils/sample-config";
         let sample_config = SentinelConfig::new(path).unwrap();
         let network_config: &NetworkConfig = sample_config.networks().values().collect::<Vec<_>>()[0];
         let result = SignedEvents::try_from((&metadata_chain_id, &pk, &sub_mat, network_config)).unwrap();
+
+        let receipt = sub_mat.receipts[0].clone();
+        let log = receipt.logs[0].clone();
+        let block_hash = sub_mat.get_block_hash().unwrap();
+        let (tx_index, _) = receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple().unwrap();
+        let mut merkle_tree = MerkleTree::try_from(&sub_mat).unwrap();
+        let merkle_proof = MerkleProof::try_from((&mut merkle_tree, tx_index.as_ref())).unwrap();
+        let expected_result = SignedEvent::new(log, block_hash, merkle_proof, metadata_chain_id, &pk).unwrap();
         assert_eq!(result.len(), 5);
         assert_eq!(result[0], expected_result);
     }
