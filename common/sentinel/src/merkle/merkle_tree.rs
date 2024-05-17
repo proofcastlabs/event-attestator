@@ -25,3 +25,18 @@ impl TryFrom<&EthSubmissionMaterial> for MerkleTree {
         Ok(Self::new(trie))
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::test_utils::get_sample_sub_mat_n;
+
+    #[test]
+    fn should_calculate_merkle_root() {
+        let sub_mat = get_sample_sub_mat_n(1);
+        let mut merkle_tree = MerkleTree::try_from(&sub_mat).unwrap();
+        let root_hash = merkle_tree.root_hash().unwrap();
+        let expected_root_hash = sub_mat.receipts_root.unwrap();
+        assert_eq!(root_hash.as_bytes(), expected_root_hash.as_bytes());
+    }
+}
