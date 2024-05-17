@@ -3,6 +3,7 @@ use common_chain_ids::EthChainId;
 use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::{MetadataChainId, MetadataProtocolId};
 use derive_getters::Getters;
+use derive_more::Deref;
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
@@ -15,47 +16,75 @@ pub struct SignedEvent {
     block_hash: EthHash,
     // NOTE: String in case format changes, plus can't auto derive ser/de on [u8; 65]
     // It's an option so we can create the struct with no signature then add it later.
+    encoded_event: Option<String>,
     signature: Option<String>,
-    merkle_proof: MerkleProof,
+    event_id: String,
+    public_key: String,
     version: SignedEventVersion,
-    // NOTE: gitmp needs this instead of the v3 NetworkId
-    metadata_chain_id: MetadataChainId,
+}
+
+fn calculate_event_id() -> EventId {
+    // FIXME sha256(protocol, protocol_chain_id, blockhash, unique_event_identifier_such_as_merklepathonevm)
+    // Currently, arbitrary bytes
+    EventId([0xab, 0xcd, 0xee, 0xff])
 }
 
 impl SignedEvent {
     pub(super) fn new(
         log: EthLog,
         block_hash: EthHash,
-        merkle_proof: MerkleProof,
-        metadata_chain_id: MetadataChainId,
+        // FIXME reintroduce
+        _merkle_proof: MerkleProof,
+        _metadata_chain_id: MetadataChainId,
         pk: &EthPrivateKey,
     ) -> Result<Self, SignedEventError> {
+        let event_id = calculate_event_id().to_string();
+        let public_key = pk.to_public_key().public_key.to_string();
         let mut signed_event = Self {
             log,
             block_hash,
-            merkle_proof,
+            encoded_event: None,
             signature: None,
-            metadata_chain_id,
+            event_id,
+            public_key,
             version: SignedEventVersion::current(),
         };
-        let signed_event_encoded = signed_event.encode();
-        let sig = pk.sha256_hash_and_sign_msg(signed_event_encoded.as_slice())?;
+        let encoded_event = signed_event.encode();
+        signed_event.encoded_event = Some(encoded_event.to_string());
+        let sig = pk.sha256_hash_and_sign_msg(encoded_event.as_slice())?;
         signed_event.signature = Some(sig.to_string());
         Ok(signed_event)
     }
 
-    fn encode(&self) -> Bytes {
-        // FIXME sha256(protocol, protocol_chain_id, blockhash, unique_event_identifier_such_as_merklepathonevm)
-        // Currently, random 32 bytes
-        let event_id = &[0xab, 0xcd, 0xee, 0xff];
-        [
-            self.version.as_bytes(),
-            &[MetadataProtocolId::Ethereum.to_byte()],
-            EthChainId::Mainnet.to_bytes().as_ref().unwrap(),
-            event_id,
-            &self.log.data.len().to_le_bytes(),
-            self.log.data.as_ref(),
-        ]
-        .concat()
+    fn encode(&self) -> EncodedEvent {
+        EncodedEvent(
+            [
+                self.version.as_bytes(),
+                &[MetadataProtocolId::Ethereum.to_byte()],
+                EthChainId::Mainnet.to_bytes().as_ref().unwrap(),
+                &self.event_id.as_bytes(),
+                &self.log.data.len().to_le_bytes(),
+                self.log.data.as_ref(),
+            ]
+            .concat(),
+        )
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct EventId(pub [u8; 4]);
+
+impl std::fmt::Display for EventId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", hex::encode(self.0))
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Deref)]
+pub struct EncodedEvent(pub Bytes);
+
+impl std::fmt::Display for EncodedEvent {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", hex::encode(&self.0))
     }
 }
