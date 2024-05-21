@@ -24,6 +24,33 @@ diagram:
 
 ![diagram-1](/docs/imgs/authorization-system.png)
 
-# Setup
 
-1. Copy the configuration sample into the p
+ - The JSONRPC api allows the end user to send commands to the device
+ - These commands are then sent through the websocket channel to which the device is connects on startup
+ - The core library deserialize each message coming from the websocket channel and process them accordingly
+
+# Setup for EVM chains
+
+1. Copy the configuration sample from `sample-config.toml` file in the common folder
+and configure it to your needs, in particular be careful to fill up the ```[networks.chainName]``` section with the `endpoints` property.
+
+1. For each configured chain, set the `events` array where each element is in the following form:
+
+```
+["<contract-address>","<topic>"]
+```
+
+3. Build the app
+
+```
+cargo build --release --bin jsonrpc-app
+```
+
+4. Run
+
+```
+./jsonrpc-app -c <config.toml>
+```
+
+
+5. Then follow the README on [this repo](https://github.com/proofcastlabs/tee-wrapper-android) in order to connect app to the device.
