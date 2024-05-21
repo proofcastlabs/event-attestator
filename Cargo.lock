@@ -4155,31 +4155,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "sentinel-strongbox"
-version = "0.1.1"
-dependencies = [
- "android_logger",
- "common",
- "debug_signers",
- "derive-getters",
- "derive_more",
- "ethereum",
- "ethereum-types 0.12.1",
- "file_logger",
- "function_name",
- "hex",
- "jni",
- "log",
- "metadata",
- "network_ids",
- "sentinel-lib",
- "serde",
- "serde_json",
- "thiserror",
- "tiny-keccak 2.0.2",
-]
-
-[[package]]
 name = "serde"
 version = "1.0.196"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4496,6 +4471,31 @@ dependencies = [
  "log",
  "termcolor",
  "thread_local",
+]
+
+[[package]]
+name = "strongbox"
+version = "0.1.1"
+dependencies = [
+ "android_logger",
+ "common",
+ "debug_signers",
+ "derive-getters",
+ "derive_more",
+ "ethereum",
+ "ethereum-types 0.12.1",
+ "file_logger",
+ "function_name",
+ "hex",
+ "jni",
+ "log",
+ "metadata",
+ "network_ids",
+ "sentinel-lib",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tiny-keccak 2.0.2",
 ]
 
 [[package]]

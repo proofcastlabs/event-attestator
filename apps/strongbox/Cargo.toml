@@ -1,7 +1,7 @@
 [package]
 edition = "2021"
 version = "0.1.1"
-name = "sentinel-strongbox"
+name = "strongbox"
 authors = [ "Greg Kapka <gregkapka@gmail.com>" ]
 description = "The android/strongbox library for a pTokens EVM sentinel"
 
