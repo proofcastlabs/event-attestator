@@ -2382,6 +2382,56 @@ dependencies = [
 ]
 
 [[package]]
+name = "jsonrpc-app"
+version = "0.2.0"
+dependencies = [
+ "anyhow",
+ "axum",
+ "base64 0.21.7",
+ "bounded-vec-deque",
+ "chain_ids",
+ "clap",
+ "common",
+ "config",
+ "debug_signers",
+ "derive-getters",
+ "derive_more",
+ "dotenv",
+ "enclave_info",
+ "ethabi 15.0.0",
+ "ethereum",
+ "ethereum-types 0.12.1",
+ "ethereum_debug",
+ "ethers-core",
+ "flexi_logger",
+ "futures",
+ "futures-retry",
+ "headers",
+ "hex",
+ "jsonrpsee",
+ "lazy_static",
+ "log",
+ "metadata",
+ "network_ids",
+ "paste",
+ "reqwest",
+ "sentinel-lib",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "serde_with",
+ "sha2 0.10.8",
+ "simple_logger",
+ "strum 0.22.0",
+ "thiserror",
+ "tiny-keccak 2.0.2",
+ "tokio",
+ "tokio-tungstenite 0.19.0",
+ "tower-http",
+ "warp",
+]
+
+[[package]]
 name = "jsonrpc-core"
 version = "18.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4049,56 +4099,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b97ed7a9823b74f99c7742f5336af7be5ecd3eeafcb1507d1fa93347b1d589b0"
 
 [[package]]
-name = "sentinel-app"
-version = "0.2.0"
-dependencies = [
- "anyhow",
- "axum",
- "base64 0.21.7",
- "bounded-vec-deque",
- "chain_ids",
- "clap",
- "common",
- "config",
- "debug_signers",
- "derive-getters",
- "derive_more",
- "dotenv",
- "enclave_info",
- "ethabi 15.0.0",
- "ethereum",
- "ethereum-types 0.12.1",
- "ethereum_debug",
- "ethers-core",
- "flexi_logger",
- "futures",
- "futures-retry",
- "headers",
- "hex",
- "jsonrpsee",
- "lazy_static",
- "log",
- "metadata",
- "network_ids",
- "paste",
- "reqwest",
- "sentinel-lib",
- "serde",
- "serde_derive",
- "serde_json",
- "serde_with",
- "sha2 0.10.8",
- "simple_logger",
- "strum 0.22.0",
- "thiserror",
- "tiny-keccak 2.0.2",
- "tokio",
- "tokio-tungstenite 0.19.0",
- "tower-http",
- "warp",
-]
-
-[[package]]
 name = "sentinel-lib"
 version = "0.2.1"
 dependencies = [
@@ -4152,31 +4152,6 @@ dependencies = [
  "tokio-tungstenite 0.19.0",
  "tower-http",
  "warp",
-]
-
-[[package]]
-name = "sentinel-strongbox"
-version = "0.1.1"
-dependencies = [
- "android_logger",
- "common",
- "debug_signers",
- "derive-getters",
- "derive_more",
- "ethereum",
- "ethereum-types 0.12.1",
- "file_logger",
- "function_name",
- "hex",
- "jni",
- "log",
- "metadata",
- "network_ids",
- "sentinel-lib",
- "serde",
- "serde_json",
- "thiserror",
- "tiny-keccak 2.0.2",
 ]
 
 [[package]]
@@ -4496,6 +4471,31 @@ dependencies = [
  "log",
  "termcolor",
  "thread_local",
+]
+
+[[package]]
+name = "strongbox"
+version = "0.1.1"
+dependencies = [
+ "android_logger",
+ "common",
+ "debug_signers",
+ "derive-getters",
+ "derive_more",
+ "ethereum",
+ "ethereum-types 0.12.1",
+ "file_logger",
+ "function_name",
+ "hex",
+ "jni",
+ "log",
+ "metadata",
+ "network_ids",
+ "sentinel-lib",
+ "serde",
+ "serde_json",
+ "thiserror",
+ "tiny-keccak 2.0.2",
 ]
 
 [[package]]

@@ -1,152 +1,107 @@
-# :closed_lock_with_key: pTokens Core
+# Event Attestator
 
-The Provable __pTokens__ core which manages the cross-chain conversions between native and host blockchains.
+**Note:** this repo is currently a work in progress and it will be update in the incoming days
 
-&nbsp;
+This repository contains the core codebase for the Proofcast event attestation
+system.
+This will be useful for anyone aiming at proving that an event or a state change
+happened on a blockchain to another one, backed by a Trusted Execution Environment
+attestation.
 
-## :earth_africa: Core Overview
+Currently the TEE supported is Android Strongbox, but other platforms will be
+integrated soon.
 
-The __pToken__ core is a set of libraries implementing light-clients for various block-chains, and a set of bridges which each contain two of those light clients, working in tandem to move assets from one to the other.
+The project is structured like follows:
 
-The v1 & v2 bridges have zero network connectivity and make no network requests. They are a push-only model, requiring external tools to gather & feed them the blocks from the chains with which the bridges interact.
+ - **`common/`**: low level library providing all the code for block
+ validation and proof generation for each supported blockchain
+ - **`apps/`**: lightweight JSONRPC HTTP server abstracting the interaction to
+ the TEE contained into the device
 
-In order to initialize the light-clients inside the core, an initial block from each desired chain is required. These will be the only trusted blocks in the system. Thereafter, subsequent blocks pushed to the core will undergo all the usual validation checks w/r/t to that block's veracity before appending it to the small piece of chain the light client(s) in the bridges hold.
 
-The length of these small pieces of chain held by the bridge are governed by their __`canon-to-tip`__ lengths, which lengths can also be thought of as the number of __`confirmations + 1`__ required before the bridge will sign a transaction.
+# Architecture
 
-Once a submitted block reaches __`canon-to-tip`__ number of blocks away from the tip of the chain, it becomes the __`canon-block`__. At this point, it is searched for any relevant peg-ins or peg-outs and any required transactions are then signed and returned to the caller in __`JSON`__ format.
+At a glance, the system architecture is better understood from the following
+diagram:
 
-Behind the __`canon-block`__ lies some configurable number of further blocks, which here after are referred to the __`tail`__. This tail allow for the light client to hold more than just the __`cannon-to-tip-length`__ number of blocks, which allows the bridge to handle larger re-organisations if the chain in   question is particularly unstable.
+![diagram-1](/docs/imgs/authorization-system.png)
 
-In order to keep the light-clients thin, blocks behind the __`tail`__  are removed. In order to do that whilst retaining the integrity of the chain, the block to be removed is first _linked_ to the initial trusted block (the __`anchor-block`__) by hashing it together with the so-called __`linker-hash`__ (where an arbitrary constant is used for the first linkage) and the block to be removed. This way the small piece of chain inside then core can always be proven to have originated from the original trusted blocks that were used to initialize the bridge.
 
-And so thusly the brige remains synced with the each blockchain, writing relevant transactions as it does so.
+ - The JSONRPC api allows the end user to send commands to the device
+ - These commands are then sent through the websocket channel to which the device is connects on startup
+ - The core library deserialize each message coming from the websocket channel and process them accordingly
 
-## :lock_with_ink_pen: Security:
+# Setup for EVM chains
 
-The bridges herein are designed to be imported by an application that leverages an HSM in order to implement a secure database that adheres to the __`DatabseInterface`__ as defined in __`./common/common/src/traits.rs`__.
+1. Copy the configuration sample from `sample-config.toml` file in the common folder
+and configure it to your needs, in particular be careful to fill up the ```[networks.chainName]``` section with the `endpoints` property.
 
-The example applications inside the __`vanilla`__ directories for both __`v1`__ and __`v2`__ bridges implement no such protections, and are there simple as examples as to how to implement a bridge from the library modules. These should not be used in production as their databasing is not protected by any means whatsoever.
-
-&nbsp;
-
-## :wrench: Build
-
-You need to ensure you have both __`clang`__ & __`llvm`__ (or later versions) installed on your system. Then, build your desired bridge like so:
-
-__`❍ cargo build --release --package=<bridge-name-here>`__
-
-You can see the available app names by inspecting the __`vanilla`__ directories.
-
-#### Versions
-
- - __`llvm:`__ version 6.0.0 or later.
- - __`clang:`__ version 6.0.0-1ubuntu2 or later.
- - __`rustc & cargo:`__ version 1.56.0 or later.
-
-&nbsp;
-
-## :floppy_disk: Database Interface
-
-The `core` implements a generic database whose interface follows:
+1. For each configured chain, set the `events` array where each element is in the following form:
 
 ```
-pub trait DatabaseInterface {
-    fn end_transaction(&self) -> Result<()>;
-    fn start_transaction(&self) -> Result<()>;
-    fn delete(&self, key: Bytes) -> Result<()>;
-    fn get(&self, key: Bytes, data_sensitivity: Option<u8>) -> Result<Bytes>;
-    fn put(&self, key: Bytes, value: Bytes, data_sensitivity: Option<u8>) -> Result<()>;
+["<contract-address>","<topic>"]
+```
+
+3. Build the app
+
+```
+cargo build --release --bin jsonrpc-app
+```
+
+4. Run
+
+```
+./jsonrpc-app -c <config.toml>
+```
+
+
+5. Then follow the README on [this repo](https://github.com/proofcastlabs/tee-wrapper-android) in order to connect app to the device.
+
+
+When everything is connected you can manually process a block of interest on the configured chain through the following call:
+
+```bash
+curl \
+  -X POST \
+  -H 'Content-Type: application/json' \
+  -d '{"jsonrpc":"2.0","id":1,"method":"process","params":["bsc", "38745426", "false", "true"]}' \
+  http://127.0.0.1:3030/v1/rpc
+```
+
+The output would contain all the signatures for the configured events in the `signed_events` array:
+
+```json
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "latest_block_num": 38745426,
+    "network_id": {
+      "chain_id": 56,
+      "disambiguator": 0,
+      "protocol_id": "Ethereum",
+      "version": "V1"
+    },
+    "signed_events": [
+      {
+        "block_hash": "0x1535c8e9ab42918c2df9d05ba18a816dafc2e3eba45fffc334d2890a2ebcc0bf",
+        "encoded_event": "0100016162636465656666200000000000000000000000000000000000000000000000000000000000000000005af3107a4000",
+        "event_id": "abcdeeff",
+        "log": {
+          "address": "0xf5e11df1ebcf78b6b6d26e04ff19cd786a1e81dc",
+          "data": [],
+          "topics": [
+            "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
+            "0x000000000000000000000000b0116a2cab9774e9d75834dcce64f99fd75a8579",
+            "0x0000000000000000000000000000000000000000000000000000000000000000"
+          ]
+        },
+        "public_key": "03572d2b94ea3918ecd104cdd84a07efc1f9cbc1f11bbd02a6418179894d0d2fc6",
+        "signature": "02a893f433fcd688558931a1ab8041c8384ac710550e8ab22c705233c68bd12c38c085405ca6d2c5ea3db8d1b6b84d49f46f070239dcc06aa3c4ec78ea72cb0f01",
+        "version": "V1"
+      }
+    ],
+    "timestamp": 1716302631
+  }
 }
-
 ```
-
-The `start_transaction` and `end_transaction` are used by the core algorithms to signal when databasing actions begin and end, allowing a consumer of the `core` to implement atomic databasing however they wish.
-
-Further, the `sensitivity` parameter provides a way for the `core` to signal to the consumer how sensitive the data being transmitted is, giving flexibility for the `core` consumer to handle different levels of sensitive data in different ways, where `0` signifies the _least_ sensitive data, and `255` the _most_.
-
-&nbsp;
-
-## :label: Metadata Chain IDs
-
-The `v2` bridges use metadata chain IDs to route peg-ins and peg-outs to their correct destinations. The byte encodings of those metadata chain IDs are as follows:
-
-```
-EthereumMainnet,  // 0x005fe7f9
-EthereumRopsten,  // 0x0069c322
-EthereumRinkeby,  // 0x00f34368
-BitcoinMainnet,   // 0x01ec97de
-BitcoinTestnet,   // 0x018afeb2
-EosMainnet,       // 0x02e7261c
-TelosMainnet,     // 0x028c7109
-BscMainnet,       // 0x00e4b170
-EosJungleTestnet, // 0x0282317f
-XDaiMainnet,      // 0x00f1918e
-PolygonMainnet,   // 0x0075dd4c
-UltraMainnet,     // 0x02f9337d
-FioMainnet,       // 0x02174f20
-UltraTestnet,     // 0x02b5a4d6
-EthUnknown,       // 0x00000000
-BtcUnknown,       // 0x01000000
-EosUnknown,       // 0x02000000
-InterimChain,     // 0xffffffff
-ArbitrumMainnet,  // 0x00ce98c4
-LuxochainMainnet, // 0x00d5beb0
-FantomMainnet,    // 0x0022af98
-AlgorandMainnet,  // 0x03c38e67
-PhoenixTestnet,   // 0x02a75f2c
-PhoenixMainnet,   // 0x026776fa
-EthereumGoerli,   // 0x00b4f6c5
-EthereumSepolia,  // 0x0030d6b5
-LitecoinMainnet,  // 0x01840435
-```
-
-&nbsp;
-
-## :black_nib: Notes
-
-- The maximum __`confs`__ possible during initialization is 255.
-
-- There are hardcoded "safe" addresses for each chain which are used as destinations for transactions whose actual destinations are absent or malformed when being parsed from their originating transactions.
-
-- When initializing a bridge, the merkle-roots for transactions in blocks are __NOT__ verified - only the block headers are checked. For smaller initialiazation material, feel free to provide empty arrays for the transactions. Ensure not relevant transactions took place in the blocks used to initialize the core.
-
-- The light __BTC__ client implemented herein currently accepts only `p2sh` deposits made to addresses generated via the __`deposit-address-generator`__ run with the private-key emitted by the core upon BTC initialization.
-
-:warning: Neither `p2pk`, `p2pkh` nor `segwit` deposit transactions are currently supported. Deposits made via such transactions will result in lost funds! :warning:
-
-- The library follows semantic versioning specification ([SemVer](https://semver.org)).
-
-&nbsp;
-
-## :mag: Features
-
-When building the vanilla apps, you can enable features like so:
-
-__`❍ cargo b -r -p <packageName> --features=<featureName>[,<featureName>]`__
-
-Currently supported features include:
-
- - __`non-validating`__ Build a bridge with block & receipt validation skipped.
- - __`disable-fees`__ Build a v1 bridge with fees disabled. Note that v2 bridges handle fees differently, and this flag doesn't exist/does nothing.
-
- - __`ltc`__ Build a Litecoin bridge. Note this flag only exists for:
-
-`pbtc-on-eth` (v1 vanilla binary)
-`pbtc-on-eos` (v1 vanilla binary)
-`pbtc-on-int` (v2 vanilla binary)
-
-`common/bitcoin` (library crate)
-`common/safe_addresses` (library crate)
-
-&nbsp;
-
-## :guardsman: Tests
-
-To run the tests simply run:
-
-__`❍ cargo test --features='<chosen-feature>'`__
-
-&nbsp;
-
-## :black_nib: To Do:
