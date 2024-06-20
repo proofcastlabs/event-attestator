@@ -10,7 +10,6 @@ use crate::{
     DbIntegrity,
     DbKey,
     EthRpcMessages,
-    StatusPublisherMessages,
     SyncerMessages,
     UserOpCancellerMessages,
     WebSocketMessages,
@@ -56,9 +55,6 @@ pub enum SentinelError {
 
     #[error("{0}")]
     Actors(#[from] crate::ActorsError),
-
-    #[error("{0}")]
-    Ipfs(#[from] crate::IpfsError),
 
     #[error("{0}")]
     SentinelStatusError(#[from] crate::status::SentinelStatusError),
@@ -204,9 +200,6 @@ pub enum SentinelError {
     #[error("websocket channel error: {0}")]
     WebSocketChannel(Box<tokio::sync::mpsc::error::SendError<WebSocketMessages>>),
 
-    #[error("status channel error: {0}")]
-    StatusChannel(Box<tokio::sync::mpsc::error::SendError<StatusPublisherMessages>>),
-
     #[error("challenge responder channel error: {0}")]
     ChallengeResponderChannel(Box<tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>>),
 
@@ -244,12 +237,6 @@ impl From<tokio::sync::mpsc::error::SendError<EthRpcMessages>> for SentinelError
 impl From<tokio::sync::mpsc::error::SendError<WebSocketMessages>> for SentinelError {
     fn from(e: tokio::sync::mpsc::error::SendError<WebSocketMessages>) -> Self {
         Self::WebSocketChannel(Box::new(e))
-    }
-}
-
-impl From<tokio::sync::mpsc::error::SendError<StatusPublisherMessages>> for SentinelError {
-    fn from(e: tokio::sync::mpsc::error::SendError<StatusPublisherMessages>) -> Self {
-        Self::StatusChannel(Box::new(e))
     }
 }
 

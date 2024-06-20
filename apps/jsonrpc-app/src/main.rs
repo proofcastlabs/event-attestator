@@ -3,7 +3,6 @@ mod cli;
 mod eth_rpc;
 mod rpc_server;
 mod start_sentinel;
-mod status_publisher;
 mod syncer;
 mod type_aliases;
 mod ws_server;

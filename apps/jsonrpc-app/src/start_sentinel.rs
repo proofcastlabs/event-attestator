@@ -8,7 +8,6 @@ use common_sentinel::{
     EthRpcSenders,
     SentinelConfig,
     SentinelError,
-    StatusPublisherMessages,
     WebSocketMessages,
 };
 use futures::future::try_join_all;
@@ -23,7 +22,6 @@ use crate::{
     challenge_responder::challenge_responder_loop,
     eth_rpc::eth_rpc_loop,
     rpc_server::rpc_server_loop,
-    status_publisher::status_publisher_loop,
     syncer::syncer,
     ws_server::ws_server_loop,
 };
@@ -39,22 +37,10 @@ pub async fn start_sentinel(config: &SentinelConfig, disable: bool) -> Result<St
         MpscRx<ChallengeResponderMessages>,
     ) = mpsc::channel(MAX_CHANNEL_CAPACITY);
 
-    let (status_tx, status_rx): (MpscTx<StatusPublisherMessages>, MpscRx<StatusPublisherMessages>) =
-        mpsc::channel(MAX_CHANNEL_CAPACITY);
-
     let (broadcast_channel_tx, _) = broadcast::channel(MAX_CHANNEL_CAPACITY);
 
     let (websocket_tx, websocket_rx): (MpscTx<WebSocketMessages>, MpscRx<WebSocketMessages>) =
         mpsc::channel(MAX_CHANNEL_CAPACITY);
-
-    let status_thread = tokio::spawn(status_publisher_loop(
-        config.clone(),
-        status_rx,
-        status_tx.clone(),
-        broadcast_channel_tx.clone(),
-        websocket_tx.clone(),
-        disable,
-    ));
 
     let challenge_responder_thread = tokio::spawn(challenge_responder_loop(
         config.clone(),
@@ -71,7 +57,6 @@ pub async fn start_sentinel(config: &SentinelConfig, disable: bool) -> Result<St
         websocket_tx.clone(),
         config.clone(),
         broadcast_channel_tx.clone(),
-        status_tx.clone(),
         challenge_responder_tx.clone(),
     ));
 
@@ -119,12 +104,7 @@ pub async fn start_sentinel(config: &SentinelConfig, disable: bool) -> Result<St
     threads.append(&mut eth_rpc_threads);
 
     // NOTE: These final threads are all single modules, not dynamically generated.
-    let mut other_threads = vec![
-        ws_server_thread,
-        rpc_server_thread,
-        status_thread,
-        challenge_responder_thread,
-    ];
+    let mut other_threads = vec![ws_server_thread, rpc_server_thread, challenge_responder_thread];
     threads.append(&mut other_threads);
 
     match try_join_all(threads.into_iter().map(flatten_join_handle).collect::<Vec<_>>()).await {

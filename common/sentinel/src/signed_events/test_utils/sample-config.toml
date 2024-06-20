@@ -6,10 +6,6 @@ max_log_size = 1_000_000_000
 max_num_logs = 1
 use_file_logging = false
 
-[ipfs]
-ipfs_bin_path = ""
-status_update_frequency = 0
-
 [core]
 timeout = 0
 challenge_response_frequency = 0

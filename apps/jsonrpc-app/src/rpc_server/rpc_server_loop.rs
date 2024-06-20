@@ -8,13 +8,7 @@ use common_sentinel::{
 use warp::Filter;
 
 use super::{JsonRpcRequest, RpcCalls};
-use crate::type_aliases::{
-    BroadcastChannelRx,
-    BroadcastChannelTx,
-    ChallengeResponderTx,
-    StatusPublisherTx,
-    WebSocketTx,
-};
+use crate::type_aliases::{BroadcastChannelRx, BroadcastChannelTx, ChallengeResponderTx, WebSocketTx};
 
 async fn start_rpc_server(
     eth_rpc_senders: EthRpcSenders,
@@ -22,12 +16,10 @@ async fn start_rpc_server(
     config: SentinelConfig,
     broadcast_channel_tx: BroadcastChannelTx,
     core_cxn: bool,
-    status_tx: StatusPublisherTx,
     challenge_responder_tx: ChallengeResponderTx,
 ) -> Result<(), SentinelError> {
     debug!("rpc server listening!");
     let core_cxn_filter = warp::any().map(move || core_cxn);
-    let status_tx_filter = warp::any().map(move || status_tx.clone());
     let websocket_tx_filter = warp::any().map(move || websocket_tx.clone());
     let eth_rpc_senders_filter = warp::any().map(move || eth_rpc_senders.clone());
     let broadcast_channel_tx_filter = warp::any().map(move || broadcast_channel_tx.clone());
@@ -43,7 +35,6 @@ async fn start_rpc_server(
         .and(websocket_tx_filter.clone())
         .and(eth_rpc_senders_filter.clone())
         .and(broadcast_channel_tx_filter.clone())
-        .and(status_tx_filter.clone())
         .and(challenge_responder_tx_filter.clone())
         .and(core_cxn_filter)
         .map(RpcCalls::new)
@@ -75,7 +66,6 @@ pub async fn rpc_server_loop(
     websocket_tx: WebSocketTx,
     config: SentinelConfig,
     broadcast_channel_tx: BroadcastChannelTx,
-    status_tx: StatusPublisherTx,
     challenge_responder_tx: ChallengeResponderTx,
 ) -> Result<(), SentinelError> {
     let name = "rpc server";
@@ -104,7 +94,6 @@ pub async fn rpc_server_loop(
                 config.clone(),
                 broadcast_channel_tx.clone(),
                 core_connection_status,
-                status_tx.clone(),
                 challenge_responder_tx.clone(),
             ), if rpc_server_is_enabled => {
                 if r.is_ok() {

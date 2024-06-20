@@ -18,7 +18,6 @@ use common_sentinel::{
     RpcServerBroadcastChannelMessages,
     SentinelConfig,
     SentinelError,
-    StatusPublisherBroadcastChannelMessages,
     SyncerBroadcastChannelMessages,
     UserOpCancellerBroadcastChannelMessages,
     WebSocketMessages,
@@ -84,9 +83,6 @@ async fn handle_socket(
     ))?;
     broadcast_channel_tx.send(BroadcastChannelMessages::UserOpCanceller(
         UserOpCancellerBroadcastChannelMessages::CoreConnected,
-    ))?;
-    broadcast_channel_tx.send(BroadcastChannelMessages::StatusPublisher(
-        StatusPublisherBroadcastChannelMessages::CoreConnected,
     ))?;
     broadcast_channel_tx.send(BroadcastChannelMessages::ChallengeResponder(
         ChallengeResponderBroadcastChannelMessages::CoreConnected,
@@ -165,9 +161,6 @@ async fn handle_socket(
     ))?;
     broadcast_channel_tx.send(BroadcastChannelMessages::UserOpCanceller(
         UserOpCancellerBroadcastChannelMessages::CoreDisconnected,
-    ))?;
-    broadcast_channel_tx.send(BroadcastChannelMessages::StatusPublisher(
-        StatusPublisherBroadcastChannelMessages::CoreDisconnected,
     ))?;
     broadcast_channel_tx.send(BroadcastChannelMessages::ChallengeResponder(
         ChallengeResponderBroadcastChannelMessages::CoreDisconnected,

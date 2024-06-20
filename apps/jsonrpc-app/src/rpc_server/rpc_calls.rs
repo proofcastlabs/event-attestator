@@ -14,7 +14,7 @@ use super::{
     type_aliases::{RpcId, RpcParams},
     JsonRpcRequest,
 };
-use crate::type_aliases::{BroadcastChannelTx, ChallengeResponderTx, CoreCxnStatus, StatusPublisherTx, WebSocketTx};
+use crate::type_aliases::{BroadcastChannelTx, ChallengeResponderTx, CoreCxnStatus, WebSocketTx};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct Error(String);
@@ -57,7 +57,6 @@ pub(crate) enum RpcCalls {
     GetStatus(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
     HardReset(RpcId, RpcParams, WebSocketTx, CoreCxnStatus),
     GetUnsolvedChallenges(RpcId, WebSocketTx, CoreCxnStatus),
-    StatusPublisherStartStop(RpcId, BroadcastChannelTx, bool),
     PurgeUserOps(RpcId, RpcParams, WebSocketTx, CoreCxnStatus),
     RemoveUserOp(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
     GetChallenge(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
@@ -71,7 +70,6 @@ pub(crate) enum RpcCalls {
     RemoveDebugSigner(RpcId, RpcParams, WebSocketTx, CoreCxnStatus),
     StartSyncer(RpcId, BroadcastChannelTx, RpcParams, CoreCxnStatus),
     GetBalances(RpcId, Box<SentinelConfig>, RpcParams, EthRpcSenders),
-    SetStatusPublishingFrequency(RpcId, RpcParams, StatusPublisherTx),
     GetAttestionSignature(RpcId, RpcParams, WebSocketTx, CoreCxnStatus),
     SetChallengeResponderFrequency(RpcId, RpcParams, ChallengeResponderTx),
     GetRegistrationSignature(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
@@ -122,7 +120,6 @@ impl RpcCalls {
         websocket_tx: WebSocketTx,
         eth_rpc_senders: EthRpcSenders,
         broadcast_channel_tx: BroadcastChannelTx,
-        status_tx: StatusPublisherTx,
         challenge_responder_tx: ChallengeResponderTx,
         core_cxn: bool,
     ) -> Self {
@@ -151,7 +148,6 @@ impl RpcCalls {
             "startChallengeResponder" => Self::ChallengeResponderStartStop(*r.id(), broadcast_channel_tx, true),
             "stopChallengeResponder" => Self::ChallengeResponderStartStop(*r.id(), broadcast_channel_tx, false),
             "getChallengesList" | "getChallengeList" => Self::GetChallengesList(*r.id(), websocket_tx, core_cxn),
-            "setStatusPublishingFrequency" => Self::SetStatusPublishingFrequency(*r.id(), r.params(), status_tx),
             "getAttestationSignature" => Self::GetAttestionSignature(*r.id(), r.params(), websocket_tx, core_cxn),
             "removeChallenge" | "rmChallenge" => Self::RemoveChallenge(*r.id(), websocket_tx, r.params(), core_cxn),
             "addDebugSigners" | "addDebugSigner" => Self::AddDebugSigners(*r.id(), r.params(), websocket_tx, core_cxn),
@@ -169,12 +165,6 @@ impl RpcCalls {
             },
             "getRegistrationSignature" | "getRegSig" => {
                 Self::GetRegistrationSignature(*r.id(), websocket_tx, r.params(), core_cxn)
-            },
-            "stopStatusPublisher" | "stopPublisher" => {
-                Self::StatusPublisherStartStop(*r.id(), broadcast_channel_tx.clone(), false)
-            },
-            "startStatusPublisher" | "startPublisher" => {
-                Self::StatusPublisherStartStop(*r.id(), broadcast_channel_tx.clone(), true)
             },
             "getLatestBlockInfos" | "latest" => {
                 Self::LatestBlockInfos(*r.id(), Box::new(config.clone()), websocket_tx, core_cxn)
@@ -259,11 +249,6 @@ impl RpcCalls {
 
     pub(super) async fn handle(self) -> Result<impl warp::Reply, Rejection> {
         match self {
-            Self::SetStatusPublishingFrequency(id, status_tx, params) => {
-                let result = Self::handle_set_status_publishing_frequency(status_tx, params).await;
-                let json = create_json_rpc_response_from_result(id, result, 1337);
-                Ok(warp::reply::json(&json))
-            },
             Self::SetChallengeResponderFrequency(id, challenge_tx, params) => {
                 let result = Self::handle_set_challenge_responder_frequency(challenge_tx, params).await;
                 let json = create_json_rpc_response_from_result(id, result, 1337);
@@ -324,12 +309,6 @@ impl RpcCalls {
             },
             Self::ChallengeResponderStartStop(id, broadcast_channel_tx, start) => {
                 let result = Self::handle_challenge_responder_start_stop(broadcast_channel_tx, start).await;
-                let json = create_json_rpc_response_from_result(id, result, 1337);
-                Ok(warp::reply::json(&json))
-            },
-            Self::StatusPublisherStartStop(id, broadcast_channel_tx, start_status_publisher) => {
-                let result =
-                    Self::handle_status_publisher_start_stop(broadcast_channel_tx, start_status_publisher).await;
                 let json = create_json_rpc_response_from_result(id, result, 1337);
                 Ok(warp::reply::json(&json))
             },
