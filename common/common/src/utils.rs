@@ -91,6 +91,13 @@ fn left_pad_with_zero(string: &str) -> String {
     format!("0{}", string)
 }
 
+pub fn left_pad_bytes_with_zeroes(bytes: &[Byte], width: usize) -> Bytes {
+    let padding = width - bytes.len();
+    let mut padded_bytes = vec![0; padding];
+    padded_bytes.extend_from_slice(bytes);
+    padded_bytes
+}
+
 pub fn strip_hex_prefix(hex: &str) -> String {
     const LOWERCASE_HEX_PREFIX: &str = "0x";
     const UPPERCASE_HEX_PREFIX: &str = "0X";
