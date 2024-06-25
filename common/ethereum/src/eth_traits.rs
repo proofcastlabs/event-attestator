@@ -18,9 +18,11 @@ pub trait EthTxInfoCompatible {
 
 pub trait EthSigningCapabilities {
     fn sign_hash(&self, hash: EthHash) -> Result<EthSignature>;
+    fn sign_hash_with_normalized_parity(&self, hash: EthHash) -> Result<EthSignature>;
     fn hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature>;
     fn keccak_hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sha256_hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature>;
+    fn sha256_hash_and_sign_msg_with_normalized_parity(&self, message: &[Byte]) -> Result<EthSignature>;
     fn hash_and_sign_msg_with_eth_prefix(&self, message: &[Byte]) -> Result<EthSignature>;
     fn sign_hash_and_set_eth_recovery_param(&self, hash: EthHash) -> Result<EthSignature>;
 }
