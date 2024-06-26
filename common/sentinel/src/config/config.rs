@@ -13,6 +13,7 @@ use crate::{
         IpfsConfig,
         LogConfig,
         LogToml,
+        MongoConfig,
         NetworkConfig,
         NetworkToml,
         SentinelConfigError,
@@ -29,6 +30,7 @@ struct SentinelConfigToml {
     core: SentinelCoreConfig,
     governance: GovernanceToml,
     networks: HashMap<String, NetworkToml>,
+    mongo: MongoConfig,
 }
 
 impl SentinelConfigToml {
@@ -47,6 +49,7 @@ pub struct SentinelConfig {
     core: SentinelCoreConfig,
     governance: GovernanceConfig,
     networks: HashMap<NetworkId, NetworkConfig>,
+    mongo: MongoConfig,
 }
 
 impl SentinelConfig {
@@ -70,6 +73,7 @@ impl SentinelConfig {
             core: toml.core.clone(),
             log: LogConfig::from_toml(&toml.log)?,
             governance: GovernanceConfig::try_from(&toml.governance)?,
+            mongo: toml.mongo.clone(),
         })
     }
 
