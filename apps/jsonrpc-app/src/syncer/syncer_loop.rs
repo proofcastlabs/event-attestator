@@ -6,6 +6,7 @@ use common_sentinel::{
     ProcessorOutput,
     SentinelConfig,
     SentinelError,
+    SignedEvent,
     WebSocketMessages,
     WebSocketMessagesEncodable,
     WebSocketMessagesError,
@@ -31,6 +32,16 @@ pub(super) async fn syncer_loop(
     let validate = matches!(config.validate(&network_id), Ok(true));
     let pnetwork_hub = config.pnetwork_hub(&network_id)?;
     let sleep_duration = batch.get_sleep_duration();
+    let collection = if config.mongo().enabled {
+        Some(
+            mongodb::Client::with_uri_str(config.mongo().uri_str())
+                .await?
+                .database(config.mongo().database())
+                .collection::<SignedEvent>(config.mongo().collection()),
+        )
+    } else {
+        None
+    };
 
     let latest_block_numbers = 'latest_block_getter_loop: loop {
         if !core_is_connected {
@@ -97,10 +108,15 @@ pub(super) async fn syncer_loop(
                     Ok(WebSocketMessagesEncodable::Success(output)) => {
                         // FIXME Handle below result more explicitly if you don't want a crash on
                         // the error variant
-                        let processor_output = ProcessorOutput::try_from(output)?;
-                        todo!("now you have `processor_output.signed_events()` and you can do with them what you wish/put in mongo/whatever");
+                        let processor_output = ProcessorOutput::try_from(output.clone())?;
 
                         debug!("{log_prefix} websocket channel returned success output: {output}");
+
+                        if let Some(ref c) = collection {
+                            if !processor_output.signed_events().is_empty() {
+                                c.insert_many(processor_output.signed_events().iter()).await?;
+                            }
+                        }
                         batch.update_bpm(&processor_output);
                         batch.increment_block_num();
                     },
