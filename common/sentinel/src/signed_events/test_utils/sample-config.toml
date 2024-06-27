@@ -33,3 +33,9 @@ base_challenge_period_duration = 0
 events = [
   ["0x990f341946a3fdb507ae7e52d17851b87168017c", "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
 ]
+
+[mongo]
+enabled = false
+uri_str = ""
+database = ""
+collection = ""
