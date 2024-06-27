@@ -218,6 +218,9 @@ pub enum SentinelError {
 
     #[error("broadcast messages channel error: {0}")]
     BroadcastChannelMessages(Box<tokio::sync::broadcast::error::SendError<BroadcastChannelMessages>>),
+
+    #[error("mongodb error: {0}")]
+    MongoDB(Box<mongodb::error::Error>),
 }
 
 impl From<tokio::sync::broadcast::error::SendError<SyncerMessages>> for SentinelError {
@@ -276,5 +279,11 @@ impl From<common::AppError> for SentinelError {
             common::AppError::BlockAlreadyInDbError(e) => Self::BlockAlreadyInDb(e),
             _ => Self::Common(e),
         }
+    }
+}
+
+impl From<mongodb::error::Error> for SentinelError {
+    fn from(e: mongodb::error::Error) -> Self {
+        Self::MongoDB(Box::new(e))
     }
 }
