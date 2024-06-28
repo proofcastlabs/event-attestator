@@ -3,7 +3,6 @@ mod balances;
 mod batching;
 mod bpm;
 mod call_core;
-mod challenges;
 mod config;
 mod constants;
 mod core_state;
@@ -29,21 +28,13 @@ mod test_utils;
 mod user_ops;
 mod utils;
 
+use self::db_utils::SentinelDbKeys;
 pub use self::{
     actors::{Actor, ActorInclusionProof, ActorType, Actors, ActorsError},
     balances::{Balance, Balances},
     batching::Batch,
     bpm::{Bpm, BpmInfo, Bpms},
     call_core::call_core,
-    challenges::{
-        Challenge,
-        ChallengeAndResponseInfo,
-        ChallengeAndResponseInfos,
-        ChallengeState,
-        Challenges,
-        ChallengesError,
-        ChallengesList,
-    },
     config::{
         ConfiguredEvent,
         ConfiguredEvents,
@@ -70,7 +61,6 @@ pub use self::{
         eth_call,
         get_block,
         get_chain_id,
-        get_challenge_state,
         get_eth_balance,
         get_gas_price,
         get_latest_block_num,
@@ -87,8 +77,6 @@ pub use self::{
     merkle::{MerkleError, MerkleProof, MerkleTree},
     messages::{
         BroadcastChannelMessages,
-        ChallengeResponderBroadcastChannelMessages,
-        ChallengeResponderMessages,
         EthRpcMessages,
         Responder,
         RpcServerBroadcastChannelMessages,
@@ -124,7 +112,6 @@ pub use self::{
     },
     utils::{get_utc_timestamp, run_timer},
 };
-use self::{challenges::ChallengeSolvedEvents, db_utils::SentinelDbKeys};
 
 #[macro_use]
 extern crate log;

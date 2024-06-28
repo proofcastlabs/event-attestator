@@ -3,7 +3,6 @@ use std::result::Result;
 use common_network_ids::NetworkId;
 use common_sentinel::{
     eth_call,
-    get_challenge_state,
     get_eth_balance,
     get_gas_price,
     get_latest_block_num,
@@ -62,28 +61,6 @@ pub async fn eth_rpc_loop(
             r = eth_rpc_rx.recv() => match r {
                 Some(msg) => {
                     match msg {
-                        EthRpcMessages::GetChallengeState((network_id, challenge, pnetwork_hub, responder)) => {
-                            'inner: loop {
-                                let r = get_challenge_state(
-                                    &challenge,
-                                    &pnetwork_hub,
-                                    &ws_client,
-                                    sleep_duration,
-                                    network_id,
-                                ).await;
-                                match r {
-                                    Ok(r) => {
-                                        let _ = responder.send(Ok(r));
-                                        continue 'eth_rpc_loop
-                                    },
-                                    Err(e) => {
-                                        error!("{network_id} eth rpc error: {e}");
-                                        rotate_endpoint(&network_id, &mut endpoints, &mut ws_client, &mut use_quicknode).await?;
-                                        continue 'inner
-                                    },
-                                }
-                            }
-                        },
                         EthRpcMessages::GetUserOpState((network_id, user_op, contract_address, responder)) => {
                             'inner: loop {
                                 let r = get_user_op_state(

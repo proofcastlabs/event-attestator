@@ -8,7 +8,7 @@ use common_sentinel::{
 use warp::Filter;
 
 use super::{JsonRpcRequest, RpcCalls};
-use crate::type_aliases::{BroadcastChannelRx, BroadcastChannelTx, ChallengeResponderTx, WebSocketTx};
+use crate::type_aliases::{BroadcastChannelRx, BroadcastChannelTx, WebSocketTx};
 
 async fn start_rpc_server(
     eth_rpc_senders: EthRpcSenders,
@@ -16,14 +16,12 @@ async fn start_rpc_server(
     config: SentinelConfig,
     broadcast_channel_tx: BroadcastChannelTx,
     core_cxn: bool,
-    challenge_responder_tx: ChallengeResponderTx,
 ) -> Result<(), SentinelError> {
     debug!("rpc server listening!");
     let core_cxn_filter = warp::any().map(move || core_cxn);
     let websocket_tx_filter = warp::any().map(move || websocket_tx.clone());
     let eth_rpc_senders_filter = warp::any().map(move || eth_rpc_senders.clone());
     let broadcast_channel_tx_filter = warp::any().map(move || broadcast_channel_tx.clone());
-    let challenge_responder_tx_filter = warp::any().map(move || challenge_responder_tx.clone());
 
     let rpc = warp::path("v1")
         .and(warp::path("rpc"))
@@ -35,7 +33,6 @@ async fn start_rpc_server(
         .and(websocket_tx_filter.clone())
         .and(eth_rpc_senders_filter.clone())
         .and(broadcast_channel_tx_filter.clone())
-        .and(challenge_responder_tx_filter.clone())
         .and(core_cxn_filter)
         .map(RpcCalls::new)
         .and_then(|r: RpcCalls| async move { r.handle().await });
@@ -66,7 +63,6 @@ pub async fn rpc_server_loop(
     websocket_tx: WebSocketTx,
     config: SentinelConfig,
     broadcast_channel_tx: BroadcastChannelTx,
-    challenge_responder_tx: ChallengeResponderTx,
 ) -> Result<(), SentinelError> {
     let name = "rpc server";
 
@@ -94,7 +90,6 @@ pub async fn rpc_server_loop(
                 config.clone(),
                 broadcast_channel_tx.clone(),
                 core_connection_status,
-                challenge_responder_tx.clone(),
             ), if rpc_server_is_enabled => {
                 if r.is_ok() {
                     warn!("{name} returned, restarting {name} now...");

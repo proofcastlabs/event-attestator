@@ -14,7 +14,6 @@ use axum::{
 use common_network_ids::NetworkId;
 use common_sentinel::{
     BroadcastChannelMessages,
-    ChallengeResponderBroadcastChannelMessages,
     RpcServerBroadcastChannelMessages,
     SentinelConfig,
     SentinelError,
@@ -83,9 +82,6 @@ async fn handle_socket(
     ))?;
     broadcast_channel_tx.send(BroadcastChannelMessages::UserOpCanceller(
         UserOpCancellerBroadcastChannelMessages::CoreConnected,
-    ))?;
-    broadcast_channel_tx.send(BroadcastChannelMessages::ChallengeResponder(
-        ChallengeResponderBroadcastChannelMessages::CoreConnected,
     ))?;
 
     'ws_loop: loop {
@@ -161,9 +157,6 @@ async fn handle_socket(
     ))?;
     broadcast_channel_tx.send(BroadcastChannelMessages::UserOpCanceller(
         UserOpCancellerBroadcastChannelMessages::CoreDisconnected,
-    ))?;
-    broadcast_channel_tx.send(BroadcastChannelMessages::ChallengeResponder(
-        ChallengeResponderBroadcastChannelMessages::CoreDisconnected,
     ))?;
 
     error!("websocket context {who} destroyed");

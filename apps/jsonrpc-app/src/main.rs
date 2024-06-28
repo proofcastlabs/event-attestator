@@ -1,4 +1,3 @@
-mod challenge_responder;
 mod cli;
 mod eth_rpc;
 mod rpc_server;

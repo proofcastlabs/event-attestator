@@ -1,5 +1,4 @@
 mod broadcast_channel;
-mod challenge_responder;
 mod eth_rpc;
 mod responder;
 mod syncer;
@@ -9,12 +8,10 @@ mod websocket;
 pub use self::{
     broadcast_channel::{
         BroadcastChannelMessages,
-        ChallengeResponderBroadcastChannelMessages,
         RpcServerBroadcastChannelMessages,
         SyncerBroadcastChannelMessages,
         UserOpCancellerBroadcastChannelMessages,
     },
-    challenge_responder::ChallengeResponderMessages,
     eth_rpc::EthRpcMessages,
     responder::Responder,
     syncer::SyncerMessages,

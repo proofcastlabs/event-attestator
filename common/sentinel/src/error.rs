@@ -6,7 +6,6 @@ use thiserror::Error;
 
 use crate::{
     BroadcastChannelMessages,
-    ChallengeResponderMessages,
     DbIntegrity,
     DbKey,
     EthRpcMessages,
@@ -49,9 +48,6 @@ pub enum SentinelError {
 
     #[error("invalid frequency {frequency} - must be between {min} & {max}")]
     InvalidFrequency { min: u64, max: u64, frequency: u64 },
-
-    #[error("{0}")]
-    Challenges(#[from] crate::ChallengesError),
 
     #[error("{0}")]
     Actors(#[from] crate::ActorsError),
@@ -200,9 +196,6 @@ pub enum SentinelError {
     #[error("websocket channel error: {0}")]
     WebSocketChannel(Box<tokio::sync::mpsc::error::SendError<WebSocketMessages>>),
 
-    #[error("challenge responder channel error: {0}")]
-    ChallengeResponderChannel(Box<tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>>),
-
     #[error("syncer channel error: {0}")]
     SyncerChannel(Box<tokio::sync::broadcast::error::SendError<SyncerMessages>>),
 
@@ -237,12 +230,6 @@ impl From<tokio::sync::mpsc::error::SendError<EthRpcMessages>> for SentinelError
 impl From<tokio::sync::mpsc::error::SendError<WebSocketMessages>> for SentinelError {
     fn from(e: tokio::sync::mpsc::error::SendError<WebSocketMessages>) -> Self {
         Self::WebSocketChannel(Box::new(e))
-    }
-}
-
-impl From<tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>> for SentinelError {
-    fn from(e: tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>) -> Self {
-        Self::ChallengeResponderChannel(Box::new(e))
     }
 }
 
