@@ -8,7 +8,6 @@ use common_sentinel::{
     get_latest_block_num,
     get_nonce,
     get_sub_mat,
-    get_user_op_state,
     push_tx,
     BroadcastChannelMessages,
     Endpoints,
@@ -61,28 +60,6 @@ pub async fn eth_rpc_loop(
             r = eth_rpc_rx.recv() => match r {
                 Some(msg) => {
                     match msg {
-                        EthRpcMessages::GetUserOpState((network_id, user_op, contract_address, responder)) => {
-                            'inner: loop {
-                                let r = get_user_op_state(
-                                    &user_op,
-                                    &contract_address,
-                                    &ws_client,
-                                    sleep_duration,
-                                    network_id,
-                                ).await;
-                                match r {
-                                    Ok(r) => {
-                                        let _ = responder.send(Ok(r));
-                                        continue 'eth_rpc_loop
-                                    },
-                                    Err(e) => {
-                                        error!("{network_id} eth rpc error: {e}");
-                                        rotate_endpoint(&network_id, &mut endpoints, &mut ws_client, &mut use_quicknode).await?;
-                                        continue 'inner
-                                    },
-                                }
-                            }
-                        },
                         EthRpcMessages::GetLatestBlockNum((network_id, responder)) => {
                             'inner: loop {
                                 let r = get_latest_block_num(

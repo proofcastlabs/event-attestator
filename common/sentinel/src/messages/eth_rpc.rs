@@ -4,7 +4,7 @@ use common_network_ids::NetworkId;
 use ethereum_types::{Address as EthAddress, H256 as EthHash, U256};
 use tokio::sync::{oneshot, oneshot::Receiver};
 
-use crate::{Responder, SentinelError, UserOp, UserOpSmartContractState};
+use crate::{Responder, SentinelError};
 
 #[derive(Debug)]
 pub enum EthRpcMessages {
@@ -15,19 +15,9 @@ pub enum EthRpcMessages {
     GetGasPrice((NetworkId, Responder<u64>)),
     GetSubMat((NetworkId, u64, Responder<EthSubmissionMaterial>)),
     GetEthBalance((NetworkId, EthAddress, Responder<U256>)),
-    GetUserOpState((NetworkId, UserOp, EthAddress, Responder<UserOpSmartContractState>)),
 }
 
 impl EthRpcMessages {
-    pub fn get_user_op_state_msg(
-        nid: NetworkId,
-        o: UserOp,
-        a: EthAddress,
-    ) -> (Self, Receiver<Result<UserOpSmartContractState, SentinelError>>) {
-        let (tx, rx) = oneshot::channel();
-        (Self::GetUserOpState((nid, o, a, tx)), rx)
-    }
-
     pub fn get_eth_balance_msg(nid: NetworkId, a: EthAddress) -> (Self, Receiver<Result<U256, SentinelError>>) {
         let (tx, rx) = oneshot::channel();
         (Self::GetEthBalance((nid, a, tx)), rx)

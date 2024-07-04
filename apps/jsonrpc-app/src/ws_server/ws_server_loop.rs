@@ -18,7 +18,6 @@ use common_sentinel::{
     SentinelConfig,
     SentinelError,
     SyncerBroadcastChannelMessages,
-    UserOpCancellerBroadcastChannelMessages,
     WebSocketMessages,
     WebSocketMessagesEncodable,
     WebSocketMessagesError,
@@ -79,9 +78,6 @@ async fn handle_socket(
     }
     broadcast_channel_tx.send(BroadcastChannelMessages::RpcServer(
         RpcServerBroadcastChannelMessages::CoreConnected,
-    ))?;
-    broadcast_channel_tx.send(BroadcastChannelMessages::UserOpCanceller(
-        UserOpCancellerBroadcastChannelMessages::CoreConnected,
     ))?;
 
     'ws_loop: loop {
@@ -154,9 +150,6 @@ async fn handle_socket(
     }
     broadcast_channel_tx.send(BroadcastChannelMessages::RpcServer(
         RpcServerBroadcastChannelMessages::CoreDisconnected,
-    ))?;
-    broadcast_channel_tx.send(BroadcastChannelMessages::UserOpCanceller(
-        UserOpCancellerBroadcastChannelMessages::CoreDisconnected,
     ))?;
 
     error!("websocket context {who} destroyed");

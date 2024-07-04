@@ -25,7 +25,6 @@ mod signed_events;
 mod status;
 mod sync_state;
 mod test_utils;
-mod user_ops;
 mod utils;
 
 use self::db_utils::SentinelDbKeys;
@@ -67,7 +66,6 @@ pub use self::{
         get_nonce,
         get_receipts,
         get_sub_mat,
-        get_user_op_state,
         push_tx,
     },
     eth_rpc_channels::{EthRpcChannels, EthRpcSenders},
@@ -82,10 +80,7 @@ pub use self::{
         RpcServerBroadcastChannelMessages,
         SyncerBroadcastChannelMessages,
         SyncerMessages,
-        UserOpCancellerBroadcastChannelMessages,
-        UserOpCancellerMessages,
         WebSocketMessages,
-        WebSocketMessagesCancelUserOpArgs,
         WebSocketMessagesEncodable,
         WebSocketMessagesEncodableDbOps,
         WebSocketMessagesError,
@@ -99,17 +94,6 @@ pub use self::{
     signed_events::{SignedEvent, SignedEventError, SignedEvents},
     status::{SentinelStatus, SentinelStatusError},
     sync_state::SyncState,
-    user_ops::{
-        CancellableUserOp,
-        CancellableUserOps,
-        UserOp,
-        UserOpCancellationSignature,
-        UserOpError,
-        UserOpList,
-        UserOpSmartContractState,
-        UserOpUniqueId,
-        UserOps,
-    },
     utils::{get_utc_timestamp, run_timer},
 };
 

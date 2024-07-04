@@ -9,7 +9,6 @@ mod get_nonce;
 mod get_quicknode_sub_mat;
 mod get_receipts;
 mod get_sub_mat;
-mod get_user_op_state;
 mod push_tx;
 mod test_utils;
 
@@ -24,6 +23,5 @@ pub use self::{
     get_nonce::get_nonce,
     get_receipts::get_receipts,
     get_sub_mat::get_sub_mat,
-    get_user_op_state::get_user_op_state,
     push_tx::push_tx,
 };
