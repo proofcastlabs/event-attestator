@@ -16,6 +16,12 @@ pub enum SignedEventError {
 
     #[error("event id error: {0}")]
     EventIdError(#[from] EventIdError),
+
+    #[error("ethabi error: {0}")]
+    EthAbiError(#[from] ethabi::Error),
+
+    #[error("log data error: {0}")]
+    LogDataError(String),
 }
 
 #[derive(Debug, Error)]
