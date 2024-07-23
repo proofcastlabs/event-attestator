@@ -14,18 +14,18 @@ address = "0x0000000000000000000000000000000000000000"
 network_id = "ethereum"
 
 
-[networks.eth]
+[networks.sep]
 pnetwork_hub = "0x0000000000000000000000000000000000000000"
 endpoints = [ "" ]
 sleep_duration = 0
-network_id = "ethereum"
+network_id = "sepolia"
 validate = false
 gas_limit = 0
 batch_size = 1000
 batch_duration = 0
 pre_filter_receipts = false
 events = [
-  ["0x990f341946a3fdb507ae7e52d17851b87168017c", "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"],
+  ["0x87415715056DA7A5EB1a30E53C4F4d20B44DB71D", "0x9b706941b48091a1c675b439064f40b9d43c577d9c7134cce93179b9b0bf2a52"],
 ]
 
 [mongo]

@@ -88,23 +88,26 @@ impl TryFrom<(&MetadataChainId, &EthPrivateKey, &EthSubmissionMaterial, &Network
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
+    use std::{fs::read_to_string, str::FromStr};
 
     use super::*;
-    use crate::{config::SentinelConfig, test_utils::get_sample_sub_mat_n};
+    use crate::config::SentinelConfig;
 
     #[test]
     fn should_get_signed_events() {
-        let sub_mat = get_sample_sub_mat_n(1);
-        let metadata_chain_id = MetadataChainId::EthereumMainnet;
+        let sub_mat = EthSubmissionMaterial::from_str(
+            &read_to_string("src/signed_events/test_utils/sepolia-sub-mat-num-6361078.json").unwrap(),
+        )
+        .unwrap();
+        let metadata_chain_id = MetadataChainId::EthereumSepolia;
         let pk = EthPrivateKey::from_str("e8eeb2631ab476dacd68f84eb0b9ee558b872f5155a088bf74381b5f2c63a130").unwrap();
         let path = "src/signed_events/test_utils/sample-config";
         let sample_config = SentinelConfig::new(path).unwrap();
         let network_config: &NetworkConfig = sample_config.networks().values().collect::<Vec<_>>()[0];
         let result = SignedEvents::try_from((&metadata_chain_id, &pk, &sub_mat, network_config)).unwrap();
 
-        let receipt = sub_mat.receipts[0].clone();
-        let log = receipt.logs[0].clone();
+        let receipt = sub_mat.receipts[56].clone();
+        let log = receipt.logs[6].clone();
         let transaction_hash = receipt.transaction_hash;
         let block_hash = sub_mat.get_block_hash().unwrap();
         let (tx_index, _) = receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple().unwrap();
@@ -112,7 +115,7 @@ mod tests {
         let merkle_proof = MerkleProof::try_from((&mut merkle_tree, tx_index.as_ref())).unwrap();
         let expected_result =
             SignedEvent::new(metadata_chain_id, log, transaction_hash, block_hash, &pk, merkle_proof).unwrap();
-        assert_eq!(result.len(), 5);
+        assert_eq!(result.len(), 1);
         assert_eq!(result[0], expected_result);
     }
 }
