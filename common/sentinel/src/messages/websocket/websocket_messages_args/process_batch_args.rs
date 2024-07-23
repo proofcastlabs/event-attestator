@@ -3,7 +3,8 @@ use derive_getters::{Dissolve, Getters};
 use derive_more::Constructor;
 use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
-use crate::{NetworkConfig};
+
+use crate::NetworkConfig;
 
 #[derive(Debug, Clone, PartialEq, Constructor, Serialize, Deserialize, Getters, Dissolve)]
 pub struct WebSocketMessagesProcessBatchArgs {
