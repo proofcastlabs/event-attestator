@@ -4,12 +4,7 @@ use common::DatabaseInterface;
 use common_eth::{Chain, ChainDbUtils, EthSubmissionMaterials};
 use ethereum_types::Address as EthAddress;
 
-use super::{
-    maybe_handle_actors_propagated_events,
-    maybe_handle_challenge_pending_events,
-    maybe_handle_challenge_solved_events,
-    process_single,
-};
+use super::{maybe_handle_actors_propagated_events, process_single};
 use crate::{NetworkConfig, ProcessorOutput, SentinelDbUtils, SentinelError, SignedEvents};
 
 pub fn process_batch<D: DatabaseInterface>(
@@ -27,7 +22,6 @@ pub fn process_batch<D: DatabaseInterface>(
     info!("processing {network_id} batch of submission material...");
 
     let c_db_utils = ChainDbUtils::new(db);
-    let s_db_utils = SentinelDbUtils::new(db);
 
     let mut chain = Chain::get(&c_db_utils, network_id.try_into()?)?;
 
@@ -47,14 +41,6 @@ pub fn process_batch<D: DatabaseInterface>(
             )
         })?
     };
-
-    batch
-        .iter()
-        .try_for_each(|m| maybe_handle_challenge_pending_events(&s_db_utils, pnetwork_hub, m, &sentinel_address))?;
-
-    batch
-        .iter()
-        .try_for_each(|m| maybe_handle_challenge_solved_events(&s_db_utils, pnetwork_hub, m, &sentinel_address))?;
 
     let signed_events = SignedEvents::from(
         batch

@@ -10,4 +10,28 @@ pub enum SignedEventError {
 
     #[error("network id error: {0}")]
     NetworkId(#[from] common_network_ids::NetworkIdError),
+
+    #[error("metadata chain id error: {0}")]
+    MetadataChainId(#[from] common_metadata::MetadataChainIdError),
+
+    #[error("event id error: {0}")]
+    EventIdError(#[from] EventIdError),
+
+    #[error("ethabi error: {0}")]
+    EthAbiError(#[from] ethabi::Error),
+
+    #[error("log data error: {0}")]
+    LogDataError(String),
+}
+
+#[derive(Debug, Error)]
+pub enum EventIdError {
+    #[error("common error: {0}")]
+    Common(#[from] common::CommonError),
+
+    #[error("encoded event is none")]
+    EncodedEventIsNone,
+
+    #[error("from hex error: {0}")]
+    FromHexError(#[from] hex::FromHexError),
 }

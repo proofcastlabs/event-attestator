@@ -189,12 +189,9 @@ impl Chain {
         // NOTE: Now we can create the chain structure
         let c = Self::new(hub, tail_length, confirmations, sub_mat.clone(), mcid)?;
 
-        // NOTE: Now we can prune the sub mat's receipts...
-        let pruned_sub_mat = sub_mat.remove_receipts_if_no_logs_from_addresses(&[hub]);
-
         // NOTE: Now we save the block itself in the db...
-        let sub_mat_bytes = serde_json::to_vec(&pruned_sub_mat)?;
-        let db_key = c.sub_mat_to_db_key(&pruned_sub_mat)?;
+        let sub_mat_bytes = serde_json::to_vec(&sub_mat)?;
+        let db_key = c.sub_mat_to_db_key(&sub_mat)?;
         db_utils
             .db()
             .put(db_key.to_vec(), sub_mat_bytes, MIN_DATA_SENSITIVITY_LEVEL)
@@ -393,13 +390,10 @@ impl Chain {
                 },
             }
         }?;
-
-        // NOTE: Now we prune receipts we don't care about
-        let pruned_sub_mat = sub_mat.remove_receipts_if_no_logs_from_addresses(&[self.hub]);
-        let sub_mat_bytes = serde_json::to_vec(&pruned_sub_mat)?;
+        let sub_mat_bytes = serde_json::to_vec(&sub_mat)?;
 
         // NOTE: Now we save the block itself in the db...
-        let db_key = self.sub_mat_to_db_key(&pruned_sub_mat)?;
+        let db_key = self.sub_mat_to_db_key(&sub_mat)?;
         db_utils
             .db()
             .put(db_key.to_vec(), sub_mat_bytes, MIN_DATA_SENSITIVITY_LEVEL)
@@ -508,8 +502,7 @@ impl Chain {
         let reset_block_data = ChainBlockData::try_from(&sub_mat)?;
 
         let key = chain.sub_mat_to_db_key(&sub_mat)?;
-        let pruned_sub_mat = sub_mat.remove_receipts_if_no_logs_from_addresses(&[chain.hub]);
-        let value = serde_json::to_vec(&pruned_sub_mat)?;
+        let value = serde_json::to_vec(&sub_mat)?;
         db_utils
             .db()
             .put(key.to_vec(), value, MIN_DATA_SENSITIVITY_LEVEL)
@@ -520,7 +513,7 @@ impl Chain {
 
         chain.offset = n;
         chain.confirmations = confirmations;
-        chain.latest_block_timestamp = pruned_sub_mat.get_timestamp();
+        chain.latest_block_timestamp = sub_mat.get_timestamp();
         chain.chain = VecDeque::from([vec![reset_block_data]]);
         if let Some(a) = hub {
             chain.hub = a;
@@ -860,7 +853,6 @@ mod tests {
         for block_num in block_nums {
             let sub_mats = chain.get_block(&db_utils, block_num).unwrap();
             assert_eq!(sub_mats.len(), 1); // NOTE There should be no forks here.
-            assert!(sub_mats[0].get_receipts().is_empty());
         }
 
         // NOTE: Now assert that blocks that re no longer in our chain were deleted.

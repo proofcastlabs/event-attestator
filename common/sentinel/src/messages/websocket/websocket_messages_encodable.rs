@@ -1,17 +1,15 @@
-use std::{fmt, str::FromStr};
+use std::fmt;
 
 use base64::{engine::general_purpose, Engine};
 use common_debug_signers::DebugSignature;
 use common_network_ids::NetworkId;
-use ethereum_types::{Address as EthAddress, H256 as EthHash};
+use ethereum_types::Address as EthAddress;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as Json;
 
 use super::WebSocketMessagesEncodableDbOps;
 use crate::{
     SentinelError,
-    UserOpUniqueId,
-    WebSocketMessagesCancelUserOpArgs,
     WebSocketMessagesError,
     WebSocketMessagesInitArgs,
     WebSocketMessagesProcessBatchArgs,
@@ -21,36 +19,23 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum WebSocketMessagesEncodable {
     Null,
-    GetUserOps,
     Success(Json),
-    GetUserOpList,
-    GetChallengesList,
     GetInclusionProof,
     CheckInit(NetworkId),
-    GetChallenge(EthHash),
-    GetUnsolvedChallenges,
     HardReset(DebugSignature),
     GetStatus(Vec<NetworkId>),
     GetAttestationCertificate,
-    GetUserOp(UserOpUniqueId),
-    GetUserOpByTxHash(EthHash),
     GetCoreState(Vec<NetworkId>),
     Error(WebSocketMessagesError),
     GetAttestationSignature(Vec<u8>),
-    PurgeUserOps(usize, DebugSignature),
-    SetChallengesToSolved(Vec<EthHash>),
     GetLatestBlockInfos(Vec<NetworkId>),
-    GetCancellableUserOps(Vec<NetworkId>),
     DbOps(WebSocketMessagesEncodableDbOps),
-    RemoveChallenge(EthHash, DebugSignature),
     RemoveDebugSigner(String, DebugSignature),
     Initialize(Box<WebSocketMessagesInitArgs>),
-    RemoveUserOp(UserOpUniqueId, DebugSignature),
     ResetChain(Box<WebSocketMessagesResetChainArgs>),
     ProcessBatch(Box<WebSocketMessagesProcessBatchArgs>),
     GetRegistrationSignature(EthAddress, u64, DebugSignature),
     AddDebugSigners(Vec<(String, EthAddress)>, DebugSignature),
-    GetUserOpCancellationSignature(Box<WebSocketMessagesCancelUserOpArgs>),
 }
 
 impl TryFrom<WebSocketMessagesEncodable> for Json {
@@ -89,33 +74,20 @@ impl fmt::Display for WebSocketMessagesEncodable {
             Self::DbOps(op) => format!("{op}"),
             Self::Error(e) => format!("Error: {e}"),
             Self::Success(_) => "Success".to_string(),
-            Self::GetUserOps => "GetUserOps".to_string(),
-            Self::GetUserOp(_) => "GetUserOp".to_string(),
             Self::CheckInit(..) => "CheckIni".to_string(),
             Self::GetStatus(..) => "GetStatus".to_string(),
             Self::HardReset(..) => "HardReset".to_string(),
             Self::Initialize(_) => "Initialize".to_string(),
             Self::ResetChain(_) => "ResetChain".to_string(),
-            Self::GetUserOpList => "GetUserOpList".to_string(),
-            Self::RemoveUserOp(..) => "RemoveUserOp".to_string(),
-            Self::PurgeUserOps(..) => "PurgeUserOps".to_string(),
             Self::GetCoreState(..) => "GetCoreState".to_string(),
             Self::ProcessBatch(..) => "ProcessBatch".to_string(),
-            Self::GetChallenge(..) => "GetChallenge".to_string(),
             Self::AddDebugSigners(..) => "AddDebugSigners".to_string(),
-            Self::GetChallengesList => "GetChallengesList".to_string(),
-            Self::RemoveChallenge(..) => "RemoveChallenge".to_string(),
             Self::GetInclusionProof => "GetInclusionProof".to_string(),
             Self::RemoveDebugSigner(..) => "RemoveDebugSigner".to_string(),
-            Self::GetUserOpByTxHash(..) => "GetUserOpByTxHash".to_string(),
             Self::GetLatestBlockInfos(..) => "GetLatestBlockInfos".to_string(),
-            Self::GetUnsolvedChallenges => "GetUnsolvedChallenges".to_string(),
-            Self::GetCancellableUserOps(_) => "GetCancellableUserOps".to_string(),
-            Self::SetChallengesToSolved(..) => "SetChallengesToSolved".to_string(),
             Self::GetAttestationSignature(..) => "GetAttestationSignature".to_string(),
             Self::GetAttestationCertificate => "GetAttestationCertificate".to_string(),
             Self::GetRegistrationSignature(..) => "GetRegistrationSignature".to_string(),
-            Self::GetUserOpCancellationSignature(..) => "GetUserOpCancellationSignature".to_string(),
         };
         write!(f, "{prefix}{s}")
     }
@@ -160,10 +132,6 @@ impl TryFrom<Vec<String>> for WebSocketMessagesEncodable {
             "reset" | "resetChain" => Ok(Self::ResetChain(Box::new(WebSocketMessagesResetChainArgs::try_from(
                 args[1..].to_vec(),
             )?))),
-            "removeUserOp" => {
-                let uid = UserOpUniqueId::from_str(&args[1])?;
-                Ok(Self::RemoveUserOp(uid, args.get(2).into()))
-            },
             "get" | "put" | "delete" => Ok(Self::DbOps(WebSocketMessagesEncodableDbOps::try_from(args)?)),
             _ => {
                 warn!("cannot create WebSocketMessagesEncodable from args {args:?}");

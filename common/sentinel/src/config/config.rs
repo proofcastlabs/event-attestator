@@ -10,9 +10,9 @@ use crate::{
     config::{
         GovernanceConfig,
         GovernanceToml,
-        IpfsConfig,
         LogConfig,
         LogToml,
+        MongoConfig,
         NetworkConfig,
         NetworkToml,
         SentinelConfigError,
@@ -25,10 +25,10 @@ use crate::{
 #[derive(Debug, Clone, Deserialize)]
 struct SentinelConfigToml {
     log: LogToml,
-    ipfs: IpfsConfig,
     core: SentinelCoreConfig,
     governance: GovernanceToml,
     networks: HashMap<String, NetworkToml>,
+    mongo: MongoConfig,
 }
 
 impl SentinelConfigToml {
@@ -43,10 +43,10 @@ impl SentinelConfigToml {
 #[derive(Debug, Clone, Getters, Eq, PartialEq, Serialize, Deserialize)]
 pub struct SentinelConfig {
     log: LogConfig,
-    ipfs: IpfsConfig,
     core: SentinelCoreConfig,
     governance: GovernanceConfig,
     networks: HashMap<NetworkId, NetworkConfig>,
+    mongo: MongoConfig,
 }
 
 impl SentinelConfig {
@@ -66,10 +66,10 @@ impl SentinelConfig {
 
         Ok(Self {
             networks,
-            ipfs: toml.ipfs.clone(),
             core: toml.core.clone(),
             log: LogConfig::from_toml(&toml.log)?,
             governance: GovernanceConfig::try_from(&toml.governance)?,
+            mongo: toml.mongo.clone(),
         })
     }
 

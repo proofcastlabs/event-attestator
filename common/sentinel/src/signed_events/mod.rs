@@ -4,7 +4,7 @@ mod signed_events;
 mod version;
 
 pub use self::{
-    error::SignedEventError,
+    error::{EventIdError, SignedEventError},
     signed_event::SignedEvent,
     signed_events::SignedEvents,
     version::SignedEventVersion,

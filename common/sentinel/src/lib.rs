@@ -3,7 +3,6 @@ mod balances;
 mod batching;
 mod bpm;
 mod call_core;
-mod challenges;
 mod config;
 mod constants;
 mod core_state;
@@ -15,7 +14,6 @@ mod error;
 mod eth_rpc_calls;
 mod eth_rpc_channels;
 mod flatten_join_handle;
-mod ipfs;
 mod latest_block_info;
 mod logging;
 mod merkle;
@@ -27,28 +25,18 @@ mod signed_events;
 mod status;
 mod sync_state;
 mod test_utils;
-mod user_ops;
 mod utils;
 
+use self::db_utils::SentinelDbKeys;
 pub use self::{
     actors::{Actor, ActorInclusionProof, ActorType, Actors, ActorsError},
     balances::{Balance, Balances},
     batching::Batch,
     bpm::{Bpm, BpmInfo, Bpms},
     call_core::call_core,
-    challenges::{
-        Challenge,
-        ChallengeAndResponseInfo,
-        ChallengeAndResponseInfos,
-        ChallengeState,
-        Challenges,
-        ChallengesError,
-        ChallengesList,
-    },
     config::{
         ConfiguredEvent,
         ConfiguredEvents,
-        IpfsConfig,
         LogConfig,
         NetworkConfig,
         SentinelConfig,
@@ -72,37 +60,27 @@ pub use self::{
         eth_call,
         get_block,
         get_chain_id,
-        get_challenge_state,
         get_eth_balance,
         get_gas_price,
         get_latest_block_num,
         get_nonce,
         get_receipts,
         get_sub_mat,
-        get_user_op_state,
         push_tx,
     },
     eth_rpc_channels::{EthRpcChannels, EthRpcSenders},
     flatten_join_handle::flatten_join_handle,
-    ipfs::{check_ipfs_daemon_is_running, publish_status, IpfsError},
     latest_block_info::{LatestBlockInfo, LatestBlockInfos},
     logging::{init_logger, LogLevel},
     merkle::{MerkleError, MerkleProof, MerkleTree},
     messages::{
         BroadcastChannelMessages,
-        ChallengeResponderBroadcastChannelMessages,
-        ChallengeResponderMessages,
         EthRpcMessages,
         Responder,
         RpcServerBroadcastChannelMessages,
-        StatusPublisherBroadcastChannelMessages,
-        StatusPublisherMessages,
         SyncerBroadcastChannelMessages,
         SyncerMessages,
-        UserOpCancellerBroadcastChannelMessages,
-        UserOpCancellerMessages,
         WebSocketMessages,
-        WebSocketMessagesCancelUserOpArgs,
         WebSocketMessagesEncodable,
         WebSocketMessagesEncodableDbOps,
         WebSocketMessagesError,
@@ -116,20 +94,8 @@ pub use self::{
     signed_events::{SignedEvent, SignedEventError, SignedEvents},
     status::{SentinelStatus, SentinelStatusError},
     sync_state::SyncState,
-    user_ops::{
-        CancellableUserOp,
-        CancellableUserOps,
-        UserOp,
-        UserOpCancellationSignature,
-        UserOpError,
-        UserOpList,
-        UserOpSmartContractState,
-        UserOpUniqueId,
-        UserOps,
-    },
     utils::{get_utc_timestamp, run_timer},
 };
-use self::{challenges::ChallengeSolvedEvents, db_utils::SentinelDbKeys};
 
 #[macro_use]
 extern crate log;

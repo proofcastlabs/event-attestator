@@ -87,6 +87,19 @@ impl EthSigningCapabilities for EthPrivateKey {
         Ok(EthSignature::new(data_arr))
     }
 
+    fn sign_hash_with_normalized_parity(&self, hash: H256) -> Result<EthSignature> {
+        let msg = match Message::from_slice(hash.as_bytes()) {
+            Ok(msg) => msg,
+            Err(err) => return Err(err.into()),
+        };
+        let sig = Secp256k1::sign_recoverable(&Secp256k1::new(), &msg, &self.0);
+        let (rec_id, data) = sig.serialize_compact();
+        let mut data_arr = [0; 65];
+        data_arr[0..64].copy_from_slice(&data[0..64]);
+        data_arr[64] = rec_id.to_i32() as u8 + 27;
+        Ok(EthSignature::new(data_arr))
+    }
+
     fn sign_hash_and_set_eth_recovery_param(&self, hash: H256) -> Result<EthSignature> {
         self.sign_hash(hash).map(EthSignature::set_recovery_param)
     }
@@ -97,6 +110,10 @@ impl EthSigningCapabilities for EthPrivateKey {
 
     fn sha256_hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature> {
         self.sign_hash(H256::from_slice(&sha256_hash_bytes(message)))
+    }
+
+    fn sha256_hash_and_sign_msg_with_normalized_parity(&self, message: &[Byte]) -> Result<EthSignature> {
+        self.sign_hash_with_normalized_parity(H256::from_slice(&sha256_hash_bytes(message)))
     }
 
     fn hash_and_sign_msg(&self, message: &[Byte]) -> Result<EthSignature> {

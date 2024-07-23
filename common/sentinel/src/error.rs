@@ -4,17 +4,7 @@ use common_metadata::MetadataChainIdError;
 use common_network_ids::NetworkId;
 use thiserror::Error;
 
-use crate::{
-    BroadcastChannelMessages,
-    ChallengeResponderMessages,
-    DbIntegrity,
-    DbKey,
-    EthRpcMessages,
-    StatusPublisherMessages,
-    SyncerMessages,
-    UserOpCancellerMessages,
-    WebSocketMessages,
-};
+use crate::{BroadcastChannelMessages, DbIntegrity, DbKey, EthRpcMessages, SyncerMessages, WebSocketMessages};
 
 impl From<SentinelError> for CommonError {
     fn from(e: SentinelError) -> CommonError {
@@ -52,13 +42,7 @@ pub enum SentinelError {
     InvalidFrequency { min: u64, max: u64, frequency: u64 },
 
     #[error("{0}")]
-    Challenges(#[from] crate::ChallengesError),
-
-    #[error("{0}")]
     Actors(#[from] crate::ActorsError),
-
-    #[error("{0}")]
-    Ipfs(#[from] crate::IpfsError),
 
     #[error("{0}")]
     SentinelStatusError(#[from] crate::status::SentinelStatusError),
@@ -113,9 +97,6 @@ pub enum SentinelError {
 
     #[error("{0}")]
     FromStrRadix(#[from] ethereum_types::FromStrRadixErr),
-
-    #[error("{0}")]
-    UserOp(Box<crate::user_ops::UserOpError>),
 
     #[error("key exists in db: {0}")]
     KeyExists(DbKey),
@@ -204,31 +185,19 @@ pub enum SentinelError {
     #[error("websocket channel error: {0}")]
     WebSocketChannel(Box<tokio::sync::mpsc::error::SendError<WebSocketMessages>>),
 
-    #[error("status channel error: {0}")]
-    StatusChannel(Box<tokio::sync::mpsc::error::SendError<StatusPublisherMessages>>),
-
-    #[error("challenge responder channel error: {0}")]
-    ChallengeResponderChannel(Box<tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>>),
-
     #[error("syncer channel error: {0}")]
     SyncerChannel(Box<tokio::sync::broadcast::error::SendError<SyncerMessages>>),
 
-    #[error("user op canceller channel error: {0}")]
-    UserOpCancellerChannel(Box<tokio::sync::mpsc::error::SendError<UserOpCancellerMessages>>),
-
     #[error("broadcast messages channel error: {0}")]
     BroadcastChannelMessages(Box<tokio::sync::broadcast::error::SendError<BroadcastChannelMessages>>),
+
+    #[error("mongodb error: {0}")]
+    MongoDB(Box<mongodb::error::Error>),
 }
 
 impl From<tokio::sync::broadcast::error::SendError<SyncerMessages>> for SentinelError {
     fn from(e: tokio::sync::broadcast::error::SendError<SyncerMessages>) -> Self {
         Self::SyncerChannel(Box::new(e))
-    }
-}
-
-impl From<tokio::sync::mpsc::error::SendError<UserOpCancellerMessages>> for SentinelError {
-    fn from(e: tokio::sync::mpsc::error::SendError<UserOpCancellerMessages>) -> Self {
-        Self::UserOpCancellerChannel(Box::new(e))
     }
 }
 
@@ -244,27 +213,9 @@ impl From<tokio::sync::mpsc::error::SendError<WebSocketMessages>> for SentinelEr
     }
 }
 
-impl From<tokio::sync::mpsc::error::SendError<StatusPublisherMessages>> for SentinelError {
-    fn from(e: tokio::sync::mpsc::error::SendError<StatusPublisherMessages>) -> Self {
-        Self::StatusChannel(Box::new(e))
-    }
-}
-
-impl From<tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>> for SentinelError {
-    fn from(e: tokio::sync::mpsc::error::SendError<ChallengeResponderMessages>) -> Self {
-        Self::ChallengeResponderChannel(Box::new(e))
-    }
-}
-
 impl From<tokio::sync::broadcast::error::SendError<BroadcastChannelMessages>> for SentinelError {
     fn from(e: tokio::sync::broadcast::error::SendError<BroadcastChannelMessages>) -> Self {
         Self::BroadcastChannelMessages(Box::new(e))
-    }
-}
-
-impl From<crate::user_ops::UserOpError> for SentinelError {
-    fn from(e: crate::user_ops::UserOpError) -> Self {
-        Self::UserOp(Box::new(e))
     }
 }
 
@@ -276,5 +227,11 @@ impl From<common::AppError> for SentinelError {
             common::AppError::BlockAlreadyInDbError(e) => Self::BlockAlreadyInDb(e),
             _ => Self::Common(e),
         }
+    }
+}
+
+impl From<mongodb::error::Error> for SentinelError {
+    fn from(e: mongodb::error::Error) -> Self {
+        Self::MongoDB(Box::new(e))
     }
 }
