@@ -2,21 +2,17 @@ use std::result::Result;
 
 use common::DatabaseInterface;
 use common_eth::{Chain, ChainDbUtils, EthSubmissionMaterials};
-use ethereum_types::Address as EthAddress;
 
 use super::process_single;
 use crate::{NetworkConfig, ProcessorOutput, SentinelError, SignedEvents};
 
 pub fn process_batch<D: DatabaseInterface>(
     db: &D,
-    pnetwork_hub: &EthAddress,
     batch: &EthSubmissionMaterials,
     validate: bool,
     network_config: &NetworkConfig,
     reprocess: bool,
     dry_run: bool,
-    maybe_governance_address: Option<EthAddress>,
-    sentinel_address: EthAddress,
 ) -> Result<ProcessorOutput, SentinelError> {
     let network_id = network_config.network_id();
     info!("processing {network_id} batch of submission material...");
