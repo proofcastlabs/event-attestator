@@ -42,9 +42,6 @@ pub enum SentinelError {
     InvalidFrequency { min: u64, max: u64, frequency: u64 },
 
     #[error("{0}")]
-    Actors(#[from] crate::ActorsError),
-
-    #[error("{0}")]
     SentinelStatusError(#[from] crate::status::SentinelStatusError),
 
     #[error("chain error: {0}")]
