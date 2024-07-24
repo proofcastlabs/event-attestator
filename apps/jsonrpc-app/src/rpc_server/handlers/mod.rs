@@ -4,7 +4,6 @@ mod handle_get_attestation_certificate;
 mod handle_get_attestation_signature;
 mod handle_get_balances;
 mod handle_get_core_state;
-mod handle_get_inclusion_proof;
 mod handle_get_registration_extension_tx;
 mod handle_get_registration_signature;
 mod handle_get_status;

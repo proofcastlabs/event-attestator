@@ -4,7 +4,6 @@ mod db_ops;
 mod get_attestation_certificate;
 mod get_attestation_signature;
 mod get_core_state;
-mod get_inclusion_proof;
 mod get_latest_block_infos;
 mod get_registration_signature;
 mod get_status;
@@ -21,7 +20,6 @@ pub(crate) use self::{
     get_attestation_certificate::get_attestation_certificate,
     get_attestation_signature::get_attestation_signature,
     get_core_state::get_core_state,
-    get_inclusion_proof::get_inclusion_proof,
     get_latest_block_infos::get_latest_block_infos,
     get_registration_signature::get_registration_signature,
     get_status::get_status,

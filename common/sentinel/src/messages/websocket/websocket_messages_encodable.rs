@@ -20,7 +20,6 @@ use crate::{
 pub enum WebSocketMessagesEncodable {
     Null,
     Success(Json),
-    GetInclusionProof,
     CheckInit(NetworkId),
     HardReset(DebugSignature),
     GetStatus(Vec<NetworkId>),
@@ -82,7 +81,6 @@ impl fmt::Display for WebSocketMessagesEncodable {
             Self::GetCoreState(..) => "GetCoreState".to_string(),
             Self::ProcessBatch(..) => "ProcessBatch".to_string(),
             Self::AddDebugSigners(..) => "AddDebugSigners".to_string(),
-            Self::GetInclusionProof => "GetInclusionProof".to_string(),
             Self::RemoveDebugSigner(..) => "RemoveDebugSigner".to_string(),
             Self::GetLatestBlockInfos(..) => "GetLatestBlockInfos".to_string(),
             Self::GetAttestationSignature(..) => "GetAttestationSignature".to_string(),

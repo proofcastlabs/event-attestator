@@ -48,7 +48,6 @@ pub(crate) enum RpcCalls {
     SignMessage(RpcId, RpcParams),
     Get(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
     Put(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
-    GetInclusionProof(RpcId, WebSocketTx, CoreCxnStatus),
     Delete(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
     GetStatus(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
     HardReset(RpcId, RpcParams, WebSocketTx, CoreCxnStatus),
@@ -98,7 +97,6 @@ impl RpcCalls {
             "put" => Self::Put(*r.id(), websocket_tx, r.params(), core_cxn),
             "signMessage" | "sign" => Self::SignMessage(*r.id(), r.params()),
             "delete" => Self::Delete(*r.id(), websocket_tx, r.params(), core_cxn),
-            "getInclusionProof" => Self::GetInclusionProof(*r.id(), websocket_tx, core_cxn),
             "hardReset" => Self::HardReset(*r.id(), r.params(), websocket_tx.clone(), core_cxn),
             "stopSyncer" => Self::StopSyncer(*r.id(), broadcast_channel_tx, r.params(), core_cxn),
             "getStatus" | "status" => Self::GetStatus(*r.id(), websocket_tx, r.params(), core_cxn),
@@ -276,9 +274,6 @@ impl RpcCalls {
                 id,
                 Self::handle_get_attestation_signature(websocket_tx, params, core_cxn).await,
             ),
-            Self::GetInclusionProof(id, websocket_tx, core_cxn) => {
-                Self::handle_ws_result(id, Self::handle_get_inclusion_proof(websocket_tx, core_cxn).await)
-            },
             Self::Unknown(id, method) => Ok(warp::reply::json(&create_json_rpc_error(
                 id,
                 1, // FIXME arbitrary
