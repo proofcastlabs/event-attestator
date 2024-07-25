@@ -1,0 +1,53 @@
+#!/bin/bash
+
+set -e
+
+function strongbox_hooks {
+	if ! [[ -v NDK_HOME ]]; then
+		echo "NDK_HOME not set, skipping strongbox hooks"
+		return
+	fi
+	echo "Strongbox hooks"
+
+	export TARGET_CC="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/aarch64-linux-android30-clang"
+	export CARGO_TARGET_AARCH64_LINUX_ANDROID_LINKER=$TARGET_CC
+	if ! [[ -f $TARGET_CC ]]; then
+		echo "Couldn't find $TARGET_CC"
+		exit 1
+	fi
+	echo "Using target compiler $TARGET_CC"
+	export TARGET_AR="$NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/bin/llvm-ar"
+	if ! [[ -f $TARGET_AR ]]; then
+		echo "Couldn't find $TARGET_AR"
+		exit 1
+	fi
+	echo "Using target arch $TARGET_AR"
+
+	echo "Check strongbox code"
+	cargo check -p strongbox --target aarch64-linux-android
+	echo "Build strongbox code"
+	cargo build --lib -p strongbox --target aarch64-linux-android
+
+	echo "Check strongbox clippy"
+	cargo clippy -p strongbox --target aarch64-linux-android -- -D warnings
+}
+
+echo "Running pre-commit hook, disable with --no-verify"
+echo "Check code"
+cargo check
+echo "Build code"
+cargo build
+echo "Run tests"
+cargo test
+echo "Run non validating tests"
+cargo test --features non-validating
+
+echo "Check code formatting"
+cargo +nightly fmt --all -- --check
+
+echo "Check clippy"
+cargo clippy -- -D warnings
+
+strongbox_hooks
+
+echo done
