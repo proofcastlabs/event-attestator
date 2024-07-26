@@ -34,7 +34,6 @@ pub fn handle_websocket_message(state: State) -> Result<State, SentinelError> {
     info!("handling websocket msg: '{msg}'...");
     let final_state = match msg {
         Msg::Initialize(args) => super::handlers::init(*args.clone(), state),
-        Msg::GetInclusionProof => super::handlers::get_inclusion_proof(state),
         Msg::GetStatus(nids) => super::handlers::get_status(nids.clone(), state),
         Msg::ResetChain(args) => super::handlers::reset_chain(*args.clone(), state),
         Msg::CheckInit(network_id) => super::handlers::check_init(*network_id, state),

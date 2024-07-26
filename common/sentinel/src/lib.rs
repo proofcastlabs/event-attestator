@@ -1,4 +1,3 @@
-mod actors;
 mod balances;
 mod batching;
 mod bpm;
@@ -27,9 +26,7 @@ mod sync_state;
 mod test_utils;
 mod utils;
 
-use self::db_utils::SentinelDbKeys;
 pub use self::{
-    actors::{Actor, ActorInclusionProof, ActorType, Actors, ActorsError},
     balances::{Balance, Balances},
     batching::Batch,
     bpm::{Bpm, BpmInfo, Bpms},

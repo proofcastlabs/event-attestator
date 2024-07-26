@@ -6,7 +6,6 @@ pub const MAX_CHANNEL_CAPACITY: usize = 1337;
 pub const MILLISECONDS_MULTIPLIER: u64 = 1000;
 
 lazy_static! {
-    pub static ref ACTOR_TYPE: crate::ActorType = crate::ActorType::Sentinel;
     pub static ref HOST_PROTOCOL_ID: common_network_ids::ProtocolId = common_network_ids::ProtocolId::Ethereum;
     pub static ref NATIVE_PROTOCOL_ID: common_network_ids::ProtocolId = common_network_ids::ProtocolId::Ethereum;
 }
