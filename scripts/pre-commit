@@ -37,10 +37,14 @@ echo "Check code"
 cargo check
 echo "Build code"
 cargo build
-echo "Run tests"
-cargo test
-echo "Run non validating tests"
-cargo test --features non-validating
+if ! [[ -v SKIP_TESTS ]]; then
+	echo "Run tests"
+	cargo test
+	echo "Run non validating tests"
+	cargo test --features non-validating
+else
+	echo "SKIP_TESTS set, skipping tests"
+fi
 
 echo "Check code formatting"
 cargo +nightly fmt --all -- --check
@@ -50,4 +54,4 @@ cargo clippy -- -D warnings
 
 strongbox_hooks
 
-echo done
+echo "Done running pre-commit hook"
