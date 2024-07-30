@@ -4,7 +4,6 @@ use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::MetadataChainId;
 use common_network_ids::ProtocolId;
 use derive_getters::Getters;
-use ethabi::{decode as eth_abi_decode, ParamType as EthAbiParamType, Token as EthAbiToken};
 use ethereum_types::H256 as EthHash;
 use serde::{Deserialize, Serialize};
 
@@ -71,16 +70,8 @@ impl SignedEvent {
             .map(|t| t.as_bytes().to_vec())
             .collect::<Vec<_>>()
             .concat();
-        let event_bytes = eth_abi_decode(&[EthAbiParamType::Tuple(vec![EthAbiParamType::Bytes])], &self.log.data)?;
-        let event_bytes = match &event_bytes[0] {
-            EthAbiToken::Tuple(value) => match &value[0] {
-                EthAbiToken::Bytes(bytes) => Ok(bytes.to_vec()),
-                _ => Err(SignedEventError::LogDataError("bad log data format".to_string())),
-            },
-            _ => Err(SignedEventError::LogDataError("bad log data format".to_string())),
-        }?;
 
-        Ok([address, sha256_hash_bytes(&topics), event_bytes].concat())
+        Ok([address, sha256_hash_bytes(&topics), self.log.data.to_vec()].concat())
     }
 
     fn calculate_event_id(&self) -> Result<EventId, EventIdError> {
@@ -124,8 +115,8 @@ mod tests {
             EthHash::from_str("0x9b706941b48091a1c675b439064f40b9d43c577d9c7134cce93179b9b0bf2a52").unwrap(),
             EthHash::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
         ];
-        let event_bytes = hex::decode("0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000ea0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f6652f1db7a7b48d9a6c515ad759c0464e16559c0000000000000000000000000000000000000000000000000000000000000038000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000ada2de876567a06ed79b0b29ae6ab2e142129e51000000000000000000000000000000000000000000000000000000000000002a30784144413264653837363536376130366544373962304232396165366142326531343231323945353100000000000000000000000000000000000000000000").unwrap();
-        let log = EthLog::new(address, topics, event_bytes);
+        let data = hex::decode("0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000ea0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f6652f1db7a7b48d9a6c515ad759c0464e16559c0000000000000000000000000000000000000000000000000000000000000038000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000ada2de876567a06ed79b0b29ae6ab2e142129e51000000000000000000000000000000000000000000000000000000000000002a30784144413264653837363536376130366544373962304232396165366142326531343231323945353100000000000000000000000000000000000000000000").unwrap();
+        let log = EthLog::new(address, topics, data);
         let block_id_hash =
             EthHash::from_str("0x658d5ae6a577714c7507e7b5911d26429280d6a0922a2be3f4502d577985527a").unwrap();
         let tx_id_hash =
@@ -134,7 +125,7 @@ mod tests {
         let merkle_proof = MerkleProof::new(vec![vec![]]);
         let result = SignedEvent::new(metadata_chain_id, log, tx_id_hash, block_id_hash, &pk, merkle_proof).unwrap();
 
-        let expected_signature = "5f39735498e1b86e914aa1e297dc2fe33a828b68d3720884953a52bdb43d5ed03b08465279ca638cf671cb037b55eac9033b5f20c9cb7eeffc8475fa8ef35f291c".to_string();
+        let expected_signature = "d1820d529a376ed15395faa94a0d8d535620ebc63755a9e57c9cc6d25ac503fa6a14ffa06bc9257ddd3b335da620333fddec0ddf17b151154c3eaa6fe880ff481c".to_string();
 
         assert_eq!(result.signature.unwrap(), expected_signature);
     }
