@@ -8,7 +8,4 @@ extern crate common;
 
 mod android;
 
-pub use self::android::{
-    Java_com_ptokenssentinelandroidapp_RustBridge_callCore,
-    Java_com_ptokenssentinelandroidapp_rustlogger_RustLogger_log,
-};
+pub use self::android::{Java_proofcastlabs_tee_MainActivity_callCore, Java_proofcastlabs_tee_logging_RustLogger_log};
