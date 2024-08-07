@@ -19,6 +19,7 @@ use crate::{
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum WebSocketMessagesEncodable {
     Null,
+    GetAddress,
     GetPublicKey,
     Success(Json),
     CheckInit(NetworkId),
@@ -74,6 +75,7 @@ impl fmt::Display for WebSocketMessagesEncodable {
             Self::DbOps(op) => format!("{op}"),
             Self::Error(e) => format!("Error: {e}"),
             Self::Success(_) => "Success".to_string(),
+            Self::GetAddress => "GetAddress".to_string(),
             Self::CheckInit(..) => "CheckIni".to_string(),
             Self::GetStatus(..) => "GetStatus".to_string(),
             Self::HardReset(..) => "HardReset".to_string(),

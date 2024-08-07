@@ -46,6 +46,7 @@ pub(crate) enum RpcCalls {
     Ping(RpcId),
     Unknown(RpcId, String),
     SignMessage(RpcId, RpcParams),
+    GetAddress(RpcId, WebSocketTx, CoreCxnStatus),
     GetPublicKey(RpcId, WebSocketTx, CoreCxnStatus),
     Get(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
     Put(RpcId, WebSocketTx, RpcParams, CoreCxnStatus),
@@ -107,6 +108,7 @@ impl RpcCalls {
             "getAttestationCertificate" => Self::GetAttestionCertificate(*r.id(), websocket_tx, core_cxn),
             "getAttestationSignature" => Self::GetAttestionSignature(*r.id(), r.params(), websocket_tx, core_cxn),
             "getPublicKey" => Self::GetPublicKey(*r.id(), websocket_tx, core_cxn),
+            "getAddress" => Self::GetAddress(*r.id(), websocket_tx, core_cxn),
             "addDebugSigners" | "addDebugSigner" => Self::AddDebugSigners(*r.id(), r.params(), websocket_tx, core_cxn),
             "getRegistrationExtensionTx" => {
                 Self::GetRegistrationExtensionTx(*r.id(), Box::new(config.clone()), r.params(), eth_rpc_senders.clone())
@@ -278,6 +280,9 @@ impl RpcCalls {
             ),
             Self::GetPublicKey(id, websocket_tx, core_cxn) => {
                 Self::handle_ws_result(id, Self::handle_get_public_key(websocket_tx, core_cxn).await)
+            },
+            Self::GetAddress(id, websocket_tx, core_cxn) => {
+                Self::handle_ws_result(id, Self::handle_get_address(websocket_tx, core_cxn).await)
             },
             Self::Unknown(id, method) => Ok(warp::reply::json(&create_json_rpc_error(
                 id,
