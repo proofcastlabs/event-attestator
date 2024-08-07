@@ -1,11 +1,11 @@
 # Contributing to the Event Attestator
 
-## Setup the pre-commit hook
+## Setup the pre-push hook
 
 From the project root run:
 
 ```bash
-./scripts/install-pre-commit-hook.sh
+./scripts/install-pre-push-hook.sh
 ```
 
-This sets up `./scripts/pre-commit` as the git's pre-commit hook.
+This sets up `./scripts/pre-push` as the git's pre-push hook.
