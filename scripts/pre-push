@@ -32,7 +32,7 @@ function strongbox_hooks {
 	cargo clippy -p strongbox --target aarch64-linux-android -- -D warnings
 }
 
-echo "Running pre-commit hook, disable with --no-verify"
+echo "Running pre-push hook, disable with --no-verify"
 echo "Check code"
 cargo check
 echo "Build code"
@@ -54,4 +54,4 @@ cargo clippy -- -D warnings
 
 strongbox_hooks
 
-echo "Done running pre-commit hook"
+echo "Done running pre-push hook"
