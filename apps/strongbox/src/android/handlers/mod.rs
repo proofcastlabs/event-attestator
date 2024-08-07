@@ -5,6 +5,7 @@ mod get_attestation_certificate;
 mod get_attestation_signature;
 mod get_core_state;
 mod get_latest_block_infos;
+mod get_public_key;
 mod get_registration_signature;
 mod get_status;
 mod hard_reset;
@@ -21,6 +22,7 @@ pub(crate) use self::{
     get_attestation_signature::get_attestation_signature,
     get_core_state::get_core_state,
     get_latest_block_infos::get_latest_block_infos,
+    get_public_key::get_public_key,
     get_registration_signature::get_registration_signature,
     get_status::get_status,
     hard_reset::hard_reset,

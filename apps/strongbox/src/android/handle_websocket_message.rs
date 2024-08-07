@@ -43,6 +43,7 @@ pub fn handle_websocket_message(state: State) -> Result<State, SentinelError> {
         Msg::GetAttestationCertificate => super::handlers::get_attestation_certificate(state),
         Msg::GetLatestBlockInfos(nids) => super::handlers::get_latest_block_infos(nids.clone(), state),
         Msg::GetAttestationSignature(bytes) => super::handlers::get_attestation_signature(bytes.clone(), state),
+        Msg::GetPublicKey => super::handlers::get_public_key(state),
         Msg::AddDebugSigners(signers, sig) => super::handlers::add_debug_signers(signers.clone(), sig.clone(), state),
         Msg::RemoveDebugSigner(signer, sig) => super::handlers::remove_debug_signer(signer.clone(), sig.clone(), state),
         Msg::GetRegistrationSignature(owner, nonce, sig) => {
