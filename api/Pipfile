@@ -8,6 +8,7 @@ flask = "*"
 pymongo = {extras = ["srv"], version = "*"}
 toml = "*"
 gunicorn = "*"
+requests = "*"
 
 [dev-packages]
 black = "*"

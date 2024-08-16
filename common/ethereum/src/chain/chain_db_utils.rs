@@ -5,7 +5,7 @@ use ethereum_types::Address as EthAddress;
 use function_name::named;
 
 use super::ChainError;
-use crate::EthPrivateKey;
+use crate::{EthPrivateKey, EthPublicKey};
 
 #[derive(Debug, Clone, PartialEq, Eq, Getters, Constructor)]
 pub struct ChainDbUtils<'a, D: DatabaseInterface> {
@@ -41,6 +41,10 @@ impl<'a, D: DatabaseInterface> ChainDbUtils<'a, D> {
 
     pub fn get_signing_address(&self) -> Result<EthAddress, ChainError> {
         self.get_pk().map(|pk| pk.to_address())
+    }
+
+    pub fn get_public_key(&self) -> Result<EthPublicKey, ChainError> {
+        self.get_pk().map(|pk| pk.to_public_key())
     }
 }
 
