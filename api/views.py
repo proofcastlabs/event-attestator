@@ -33,27 +33,39 @@ REQUEST_TIMEOUT = 1  # second
 
 def get_signer_details():
     """Return signer details to the root view."""
+    url = app.config["rpc_uri_str"]
 
-    def make_json(method):
-        return {"jsonrpc": "2.0", "method": method, "params": []}
+    def make_json(method, params=None):
+        if params is None:
+            params = []
+        return {"jsonrpc": "2.0", "method": method, "params": params}
 
     try:
-        resp_attestation = requests.post(
-            app.config["rpc_uri_str"],
+        resp_attestation_cert = requests.post(
+            url,
             json=make_json("getAttestationCertificate"),
             timeout=REQUEST_TIMEOUT,
         )
-        attestation = resp_attestation.json()["result"]["attestationCertificate"]
+        attestation_cert = resp_attestation_cert.json()["result"][
+            "attestationCertificate"
+        ]
 
         resp_pub_k = requests.post(
-            app.config["rpc_uri_str"],
+            url,
             json=make_json("getPublicKey"),
             timeout=REQUEST_TIMEOUT,
         )
         pub_k = resp_pub_k.json()["result"]["publicKey"]
 
+        resp_attestation_sig = requests.post(
+            url,
+            json=make_json("getAttestationSignature", params=[pub_k]),
+            timeout=REQUEST_TIMEOUT,
+        )
+        attestation_sig = resp_attestation_sig.json()["result"]["attestationSignature"]
+
         resp_addr = requests.post(
-            app.config["rpc_uri_str"],
+            url,
             json=make_json("getAddress"),
             timeout=REQUEST_TIMEOUT,
         )
@@ -61,9 +73,10 @@ def get_signer_details():
 
         return {
             "result": {
-                "attestationCertificate": attestation,
                 "publicKey": pub_k,
-                "address": address,
+                "account": address,
+                "attestationSignature": attestation_sig,
+                "attestationCertificate": attestation_cert,
             }
         }
     except Exception as exc:
