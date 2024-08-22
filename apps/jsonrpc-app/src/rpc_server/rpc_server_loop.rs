@@ -22,6 +22,7 @@ async fn start_rpc_server(
     let websocket_tx_filter = warp::any().map(move || websocket_tx.clone());
     let eth_rpc_senders_filter = warp::any().map(move || eth_rpc_senders.clone());
     let broadcast_channel_tx_filter = warp::any().map(move || broadcast_channel_tx.clone());
+    let server_address = *config.core().rpc_server_address();
 
     let rpc = warp::path("v1")
         .and(warp::path("rpc"))
@@ -37,7 +38,7 @@ async fn start_rpc_server(
         .map(RpcCalls::new)
         .and_then(|r: RpcCalls| async move { r.handle().await });
 
-    warp::serve(rpc).run(([127, 0, 0, 1], 3030)).await; // FIXME make configurable
+    warp::serve(rpc).run(server_address).await;
 
     Ok(())
 }
