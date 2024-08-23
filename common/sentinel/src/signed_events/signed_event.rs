@@ -1,21 +1,39 @@
 use common::{sha256_hash_bytes, types::Bytes, utils::left_pad_bytes_with_zeroes};
 use common_chain_ids::EthChainId;
-use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
+use common_eth::{EthLog, EthLogExt, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::MetadataChainId;
 use common_network_ids::ProtocolId;
 use derive_getters::Getters;
-use ethereum_types::H256 as EthHash;
+use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use serde::{Deserialize, Serialize};
 
 use super::{EventIdError, SignedEventError, SignedEventVersion};
 use crate::MerkleProof;
+
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SignedEventLog {
+    pub address: EthAddress,
+    pub topics: Vec<EthHash>,
+    #[serde(with = "hex::serde")]
+    pub data: Bytes,
+}
+
+impl SignedEventLog {
+    pub fn from_log(log: &EthLog) -> Self {
+        Self {
+            address: log.get_address(),
+            topics: log.get_topics(),
+            data: log.get_data(),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Getters)]
 pub struct SignedEvent {
     version: SignedEventVersion,
     protocol: ProtocolId,
     origin: EthChainId,
-    log: EthLog,
+    log: SignedEventLog,
     tx_id_hash: EthHash,
     block_id_hash: EthHash,
     // NOTE: String in case format changes, plus can't auto derive ser/de on [u8; 65]
@@ -44,7 +62,7 @@ impl SignedEvent {
             version: SignedEventVersion::current(),
             protocol: metadata_chain_id.to_protocol_id().into(),
             origin: metadata_chain_id.to_eth_chain_id()?,
-            log,
+            log: SignedEventLog::from_log(&log),
             tx_id_hash,
             block_id_hash,
             event_payload: None,
