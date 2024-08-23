@@ -1,4 +1,8 @@
-use common::{sha256_hash_bytes, types::Bytes, utils::left_pad_bytes_with_zeroes};
+use common::{
+    sha256_hash_bytes,
+    types::Bytes,
+    utils::{get_unix_timestamp, left_pad_bytes_with_zeroes},
+};
 use common_chain_ids::EthChainId;
 use common_eth::{EthLog, EthLogExt, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::MetadataChainId;
@@ -42,6 +46,14 @@ pub struct SignedEvent {
     event_id: Option<String>,
     signature: Option<String>,
     public_key: String,
+    timestamp: u64,
+}
+
+#[cfg(test)]
+impl SignedEvent {
+    pub fn set_timestamp(&mut self, timestamp: u64) {
+        self.timestamp = timestamp;
+    }
 }
 
 const CHAIN_ID_PADDING: usize = 32;
@@ -69,6 +81,7 @@ impl SignedEvent {
             event_id: None,
             signature: None,
             public_key,
+            timestamp: get_unix_timestamp()?,
         };
         let event_payload = signed_event.get_event_payload()?;
         signed_event.event_payload = Some(hex::encode(event_payload));

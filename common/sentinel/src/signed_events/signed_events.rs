@@ -104,7 +104,8 @@ mod tests {
         let path = "src/signed_events/test_utils/sample-config";
         let sample_config = SentinelConfig::new(path).unwrap();
         let network_config: &NetworkConfig = sample_config.networks().values().collect::<Vec<_>>()[0];
-        let result = SignedEvents::try_from((&metadata_chain_id, &pk, &sub_mat, network_config)).unwrap();
+        let mut result = SignedEvents::try_from((&metadata_chain_id, &pk, &sub_mat, network_config)).unwrap();
+        result[0].set_timestamp(0);
 
         let receipt = sub_mat.receipts[56].clone();
         let log = receipt.logs[6].clone();
@@ -113,8 +114,9 @@ mod tests {
         let (tx_index, _) = receipt.get_rlp_encoded_index_and_rlp_encoded_receipt_tuple().unwrap();
         let mut merkle_tree = MerkleTree::try_from(&sub_mat).unwrap();
         let merkle_proof = MerkleProof::try_from((&mut merkle_tree, tx_index.as_ref())).unwrap();
-        let expected_result =
+        let mut expected_result =
             SignedEvent::new(metadata_chain_id, log, transaction_hash, block_hash, &pk, merkle_proof).unwrap();
+        expected_result.set_timestamp(0);
         assert_eq!(result.len(), 1);
         assert_eq!(result[0], expected_result);
     }
