@@ -1,4 +1,4 @@
-use common::{types::Bytes, utils::left_pad_bytes_with_zeroes};
+use common::{sha256_hash_bytes, types::Bytes, utils::left_pad_bytes_with_zeroes};
 use common_chain_ids::EthChainId;
 use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::MetadataChainId;
@@ -54,9 +54,10 @@ impl SignedEvent {
         };
         let event_payload = signed_event.get_event_payload()?;
         signed_event.event_payload = Some(hex::encode(event_payload));
-        let event_id = signed_event.calculate_event_id()?;
+        let event_id_preimage = signed_event.get_event_id_preimage()?;
+        let event_id = EventId(sha256_hash_bytes(&event_id_preimage));
         signed_event.event_id = Some(event_id.to_string());
-        let sig = pk.sha256_hash_and_sign_msg_with_normalized_parity(&event_id.0)?;
+        let sig = pk.sha256_hash_and_sign_msg_with_normalized_parity(&event_id_preimage)?;
         signed_event.signature = Some(sig.to_string());
         Ok(signed_event)
     }
@@ -76,9 +77,9 @@ impl SignedEvent {
         Ok([address, topics.concat(), self.log.data.to_vec()].concat())
     }
 
-    fn calculate_event_id(&self) -> Result<EventId, EventIdError> {
+    fn get_event_id_preimage(&self) -> Result<Bytes, EventIdError> {
         let event_payload = self.event_payload.as_ref().ok_or(EventIdError::EncodedEventIsNone)?;
-        let event_id = [
+        let pre_image = [
             self.version.as_bytes(),
             &[self.protocol.into()],
             &left_pad_bytes_with_zeroes(&self.origin.to_bytes()?, CHAIN_ID_PADDING),
@@ -88,7 +89,7 @@ impl SignedEvent {
         ]
         .concat();
 
-        Ok(EventId(event_id))
+        Ok(pre_image)
     }
 }
 
