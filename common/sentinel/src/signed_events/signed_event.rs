@@ -39,7 +39,7 @@ impl SignedEvent {
         // FIXME reintroduce
         _merkle_proof: MerkleProof,
     ) -> Result<Self, SignedEventError> {
-        let public_key = pk.to_public_key().public_key.to_string();
+        let public_key = hex::encode(pk.to_public_key().public_key.serialize_uncompressed());
         let mut signed_event = Self {
             version: SignedEventVersion::current(),
             protocol: metadata_chain_id.to_protocol_id().into(),
