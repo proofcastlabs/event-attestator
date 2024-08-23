@@ -2471,6 +2471,7 @@ dependencies = [
  "axum",
  "base64 0.21.7",
  "bounded-vec-deque",
+ "bson",
  "chain_ids",
  "clap",
  "common",

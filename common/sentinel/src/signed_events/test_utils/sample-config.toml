@@ -34,3 +34,4 @@ enabled = false
 uri_str = ""
 database = ""
 collection = ""
+index = ""
