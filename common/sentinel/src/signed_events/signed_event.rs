@@ -18,8 +18,7 @@ use crate::MerkleProof;
 pub struct SignedEventLog {
     pub address: EthAddress,
     pub topics: Vec<EthHash>,
-    #[serde(with = "hex::serde")]
-    pub data: Bytes,
+    pub data: String,
 }
 
 impl SignedEventLog {
@@ -27,7 +26,7 @@ impl SignedEventLog {
         Self {
             address: log.get_address(),
             topics: log.get_topics(),
-            data: log.get_data(),
+            data: format!("0x{}", hex::encode(log.get_data())),
         }
     }
 }
@@ -69,7 +68,10 @@ impl SignedEvent {
         // FIXME reintroduce
         _merkle_proof: MerkleProof,
     ) -> Result<Self, SignedEventError> {
-        let public_key = hex::encode(pk.to_public_key().public_key.serialize_uncompressed());
+        let public_key = format!(
+            "0x{}",
+            hex::encode(pk.to_public_key().public_key.serialize_uncompressed())
+        );
         let mut signed_event = Self {
             version: SignedEventVersion::current(),
             protocol: metadata_chain_id.to_protocol_id().into(),
@@ -83,33 +85,33 @@ impl SignedEvent {
             public_key,
             timestamp: get_unix_timestamp()?,
         };
-        let event_payload = signed_event.get_event_payload()?;
-        signed_event.event_payload = Some(hex::encode(event_payload));
+        let event_payload = Self::get_event_payload(&log)?;
+        signed_event.event_payload = Some(format!("0x{}", hex::encode(event_payload)));
         let event_id_preimage = signed_event.get_event_id_preimage()?;
         let event_id = EventId(sha256_hash_bytes(&event_id_preimage));
         signed_event.event_id = Some(event_id.to_string());
         let sig = pk.sha256_hash_and_sign_msg_with_normalized_parity(&event_id_preimage)?;
-        signed_event.signature = Some(sig.to_string());
+        signed_event.signature = Some(sig.to_0x_string());
         Ok(signed_event)
     }
 
-    fn get_event_payload(&self) -> Result<Bytes, SignedEventError> {
-        let address = left_pad_bytes_with_zeroes(self.log.address.as_bytes(), EVENT_ADDRESS_PADDING);
-        let mut topics = self
-            .log
-            .topics
-            .iter()
-            .map(|t| t.as_bytes().to_vec())
-            .collect::<Vec<_>>();
+    fn get_event_payload(log: &EthLog) -> Result<Bytes, SignedEventError> {
+        let address = left_pad_bytes_with_zeroes(log.address.as_bytes(), EVENT_ADDRESS_PADDING);
+        let mut topics = log.topics.iter().map(|t| t.as_bytes().to_vec()).collect::<Vec<_>>();
         while topics.len() < 4 {
             topics.push(EthHash::zero().as_bytes().to_vec());
         }
 
-        Ok([address, topics.concat(), self.log.data.to_vec()].concat())
+        Ok([address, topics.concat(), log.data.to_vec()].concat())
     }
 
     fn get_event_id_preimage(&self) -> Result<Bytes, EventIdError> {
-        let event_payload = self.event_payload.as_ref().ok_or(EventIdError::EncodedEventIsNone)?;
+        let event_payload = self
+            .event_payload
+            .as_ref()
+            .ok_or(EventIdError::EncodedEventIsNone)?
+            .strip_prefix("0x")
+            .expect("event_payload is 0x prefixed");
         let pre_image = [
             self.version.as_bytes(),
             &[self.protocol.into()],
@@ -129,7 +131,7 @@ pub struct EventId(pub Bytes);
 
 impl std::fmt::Display for EventId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", hex::encode(&self.0))
+        write!(f, "0x{}", hex::encode(&self.0))
     }
 }
 
@@ -159,7 +161,7 @@ mod tests {
         let merkle_proof = MerkleProof::new(vec![vec![]]);
         let result = SignedEvent::new(metadata_chain_id, log, tx_id_hash, block_id_hash, &pk, merkle_proof).unwrap();
 
-        let expected_signature = "5b838b1283851a1fa35ba79ea39bb74b0bf7ec7d3c0bcb96d3879e28d291c8e348a74ff321b0e02fa3960fc1fec2ddc2e49738a77d0f9f1a596312b6bb03b8f01c".to_string();
+        let expected_signature = "0x5b838b1283851a1fa35ba79ea39bb74b0bf7ec7d3c0bcb96d3879e28d291c8e348a74ff321b0e02fa3960fc1fec2ddc2e49738a77d0f9f1a596312b6bb03b8f01c".to_string();
 
         assert_eq!(result.signature.unwrap(), expected_signature);
     }
