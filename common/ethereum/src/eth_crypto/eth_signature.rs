@@ -63,6 +63,10 @@ impl EthSignature {
     pub fn empty() -> Self {
         Self([0u8; ETH_SIGNATURE_NUM_BYTES])
     }
+
+    pub fn to_0x_string(&self) -> String {
+        format!("0x{}", self)
+    }
 }
 
 impl FromStr for EthSignature {

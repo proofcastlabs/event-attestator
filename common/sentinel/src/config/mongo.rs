@@ -7,4 +7,5 @@ pub struct MongoConfig {
     pub uri_str: String,
     pub database: String,
     pub collection: String,
+    pub index: String,
 }

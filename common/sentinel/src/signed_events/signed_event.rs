@@ -1,21 +1,42 @@
-use common::{crypto_utils::sha256_hash_bytes, types::Bytes, utils::left_pad_bytes_with_zeroes};
+use common::{
+    sha256_hash_bytes,
+    types::Bytes,
+    utils::{get_unix_timestamp, left_pad_bytes_with_zeroes},
+};
 use common_chain_ids::EthChainId;
-use common_eth::{EthLog, EthPrivateKey, EthSigningCapabilities};
+use common_eth::{EthLog, EthLogExt, EthPrivateKey, EthSigningCapabilities};
 use common_metadata::MetadataChainId;
 use common_network_ids::ProtocolId;
 use derive_getters::Getters;
-use ethereum_types::H256 as EthHash;
+use ethereum_types::{Address as EthAddress, H256 as EthHash};
 use serde::{Deserialize, Serialize};
 
 use super::{EventIdError, SignedEventError, SignedEventVersion};
 use crate::MerkleProof;
+
+#[derive(Clone, Default, Debug, PartialEq, Eq, Serialize, Deserialize)]
+pub struct SignedEventLog {
+    pub address: EthAddress,
+    pub topics: Vec<EthHash>,
+    pub data: String,
+}
+
+impl SignedEventLog {
+    pub fn from_log(log: &EthLog) -> Self {
+        Self {
+            address: log.get_address(),
+            topics: log.get_topics(),
+            data: format!("0x{}", hex::encode(log.get_data())),
+        }
+    }
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Default, Serialize, Deserialize, Getters)]
 pub struct SignedEvent {
     version: SignedEventVersion,
     protocol: ProtocolId,
     origin: EthChainId,
-    log: EthLog,
+    log: SignedEventLog,
     tx_id_hash: EthHash,
     block_id_hash: EthHash,
     // NOTE: String in case format changes, plus can't auto derive ser/de on [u8; 65]
@@ -24,6 +45,14 @@ pub struct SignedEvent {
     event_id: Option<String>,
     signature: Option<String>,
     public_key: String,
+    timestamp: u64,
+}
+
+#[cfg(test)]
+impl SignedEvent {
+    pub fn set_timestamp(&mut self, timestamp: u64) {
+        self.timestamp = timestamp;
+    }
 }
 
 const CHAIN_ID_PADDING: usize = 32;
@@ -39,44 +68,51 @@ impl SignedEvent {
         // FIXME reintroduce
         _merkle_proof: MerkleProof,
     ) -> Result<Self, SignedEventError> {
-        let public_key = pk.to_public_key().public_key.to_string();
+        let public_key = format!(
+            "0x{}",
+            hex::encode(pk.to_public_key().public_key.serialize_uncompressed())
+        );
         let mut signed_event = Self {
             version: SignedEventVersion::current(),
             protocol: metadata_chain_id.to_protocol_id().into(),
             origin: metadata_chain_id.to_eth_chain_id()?,
-            log,
+            log: SignedEventLog::from_log(&log),
             tx_id_hash,
             block_id_hash,
             event_payload: None,
             event_id: None,
             signature: None,
             public_key,
+            timestamp: get_unix_timestamp()?,
         };
-        let event_payload = signed_event.get_event_payload()?;
-        signed_event.event_payload = Some(hex::encode(event_payload));
-        let event_id = signed_event.calculate_event_id()?;
+        let event_payload = Self::get_event_payload(&log)?;
+        signed_event.event_payload = Some(format!("0x{}", hex::encode(event_payload)));
+        let event_id_preimage = signed_event.get_event_id_preimage()?;
+        let event_id = EventId(sha256_hash_bytes(&event_id_preimage));
         signed_event.event_id = Some(event_id.to_string());
-        let sig = pk.sha256_hash_and_sign_msg_with_normalized_parity(&event_id.0)?;
-        signed_event.signature = Some(sig.to_string());
+        let sig = pk.sha256_hash_and_sign_msg_with_normalized_parity(&event_id_preimage)?;
+        signed_event.signature = Some(sig.to_0x_string());
         Ok(signed_event)
     }
 
-    fn get_event_payload(&self) -> Result<Bytes, SignedEventError> {
-        let address = left_pad_bytes_with_zeroes(self.log.address.as_bytes(), EVENT_ADDRESS_PADDING);
-        let topics = self
-            .log
-            .topics
-            .iter()
-            .map(|t| t.as_bytes().to_vec())
-            .collect::<Vec<_>>()
-            .concat();
+    fn get_event_payload(log: &EthLog) -> Result<Bytes, SignedEventError> {
+        let address = left_pad_bytes_with_zeroes(log.address.as_bytes(), EVENT_ADDRESS_PADDING);
+        let mut topics = log.topics.iter().map(|t| t.as_bytes().to_vec()).collect::<Vec<_>>();
+        while topics.len() < 4 {
+            topics.push(EthHash::zero().as_bytes().to_vec());
+        }
 
-        Ok([address, sha256_hash_bytes(&topics), self.log.data.to_vec()].concat())
+        Ok([address, topics.concat(), log.data.to_vec()].concat())
     }
 
-    fn calculate_event_id(&self) -> Result<EventId, EventIdError> {
-        let event_payload = self.event_payload.as_ref().ok_or(EventIdError::EncodedEventIsNone)?;
-        let event_id = [
+    fn get_event_id_preimage(&self) -> Result<Bytes, EventIdError> {
+        let event_payload = self
+            .event_payload
+            .as_ref()
+            .ok_or(EventIdError::EncodedEventIsNone)?
+            .strip_prefix("0x")
+            .expect("event_payload is 0x prefixed");
+        let pre_image = [
             self.version.as_bytes(),
             &[self.protocol.into()],
             &left_pad_bytes_with_zeroes(&self.origin.to_bytes()?, CHAIN_ID_PADDING),
@@ -86,7 +122,7 @@ impl SignedEvent {
         ]
         .concat();
 
-        Ok(EventId(event_id))
+        Ok(pre_image)
     }
 }
 
@@ -95,7 +131,7 @@ pub struct EventId(pub Bytes);
 
 impl std::fmt::Display for EventId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", hex::encode(&self.0))
+        write!(f, "0x{}", hex::encode(&self.0))
     }
 }
 
@@ -115,7 +151,7 @@ mod tests {
             EthHash::from_str("0x9b706941b48091a1c675b439064f40b9d43c577d9c7134cce93179b9b0bf2a52").unwrap(),
             EthHash::from_str("0x0000000000000000000000000000000000000000000000000000000000000000").unwrap(),
         ];
-        let data = hex::decode("0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000ea0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000f6652f1db7a7b48d9a6c515ad759c0464e16559c0000000000000000000000000000000000000000000000000000000000000038000000000000000000000000000000000000000000000000016345785d8a0000000000000000000000000000ada2de876567a06ed79b0b29ae6ab2e142129e51000000000000000000000000000000000000000000000000000000000000002a30784144413264653837363536376130366544373962304232396165366142326531343231323945353100000000000000000000000000000000000000000000").unwrap();
+        let data = hex::decode("0000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000ea000000000000000000000000000000000000000000000000000000000000000000000000000000000000000051a240271ab8ab9f9a21c82d9a85396b704e164d0000000000000000000000000000000000000000000000000000000000007a6a00000000000000000000000000000000000000000000000000000000000026fc0000000000000000000000002b5ad5c4795c026514f8317c7a215e218dccd6cf000000000000000000000000000000000000000000000000000000000000002a30783638313345623933363233373245454636323030663362316462433366383139363731634241363900000000000000000000000000000000000000000000").unwrap();
         let log = EthLog::new(address, topics, data);
         let block_id_hash =
             EthHash::from_str("0x658d5ae6a577714c7507e7b5911d26429280d6a0922a2be3f4502d577985527a").unwrap();
@@ -125,7 +161,7 @@ mod tests {
         let merkle_proof = MerkleProof::new(vec![vec![]]);
         let result = SignedEvent::new(metadata_chain_id, log, tx_id_hash, block_id_hash, &pk, merkle_proof).unwrap();
 
-        let expected_signature = "d1820d529a376ed15395faa94a0d8d535620ebc63755a9e57c9cc6d25ac503fa6a14ffa06bc9257ddd3b335da620333fddec0ddf17b151154c3eaa6fe880ff481c".to_string();
+        let expected_signature = "0x5b838b1283851a1fa35ba79ea39bb74b0bf7ec7d3c0bcb96d3879e28d291c8e348a74ff321b0e02fa3960fc1fec2ddc2e49738a77d0f9f1a596312b6bb03b8f01c".to_string();
 
         assert_eq!(result.signature.unwrap(), expected_signature);
     }

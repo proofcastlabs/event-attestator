@@ -1,3 +1,4 @@
+use bson::doc;
 use common_sentinel::{
     call_core,
     Batch,
@@ -33,12 +34,18 @@ pub(super) async fn syncer_loop(
     let pnetwork_hub = config.pnetwork_hub(&network_id)?;
     let sleep_duration = batch.get_sleep_duration();
     let collection = if config.mongo().enabled {
-        Some(
-            mongodb::Client::with_uri_str(config.mongo().uri_str())
-                .await?
-                .database(config.mongo().database())
-                .collection::<SignedEvent>(config.mongo().collection()),
-        )
+        let collection = mongodb::Client::with_uri_str(config.mongo().uri_str())
+            .await?
+            .database(config.mongo().database())
+            .collection::<SignedEvent>(config.mongo().collection());
+        collection
+            .create_index(
+                mongodb::IndexModel::builder()
+                    .keys(doc! {config.mongo().index(): 1})
+                    .build(),
+            )
+            .await?;
+        Some(collection)
     } else {
         None
     };
